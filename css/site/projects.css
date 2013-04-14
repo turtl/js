@@ -1,0 +1,10 @@
+.project-list {width: 150px; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #ddd;}
+.project-list a.drop {float: right;}
+.project-list ul {float: left; display: block; margin: 0 10px 0 0;}
+.project-list ul.open li,
+.project-list ul:hover li {display: block;}
+.project-list li {display: none;}
+.project-list li a {display: block; width: 100px;}
+.project-list li.active {display: block;}
+.project-list li.active a {background: #eee;}
+.project-list .add {float: left; display: inline-block; padding: 3px 0 0 0;}

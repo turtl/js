@@ -1,0 +1,14 @@
+<div class="project-list clear">
+	<ul class="open">
+		<? if(projects.length) { ?>
+			<? projects.each(function(p) { ?>
+				<li <? if(current == p.name) { ?>class="active"<? } ?>>
+					<a href="/<?=view.projectize(p.name)?>">
+						<?=p.name?>
+					</a>
+				</li>
+			<? }); ?>
+		<? } ?>
+	</ul>
+	<a href="#" class="add">[+]</a>
+</div>

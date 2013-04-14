@@ -1,0 +1,17 @@
+.clearMe {display: block; height: 0; clear: both; font-size: 0;}
+.clear:after {content: "."; display: block; height: 0; clear: both; visibility: hidden;}
+.clear {display: inline-block;}
+/* hide IE mac \*/
+* html .clear {height: 1%;}
+.clear {display: block;}
+/* */
+
+strong {font-weight: bold;}
+.success {color: #5a3;}
+.error {color: #c22;}
+a {outline: none;}
+
+h1 {font-size: 24px; font-weight: bold; color: #444; margin: 0 0 16px 0;}
+
+form input[type="text"] {width: 60%; height: 20px; margin: 0 0 16px 0; padding: 3px 5px;}
+form input[type="button"] {height: 30px; margin: 0; padding: 3px 5px; color: #333; font-weight: bold; border: 1px solid #999; <?=gradient('#eee', '#ccc', '#ddd')?>; border: 1px solid #ccc; <?=border_radius('4px')?>;}

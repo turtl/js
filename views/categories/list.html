@@ -1,0 +1,13 @@
+<h3>Tags</h3>
+<ul class="categories">
+	<? categories.each(function(c) { ?>
+		<li>
+			<a href="#cat"><?=c.name?></a>
+			<ul>
+				<? c.tags.each(function(t) { ?>
+					<li><a href="#tag"><?=t.name?></a></li>
+				<? }); ?>
+			</ul>
+		</li>
+	<? }); ?>
+</ul>

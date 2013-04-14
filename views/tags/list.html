@@ -1,0 +1,10 @@
+<div class="tag-list">
+	<ul>
+		<? tags.each(function(t) { ?>
+			<? if(t.category) return false; ?>
+			<li>
+				<a href="#tag"><?=t.name?></a>
+			</li>
+		<? }); ?>
+	</ul>
+</div>

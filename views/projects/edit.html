@@ -1,0 +1,9 @@
+<?
+var action	=	(project ? 'Edit' : 'Add');
+?>
+<h1><?=action?> project</h1>
+<form>
+	<input type="text" name="name" value="<?=(project ? project.name : '')?>" placeholder="Project name">
+	<br>
+	<input type="button" value="<?=action?> project">
+</form>
