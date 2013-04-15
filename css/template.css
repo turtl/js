@@ -16,11 +16,10 @@ html.loading a {cursor: progress;}
 body {
 	font-size: 13px;
 	font-family: helvetica, arial, sans-serif; 
-	background: #fff;
+	background: #dcdacd;
+	background: #f0f0f0;
 }
-a {
-	text-decoration: none;
-}
+a { text-decoration: none; }
 
 header {height: 40px; margin: 0 0 32px 0;}
 header {
@@ -35,6 +34,7 @@ header {
 }
 header h1 {padding: 10px 0 0 10px; font-size: 16px; text-transform: lowercase; font-weight: bold;}
 header h1 a {color: #eee;}
+header h1 a:hover span {color: #8aceeb;}
 
 #main {min-height: 500px; padding: 0 10px;}
 

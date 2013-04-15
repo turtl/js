@@ -16,7 +16,7 @@ var Profile = Composer.RelationalModel.extend({
 		options || (options = {});
 		var data = this.toJSON();
 		delete data.current_project;
-		research.api.post('save_profile', {profile: JSON.encode(data)}, {
+		tagit.api.post('save_profile', {profile: JSON.encode(data)}, {
 			success: function() {
 				if(options.success) options.success.apply(arguments, this);
 			},

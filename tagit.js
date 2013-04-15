@@ -4,7 +4,7 @@
 var $E = function(selector, filter){ return ($(filter) || document).getElement(selector); };
 var $ES = function(selector, filter){ return ($(filter) || document).getElements(selector); };
 
-var research	=	{
+var tagit	=	{
 	site_url: null,
 
 	// base window title
@@ -142,7 +142,7 @@ var research	=	{
 				{
 					// make sure if we are going from PAGE + MODAL -> PAGE, we dont reload PAGE's controller
 					var url	=	url + window.location.search;
-					var last_base_url	=	research.last_url ? research.last_url.replace(/\-\-.*/) : null;
+					var last_base_url	=	tagit.last_url ? tagit.last_url.replace(/\-\-.*/) : null;
 					return this.loaded && last_base_url != url;
 				}.bind(this),
 				on_failure: function(obj)
@@ -160,8 +160,8 @@ var research	=	{
 						this._string_value	=	str;
 					}.bind(path);
 					path.rewrite(null);
-					research.controllers.pages.trigger('onroute', path);
-					//research.controllers.pages.on_route(path);
+					tagit.controllers.pages.trigger('onroute', path);
+					//tagit.controllers.pages.on_route(path);
 					//if(path._string_value) a_tag.set('href', path._string_value);
 					return true;
 				}
@@ -188,7 +188,7 @@ var research	=	{
 
 	set_title: function(title)
 	{
-		title	=	title.clean().replace(eval('/(\\s*\\|\\s*'+(research.base_window_title).escapeRegExp()+')*(\\s*\\|)?$/g'), '');
+		title	=	title.clean().replace(eval('/(\\s*\\|\\s*'+(tagit.base_window_title).escapeRegExp()+')*(\\s*\\|)?$/g'), '');
 		if(title == '') title = this.base_window_title;
 		else title = title + ' | ' + this.base_window_title;
 		document.title	=	title;
@@ -208,10 +208,10 @@ var barfr	=	null;
 
 window.addEvent('domready', function() {
 	window._header_tags		=	[];
-	research.main_container	=	$E(research.main_container_selector);
-	research.site_url			=	__site_url;
-	research.base_window_title	=	document.title.replace(/.*\|\s*/, '');
-	research.api				=	new Api(
+	tagit.main_container	=	$E(tagit.main_container_selector);
+	tagit.site_url			=	__site_url;
+	tagit.base_window_title	=	document.title.replace(/.*\|\s*/, '');
+	tagit.api				=	new Api(
 		__api_url,
 		__api_key,
 		function(cb_success, cb_fail) {
@@ -252,10 +252,10 @@ window.addEvent('domready', function() {
 	// create the barfr
 	barfr	=	new Barfr('barfr', {});
 	
-	research.load_controller('pages', PagesController);
+	tagit.load_controller('pages', PagesController);
 
 	// fucking load, repinterblr
-	research.init.delay(50, research);
+	tagit.init.delay(50, tagit);
 });
 
 // couldn't be simpler
@@ -287,7 +287,7 @@ Composer.sync	=	function(method, model, options)
 		}
 		data	=	newdata;
 	}
-	research.api[method](model.get_url(), {data: data}, {
+	tagit.api[method](model.get_url(), {data: data}, {
 		onSuccess: options.success,
 		onFail: options.error
 	});

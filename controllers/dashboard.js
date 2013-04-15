@@ -1,5 +1,5 @@
 var DashboardController = Composer.Controller.extend({
-	inject: research.main_container_selector,
+	inject: tagit.main_container_selector,
 
 	elements: {
 		'.projects': 'projects',
@@ -21,7 +21,7 @@ var DashboardController = Composer.Controller.extend({
 		{
 			this.current_project	=	this.profile.get('projects').first().get('name');
 		}
-		this.profile = research.user.get('profile');
+		this.profile = tagit.user.get('profile');
 		var do_init = function() {
 			this.profile.set({ current_project: this.current_project });
 
@@ -43,7 +43,7 @@ var DashboardController = Composer.Controller.extend({
 				profile: this.profile
 			});
 
-			research.controllers.pages.trigger('loaded');
+			tagit.controllers.pages.trigger('loaded');
 		}.bind(this);
 
 		this.profile.bind('change:projects', function() {

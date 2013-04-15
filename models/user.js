@@ -75,7 +75,7 @@ var User	=	Composer.Model.extend({
 		{
 			this.set({ profile: new Profile() });
 		}
-		research.api.get('get_profile', {}, {
+		tagit.api.get('get_profile', {}, {
 			success: function(profile_data) {
 				var profile = this.get('profile');
 				profile.clear({silent: true});
