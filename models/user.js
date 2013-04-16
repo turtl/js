@@ -13,6 +13,8 @@ var User	=	Composer.Model.extend({
 	init: function()
 	{
 		this.logged_in		=	false;
+		// TODO: REMOVE ME!!
+		this.set({id: '516b9c503dc42c17a4000003'});
 	},
 
 	login: function(data, remember, silent)
@@ -69,25 +71,18 @@ var User	=	Composer.Model.extend({
 		this.trigger('logout', this);
 	},
 
-	load_profile: function()
+	load_profile: function(options)
 	{
-		if(!this.get('profile', false))
+		options || (options = {});
+		var profile = this.get('profile', false);
+		if(!profile)
 		{
-			this.set({ profile: new Profile() });
+			profile = new Profile();
+			this.set({ profile: profile });
 		}
-		tagit.api.get('get_profile', {}, {
-			success: function(profile_data) {
-				var profile = this.get('profile');
-				profile.clear({silent: true});
-				profile.set(profile_data);
-				profile.get('projects').each(function(p) {
-					p.get('posts').trigger('refresh');
-				});
-			}.bind(this),
-			error: function(e) {
-				barfr.barf('There was an error loading your profile. Are you connected to the internet?');
-			}
-		});
+		profile.clear({silent: true});
+		profile.load(options);
+		return profile;
 	},
 
 	get_name: function()

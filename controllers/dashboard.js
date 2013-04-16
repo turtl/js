@@ -11,17 +11,17 @@ var DashboardController = Composer.Controller.extend({
 	// profile
 	profile: null,
 
+	current_project: null,
+
 	projects_controller: null,
 	categories_controller: null,
 	tags_controller: null,
 
 	init: function()
 	{
-		if(!this.current_project)
-		{
-			this.current_project	=	this.profile.get('projects').first().get('name');
-		}
-		this.profile = tagit.user.get('profile');
+		this.profile = tagit.user.load_profile({
+			project: this.current_project
+		});
 		var do_init = function() {
 			this.profile.set({ current_project: this.current_project });
 

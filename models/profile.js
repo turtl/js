@@ -27,10 +27,35 @@ var Profile = Composer.RelationalModel.extend({
 		});
 	},
 
+	load: function(options)
+	{
+		options || (options = {});
+		this.clear({silent: true});
+		var projects = new Projects();
+		projects.load_projects({
+			success: function(data) {
+				var project = null;
+				if(options.project)
+				{
+					project = projects.find(function(p) {
+						return p.name == options.project;
+					});
+				}
+				if(!project) project = projects.first();
+				this.set({current_project: project});
+				project.load_notes({
+					success: function(notes) {
+						if(options.success) options.success();
+					}.bind(this)
+				});
+			}.bind(this),
+			error: function(e) {
+			}
+		});
+	},
+
 	get_current_project: function()
 	{
-		return this.get('projects').find(function(p) {
-			return p.get('name') == this.get('current_project');
-		}.bind(this));
+		return this.get('current_project');
 	}
 });

@@ -1,17 +1,17 @@
 var Tag = Composer.Model.extend({
 	defaults: {
-		count: 1	// the number of posts referencing this tag
+		count: 1	// the number of notes referencing this tag
 	}
 });
 
 var Tags = Composer.Collection.extend({
 	model: Tag,
 
-	refresh_from_posts: function(posts_collection)
+	refresh_from_notes: function(notes_collection)
 	{
-		if(!posts_collection) return false;
+		if(!notes_collection) return false;
 		this.clear();
-		posts_collection.models().each(function(p) {
+		notes_collection.models().each(function(p) {
 			var tags = p.get('tags', []);
 			tags.each(function(t) {
 				var exists = this.find(function(_t) {

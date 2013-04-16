@@ -8,7 +8,7 @@ var tagit	=	{
 	site_url: null,
 
 	// base window title
-	base_window_title: 'Repinterblr',
+	base_window_title: 'tag.it',
 
 	// holds the user model
 	user: null,
@@ -37,8 +37,6 @@ var tagit	=	{
 	// window after a page load
 	scroll_to_top: true,
 
-
-
 	init: function()
 	{
 		this.initial_load();
@@ -58,8 +56,6 @@ var tagit	=	{
 
 		// create the user model
 		this.user || (this.user = new User());
-
-		this.user.load_profile();
 
 		// this holds the collection holding the user's profiles
 		this.data	=	{};

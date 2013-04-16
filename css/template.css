@@ -12,6 +12,7 @@ html {
 
 html.loading {cursor: progress;}
 html.loading a {cursor: progress;}
+html.loading header div.loading {visibility: visible;}
 
 body {
 	font-size: 13px;
@@ -32,9 +33,10 @@ header {
 	background: linear-gradient(to bottom,  #333333 1%,#111111 100%); /* W3C */
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#333333', endColorstr='#111111',GradientType=0 ); /* IE6-9 */
 }
-header h1 {padding: 10px 0 0 10px; font-size: 16px; text-transform: lowercase; font-weight: bold;}
+header h1 {float: left; padding: 10px 0 0 10px; font-size: 16px; text-transform: lowercase; font-weight: bold;}
 header h1 a {color: #eee;}
 header h1 a:hover span {color: #8aceeb;}
+header div.loading {visibility: hidden; float: left; margin: 13px 16px 0 16px;}
 
 #main {min-height: 500px; padding: 0 10px;}
 

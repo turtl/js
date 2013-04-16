@@ -153,7 +153,7 @@ var Api	=	new Class({
 		var send_auth	=	this.test_auth_needed(method, resource);
 		//console.log('method: '+method+'\nresource: '+resource+'\nauth_needed: '+send_auth+'\nthis.user: '+this.user+'\n----');
 
-		var url	=	api_url + '/' + resource;
+		var url	=	api_url + '/' + resource.replace(/^\//, '');
 		var request	=	{
 			url: url,
 			method: method.toLowerCase(),
