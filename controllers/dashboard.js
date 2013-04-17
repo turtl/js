@@ -5,7 +5,7 @@ var DashboardController = Composer.Controller.extend({
 		'.projects': 'projects',
 		'.categories': 'categories',
 		'.tags': 'tags',
-		'.posts': 'posts'
+		'.notes': 'notes'
 	},
 
 	// profile
@@ -23,8 +23,6 @@ var DashboardController = Composer.Controller.extend({
 			project: this.current_project
 		});
 		var do_init = function() {
-			this.profile.set({ current_project: this.current_project });
-
 			this.render();
 			this.projects_controller = new ProjectsController({
 				el: this.projects,
@@ -38,27 +36,33 @@ var DashboardController = Composer.Controller.extend({
 				el: this.tags,
 				profile: this.profile
 			});
-			this.posts_controller = new PostsController({
-				el: this.posts,
+			this.notes_controller = new NotesController({
+				el: this.notes,
 				profile: this.profile
 			});
 
 			tagit.controllers.pages.trigger('loaded');
 		}.bind(this);
 
-		this.profile.bind('change:projects', function() {
-			this.profile.unbind('change:projects', 'dashboard:init_on_projects');
+		this.profile.bind(['change:current_project', 'change:projects'], function() {
+			this.soft_release();
 			do_init();
 		}.bind(this), 'dashboard:init_on_projects');
 		do_init();
 	},
 
+	soft_release: function()
+	{
+		if(this.projects_controller) this.projects_controller.release();
+		if(this.categories_controller) this.categories_controller.release();
+		if(this.tags_controller) this.tags_controller.release();
+		if(this.notes_controller) this.notes_controller.release();
+	},
+
 	release: function()
 	{
-		this.profile.unbind('change:current_project', 'dashboard:reinit_on_proj_change');
-		this.projects_controller.release();
-		this.categories_controller.release();
-		this.tags_controller.release();
+		this.soft_release();
+		this.profile.unbind(['change:current_project', 'change:projects'], 'dashboard:init_on_projects');
 		this.parent.apply(this, arguments);
 	},
 

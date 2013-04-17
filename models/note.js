@@ -13,6 +13,13 @@ var Note = Composer.RelationalModel.extend({
 		'body',
 		'meta',
 		'sort'
+	],
+
+	private_fields: [
+		'link',
+		'body',
+		'image',
+		'embed'
 	]
 }, Protected);
 

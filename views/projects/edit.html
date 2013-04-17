@@ -5,5 +5,5 @@ var action	=	(project ? 'Edit' : 'Add');
 <form>
 	<input type="text" name="name" value="<?=(project ? project.name : '')?>" placeholder="Project name">
 	<br>
-	<input type="button" value="<?=action?> project">
+	<input type="submit" value="<?=action?> project">
 </form>

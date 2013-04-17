@@ -18,7 +18,7 @@ var CategoriesController = Composer.Controller.extend({
 	render: function()
 	{
 		var content = Template.render('categories/list', {
-			categories: this.project.get('categories').toJSON()
+			categories: toJSON(this.project.get('categories'))
 		});
 		this.html(content);
 	}

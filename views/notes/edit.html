@@ -1,0 +1,24 @@
+<?
+var action = note.id ? 'Edit' : 'Add';
+?>
+<h1><?=action?> note</h1>
+<div class="note-edit">
+	<? if(!note.id) { ?>
+		<ul class="type clear">
+			<li class="sel">Link</li>
+			<li>Text</li>
+			<!--
+			<li>Image</li>
+			<li>Embed</li>
+			<li>PDF</li>
+			-->
+		</ul>
+	<? } ?>
+	<div class="type link sel">
+		link
+	</div>
+
+	<div class="type text">
+		textxxx
+	</div>
+</div>

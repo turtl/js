@@ -15,7 +15,7 @@ var TagsController = Composer.Controller.extend({
 	render: function()
 	{
 		var content = Template.render('tags/list', {
-			tags: this.project.get('tags').toJSON()
+			tags: toJSON(this.project.get('tags'))
 		});
 		this.html(content);
 	}

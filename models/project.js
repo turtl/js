@@ -21,14 +21,12 @@ var Project = Composer.RelationalModel.extend({
 		'sort'
 	],
 
+	private_fields: [
+		'title'
+	],
+
 	defaults: {
 		title: 'My Project'
-	},
-
-	set: function()
-	{
-		console.log('proj set: ', arguments);
-		return this.parent.apply(this, arguments);
 	},
 
 	init: function()
@@ -68,6 +66,22 @@ var Project = Composer.RelationalModel.extend({
 				if(options.error) options.error(e);
 			}
 		});
+	},
+
+	save: function(options)
+	{
+		options || (options = {});
+		tagit.api.post('/projects/users/'+tagit.user.id(), {data: this.toJSON()}, {
+			success: function(data) {
+				console.log('proj: ', data)
+				this.set(data);
+				if(options.success) options.success(data);
+			}.bind(this),
+			error: function(e) {
+				barfr.barf('Error saving project. Try again!');
+				if(options.error) options.error(e);
+			}
+		});
 	}
 }, Protected);
 
@@ -77,10 +91,8 @@ var Projects = Composer.Collection.extend({
 	load_projects: function(options)
 	{
 		options || (options = {});
-		tagit.api.get('/projects/user/'+tagit.user.id(), {}, {
+		tagit.api.get('/projects/users/'+tagit.user.id(), {}, {
 			success: function(projects) {
-				console.log('data: ', projects);
-				console.log('proj mod: ', new Project(projects[0]));
 				this.reset(projects);
 				if(options.success) options.success(projects);
 			}.bind(this),

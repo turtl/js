@@ -19,21 +19,23 @@ var Protected = Composer.RelationalModel.extend({
 		}
 	},
 
-	protected_field: 'body',
 	public_fields: [],
+	private_fields: [],
 
 	set: function(obj, options)
 	{
 		options || (options = {});
 		var set_into_body = function(k, v)
 		{
-			var body	=	this.get(this.protected_field);
+			var body	=	this.get('body');
 			var set		=	{};
 			set[k]		=	v;
+			// make sure the obj set doesn't override the body set
+			delete obj[k];
 			body.set(set);
 		}.bind(this);
 		Object.each(obj, function(v, k) {
-			if(k == this.protected_field)
+			if(k == 'body')
 			{
 				if(typeOf(v) == 'string')
 				{
@@ -50,13 +52,13 @@ var Protected = Composer.RelationalModel.extend({
 			}
 		}.bind(this));
 		// we processed the body vars already.
-		delete obj[this.protected_field];
-		return this.parent.apply(this, arguments);
+		delete obj['body'];
+		return this.parent.apply(this, [obj, options]);
 	},
 
 	toJSON: function()
 	{
-		var data	=	this.parent.apply(this, arguments);
+		var data	=	this.parent();
 		var body	=	{};
 		var newdata	=	{};
 		Object.each(data, function(v, k) {
@@ -66,11 +68,28 @@ var Protected = Composer.RelationalModel.extend({
 			}
 			else
 			{
-				body[k]		=	v;
+				if(this.private_fields.length > 0)
+				{
+					if(this.private_fields.contains(k))
+					{
+						body[k]	=	v;
+					}
+				}
+				else
+				{
+					body[k]		=	v;
+				}
 			}
 		}.bind(this));
-		newdata[this.protected_field]	=	JSON.encode(body);
-		// TODO: CRYPTO
+		if(window._toJSON_disable_protect)
+		{
+			Object.merge(newdata, body);
+		}
+		else
+		{
+			// TODO: CRYPTO
+			newdata['body']	=	JSON.encode(body);
+		}
 		return newdata;
 	}
 });

@@ -228,7 +228,7 @@ window.addEvent('domready', function() {
 
 	// create the modal object
 	modal	=	new modal_interface({
-		width: 600,
+		width: 700,
 		// stick it in #wrap instead of body, which fixes various problems with
 		// controllers expecting wrap to be there (for instance, the Likes
 		// controller).

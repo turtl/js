@@ -1,34 +1,9 @@
-function generate_fake_profile()
+function toJSON(object)
 {
-	return {
-		projects: [
-			{
-				name: 'lol',
-				categories: [
-					{name: 'fluids'}
-				],
-				posts: [
-					{tags: [
-						{name:'pee', category: 'fluids'},
-						{name:'poop'},
-						{name:'jizz', category: 'fluids'}
-					]},
-					{tags: [
-						{name:'shit'},
-						{name:'jizz', category: 'fluids'},
-						{name:'cum', category: 'fluids'}
-					]}
-				]
-			},
-			{
-				name: 'jizzlobber',
-				categories: [
-					{name: 'penis breath'}
-				],
-				posts: []
-			}
-		]
-	}
+	window._toJSON_disable_protect = true;
+	var ret	=	object.toJSON();
+	window._toJSON_disable_protect = false;
+	return ret;
 }
 
 // get the next tag of type "type" in the chain up the dom

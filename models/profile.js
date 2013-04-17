@@ -11,22 +11,6 @@ var Profile = Composer.RelationalModel.extend({
 	{
 	},
 
-	save_profile: function(options)
-	{
-		options || (options = {});
-		var data = this.toJSON();
-		delete data.current_project;
-		tagit.api.post('save_profile', {profile: JSON.encode(data)}, {
-			success: function() {
-				if(options.success) options.success.apply(arguments, this);
-			},
-			error: function(e) {
-				if(options.error) options.apply(arguments, this);
-				else barfr.barf('There was an error saving your profile: '+ e.msg);
-			}
-		});
-	},
-
 	load: function(options)
 	{
 		options || (options = {});
@@ -34,28 +18,34 @@ var Profile = Composer.RelationalModel.extend({
 		var projects = new Projects();
 		projects.load_projects({
 			success: function(data) {
+				this.set({projects: data});
 				var project = null;
 				if(options.project)
 				{
-					project = projects.find(function(p) {
+					project = this.get('projects').find(function(p) {
 						return p.name == options.project;
 					});
 				}
-				if(!project) project = projects.first();
-				this.set({current_project: project});
+				if(!project) project = this.get('projects').first();
+				if(!project) return;
+				this.set_current_project(project);
 				project.load_notes({
 					success: function(notes) {
 						if(options.success) options.success();
 					}.bind(this)
 				});
-			}.bind(this),
-			error: function(e) {
-			}
+			}.bind(this)
 		});
 	},
 
 	get_current_project: function()
 	{
-		return this.get('current_project');
+		return this.get('current_project', false);
+	},
+
+	set_current_project: function(obj)
+	{
+		return this.set({current_project: obj});
 	}
 });
+

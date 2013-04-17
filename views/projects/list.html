@@ -1,14 +1,21 @@
 <div class="project-list clear">
-	<ul class="open">
-		<? if(projects.length) { ?>
+	<? if(projects.length > 0) { ?>
+		<select>
 			<? projects.each(function(p) { ?>
-				<li <? if(current == p.name) { ?>class="active"<? } ?>>
-					<a href="/<?=view.projectize(p.name)?>">
-						<?=p.name?>
-					</a>
-				</li>
+				<option
+					value="<?=view.projectize(p.title)?>"
+					<? if(current == p.title) { ?>selected<? } ?>>
+					<?=p.title?>
+				</option>
 			<? }); ?>
-		<? } ?>
-	</ul>
-	<a href="#" class="add">[+]</a>
+		</select>
+		<a href="#" class="add" title="Add a new project">
+			<img src="/images/site/icons/add_16x16.png" alt="add" />
+		</a>
+	<? } else { ?>
+	<a href="#" class="add first">
+		<img src="/images/site/icons/add_16x16.png" alt="add" />
+		Add your first project
+	</a>
+	<? } ?>
 </div>
