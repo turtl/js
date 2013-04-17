@@ -14,11 +14,19 @@ var action = note.id ? 'Edit' : 'Add';
 			-->
 		</ul>
 	<? } ?>
-	<div class="type link sel">
-		link
-	</div>
+	<form>
+		<div class="type link sel">
+			<input type="text" name="link" value="<?=note.link?>" placeholder="http://">
+		</div>
 
-	<div class="type text">
-		textxxx
-	</div>
+		<div class="type text">
+			<textarea name="text" rows="8" cols="40"><?=note.text?></textarea>
+			<div class="form-note">
+				Feel free to use <a href="http://daringfireball.net/projects/markdown/" target="_blank">markdown</a> for note text.
+			</div>
+		</div>
+
+		<div class="tags">
+		</div>
+	</form>
 </div>

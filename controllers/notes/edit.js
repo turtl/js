@@ -1,5 +1,8 @@
 var NoteEditController = Composer.Controller.extend({
 	elements: {
+		'.note-edit form div.tags': 'tags',
+		'input[name=link]': 'inp_link',
+		'textarea[name=text]': 'inp_text'
 	},
 
 	events: {
@@ -9,6 +12,7 @@ var NoteEditController = Composer.Controller.extend({
 
 	project: null,
 	note: null,
+	tag_controller: null,
 
 	init: function()
 	{
@@ -20,6 +24,18 @@ var NoteEditController = Composer.Controller.extend({
 			modal.removeEvent('close', close_fn);
 		}.bind(this);
 		modal.addEvent('close', close_fn);
+		this.tag_controller = new NoteEditTagController({
+			inject: this.tags,
+			note: this.note,
+			project: this.project
+		});
+		this.inp_link.focus();
+	},
+
+	release: function()
+	{
+		if(this.tag_controller) this.tag_controller.release();
+		this.parent.apply(this, arguments);
 	},
 
 	render: function()
@@ -53,12 +69,16 @@ var NoteEditController = Composer.Controller.extend({
 		if(!e) return;
 		e.stop();
 		var li = next_tag_up('li', e.target);
-		var types = this.el.getElements('.note-edit > div.type');
+		var typename = li.get('html').clean().toLowerCase();
+		var types = this.el.getElements('.note-edit > form > div.type');
 		types.each(function(el) { el.removeClass('sel'); });
 		var lis = this.el.getElements('ul.type > li');
 		lis.each(function(el) { el.removeClass('sel'); });
-		var type = this.el.getElement('.note-edit > div.type.'+ li.get('html').clean().toLowerCase());
+		var type = this.el.getElement('.note-edit > form > div.type.'+ typename);
 		type.addClass('sel');
 		li.addClass('sel');
+		this.note.set({type: typename});
+		if(this['inp_'+typename]) this['inp_'+typename].focus();
 	}
 });
+

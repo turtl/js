@@ -1,0 +1,29 @@
+<?
+var format_tag = function(tagname, selected)
+{
+	var t = '<li class="'+view.tagetize(tagname)+' '+(selected ? 'sel': '')+'">';
+	t += view.tagetize(tagname);
+	t += '</li>';
+	return t;
+};
+?>
+<input type="text" name="tag" placeholder="Add tags here (comma separated)">
+<input type="button" class="add" value="Add tag">
+<? if(suggested_tags.length == 0 && (!note.tags || note.tags.length == 0)) { ?>
+	<br>
+	<span class="form-note">Tags make your notes easier to find.</span>
+<? } else { ?>
+	<ul class="clear">
+		<? suggested_tags.each(function(tagname) { ?>
+			<? var sel = note.tags ? note.tags.filter(function(t) { return t.name == tagname; }).length > 0 : false; ?>
+			<?=format_tag(tagname, sel)?>
+		<? }); ?>
+		<? if(note.tags) { ?>
+			<? note.tags.each(function(tag) { ?>
+				<? if(suggested_tags.contains(tag.name)) { return; } ?>
+				<?=format_tag(tag.name, true)?>
+			<? }); ?>
+		<? } ?>
+	</ul>
+<? } ?>
+

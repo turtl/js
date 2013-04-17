@@ -16,11 +16,28 @@ var Note = Composer.RelationalModel.extend({
 	],
 
 	private_fields: [
+		'tags',
 		'link',
 		'body',
 		'image',
 		'embed'
-	]
+	],
+
+	add_tag: function(tag)
+	{
+		var tags = this.get('tags');
+		if(tags.find(function(t) { return t.get('name') == tag; })) return;
+		tags.add({name: tag});
+	},
+
+	remove_tag: function(tag)
+	{
+		var tags = this.get('tags');
+		var found = tags.select({name: tag});
+		found.each(function(t) {
+			tags.remove(t);
+		});
+	}
 }, Protected);
 
 var Notes = Composer.Collection.extend({

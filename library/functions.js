@@ -131,6 +131,11 @@ var view	=	{
 		return str;
 	},
 
+	tagetize: function(tag_name)
+	{
+		return tag_name.toLowerCase().clean();
+	},
+
 	projectize: function(project_name)
 	{
 		return project_name;

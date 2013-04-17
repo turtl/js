@@ -1,10 +1,11 @@
 var ProjectsController = Composer.Controller.extend({
 	elements: {
-		'.project-list > ul': 'menu'
+		'.project-list select': 'selector'
 	},
 
 	events: {
-		'click a.add': 'add_project'
+		'click a.add': 'add_project',
+		'change .project-list select': 'change_project'
 	},
 
 	profile: null,
@@ -24,7 +25,7 @@ var ProjectsController = Composer.Controller.extend({
 	render: function()
 	{
 		var current = this.profile.get_current_project();
-		if(current) current = current.get('title');
+		if(current) current = current.get('id');
 		var content = Template.render('projects/list', {
 			projects: toJSON(this.profile.get('projects')),
 			current: current
@@ -38,6 +39,13 @@ var ProjectsController = Composer.Controller.extend({
 		new ProjectEditController({
 			profile: this.profile
 		});
+	},
+
+	change_project: function(e)
+	{
+		var project_id = this.selector.value;
+		var project = this.profile.get('projects').find_by_id(project_id);
+		if(project) this.profile.set_current_project(project);
 	}
 });
 

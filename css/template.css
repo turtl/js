@@ -35,6 +35,7 @@ header {
 }
 header h1 {float: left; padding: 10px 0 0 10px; font-size: 16px; text-transform: lowercase; font-weight: bold;}
 header h1 a {color: #eee;}
+header h1 a span {display: inline-block; padding: 0 1px;}
 header h1 a:hover span {color: #8aceeb;}
 header div.loading {visibility: hidden; float: left; margin: 13px 16px 0 16px;}
 

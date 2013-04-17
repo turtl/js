@@ -15,9 +15,25 @@
 }
 
 /* add/edit */
-.note-edit ul.type {list-style: none; position: absolute; top: 31px; left: 140px;}
-.note-edit ul.type li {float: left; display: inline-block; margin: 0 6px -1px 0; padding: 5px 8px; color: #777; text-transform: uppercase; cursor: pointer;}
-.note-edit ul.type li.sel {padding-top: 4px; color: #8aceeb; border-top: 1px solid #ddd; background: #fff;}
-.note-edit > div.type {display: none;}
-.note-edit > div.type.sel {display: block;}
+.note-edit ul.type {list-style: none; position: absolute; top: 28px; left: 160px;}
+.note-edit ul.type li {float: left; display: inline-block; margin: 0 6px -1px 0; padding: 8px 10px; font-size: 12px; color: #777; text-transform: uppercase; cursor: pointer; border-radius: 4px;}
+.note-edit ul.type li.sel {padding-top: 7px; color: #8aceeb; border-top: 1px solid #ddd; background: #fff;}
+.note-edit > form > div.type {display: none;}
+.note-edit > form > div.type.sel {display: block;}
+.note-edit > form textarea {width: 95%;}
+.note-edit .form-note {color: #777;}
+
+.note-edit div.tags {padding: 16px 0; margin: 16px 0 0 0; border-top: 1px solid #ddd;}
+.note-edit div.tags input[type=text] {width: 200px; height: auto;}
+.note-edit div.tags ul li {float: left; margin: 0 8px 8px 0; padding: 3px 5px 4px 5px; font-size: 14px; color: #666; cursor: pointer; background: #ccc; border: 1px solid #999; border-radius: 4px;}
+.note-edit div.tags ul li.sel {color: #8aceeb; background: #333; border: 1px solid #111;}
+.note-edit div.tags ul li.sel {
+	background: -moz-linear-gradient(top,  #444444 1%, #222222 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(1%,#444444), color-stop(100%,#222222)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #444444 1%,#222222 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #444444 1%,#222222 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #444444 1%,#222222 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  #444444 1%,#222222 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#444444', endColorstr='#222222',GradientType=0 ); /* IE6-9 */
+}
 
