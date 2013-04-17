@@ -2,7 +2,7 @@
 var action = note.id ? 'Edit' : 'Add';
 ?>
 <h1><?=action?> note</h1>
-<div class="note-edit">
+<div class="note-edit clear">
 	<? if(!note.id) { ?>
 		<ul class="type clear">
 			<li class="sel">Link</li>
@@ -28,5 +28,7 @@ var action = note.id ? 'Edit' : 'Add';
 
 		<div class="tags">
 		</div>
+
+		<input type="submit" value="<?=action?> note">
 	</form>
 </div>

@@ -6,7 +6,7 @@ var NoteEditController = Composer.Controller.extend({
 	},
 
 	events: {
-		'submit form': 'edit_project',
+		'submit form': 'edit_note',
 		'click ul.type li': 'switch_type'
 	},
 
@@ -47,19 +47,15 @@ var NoteEditController = Composer.Controller.extend({
 		this.html(content);
 	},
 
-	edit_project: function(e)
+	edit_note: function(e)
 	{
 		if(e) e.stop();
-		var name = this.inp_name.get('value');
-		if(this.project)
+		if(this.note.id())
 		{
-			this.project.set({name: name});
+
 		}
 		else
 		{
-			this.project = new Project({ name: name });
-			var projects = this.profile.get('projects');
-			if(projects) projects.add(this.project);
 		}
 		modal.close();
 	},
@@ -68,15 +64,19 @@ var NoteEditController = Composer.Controller.extend({
 	{
 		if(!e) return;
 		e.stop();
+
 		var li = next_tag_up('li', e.target);
 		var typename = li.get('html').clean().toLowerCase();
+
 		var types = this.el.getElements('.note-edit > form > div.type');
 		types.each(function(el) { el.removeClass('sel'); });
-		var lis = this.el.getElements('ul.type > li');
-		lis.each(function(el) { el.removeClass('sel'); });
 		var type = this.el.getElement('.note-edit > form > div.type.'+ typename);
 		type.addClass('sel');
+
+		var lis = this.el.getElements('ul.type > li');
+		lis.each(function(el) { el.removeClass('sel'); });
 		li.addClass('sel');
+
 		this.note.set({type: typename});
 		if(this['inp_'+typename]) this['inp_'+typename].focus();
 	}

@@ -22,8 +22,9 @@
 .note-edit > form > div.type.sel {display: block;}
 .note-edit > form textarea {width: 95%;}
 .note-edit .form-note {color: #777;}
+.note-edit input[type=submit] {float: right;}
 
-.note-edit div.tags {padding: 16px 0; margin: 16px 0 0 0; border-top: 1px solid #ddd;}
+.note-edit div.tags {padding: 16px 0 0 0; margin: 16px 0 0 0; border-top: 1px solid #ddd;}
 .note-edit div.tags input[type=text] {width: 200px; height: auto;}
 .note-edit div.tags ul li {float: left; margin: 0 8px 8px 0; padding: 3px 5px 4px 5px; font-size: 14px; color: #666; cursor: pointer; background: #ccc; border: 1px solid #999; border-radius: 4px;}
 .note-edit div.tags ul li.sel {color: #8aceeb; background: #333; border: 1px solid #111;}

@@ -26,8 +26,9 @@ var Note = Composer.RelationalModel.extend({
 	add_tag: function(tag)
 	{
 		var tags = this.get('tags');
-		if(tags.find(function(t) { return t.get('name') == tag; })) return;
+		if(tags.find(function(t) { return t.get('name') == tag; })) return false;
 		tags.add({name: tag});
+		return true;
 	},
 
 	remove_tag: function(tag)
