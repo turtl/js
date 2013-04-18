@@ -42,21 +42,37 @@
 .note-edit div.submit {padding: 16px 0 0 0; margin: 16px 0 0 0; border-top: 1px solid #eee;}
 
 /* note listing */
+ul.note_list {list-style: none;}
+ul.note_list .note {line-height: 1.4em;}
+
+/* grid */
+ul.note_list.list_grid > li {
+	float: left;
+	display: block;
+	width: 200px;
+	height: 200px;
+	margin: 0 0 24px 24px;
+	padding: 16px;
+	background: #ccc;
+}
+ul.note_list.list_grid > li > div.gutter {height: 200px; overflow: hidden;}
+ul.note_list.list_grid .note ul,
+ul.note_list.list_grid .note ol {margin: 16px 0 16px 32px;}
+ul.note_list.list_grid .note img {max-width: 100%; max-height: 100%;}
+ul.note_list.list_grid .note a.img {display: table-cell; width: 100%; height: 200px; vertical-align: middle; text-align: center; background: #000;}
+
 /* list */
-ul.note_list {list-style: none; padding-left: 32px;}
 ul.note_list.list_list > li {
 	float: none;
 	display: block;
 	margin: 0 0 16px 0;
-	padding: 0 0 16px 16px;
+	padding: 0 0 16px 48px;
 	border-bottom: 1px solid #ddd;
 }
 ul.note_list.list_list > li > div.gutter { overflow: hidden; line-height: 1em;}
 
-ul.note_list .note {line-height: 1.5em; white-space: nowrap; overflow: hidden;}
-ul.note_list .note ul,
-ul.note_list .note ol {margin: 16px 0 16px 24px;}
-ul.note_list .note p {padding: 0 0 16px 0;}
+ul.note_list.list_list .note {line-height: 1.5em; white-space: nowrap; overflow: hidden;}
+ul.note_list.list_list .note p {padding: 0 0 16px 0;}
 ul.note_list .note h1 {
 	margin: 0 0 0 0;
 	padding: 0;
@@ -72,11 +88,8 @@ ul.note_list .note h1 a {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-ul.note_list .note img {max-height: 100px;}
-ul.note_list .note p {width: 78%; padding: 6px 0 0 0; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-ul.note_list .note a.icon + p {padding: 0; margin: 0;}
-ul.note_list .note p:first-child {padding: 0; margin: 0;}
-
-/* grid */
+ul.note_list.list_list .note img {max-height: 100px;}
+ul.note_list.list_list .note p {width: 78%; padding: 6px 0 0 0; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+ul.note_list.list_list .note p:first-child {padding: 0; margin: 0;}
 
 

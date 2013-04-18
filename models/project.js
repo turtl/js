@@ -61,6 +61,7 @@ var Project = Composer.RelationalModel.extend({
 		options || (options = {});
 		tagit.api.get('/projects/'+this.id()+'/notes', {}, {
 			success: function(notes) {
+				this.get('notes').clear();
 				this.set({notes: notes});
 				if(options.success) options.success(notes);
 			}.bind(this),

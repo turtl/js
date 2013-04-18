@@ -3,6 +3,7 @@ var NoteItemController = Composer.Controller.extend({
 	className: 'note',
 
 	note: null,
+	display_type: 'grid',
 
 	init: function()
 	{
@@ -25,23 +26,27 @@ var NoteItemController = Composer.Controller.extend({
 			note: toJSON(this.note)
 		});
 
-		// do some custom mods here (for shame)
-		var title = content.replace(/[\s\S]*?(<h1>[\s\S]*<\/h1>)[\s\S]*/i, '$1');
-		content = content.replace(/([\s\S]*?)<h1>[\s\S]*<\/h1>([\s\S]*)/i, '$1$2');
-
-		if(content == title)
+		var title = '';
+		if(this.display_type == 'list')
 		{
-			if(title.match(/<h1[^>]+>/i))
-			{
-				content = '';
-			}
-			else
-			{
-				title = '';
-			}
-		}
+			// do some custom mods here (for shame)
+			title = content.replace(/[\s\S]*?(<h1>[\s\S]*<\/h1>)[\s\S]*/i, '$1');
+			content = content.replace(/([\s\S]*?)<h1>[\s\S]*<\/h1>([\s\S]*)/i, '$1$2');
 
-		content = content.replace(/<(?!\/?(img|a))(.*?)>/g, ' ');
+			if(content == title)
+			{
+				if(title.match(/<h1[^>]+>/i))
+				{
+					content = '';
+				}
+				else
+				{
+					title = '';
+				}
+			}
+
+			content = content.replace(/<(?!\/?(img|a))(.*?)>/g, ' ');
+		}
 		content = '<div class="gutter">'+ title + '<p>'+content+'</p></div>';
 
 		content = content.replace(/"([\w]+):(\/\/([\.\-\w_\/:\?\+\&#=%,]+))/gi, '"$1::$2"');

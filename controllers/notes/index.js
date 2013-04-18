@@ -16,7 +16,7 @@ var NotesController = Composer.Controller.extend({
 	{
 		this.project	=	this.profile.get_current_project();
 		if(!this.project) return false;
-		if(!this.project.get('display_type')) this.project.set({display_type: 'list'});
+		if(!this.project.get('display_type')) this.project.set({display_type: 'grid'});
 
 		this.project.bind_relational('tags', ['change:selected', 'change:excluded'], this.render.bind(this), 'notes:listing:track_tags');
 		this.project.bind_relational('notes', 'add', this.add_note.bind(this), 'notes:listing:track_notes:add');
@@ -68,7 +68,8 @@ var NotesController = Composer.Controller.extend({
 		this.remove_note(note);
 		var item = new NoteItemController({
 			inject: this.note_list,
-			note: note
+			note: note,
+			display_type: this.project.get('display_type')
 		});
 		this.note_item_controllers.push(item);
 		this.display_actions.removeClass('hidden');
@@ -77,7 +78,7 @@ var NotesController = Composer.Controller.extend({
 	remove_note: function(note)
 	{
 		var note_controller = this.note_item_controllers.filter(function(c) {
-			if(note == c.note) return true;
+			if(note.id() == c.note.id()) return true;
 			return false;
 		});
 		this.note_item_controllers = this.note_item_controllers.filter(function(c) {
@@ -107,11 +108,11 @@ var NotesController = Composer.Controller.extend({
 	update_display_type: function()
 	{
 		this.note_list.className = this.note_list.className.replace(/list_[\w]+/g, '');
-		this.note_list.addClass('list_'+this.project.get('display_type', 'list'));
+		this.note_list.addClass('list_'+this.project.get('display_type', 'grid'));
 		$ES('li a', this.display_actions).each(function(a) {
 			a.removeClass('sel');
 		});
-		$E('li a.'+this.project.get('display_type', 'list')).addClass('sel');
+		$E('li a.'+this.project.get('display_type', 'grid')).addClass('sel');
 	}
 });
 
