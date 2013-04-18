@@ -66,7 +66,7 @@ var NoteEditTagController = Composer.Controller.extend({
 		e.stop();
 		var li = next_tag_up('li', e.target);
 		var tag = li.get('html').clean().toLowerCase();
-		if(li.hasClass('sel'))
+		if(this.note.get('tags').find(function(t) { return t.get('name') == tag; }))
 		{
 			this.note.remove_tag(tag);
 		}

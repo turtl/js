@@ -2,15 +2,18 @@ var Project = Composer.RelationalModel.extend({
 	relations: {
 		tags: {
 			type: Composer.HasMany,
-			collection: 'Tags'
+			collection: 'Tags',
+			forward_events: true
 		},
 		categories: {
 			type: Composer.HasMany,
-			collection: 'Categories'
+			collection: 'Categories',
+			forward_events: true
 		},
 		notes: {
 			type: Composer.HasMany,
-			collection: 'Notes'
+			collection: 'Notes',
+			forward_events: true
 		}
 	},
 
@@ -32,7 +35,7 @@ var Project = Composer.RelationalModel.extend({
 	init: function()
 	{
 		// make tags auto-update from notes
-		this.get('notes').bind('all', function() {
+		this.bind_relational('notes', 'all', function() {
 			var tags = this.get('tags');
 			if(tags.refresh_from_notes(this.get('notes')))
 			{
@@ -41,7 +44,7 @@ var Project = Composer.RelationalModel.extend({
 		}.bind(this), 'project:sync:tags');
 
 		// make category tags auto-update when tags do
-		this.get('tags').bind('update', function() {
+		this.bind_relational('tags', 'update', function() {
 			var cats = this.get('categories');
 			var tags = this.get('tags');
 			cats.each(function(c) {
@@ -73,7 +76,6 @@ var Project = Composer.RelationalModel.extend({
 		options || (options = {});
 		tagit.api.post('/projects/users/'+tagit.user.id(), {data: this.toJSON()}, {
 			success: function(data) {
-				console.log('proj: ', data)
 				this.set(data);
 				if(options.success) options.success(data);
 			}.bind(this),
@@ -82,6 +84,47 @@ var Project = Composer.RelationalModel.extend({
 				if(options.error) options.error(e);
 			}
 		});
+	},
+
+	get_tag_by_name: function(tagname)
+	{
+		return this.get('tags').find(function(tag) { return tag.get('name') == tagname; });
+	},
+
+	is_tag_selected: function(tagname)
+	{
+		var tag = this.get_tag_by_name(tagname);
+		return tag ? tag.get('selected') : false;
+	},
+
+	is_tag_excluded: function(tagname)
+	{
+		var tag = this.get_tag_by_name(tagname);
+		return tag ? tag.get('excluded') : false;
+	},
+
+	select_tag: function(tagname)
+	{
+		var tag = this.get_tag_by_name(tagname);
+		tag.set({selected: true});
+	},
+
+	exclude_tag: function(tagname)
+	{
+		var tag = this.get_tag_by_name(tagname);
+		tag.set({excluded: true});
+	},
+
+	unselect_tag: function(tagname)
+	{
+		var tag = this.get_tag_by_name(tagname);
+		tag.unset('selected');
+	},
+
+	unexclude_tag: function(tagname)
+	{
+		var tag = this.get_tag_by_name(tagname);
+		tag.unset('excluded');
 	}
 }, Protected);
 

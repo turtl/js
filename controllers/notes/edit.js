@@ -1,8 +1,10 @@
 var NoteEditController = Composer.Controller.extend({
 	elements: {
 		'.note-edit form div.tags': 'tags',
+		'input[name=title]': 'inp_title',
 		'input[name=link]': 'inp_link',
-		'textarea[name=text]': 'inp_text'
+		'textarea[name=text]': 'inp_text',
+		'input[name=image]': 'inp_image'
 	},
 
 	events: {
@@ -16,7 +18,7 @@ var NoteEditController = Composer.Controller.extend({
 
 	init: function()
 	{
-		if(!this.note) this.note = new Note();
+		if(!this.note) this.note = new Note({type: 'link'});
 		this.render();
 		modal.open(this.el);
 		var close_fn = function() {
@@ -42,7 +44,7 @@ var NoteEditController = Composer.Controller.extend({
 	{
 		var content = Template.render('notes/edit', {
 			note: toJSON(this.note),
-			project: this.project
+			project: toJSON(this.project)
 		});
 		this.html(content);
 	},
@@ -50,14 +52,33 @@ var NoteEditController = Composer.Controller.extend({
 	edit_note: function(e)
 	{
 		if(e) e.stop();
-		if(this.note.id())
+		switch(this.note.get('type'))
 		{
-
+		case 'link':
+			this.note.set({
+				'link': this.inp_link.get('value')
+			});
+			break;
+		case 'image':
+			this.note.set({
+				'image': this.inp_image.get('value')
+			});
+			break;
+		case 'text':
+		default:
+			this.note.set({
+				type: 'text',
+				text: this.inp_text.get('value')
+			});
+			break;
 		}
-		else
-		{
-		}
-		modal.close();
+		this.note.set({project_id: this.project.id()});
+		this.note.save({
+			success: function() {
+				modal.close();
+				this.project.get('notes').add(this.note);
+			}.bind(this)
+		});
 	},
 
 	switch_type: function(e)

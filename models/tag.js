@@ -1,6 +1,28 @@
 var Tag = Composer.Model.extend({
 	defaults: {
 		count: 1	// the number of notes referencing this tag
+	},
+
+	initialize: function(data, options)
+	{
+		if(typeOf(data) == 'string')
+		{
+			data = {name: data};
+		}
+		return this.parent.apply(this, [data, options]);
+	},
+
+	toJSON: function()
+	{
+		var data	=	this.parent.apply(this, arguments);
+		if(window._toJSON_disable_protect)
+		{
+			return data;
+		}
+		else
+		{
+			return data.name;
+		}
 	}
 });
 

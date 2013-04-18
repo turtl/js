@@ -1,10 +1,13 @@
-<div class="tag-list">
-	<ul>
-		<? tags.each(function(t) { ?>
-			<? if(t.category) return false; ?>
-			<li>
-				<a href="#tag"><?=t.name?></a>
-			</li>
-		<? }); ?>
-	</ul>
-</div>
+<ul class="tags">
+	<? tags.each(function(t) { ?>
+		<? if(t.category) return false; ?>
+		<?
+		var cls = '';
+		if(t.selected) cls = 'sel';
+		if(t.excluded) cls = 'exclude';
+		?>
+		<li class="<?=cls?>">
+			<?=t.name?>
+		</li>
+	<? }); ?>
+</ul>

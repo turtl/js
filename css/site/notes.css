@@ -1,40 +1,41 @@
 .dashboard .notes {float: right; width: 79%;}
-.notes a.add-note {position: absolute; top: 0; display: block; width: 96px; height: 40px;}
-.notes a.add-note span {display: block; padding: 13px 0 13px 31px; color: #8aceeb; font-weight: normal; text-transform: uppercase; font-size: 11px; line-height: 12px;  background: url(/images/site/icons/add_16x16.png) 9px center no-repeat;}
-.notes a.add-note {
+.notes div.note-actions {position: absolute; top: 0; display: block; height: 40px;}
+.notes div.note-actions a {display: block; height: 40px;}
+.notes div.note-actions a span {display: block;}
+.notes div.note-actions a {
 	background: #333; /* Old browsers */
-	background: -moz-linear-gradient(top,  #444444 1%, #222222 100%); /* FF3.6+ */
+	background: -moz-linear-gradient(top, #444444 1%, #222222 100%); /* FF3.6+ */
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(1%,#444444), color-stop(100%,#222222)); /* Chrome,Safari4+ */
-	background: -webkit-linear-gradient(top,  #444444 1%,#222222 100%); /* Chrome10+,Safari5.1+ */
-	background: -o-linear-gradient(top,  #444444 1%,#222222 100%); /* Opera 11.10+ */
-	background: -ms-linear-gradient(top,  #444444 1%,#222222 100%); /* IE10+ */
-	background: linear-gradient(to bottom,  #444444 1%,#222222 100%); /* W3C */
+	background: -webkit-linear-gradient(top, #444444 1%,#222222 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #444444 1%,#222222 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #444444 1%,#222222 100%); /* IE10+ */
+	background: linear-gradient(to bottom, #444444 1%,#222222 100%); /* W3C */
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#444444', endColorstr='#222222',GradientType=0 ); /* IE6-9 */
-	border-left: 1px solid #222;
-	border-right: 1px solid #222;
+	border-left: 1px solid #111;
+	border-right: 1px solid #111;
 }
+.notes div.note-actions a.sel {background: #202020;}
+.notes div.note-actions a.add-note {float: left; width: 96px;}
+.notes div.note-actions a.add-note span {padding: 13px 0 13px 31px; color: #73b8d1; font-weight: normal; text-transform: uppercase; font-size: 11px; line-height: 12px; background: url(/images/site/icons/add_16x16.png) 9px center no-repeat;}
+.notes div.note-actions ul {float: left; margin: 0 0 0 64px; border-left: 1px solid #111;}
+.notes div.note-actions ul li {float: left;}
+.notes div.note-actions ul li a {width: 40px; border-left: 0;}
+.notes div.note-actions ul li a span {width: 40px; height: 40px; opacity: .3;}
+.notes div.note-actions ul li a.list span {background: url(/images/site/notes/icons/list.png) center center no-repeat;}
+.notes div.note-actions ul li a.grid span {background: url(/images/site/notes/icons/grid.png) center center no-repeat;}
 
 /* add/edit */
 .note-edit ul.type {list-style: none; position: absolute; top: 28px; left: 160px;}
 .note-edit ul.type li {float: left; display: inline-block; margin: 0 6px -1px 0; padding: 8px 10px; font-size: 12px; color: #777; text-transform: uppercase; cursor: pointer; border-radius: 4px;}
-.note-edit ul.type li.sel {padding-top: 7px; color: #8aceeb; border-top: 1px solid #ddd; background: #fff;}
-.note-edit > form > div.type {display: none;}
+.note-edit ul.type li.sel {padding-top: 7px; color: #73b8d1; border-top: 1px solid #ddd; background: #fff;}
+.note-edit > form > div.type {display: none; float: left; width: 60%;}
 .note-edit > form > div.type.sel {display: block;}
+.note-edit > form input[type=text] {width: 95%;}
 .note-edit > form textarea {width: 95%;}
 .note-edit .form-note {color: #777;}
 .note-edit input[type=submit] {float: right;}
 
-.note-edit div.tags {padding: 16px 0 0 0; margin: 16px 0 0 0; border-top: 1px solid #ddd;}
-.note-edit div.tags input[type=text] {width: 200px; height: auto;}
-.note-edit div.tags ul li {float: left; margin: 0 8px 8px 0; padding: 3px 5px 4px 5px; font-size: 14px; color: #666; cursor: pointer; background: #ccc; border: 1px solid #999; border-radius: 4px;}
-.note-edit div.tags ul li.sel {color: #8aceeb; background: #333; border: 1px solid #111;}
-.note-edit div.tags ul li.sel {
-	background: -moz-linear-gradient(top,  #444444 1%, #222222 100%); /* FF3.6+ */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(1%,#444444), color-stop(100%,#222222)); /* Chrome,Safari4+ */
-	background: -webkit-linear-gradient(top,  #444444 1%,#222222 100%); /* Chrome10+,Safari5.1+ */
-	background: -o-linear-gradient(top,  #444444 1%,#222222 100%); /* Opera 11.10+ */
-	background: -ms-linear-gradient(top,  #444444 1%,#222222 100%); /* IE10+ */
-	background: linear-gradient(to bottom,  #444444 1%,#222222 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#444444', endColorstr='#222222',GradientType=0 ); /* IE6-9 */
-}
+.note-edit div.tags {float: right; width: 36%; padding-left: 2.2%; border-left: 1px solid #eee;}
+.note-edit div.tags input[type=text] {width: 162px; height: auto; margin-right: 2px;}
 
+.note-edit div.submit {padding: 16px 0 0 0; margin: 16px 0 0 0; border-top: 1px solid #eee;}

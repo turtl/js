@@ -70,7 +70,7 @@ var Protected = Composer.RelationalModel.extend({
 			{
 				if(this.private_fields.length > 0)
 				{
-					if(this.private_fields.contains(k))
+					if(this.private_fields.contains(k) || window._toJSON_disable_protect)
 					{
 						body[k]	=	v;
 					}

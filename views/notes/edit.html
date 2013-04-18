@@ -4,31 +4,47 @@ var action = note.id ? 'Edit' : 'Add';
 <h1><?=action?> note</h1>
 <div class="note-edit clear">
 	<? if(!note.id) { ?>
+		<?
+		var showtab = function(name)
+		{
+			var slug = name.toLowerCase();
+			var t = '<li';
+			if(note.type == slug) t += ' class="sel"';
+			t += '>'+ name +'</li>';
+			return t;
+		};
+		?>
 		<ul class="type clear">
-			<li class="sel">Link</li>
-			<li>Text</li>
+			<?=showtab('Link')?>
+			<?=showtab('Text')?>
+			<?=showtab('Image')?>
 			<!--
-			<li>Image</li>
 			<li>Embed</li>
 			<li>PDF</li>
 			-->
 		</ul>
 	<? } ?>
 	<form>
+		<div class="tags"></div>
+
 		<div class="type link sel">
-			<input type="text" name="link" value="<?=note.link?>" placeholder="http://">
+			<input tabindex="1" type="text" name="link" value="<?=note.link?>" placeholder="http://">
 		</div>
 
 		<div class="type text">
-			<textarea name="text" rows="8" cols="40"><?=note.text?></textarea>
+			<textarea tabindex="1" name="text" rows="8" cols="40"><?=note.text?></textarea>
 			<div class="form-note">
 				Feel free to use <a href="http://daringfireball.net/projects/markdown/" target="_blank">markdown</a> for note text.
 			</div>
 		</div>
 
-		<div class="tags">
+		<div class="type image">
+			<input tabindex="1" type="text" name="image" value="<?=note.image?>" placeholder="Paste image URL here">
 		</div>
 
-		<input type="submit" value="<?=action?> note">
+		<span class="clearMe"></span>
+		<div class="submit">
+			<input tabindex="3" type="submit" value="<?=action?> note">
+		</div>
 	</form>
 </div>

@@ -1,2 +1,20 @@
-<a href="#add-note" class="add-note"><span>New note</span></a>
+<div class="note-actions">
+	<a href="#add-note" class="add-note" title="Add a new note to the current project.">
+		<span>New note</span>
+	</a>
+	<? if(num_notes > 0) { ?>
+		<ul class="list-type">
+			<li>
+				<a class="list" href="#listing" title="Display notes as a list">
+					<span>&nbsp;</span>
+				</a>
+			</li>
+			<li>
+				<a class="grid" href="#grid" title="Display notes as a grid">
+					<span>&nbsp;</span>
+				</a>
+			</li>
+		</ul>
+	<? } ?>
+</div>
 <ul class="note_ul"></ul>

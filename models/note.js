@@ -16,9 +16,11 @@ var Note = Composer.RelationalModel.extend({
 	],
 
 	private_fields: [
+		'type',
+		'title',
 		'tags',
 		'link',
-		'body',
+		'text',
 		'image',
 		'embed'
 	],
@@ -37,6 +39,23 @@ var Note = Composer.RelationalModel.extend({
 		var found = tags.select({name: tag});
 		found.each(function(t) {
 			tags.remove(t);
+		});
+	},
+
+	save: function(options)
+	{
+		options || (options == {});
+		var url	=	this.id(true) ? '/notes/'+this.id() : '/projects/'+this.get('project_id')+'/notes';
+		var fn	=	(this.id(true) ? tagit.api.put : tagit.api.post).bind(tagit.api);
+		fn(url, {data: this.toJSON()}, {
+			success: function(note_data) {
+				this.set(note_data);
+				if(options.success) options.success(note_data);
+			}.bind(this),
+			error: function (e) {
+				barfr.barf('There was a problem saving your note.');
+				if(options.error) options.error(e);
+			}.bind(this)
 		});
 	}
 }, Protected);
