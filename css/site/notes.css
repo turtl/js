@@ -17,7 +17,8 @@
 .notes div.note-actions a.sel {background: #202020;}
 .notes div.note-actions a.add-note {float: left; width: 96px;}
 .notes div.note-actions a.add-note span {padding: 13px 0 13px 31px; color: #73b8d1; font-weight: normal; text-transform: uppercase; font-size: 11px; line-height: 12px; background: url(/images/site/icons/add_16x16.png) 9px center no-repeat;}
-.notes div.note-actions ul {float: left; margin: 0 0 0 64px; border-left: 1px solid #111;}
+.notes div.note-actions ul {float: left; list-style: none; margin: 0 0 0 64px; border-left: 1px solid #111;}
+.notes div.note-actions ul.hidden {display: none;}
 .notes div.note-actions ul li {float: left;}
 .notes div.note-actions ul li a {width: 40px; border-left: 0;}
 .notes div.note-actions ul li a span {width: 40px; height: 40px; opacity: .3;}
@@ -39,3 +40,43 @@
 .note-edit div.tags input[type=text] {width: 162px; height: auto; margin-right: 2px;}
 
 .note-edit div.submit {padding: 16px 0 0 0; margin: 16px 0 0 0; border-top: 1px solid #eee;}
+
+/* note listing */
+/* list */
+ul.note_list {list-style: none; padding-left: 32px;}
+ul.note_list.list_list > li {
+	float: none;
+	display: block;
+	margin: 0 0 16px 0;
+	padding: 0 0 16px 16px;
+	border-bottom: 1px solid #ddd;
+}
+ul.note_list.list_list > li > div.gutter { overflow: hidden; line-height: 1em;}
+
+ul.note_list .note {line-height: 1.5em; white-space: nowrap; overflow: hidden;}
+ul.note_list .note ul,
+ul.note_list .note ol {margin: 16px 0 16px 24px;}
+ul.note_list .note p {padding: 0 0 16px 0;}
+ul.note_list .note h1 {
+	margin: 0 0 0 0;
+	padding: 0;
+	font-size: 20px;
+	color: #666;
+	line-height: 1.1em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+ul.note_list .note h1 a {
+	display: block;
+	width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+ul.note_list .note img {max-height: 100px;}
+ul.note_list .note p {width: 78%; padding: 6px 0 0 0; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+ul.note_list .note a.icon + p {padding: 0; margin: 0;}
+ul.note_list .note p:first-child {padding: 0; margin: 0;}
+
+/* grid */
+
+

@@ -12,13 +12,13 @@ var ProjectsController = Composer.Controller.extend({
 
 	init: function()
 	{
-		this.profile.bind_relational('projects', ['add', 'remove', 'reset', 'change'], this.render.bind(this), 'projects:change');
+		this.profile.bind_relational('projects', ['add', 'remove', 'reset', 'change:title'], this.render.bind(this), 'projects:change');
 		this.render();
 	},
 
 	release: function()
 	{
-		this.profile.unbind_relational('projects', ['add', 'remove', 'reset', 'change'], 'projects:change');
+		this.profile.unbind_relational('projects', ['add', 'remove', 'reset', 'change:title'], 'projects:change');
 		this.parent.apply(this, arguments);
 	},
 

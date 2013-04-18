@@ -44,10 +44,15 @@ var DashboardController = Composer.Controller.extend({
 			tagit.controllers.pages.trigger('loaded');
 		}.bind(this);
 
-		this.profile.bind(['change:current_project', 'change:projects'], function() {
+		this.profile.bind_relational('projects', ['reset'], function() {
 			this.soft_release();
 			do_init();
 		}.bind(this), 'dashboard:init_on_projects');
+		this.profile.bind('change:current_project', function() {
+			this.soft_release();
+			this.profile.get_current_project().load_notes();
+			do_init();
+		}.bind(this), 'dashboard:change_project');
 		do_init();
 	},
 
@@ -62,7 +67,8 @@ var DashboardController = Composer.Controller.extend({
 	release: function()
 	{
 		this.soft_release();
-		this.profile.unbind(['change:current_project', 'change:projects'], 'dashboard:init_on_projects');
+		this.profile.unbind_relational('projects', ['reset'], 'dashboard:init_on_projects');
+		this.profile.unbind('change:current_project', 'dashboard:change_project');
 		this.parent.apply(this, arguments);
 	},
 

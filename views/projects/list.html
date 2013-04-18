@@ -1,4 +1,4 @@
-<div class="project-list clear">
+<div class="project-list">
 	<? if(projects.length > 0) { ?>
 		<select>
 			<? projects.each(function(p) { ?>
@@ -13,9 +13,11 @@
 			<img src="/images/site/icons/add_16x16.png" alt="add" />
 		</a>
 	<? } else { ?>
-	<a href="#" class="add first">
-		<img src="/images/site/icons/add_16x16.png" alt="add" />
-		Add your first project
-	</a>
+		<a href="#" class="add first">
+			<img src="/images/site/icons/add_16x16.png" alt="add" />
+			Add your first project
+		</a>
 	<? } ?>
+	<?/* little trick i learned in nam */?>
+	<span style="clear:left;display:block;"></span>
 </div>

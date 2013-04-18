@@ -2,19 +2,18 @@
 	<a href="#add-note" class="add-note" title="Add a new note to the current project.">
 		<span>New note</span>
 	</a>
-	<? if(num_notes > 0) { ?>
-		<ul class="list-type">
-			<li>
-				<a class="list" href="#listing" title="Display notes as a list">
-					<span>&nbsp;</span>
-				</a>
-			</li>
-			<li>
-				<a class="grid" href="#grid" title="Display notes as a grid">
-					<span>&nbsp;</span>
-				</a>
-			</li>
-		</ul>
-	<? } ?>
+	<ul class="list-type hidden">
+		<li>
+			<a class="list <? if(display_type == 'list') { ?>sel<? } ?>" href="#listing" title="Display notes as a list">
+				<span>&nbsp;</span>
+			</a>
+		</li>
+		<li>
+			<a class="grid <? if(display_type == 'grid') { ?>sel<? } ?>" href="#grid" title="Display notes as a grid">
+				<span>&nbsp;</span>
+			</a>
+		</li>
+	</ul>
 </div>
-<ul class="note_ul"></ul>
+<ul class="clear note_list list_<?=display_type?>"></ul>
+

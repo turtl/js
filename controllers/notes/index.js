@@ -1,10 +1,12 @@
 var NotesController = Composer.Controller.extend({
 	elements: {
-		'ul.note_ul': 'note_ul'
+		'ul.note_list': 'note_list',
+		'ul.list-type': 'display_actions'
 	},
 
 	events: {
-		'click a.add-note': 'open_add_note'
+		'click a.add-note': 'open_add_note',
+		'click ul.list-type a': 'change_list_type'
 	},
 
 	project: null,
@@ -14,11 +16,12 @@ var NotesController = Composer.Controller.extend({
 	{
 		this.project	=	this.profile.get_current_project();
 		if(!this.project) return false;
+		if(!this.project.get('display_type')) this.project.set({display_type: 'list'});
 
-		this.project.bind_relational('tags', ['add', 'remove', 'reset', 'change'], this.render.bind(this), 'notes:listing:track_tags');
+		this.project.bind_relational('tags', ['change:selected', 'change:excluded'], this.render.bind(this), 'notes:listing:track_tags');
 		this.project.bind_relational('notes', 'add', this.add_note.bind(this), 'notes:listing:track_notes:add');
 		this.project.bind_relational('notes', 'remove', this.remove_note.bind(this), 'notes:listing:track_notes:remove');
-		this.project.bind('reset', this.render.bind(this), 'notes:listing:track_reset');
+		this.project.bind('change:display_type', this.update_display_type.bind(this), 'notes:listing:display_type');
 		this.render();
 	},
 
@@ -27,16 +30,17 @@ var NotesController = Composer.Controller.extend({
 		this.note_item_controllers.each(function(item) {
 			item.release();
 		});
+		this.note_item_controllers = [];
 	},
 
 	release: function()
 	{
 		if(this.project)
 		{
-			this.project.unbind_relational('tags', ['add', 'remove', 'reset', 'change'], 'notes:listing:track_tags');
+			this.project.unbind_relational('tags', ['change:selected', 'change:excluded'], 'notes:listing:track_tags');
 			this.project.unbind_relational('notes', 'add', 'notes:listing:track_notes:add');
 			this.project.unbind_relational('notes', 'remove', 'notes:listing:track_notes:remove');
-			this.project.unbind('reset', 'notes:listing:track_reset');
+			this.project.unbind('change:display_type', 'notes:listing:display_type');
 		}
 		this.release_notes();
 		this.parent.apply(this, arguments);
@@ -45,13 +49,10 @@ var NotesController = Composer.Controller.extend({
 	render: function()
 	{
 		var content = Template.render('notes/index', {
-			num_notes: this.project.get('notes').models().length
+			display_type: this.project.get('display_type')
 		});
 		this.html(content);
 		this.release_notes();
-		this.project.get('notes').each(function(note) {
-			this.add_note(note);
-		}.bind(this));
 	},
 
 	open_add_note: function(e)
@@ -64,17 +65,53 @@ var NotesController = Composer.Controller.extend({
 
 	add_note: function(note)
 	{
+		this.remove_note(note);
 		var item = new NoteItemController({
-			inject: this.note_ul,
+			inject: this.note_list,
 			note: note
 		});
 		this.note_item_controllers.push(item);
+		this.display_actions.removeClass('hidden');
 	},
 
 	remove_note: function(note)
 	{
 		var note_controller = this.note_item_controllers.filter(function(c) {
+			if(note == c.note) return true;
+			return false;
 		});
+		this.note_item_controllers = this.note_item_controllers.filter(function(c) {
+			if(note_controller.contains(c)) return false;
+			return true;
+		});
+		note_controller.each(function(c) {
+			c.release();
+		});
+		if(this.project.get('notes').models().length == 0)
+		{
+			this.display_actions.addClass('hidden');
+		}
+	},
+
+	change_list_type: function(e)
+	{
+		if(!e) return;
+		e.stop()
+
+		var a = next_tag_up('a', e.target);
+		var type = a.className.replace(/sel/g, '').clean().toLowerCase();
+		if(type == '') return;
+		this.project.set({display_type: type});
+	},
+
+	update_display_type: function()
+	{
+		this.note_list.className = this.note_list.className.replace(/list_[\w]+/g, '');
+		this.note_list.addClass('list_'+this.project.get('display_type', 'list'));
+		$ES('li a', this.display_actions).each(function(a) {
+			a.removeClass('sel');
+		});
+		$E('li a.'+this.project.get('display_type', 'list')).addClass('sel');
 	}
 });
 
