@@ -63,3 +63,6 @@ var Note = Composer.RelationalModel.extend({
 var Notes = Composer.Collection.extend({
 	model: Note
 });
+
+var NotesFilter = Composer.FilterCollection.extend({
+});

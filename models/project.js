@@ -87,6 +87,20 @@ var Project = Composer.RelationalModel.extend({
 		});
 	},
 
+	get_selected_tags: function()
+	{
+		return this.get('tags').select(function(tag) {
+			return this.is_tag_selected(tag.get('name'));
+		}.bind(this));
+	},
+
+	get_excluded_tags: function()
+	{
+		return this.get('tags').select(function(tag) {
+			return this.is_tag_excluded(tag.get('name'));
+		}.bind(this));
+	},
+
 	get_tag_by_name: function(tagname)
 	{
 		return this.get('tags').find(function(tag) { return tag.get('name') == tagname; });

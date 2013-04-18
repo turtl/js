@@ -25,6 +25,26 @@
 .notes div.note-actions ul li a.list span {background: url(/images/site/notes/icons/list.png) center center no-repeat;}
 .notes div.note-actions ul li a.grid span {background: url(/images/site/notes/icons/grid.png) center center no-repeat;}
 
+/* view note */
+.note-view {padding: 20px; line-height: 1.4em;}
+.modalcontent .note-view h1 {
+	width: 100%;
+	margin: 0 0 8px 0;
+	padding: 0;
+	font-size: 20px;
+	font-weight: bold;
+	color: #666;
+	line-height: 1.1em;
+	text-transform: none;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.note-view ul,
+.note-view ol {margin: 0 0 16px 32px;}
+.note-view p {padding: 0 0 16px 0;}
+.note-view img {max-width: 100%;}
+.note-view.image {text-align: center; background: #000;}
+
 /* add/edit */
 .note-edit ul.type {list-style: none; position: absolute; top: 28px; left: 160px;}
 .note-edit ul.type li {float: left; display: inline-block; margin: 0 6px -1px 0; padding: 8px 10px; font-size: 12px; color: #777; text-transform: uppercase; cursor: pointer; border-radius: 4px;}
@@ -43,36 +63,16 @@
 
 /* note listing */
 ul.note_list {list-style: none;}
+ul.note_list > li {position: relative;}
+ul.note_list > li > div.actions {display: none; position: absolute; top: 0; right: 0; height: 24px; padding: 0 4px; opacity: .7; background: #000; border: 1px solid #888;}
+ul.note_list > li:hover > div.actions {display: inline-block;}
+ul.note_list > li > div.actions > a {padding-top: 3px;}
+ul.note_list > li > div.actions > a.open {display: inline-block; width: 16px; height: 16px; padding-left: 3px; background: url(/images/site/icons/open_16x16.png) center right no-repeat;}
+ul.note_list > li > div.actions > a.menu {display: inline-block; width: 24px; height: 16px; margin: 0 0 0 3px; padding: 0 0 0 6px; background: url(/images/site/icons/menu_24x16.png) center right no-repeat; border-left: 1px solid #444;}
+ul.note_list > li > div.actions > a span {display: none;}
+ul.note_list > li > div.actions ul.dropdown {position: absolute; top: 240px; right: 0; width: 160px; }
+
 ul.note_list .note {line-height: 1.4em;}
-
-/* grid */
-ul.note_list.list_grid > li {
-	float: left;
-	display: block;
-	width: 200px;
-	height: 200px;
-	margin: 0 0 24px 24px;
-	padding: 16px;
-	background: #ccc;
-}
-ul.note_list.list_grid > li > div.gutter {width: 200px; height: 200px; overflow: hidden;}
-ul.note_list.list_grid .note ul,
-ul.note_list.list_grid .note ol {margin: 16px 0 16px 32px;}
-ul.note_list.list_grid .note img {max-width: 100%; max-height: 100%;}
-ul.note_list.list_grid .note a.img {display: table-cell; width: 200px; height: 200px; vertical-align: middle; text-align: center; background: #000;}
-
-/* list */
-ul.note_list.list_list > li {
-	float: none;
-	display: block;
-	margin: 0 0 16px 0;
-	padding: 0 0 16px 48px;
-	border-bottom: 1px solid #ddd;
-}
-ul.note_list.list_list > li > div.gutter { overflow: hidden; line-height: 1em;}
-
-ul.note_list.list_list .note {line-height: 1.5em; white-space: nowrap; overflow: hidden;}
-ul.note_list.list_list .note p {padding: 0 0 16px 0;}
 ul.note_list .note h1 {
 	margin: 0 0 0 0;
 	padding: 0;
@@ -88,6 +88,46 @@ ul.note_list .note h1 a {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+ul.note_list .note span.break {font-size: 1px;}
+ul.note_list .note h2 {font-size: 17px;}
+ul.note_list .note h3 {font-size: 14px;}
+ul.note_list .note h4 {font-size: 12px;}
+ul.note_list .note h5 {font-size: 11px;}
+
+/* grid */
+ul.note_list.list_grid > li {
+	float: left;
+	display: block;
+	width: 200px;
+	height: 200px;
+	margin: 0 0 24px 24px;
+	padding: 16px;
+	background: #fff;
+}
+
+ul.note_list.list_grid > li.image {width: 232px; height: 232px; padding: 0;}
+ul.note_list.list_grid > li > div.gutter {width: 100%; height: 100%; overflow: hidden;}
+ul.note_list.list_grid > li.image > div.gutter {width: 100%; height: 100%; overflow: hidden;}
+ul.note_list.list_grid .note h1 {margin-bottom: 6px;}
+ul.note_list.list_grid .note ul,
+ul.note_list.list_grid .note ol {margin: 0 0 16px 32px;}
+ul.note_list.list_grid .note p {padding: 0 0 16px 0;}
+ul.note_list.list_grid .note p:first-child {padding: 0 0 0 0; margin: 0;}
+ul.note_list.list_grid .note img {max-width: 100%; max-height: 100%;}
+ul.note_list.list_grid .note a.img {display: table-cell; width: 232px; height: 232px; vertical-align: middle; text-align: center; background: #000;}
+
+/* list */
+ul.note_list.list_list > li {
+	float: none;
+	display: block;
+	margin: 0 0 16px 0;
+	padding: 0 0 16px 48px;
+	border-bottom: 1px solid #ddd;
+}
+ul.note_list.list_list > li > div.gutter { overflow: hidden; line-height: 1em;}
+
+ul.note_list.list_list .note {line-height: 1.5em; white-space: nowrap; overflow: hidden;}
+ul.note_list.list_list .note p {padding: 0 0 16px 0;}
 ul.note_list.list_list .note img {max-height: 100px;}
 ul.note_list.list_list .note p {width: 78%; padding: 6px 0 0 0; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 ul.note_list.list_list .note p:first-child {padding: 0; margin: 0;}

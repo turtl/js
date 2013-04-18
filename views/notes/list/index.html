@@ -1,0 +1,13 @@
+<div class="actions">
+	<a class="open" href="#open" title="Open note"><span>Open note</span></a>
+	<a class="menu" href="#menu" title="Note menu"><span>Note menu</span></a>
+	<ul class="dropdown">
+		<li><a href="#edit" class="edit" title="Edit note"><span>Edit note</span></a></li>
+		<li><a href="#delete" class="delete" title="Delete note"><span>Delete note</span></a></li>
+	</ul>
+</div>
+<div class="gutter">
+	<?=Template.render('notes/list/'+note.type, {
+		note: note
+	})?>
+</div>

@@ -10,6 +10,7 @@ var NotesController = Composer.Controller.extend({
 	},
 
 	project: null,
+	filter_list: null,
 	note_item_controllers: [],
 
 	init: function()
@@ -18,10 +19,42 @@ var NotesController = Composer.Controller.extend({
 		if(!this.project) return false;
 		if(!this.project.get('display_type')) this.project.set({display_type: 'grid'});
 
-		this.project.bind_relational('tags', ['change:selected', 'change:excluded'], this.render.bind(this), 'notes:listing:track_tags');
-		this.project.bind_relational('notes', 'add', this.add_note.bind(this), 'notes:listing:track_notes:add');
-		this.project.bind_relational('notes', 'remove', this.remove_note.bind(this), 'notes:listing:track_notes:remove');
+		this.filter_list	=	new NotesFilter(this.project.get('notes'), {
+			filter: function(note)
+			{
+				var selected	=	this.project.get_selected_tags().map(function(t) { return t.get('name'); });
+				var excluded	=	this.project.get_excluded_tags().map(function(t) { return t.get('name'); });;
+				var note_tags	=	note.get('tags').map(function(t) { return t.get('name'); });
+
+				if(selected.length == 0 && excluded.length == 0) return true;
+				if(selected.length > note_tags.length) return false;
+				for(var x in selected)
+				{
+					var sel	=	selected[x];
+					if(typeOf(sel) != 'string') continue;
+					if(!note_tags.contains(sel)) return false;
+				}
+
+				for(var x in excluded)
+				{
+					var exc	=	excluded[x];
+					if(typeOf(exc) != 'string') continue;
+					if(note_tags.contains(exc)) return false;
+				}
+				return true;
+			}.bind(this),
+
+			sortfn: function(a, b)
+			{
+				return a.id().localeCompare(b.id());
+			}
+		});
+
+		this.project.bind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], function() {
+			this.filter_list.refresh();
+		}.bind(this), 'notes:listing:track_filters');
 		this.project.bind('change:display_type', this.update_display_type.bind(this), 'notes:listing:display_type');
+		this.filter_list.bind('reset', this.render.bind(this), 'notes:listing:reset');
 		this.render();
 	},
 
@@ -37,10 +70,12 @@ var NotesController = Composer.Controller.extend({
 	{
 		if(this.project)
 		{
-			this.project.unbind_relational('tags', ['change:selected', 'change:excluded'], 'notes:listing:track_tags');
-			this.project.unbind_relational('notes', 'add', 'notes:listing:track_notes:add');
-			this.project.unbind_relational('notes', 'remove', 'notes:listing:track_notes:remove');
+			this.project.unbind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], 'notes:listing:track_filters');
 			this.project.unbind('change:display_type', 'notes:listing:display_type');
+		}
+		if(this.filter_list)
+		{
+			this.filter_list.bind('reset', 'notes:listing:reset');
 		}
 		this.release_notes();
 		this.parent.apply(this, arguments);
@@ -52,7 +87,12 @@ var NotesController = Composer.Controller.extend({
 			display_type: this.project.get('display_type')
 		});
 		this.html(content);
+		if(this.project.get('notes').models().length > 0)
+		{
+			this.display_actions.removeClass('hidden');
+		}
 		this.release_notes();
+		this.filter_list.each(this.add_note.bind(this));
 	},
 
 	open_add_note: function(e)
@@ -65,14 +105,13 @@ var NotesController = Composer.Controller.extend({
 
 	add_note: function(note)
 	{
-		this.remove_note(note);
+		//this.remove_note(note);
 		var item = new NoteItemController({
 			inject: this.note_list,
 			note: note,
 			display_type: this.project.get('display_type')
 		});
 		this.note_item_controllers.push(item);
-		this.display_actions.removeClass('hidden');
 	},
 
 	remove_note: function(note)

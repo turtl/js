@@ -2,7 +2,7 @@
 var link = note.link;
 if(!link.match(/^[\w]+:\/\//)) link = 'http://' + link;
 var title = note.title;
-if(!title) title = note.link.replace(/^[\w]+:\/\/(www\.)?/i, '').replace(/([?&#])/g, '$1<span class="break"> </span>');
+if(!title) title = note.link.replace(/^[\w]+:\/\/(www\.)?/i, '');
 ?>
 <h1><a href="<?=link?>" target="_blank"><?=title?></a></h1>
 <? if(note.text && note.text != '') { ?>

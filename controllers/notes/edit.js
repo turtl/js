@@ -1,7 +1,7 @@
 var NoteEditController = Composer.Controller.extend({
 	elements: {
 		'.note-edit form div.tags': 'tags',
-		'textarea[name=any]': 'inp_any',
+		'textarea[name=quick]': 'inp_quick',
 		'input[name=title]': 'inp_title',
 		'input[name=link]': 'inp_link',
 		'textarea[name=text]': 'inp_text',
@@ -14,10 +14,10 @@ var NoteEditController = Composer.Controller.extend({
 	},
 
 	type_fields: {
-		'any':   ['any'],
-		'link':  ['title', 'link', 'text'],
+		'quick':   ['quick'],
+		'link':  ['link', 'title', 'text'],
 		'text':  ['text'],
-		'image': ['image']
+		'image': ['image', 'title', 'text']
 	},
 
 	project: null,
@@ -26,7 +26,7 @@ var NoteEditController = Composer.Controller.extend({
 
 	init: function()
 	{
-		if(!this.note) this.note = new Note({type: 'any'});
+		if(!this.note) this.note = new Note({type: 'quick'});
 		this.render();
 		modal.open(this.el);
 		var close_fn = function() {
@@ -61,10 +61,10 @@ var NoteEditController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 
-		if(this.note.get('type') == 'any')
+		if(this.note.get('type') == 'quick')
 		{
 			// do some basic guessing/intelligence stuff
-			var val = this.inp_any.get('value');
+			var val = this.inp_quick.get('value');
 			if(val.match(/^[\w]+:\/\/([\.\-\w_\/:\?\+\&#=%,]+)$/i))
 			{
 				// its a URL
@@ -107,7 +107,9 @@ var NoteEditController = Composer.Controller.extend({
 				break;
 			case 'image':
 				this.note.set({
-					image: this.inp_image.get('value')
+					image: this.inp_image.get('value'),
+					title: this.inp_title.get('value'),
+					text: this.inp_text.get('value')
 				});
 				break;
 			case 'text':

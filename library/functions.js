@@ -141,6 +141,14 @@ var view	=	{
 		return project_name;
 	},
 
+	make_links: function(text)
+	{
+		text = text.replace(/"([\w]+):(\/\/([\.\-\w_\/:\?\+\&#=%,]+))/gi, '"$1::$2"');
+		text = text.replace(/([\w]+:\/\/)([\.\-\w_\/:\?\+\&#=%,]+)/gi, '<a target="_blank" href="$1$2">$2</a>');
+		text = text.replace(/"([\w]+)::(\/\/([\.\-\w_\/:\?\+\&#=%,]+))/gi, '"$1:$2"');
+		return text;
+	},
+
 	paginate: function(url, page_number, items_per_page, total_items, max_pages, prevnext, showjumps, no_page_1)
 	{
 		if(typeof(prevnext) == 'undefined') prevnext = true;

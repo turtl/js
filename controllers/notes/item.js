@@ -2,6 +2,13 @@ var NoteItemController = Composer.Controller.extend({
 	tag: 'li',
 	className: 'note',
 
+	elements: {
+	},
+
+	events: {
+		'click a.open': 'view_note'
+	},
+
 	note: null,
 	display_type: 'grid',
 
@@ -22,38 +29,42 @@ var NoteItemController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var content = Template.render('notes/list/'+this.note.get('type'), {
+		var content = Template.render('notes/list/index', {
 			note: toJSON(this.note)
 		});
 
 		var title = '';
-		if(this.display_type == 'list')
-		{
-			// do some custom mods here (for shame)
-			title = content.replace(/[\s\S]*?(<h1>[\s\S]*<\/h1>)[\s\S]*/i, '$1');
-			content = content.replace(/([\s\S]*?)<h1>[\s\S]*<\/h1>([\s\S]*)/i, '$1$2');
+		//if(this.display_type == 'list')
+		//{
+		//	// do some custom mods here (for shame)
+		//	title = content.replace(/[\s\S]*?(<h1>[\s\S]*<\/h1>)[\s\S]*/i, '$1');
+		//	content = content.replace(/([\s\S]*?)<h1>[\s\S]*<\/h1>([\s\S]*)/i, '$1$2');
 
-			if(content == title)
-			{
-				if(title.match(/<h1[^>]+>/i))
-				{
-					content = '';
-				}
-				else
-				{
-					title = '';
-				}
-			}
+		//	if(content == title)
+		//	{
+		//		if(title.match(/<h1[^>]+>/i))
+		//		{
+		//			content = '';
+		//		}
+		//		else
+		//		{
+		//			title = '';
+		//		}
+		//	}
 
-			content = content.replace(/<(?!\/?(img|a))(.*?)>/g, ' ');
-		}
-		content = '<div class="gutter">'+ title + '<p>'+content+'</p></div>';
+		//	content = content.replace(/<(?!\/?(img|a))(.*?)>/g, ' ');
+		//}
 
-		content = content.replace(/"([\w]+):(\/\/([\.\-\w_\/:\?\+\&#=%,]+))/gi, '"$1::$2"');
-		content = content.replace(/[\w]+:\/\/([\.\-\w_\/:\?\+\&#=%,]+)/gi, '<a target="_blank" href="$1">$1</a>');
-		content = content.replace(/"([\w]+)::(\/\/([\.\-\w_\/:\?\+\&#=%,]+))/gi, '"$1:$2"');
-
+		content = view.make_links(content);
 		this.html(content);
 		this.el.className = 'note ' + this.note.get('type');
+	},
+
+	view_note: function(e)
+	{
+		if(e) e.stop();
+		new NoteViewController({
+			note: this.note
+		});
 	}
 });

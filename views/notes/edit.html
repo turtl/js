@@ -15,7 +15,7 @@ var action = note.id ? 'Edit' : 'Add';
 		};
 		?>
 		<ul class="type clear">
-			<?=showtab('Any')?>
+			<?=showtab('Quick')?>
 			<?=showtab('Text')?>
 			<?=showtab('Link')?>
 			<?=showtab('Image')?>
@@ -28,8 +28,8 @@ var action = note.id ? 'Edit' : 'Add';
 	<form>
 		<div class="tags"></div>
 
-		<div class="type any">
-			<textarea tabindex="1" name="any" rows="8" cols="40" placeholder="Enter a link, text, image URL, etc"></textarea>
+		<div class="type quick">
+			<textarea tabindex="1" name="quick" rows="8" cols="40" placeholder="Enter a link, text, image URL, etc"></textarea>
 			<div class="form-note">
 				Feel free to use <a href="http://daringfireball.net/projects/markdown/" target="_blank">markdown</a> for note text.
 			</div>
@@ -37,6 +37,10 @@ var action = note.id ? 'Edit' : 'Add';
 
 		<div class="type link">
 			<input tabindex="1" type="text" name="link" value="<?=note.link?>" placeholder="http://">
+		</div>
+
+		<div class="type image">
+			<input tabindex="1" type="text" name="image" value="<?=note.image?>" placeholder="Image URL">
 		</div>
 
 		<div class="type title">
@@ -48,10 +52,6 @@ var action = note.id ? 'Edit' : 'Add';
 			<div class="form-note">
 				Feel free to use <a href="http://daringfireball.net/projects/markdown/" target="_blank">markdown</a> for note text.
 			</div>
-		</div>
-
-		<div class="type image">
-			<input tabindex="1" type="text" name="image" value="<?=note.image?>" placeholder="Image URL">
 		</div>
 
 		<span class="clearMe"></span>
