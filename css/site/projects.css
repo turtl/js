@@ -3,3 +3,5 @@
 .project-list .add {float: left; display: inline-block; padding: 3px 0 0 0;}
 .project-list .add img {margin-bottom: -3px;}
 .project-list .add.first {}
+
+.project-edit input[type=submit] {float: right;}

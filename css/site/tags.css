@@ -1,5 +1,5 @@
 ul.tags {list-style: none;}
-ul.tags li {float: left; margin: 0 8px 8px 0; padding: 3px 5px 4px 5px; font-size: 14px; white-space: nowrap; color: #666; cursor: pointer; background: #ddd; /*border: 1px solid #999;*/ border-radius: 4px;}
+ul.tags li {float: left; margin: 0 10px 10px 0; padding: 3px 5px 4px 5px; font-size: 14px; white-space: nowrap; color: #444; cursor: pointer; background: #d0d0d0; /*border: 1px solid #999;*/ border-radius: 4px;}
 ul.tags li.sel {color: #73b8d1; background: #333; /*border: 1px solid #111;*/}
 ul.tags li.sel {
 	background: -moz-linear-gradient(top,  #444444 1%, #222222 100%); /* FF3.6+ */
