@@ -14,11 +14,13 @@ var ProjectsController = Composer.Controller.extend({
 	{
 		this.profile.bind_relational('projects', ['add', 'remove', 'reset', 'change:title'], this.render.bind(this), 'projects:change');
 		this.render();
+		tagit.keyboard.bind('x', this.clear_filters.bind(this), 'projects:shortcut:clear_filters');
 	},
 
 	release: function()
 	{
 		this.profile.unbind_relational('projects', ['add', 'remove', 'reset', 'change:title'], 'projects:change');
+		tagit.keyboard.unbind('x', 'projects:shortcut:clear_filters');
 		this.parent.apply(this, arguments);
 	},
 
@@ -46,6 +48,16 @@ var ProjectsController = Composer.Controller.extend({
 		var project_id = this.selector.value;
 		var project = this.profile.get('projects').find_by_id(project_id);
 		if(project) this.profile.set_current_project(project);
+	},
+
+	clear_filters: function()
+	{
+		var current = this.profile.get_current_project();
+		current.get('tags').each(function(t) {
+			current.unselect_tag(t.get('name'));
+			current.unexclude_tag(t.get('name'));
+		});
+		current.set({filters: []});
 	}
 });
 
