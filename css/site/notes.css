@@ -64,13 +64,16 @@
 /* note listing */
 ul.note_list {list-style: none;}
 ul.note_list > li {position: relative;}
-ul.note_list > li > div.actions {display: none; position: absolute; top: 0; right: 0; height: 24px; padding: 0 4px; opacity: .7; background: #000; border: 1px solid #888;}
+ul.note_list > li > div.actions {display: inline-block; position: absolute; top: 0; right: 0; height: 24px; padding: 0 4px; opacity: .95; background: #222; border: 1px solid #444;}
 ul.note_list > li:hover > div.actions {display: inline-block;}
 ul.note_list > li > div.actions > a {padding-top: 3px;}
 ul.note_list > li > div.actions > a.open {display: inline-block; width: 16px; height: 16px; padding-left: 3px; background: url(/images/site/icons/open_16x16.png) center right no-repeat;}
 ul.note_list > li > div.actions > a.menu {display: inline-block; width: 24px; height: 16px; margin: 0 0 0 3px; padding: 0 0 0 6px; background: url(/images/site/icons/menu_24x16.png) center right no-repeat; border-left: 1px solid #444;}
 ul.note_list > li > div.actions > a span {display: none;}
-ul.note_list > li > div.actions ul.dropdown {position: absolute; top: 240px; right: 0; width: 160px; }
+ul.note_list > li > div.actions ul.dropdown {position: absolute; top: 25px; right: -1px; list-style: none; width: 36px; background: #222;}
+ul.note_list > li > div.actions ul.dropdown li {display: block; padding: 2px 5px;}
+ul.note_list > li > div.actions ul.dropdown li a {display: block; width: 24px; height: 16px;}
+ul.note_list > li > div.actions ul.dropdown li a span {display: none;}
 
 ul.note_list .note {line-height: 1.4em;}
 ul.note_list .note h1 {
