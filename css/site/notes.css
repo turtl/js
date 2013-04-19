@@ -107,12 +107,11 @@ ul.note_list .note h5 {font-weight: bold;}
 ul.note_list.list_grid > li {
 	float: left;
 	display: block;
-	width: 199px;
-	height: 199px;
+	width: 200px;
+	height: 200px;
 	margin: 0 24px 24px 0;
 	padding: 16px;
 	background: #fff;
-	border: 1px solid #d4d4d4;
 }
 
 ul.note_list.list_grid > li.image {width: 232px; height: 232px; padding: 0;}

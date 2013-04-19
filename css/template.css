@@ -23,7 +23,7 @@ body {
 }
 a { text-decoration: none; }
 
-header {height: 40px; margin: 0 0 32px 0;}
+header {height: 40px; margin: 0 0 32px 0; border-bottom: 1px solid #333;}
 header {
 	background: #222; /* Old browsers */
 	background: -moz-linear-gradient(top,  #333333 1%, #111111 100%); /* FF3.6+ */
