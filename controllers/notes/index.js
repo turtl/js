@@ -54,7 +54,7 @@ var NotesController = Composer.Controller.extend({
 			this.filter_list.refresh();
 		}.bind(this), 'notes:listing:track_filters');
 		this.project.bind('change:display_type', this.update_display_type.bind(this), 'notes:listing:display_type');
-		this.filter_list.bind('reset', this.render.bind(this), 'notes:listing:reset');
+		this.filter_list.bind(['add', 'remove', 'reset'], this.render.bind(this), 'notes:listing:reset');
 		this.render();
 	},
 
@@ -75,7 +75,7 @@ var NotesController = Composer.Controller.extend({
 		}
 		if(this.filter_list)
 		{
-			this.filter_list.bind('reset', 'notes:listing:reset');
+			this.filter_list.bind(['add', 'remove', 'reset'], 'notes:listing:reset');
 		}
 		this.release_notes();
 		this.parent.apply(this, arguments);

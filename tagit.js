@@ -284,8 +284,8 @@ Composer.sync	=	function(method, model, options)
 		data	=	newdata;
 	}
 	tagit.api[method](model.get_url(), {data: data}, {
-		onSuccess: options.success,
-		onFail: options.error
+		success: options.success,
+		error: options.error
 	});
 };
 

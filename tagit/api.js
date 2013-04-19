@@ -154,9 +154,20 @@ var Api	=	new Class({
 		//console.log('method: '+method+'\nresource: '+resource+'\nauth_needed: '+send_auth+'\nthis.user: '+this.user+'\n----');
 
 		var url	=	api_url + '/' + resource.replace(/^\//, '');
+
+		if(!['post', 'get'].contains(method.toLowerCase()))
+		{
+			// add method GET var (MUST be GET (Wookie restriction))
+			if(url.match(/\?/))
+				url += '&_method='+method;
+			else
+				url += '?_method='+method;
+		}
+
 		var request	=	{
 			url: url,
-			method: method.toLowerCase(),
+			method: (method.toLowerCase() == 'get' ? 'GET' : 'POST'),
+			emulation: false,
 			headers: {},
 			data: data,
 			onSuccess: function(res)
