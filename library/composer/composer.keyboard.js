@@ -17,12 +17,20 @@
  */
 (function() {
 	var Keyboard	=	new Class({
-		Implements: [Composer.Events],
+		Implements: [Composer.Events, Options],
+
+		// set to true to allow bindings based on meta keys
+		// (ie "?" would be 'S-/' (shift + /)
+		options: {
+			meta_bind: false
+		},
 
 		_dispatch: null,
 
-		initialize: function()
+		initialize: function(options)
 		{
+			this.setOptions(options);
+
 			// create a function bound to "this" and store it later so we can
 			// unbind it when we detach
 			this._dispatch	=	this.dispatch.bind(this);
@@ -53,7 +61,16 @@
 		dispatch: function(e)
 		{
 			if(!e.key) return false;
-			this.trigger(e.key, e);
+			var ev = '';
+			if(this.options.meta_bind)
+			{
+				if(e.shift) ev += 'S-';
+				if(e.control) ev += 'C-';
+				if(e.alt) ev += 'A-';
+				if(e.meta) ev += 'M-';
+			}
+			ev += e.key;
+			this.trigger(ev, e);
 		}
 	});
 

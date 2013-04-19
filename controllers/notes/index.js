@@ -56,6 +56,7 @@ var NotesController = Composer.Controller.extend({
 		this.project.bind('change:display_type', this.update_display_type.bind(this), 'notes:listing:display_type');
 		this.filter_list.bind(['add', 'remove', 'reset'], this.render.bind(this), 'notes:listing:reset');
 		this.render();
+		tagit.keyboard.bind('a', this.open_add_note.bind(this), 'notes:shortcut:add_note');
 	},
 
 	release_notes: function()
@@ -78,6 +79,7 @@ var NotesController = Composer.Controller.extend({
 			this.filter_list.bind(['add', 'remove', 'reset'], 'notes:listing:reset');
 		}
 		this.release_notes();
+		tagit.keyboard.unbind('a', 'notes:shortcut:add_note')
 		this.parent.apply(this, arguments);
 	},
 

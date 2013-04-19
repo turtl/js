@@ -40,11 +40,13 @@ var NoteEditController = Composer.Controller.extend({
 			project: this.project
 		});
 		this.select_tab(this.note.get('type'));
+		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
 	},
 
 	release: function()
 	{
 		if(this.tag_controller) this.tag_controller.release();
+		tagit.keyboard.attach(); // re-enable shortcuts
 		this.parent.apply(this, arguments);
 	},
 
@@ -121,12 +123,17 @@ var NoteEditController = Composer.Controller.extend({
 			}
 		}
 
+		tagit.loading(true);
 		this.note.set({project_id: this.project.id()});
 		this.note.save({
 			success: function() {
 				modal.close();
+				tagit.loading(false);
 				this.project.get('notes').add(this.note);
-			}.bind(this)
+			}.bind(this),
+			error: function() {
+				tagit.loading(false);
+			}
 		});
 	},
 

@@ -20,6 +20,13 @@ var ProjectEditController = Composer.Controller.extend({
 		}.bind(this);
 		modal.addEvent('close', close_fn);
 		this.inp_title.focus();
+		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
+	},
+
+	release: function()
+	{
+		tagit.keyboard.attach(); // re-enable shortcuts
+		this.parent.apply(this, arguments);
 	},
 
 	render: function()

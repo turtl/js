@@ -74,7 +74,7 @@ var tagit	=	{
 		this.user.login_from_cookie();
 
 		// load the global keyboard handler
-		this.keyboard	=	new Composer.Keyboard();
+		this.keyboard	=	new Composer.Keyboard({meta_bind: true});
 
 		this.loaded	=	true;
 		if(History.enabled)

@@ -54,6 +54,7 @@ var DashboardController = Composer.Controller.extend({
 			do_init();
 		}.bind(this), 'dashboard:change_project');
 		do_init();
+		tagit.keyboard.bind('S-/', this.open_help.bind(this), 'dashboard:shortcut:open_help');
 	},
 
 	soft_release: function()
@@ -69,6 +70,7 @@ var DashboardController = Composer.Controller.extend({
 		this.soft_release();
 		this.profile.unbind_relational('projects', ['reset'], 'dashboard:init_on_projects');
 		this.profile.unbind('change:current_project', 'dashboard:change_project');
+		tagit.keyboard.unbind('S-/', 'dashboard:shortcut:open_help');
 		this.parent.apply(this, arguments);
 	},
 
@@ -77,6 +79,11 @@ var DashboardController = Composer.Controller.extend({
 		var content = Template.render('dashboard/index', {
 		});
 		this.html(content);
+	},
+
+	open_help: function()
+	{
+		console.log('help!!');
 	}
 });
 
