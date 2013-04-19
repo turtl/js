@@ -3,10 +3,15 @@ var NoteItemController = Composer.Controller.extend({
 	className: 'note',
 
 	elements: {
+		'ul.dropdown': 'dropdown_menu'
 	},
 
 	events: {
-		'click a.open': 'view_note'
+		'click .actions a.open': 'view_note',
+		'click .actions a.menu': 'open_menu',
+		'mouseleave ul.dropdown': 'close_menu',
+		'click ul.dropdown a.edit': 'open_edit',
+		'click ul.dropdown a.delete': 'delete_note'
 	},
 
 	note: null,
@@ -66,5 +71,30 @@ var NoteItemController = Composer.Controller.extend({
 		new NoteViewController({
 			note: this.note
 		});
+	},
+
+	open_menu: function(e)
+	{
+		if(e) e.stop();
+		this.dropdown_menu.addClass('open');
+	},
+
+	close_menu: function(e)
+	{
+		this.dropdown_menu.removeClass('open');
+	},
+
+	open_edit: function(e)
+	{
+		if(e) e.stop();
+	},
+
+	delete_note: function(e)
+	{
+		if(e) e.stop();
+		if(confirm('Really delete this note FOREVER?!'))
+		{
+			this.note.destroy();
+		}
 	}
 });

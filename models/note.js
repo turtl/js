@@ -1,4 +1,6 @@
 var Note = Composer.RelationalModel.extend({
+	base_url: '/notes',
+
 	relations: {
 		tags: {
 			type: Composer.HasMany,
