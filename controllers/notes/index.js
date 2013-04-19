@@ -76,7 +76,7 @@ var NotesController = Composer.Controller.extend({
 		}
 		if(this.filter_list)
 		{
-			this.filter_list.bind(['add', 'remove', 'reset'], 'notes:listing:reset');
+			this.filter_list.unbind(['add', 'remove', 'reset'], 'notes:listing:reset');
 		}
 		this.release_notes();
 		tagit.keyboard.unbind('a', 'notes:shortcut:add_note')

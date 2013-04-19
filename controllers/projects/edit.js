@@ -52,7 +52,15 @@ var ProjectEditController = Composer.Controller.extend({
 			if(projects) projects.add(this.project);
 			this.profile.set_current_project(this.project);
 		}
-		this.project.save();
+		tagit.loading(true);
+		this.project.save({
+			success: function() {
+				tagit.loading(false);
+			},
+			error: function() {
+				tagit.loading(false);
+			}
+		});
 		modal.close();
 	}
 });
