@@ -53,3 +53,6 @@ var Tags = Composer.Collection.extend({
 		return this;
 	}
 });
+
+var TagsFilter = Composer.FilterCollection.extend({
+});

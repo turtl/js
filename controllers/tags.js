@@ -7,25 +7,32 @@ var TagsController = Composer.Controller.extend({
 	},
 
 	project: null,
+	tags: null,
 
 	init: function()
 	{
 		this.project	=	this.profile.get_current_project();
 		if(!this.project) return false;
-		this.project.bind_relational('tags', ['add', 'remove', 'reset', 'change'], this.render.bind(this), 'tags:listing:track_project');
+		this.tags	=	new TagsFilter(this.project.get('tags'), {
+			filter: function(m) { return true; },
+			sortfn: function(a, b) {
+				return b.get('count') - a.get('count');
+			}
+		});
+		this.tags.bind(['add', 'remove', 'reset', 'change'], this.render.bind(this), 'tags:listing:track_project');
 		this.render();
 	},
 
 	release: function()
 	{
-		if(this.project) this.project.unbind_relational('tags', ['add', 'remove', 'reset', 'change'], 'tags:listing:track_project');
+		if(this.tags) this.tags.unbind(['add', 'remove', 'reset', 'change'], 'tags:listing:track_project');
 		this.parent.apply(this, arguments);
 	},
 
 	render: function()
 	{
 		var content = Template.render('tags/list', {
-			tags: toJSON(this.project.get('tags'))
+			tags: toJSON(this.tags)
 		});
 		this.html(content);
 	},
