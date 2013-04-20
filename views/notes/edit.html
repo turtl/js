@@ -3,28 +3,28 @@ var action = note.id ? 'Edit' : 'Add';
 ?>
 <h1><?=action?> note</h1>
 <div class="note-edit clear">
-	<? if(!note.id) { ?>
-		<?
-		var showtab = function(name)
-		{
-			var slug = name.toLowerCase();
-			var t = '<li class="'+slug;
-			if(note.type == slug) t += ' sel';
-			t += '">'+ name +'</li>';
-			return t;
-		};
-		?>
-		<ul class="type clear">
+	<?
+	var showtab = function(name)
+	{
+		var slug = name.toLowerCase();
+		var t = '<li class="'+slug;
+		if(note.type == slug) t += ' sel';
+		t += '">'+ name +'</li>';
+		return t;
+	};
+	?>
+	<ul class="type clear">
+		<? if(!note.id) { ?>
 			<?=showtab('Quick')?>
-			<?=showtab('Text')?>
-			<?=showtab('Link')?>
-			<?=showtab('Image')?>
-			<!--
-			<li>Embed</li>
-			<li>PDF</li>
-			-->
-		</ul>
-	<? } ?>
+		<? } ?>
+		<?=showtab('Text')?>
+		<?=showtab('Link')?>
+		<?=showtab('Image')?>
+		<!--
+		<li>Embed</li>
+		<li>PDF</li>
+		-->
+	</ul>
 	<form>
 		<div class="tags"></div>
 
@@ -35,12 +35,8 @@ var action = note.id ? 'Edit' : 'Add';
 			</div>
 		</div>
 
-		<div class="type link">
-			<input tabindex="1" type="text" name="link" value="<?=note.link?>" placeholder="http://">
-		</div>
-
-		<div class="type image">
-			<input tabindex="1" type="text" name="image" value="<?=note.image?>" placeholder="Image URL">
+		<div class="type url">
+			<input tabindex="1" type="text" name="url" value="<?=note.url?>" placeholder="http://">
 		</div>
 
 		<div class="type title">

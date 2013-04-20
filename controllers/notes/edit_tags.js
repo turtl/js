@@ -23,7 +23,7 @@ var NoteEditTagController = Composer.Controller.extend({
 
 	release: function()
 	{
-		this.note.bind_relational('tags', ['add', 'remove', 'reset', 'change'], 'note:edit:tags:change');
+		this.note.unbind_relational('tags', ['add', 'remove', 'reset', 'change'], 'note:edit:tags:change');
 		this.parent.apply(this, arguments);
 	},
 

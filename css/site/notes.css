@@ -45,21 +45,21 @@
 .note-view.image {text-align: center; background: #000;}
 
 /* add/edit */
-.note-edit ul.type {list-style: none; position: absolute; top: 24px; left: 200px;}
+.note-edit ul.type {list-style: none; position: absolute; top: 32px; left: 200px;}
 .note-edit ul.type li {float: left; display: inline-block; margin: 0 6px -1px 0; padding: 5px 10px; font-size: 12px; color: #73b8d1; text-transform: uppercase; cursor: pointer; border-radius: 4px;}
-.note-edit ul.type li.sel {padding-top: 4px; color: #73b8d1; color: #111; border-top: 1px solid #ddd; background: #aaa;}
+.note-edit ul.type li.sel {padding-top: 4px; color: #73b8d1; color: #111; border-top: 1px solid #ddd; background: #fff;}
 .note-edit > form > div.type {display: none; float: left; width: 60%;}
 .note-edit > form > div.type.sel {display: block;}
 .note-edit > form input[type=text] {width: 95%;}
 .note-edit > form textarea {width: 95%;}
-.note-edit .form-note {color: #ccc;}
+.note-edit .form-note {color: #aaa;}
 .note-edit input[type=submit] {float: right;}
 
-.note-edit div.tags {float: right; width: 36%; padding-left: 2.2%; border-left: 1px solid #222;}
+.note-edit div.tags {float: right; width: 36%; padding-left: 2.2%; border-left: 1px solid #ddd;}
 .note-edit div.tags input[type=text] {width: 162px; height: auto; margin-right: 2px;}
 .note-edit div.tags input[type=button] {max-width: 64px;}
 
-.note-edit div.submit {padding: 16px 0 0 0; margin: 16px 0 0 0; border-top: 1px solid #222;}
+.note-edit div.submit {padding: 16px 0 0 0; margin: 16px 0 0 0; border-top: 1px solid #ddd;}
 
 /* note listing */
 ul.note_list {list-style: none;}
@@ -69,12 +69,12 @@ ul.note_list > li:hover > div.actions {display: inline-block;}
 ul.note_list > li > div.actions a {opacity: .6;}
 ul.note_list > li > div.actions a:hover {opacity: 1;}
 ul.note_list > li > div.actions > a.open {display: inline-block; width: 16px; height: 24px; padding-left: 3px; background: url(/images/site/icons/open_16x16.png) center right no-repeat;}
-ul.note_list > li > div.actions > a.menu {display: inline-block; width: 24px; height: 24px; margin: 0 0 0 3px; padding: 0 4px 0 6px; background: url(/images/site/icons/menu_26x16.png) 6px center no-repeat; border-left: 1px solid #2b2b2b;}
+ul.note_list > li > div.actions > a.menu {display: inline-block; width: 21px; height: 24px; margin: 0 0 0 3px; padding: 0 4px 0 6px; background: url(/images/site/icons/menu_19x16.png) 6px center no-repeat; border-left: 1px solid #2b2b2b;}
 ul.note_list > li > div.actions > a span {display: none;}
 ul.note_list > li > div.actions ul.dropdown {display: none; position: absolute; top: 25px; right: -1px; list-style: none; width: 36px; background: #222;}
 ul.note_list > li > div.actions ul.dropdown.open {display: block;}
 ul.note_list > li > div.actions ul.dropdown li {display: block; border-bottom: 1px solid #333;}
-ul.note_list > li > div.actions ul.dropdown li a {display: block; width: 24px; height: 16px; padding: 6px 5px;}
+ul.note_list > li > div.actions ul.dropdown li a {display: block; width: 21px; height: 16px; padding: 6px 5px;}
 ul.note_list > li > div.actions ul.dropdown li a.edit {background: url(/images/site/icons/edit_16x16.png) 10px center no-repeat;}
 ul.note_list > li > div.actions ul.dropdown li a.delete {background: url(/images/site/icons/delete_16x16.png) 10px center no-repeat;}
 ul.note_list > li > div.actions ul.dropdown li a span {display: none;}

@@ -110,6 +110,7 @@ var NotesController = Composer.Controller.extend({
 		//this.remove_note(note);
 		var item = new NoteItemController({
 			inject: this.note_list,
+			project: this.project,
 			note: note,
 			display_type: this.project.get('display_type')
 		});

@@ -14,6 +14,7 @@ var NoteItemController = Composer.Controller.extend({
 		'click ul.dropdown a.delete': 'delete_note'
 	},
 
+	project: null,
 	note: null,
 	display_type: 'grid',
 
@@ -87,6 +88,10 @@ var NoteItemController = Composer.Controller.extend({
 	open_edit: function(e)
 	{
 		if(e) e.stop();
+		new NoteEditController({
+			project: this.project,
+			note: this.note
+		});
 	},
 
 	delete_note: function(e)

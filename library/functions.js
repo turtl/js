@@ -143,9 +143,9 @@ var view	=	{
 
 	make_links: function(text)
 	{
-		text = text.replace(/"([\w]+):(\/\/([\.\-\w_\/:\?\+\&#=%,]+))/gi, '"$1::$2"');
-		text = text.replace(/([\w]+:\/\/)([\.\-\w_\/:\?\+\&#=%,]+)/gi, '<a target="_blank" href="$1$2">$2</a>');
-		text = text.replace(/"([\w]+)::(\/\/([\.\-\w_\/:\?\+\&#=%,]+))/gi, '"$1:$2"');
+		text = text.replace(/"([\w]+):(\/\/([\.\-\w_\/:\?\+\&#=%,\(\)]+))/gi, '"$1::$2"');
+		text = text.replace(/([\w]+:\/\/)([\.\-\w_\/:\?\+\&#=%,\(\)]+)/gi, '<a target="_blank" href="$1$2">$2</a>');
+		text = text.replace(/"([\w]+)::(\/\/([\.\-\w_\/:\?\+\&#=%,\(\)]+))/gi, '"$1:$2"');
 		return text;
 	},
 

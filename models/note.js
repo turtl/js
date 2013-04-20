@@ -21,9 +21,8 @@ var Note = Composer.RelationalModel.extend({
 		'type',
 		'title',
 		'tags',
-		'link',
+		'url',
 		'text',
-		'image',
 		'embed'
 	],
 

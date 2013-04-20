@@ -3,9 +3,8 @@ var NoteEditController = Composer.Controller.extend({
 		'.note-edit form div.tags': 'tags',
 		'textarea[name=quick]': 'inp_quick',
 		'input[name=title]': 'inp_title',
-		'input[name=link]': 'inp_link',
-		'textarea[name=text]': 'inp_text',
-		'input[name=image]': 'inp_image'
+		'input[name=url]': 'inp_url',
+		'textarea[name=text]': 'inp_text'
 	},
 
 	events: {
@@ -15,9 +14,9 @@ var NoteEditController = Composer.Controller.extend({
 
 	type_fields: {
 		'quick':   ['quick'],
-		'link':  ['link', 'title', 'text'],
+		'link':  ['url', 'title', 'text'],
 		'text':  ['text'],
-		'image': ['image', 'title', 'text']
+		'image': ['url', 'title', 'text']
 	},
 
 	project: null,
@@ -102,14 +101,14 @@ var NoteEditController = Composer.Controller.extend({
 			{
 			case 'link':
 				this.note.set({
-					link: this.inp_link.get('value'),
+					url: this.inp_url.get('value'),
 					title: this.inp_title.get('value'),
 					text: this.inp_text.get('value')
 				});
 				break;
 			case 'image':
 				this.note.set({
-					image: this.inp_image.get('value'),
+					url: this.inp_url.get('value'),
 					title: this.inp_title.get('value'),
 					text: this.inp_text.get('value')
 				});
@@ -124,12 +123,16 @@ var NoteEditController = Composer.Controller.extend({
 		}
 
 		tagit.loading(true);
-		this.note.set({project_id: this.project.id()});
+
+		var isnew	=	this.note.is_new();
+		if(!this.note.get('project_id'))
+			this.note.set({project_id: this.project.id()});
+
 		this.note.save({
 			success: function() {
 				modal.close();
 				tagit.loading(false);
-				this.project.get('notes').add(this.note);
+				if(isnew) this.project.get('notes').add(this.note);
 			}.bind(this),
 			error: function() {
 				tagit.loading(false);
@@ -152,8 +155,10 @@ var NoteEditController = Composer.Controller.extend({
 		var li = this.el.getElement('ul.type li.'+typename);
 		if(li) li.addClass('sel');
 
-		this.note.set({type: typename});
-		if(this['inp_'+typename]) this['inp_'+typename].focus();
+		this.note.set({type: typename}, {silent: true});
+		var input_sel = typename;
+		if(['link','image'].contains(typename)) input_sel = 'url';
+		if(this['inp_'+input_sel]) this['inp_'+input_sel].focus();
 	},
 
 	switch_type: function(e)
