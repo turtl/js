@@ -5,6 +5,6 @@ var action	=	(project ? 'Edit' : 'Add');
 <div class="project-edit clear">
 	<form>
 		<input type="submit" value="<?=action?> project">
-		<input type="text" name="name" value="<?=(project ? project.name : '')?>" placeholder="Project name">
+		<input type="text" name="name" value="<?=project.title?>" placeholder="Project name">
 	</form>
 </div>

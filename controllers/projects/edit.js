@@ -12,6 +12,7 @@ var ProjectEditController = Composer.Controller.extend({
 
 	init: function()
 	{
+		if(!this.project) this.project = new Project();
 		this.render();
 		modal.open(this.el);
 		var close_fn = function() {
@@ -32,7 +33,7 @@ var ProjectEditController = Composer.Controller.extend({
 	render: function()
 	{
 		var content = Template.render('projects/edit', {
-			project: this.project
+			project: toJSON(this.project)
 		});
 		this.html(content);
 	},
@@ -41,21 +42,25 @@ var ProjectEditController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		var title = this.inp_title.get('value');
-		if(this.project)
+		var success = null;
+		if(this.project.is_new())
 		{
-			this.project.set({title: title});
+			this.project = new Project({ title: title });
+			success = function() {
+				var projects = this.profile.get('projects');
+				if(projects) projects.add(this.project);
+				this.profile.set_current_project(this.project);
+			}.bind(this);
 		}
 		else
 		{
-			this.project = new Project({ title: title });
-			var projects = this.profile.get('projects');
-			if(projects) projects.add(this.project);
-			this.profile.set_current_project(this.project);
+			this.project.set({title: title});
 		}
 		tagit.loading(true);
 		this.project.save({
 			success: function() {
 				tagit.loading(false);
+				if(success) success();
 			},
 			error: function() {
 				tagit.loading(false);

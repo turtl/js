@@ -257,6 +257,8 @@ window.addEvent('domready', function() {
 // couldn't be simpler
 Composer.sync	=	function(method, model, options)
 {
+	options || (options = {});
+	if(options.skip_sync) return;
 	switch(method)
 	{
 	case 'create':

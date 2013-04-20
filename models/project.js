@@ -1,4 +1,6 @@
 var Project = Composer.RelationalModel.extend({
+	base_url: '/projects',
+
 	relations: {
 		tags: {
 			type: Composer.HasMany,
@@ -29,7 +31,6 @@ var Project = Composer.RelationalModel.extend({
 	],
 
 	defaults: {
-		title: 'My Project'
 	},
 
 	init: function()
@@ -74,8 +75,12 @@ var Project = Composer.RelationalModel.extend({
 
 	save: function(options)
 	{
-		options || (options = {});
-		tagit.api.post('/projects/users/'+tagit.user.id(), {data: this.toJSON()}, {
+		options || (options == {});
+		var url	=	this.id(true) ?
+			'/projects/'+this.id() :
+			'/projects/users/'+tagit.user.id();
+		var fn	=	(this.id(true) ? tagit.api.put : tagit.api.post).bind(tagit.api);
+		fn(url, {data: this.toJSON()}, {
 			success: function(data) {
 				this.set(data);
 				if(options.success) options.success(data);
@@ -85,6 +90,19 @@ var Project = Composer.RelationalModel.extend({
 				if(options.error) options.error(e);
 			}
 		});
+	},
+
+	destroy: function(options)
+	{
+		var notes = this.get('notes');
+		var tags = this.get('tags');
+		var cats = this.get('categories');
+
+		notes.each(function(n) { n.destroy({skip_sync: true}); n.unbind(); });
+		tags.each(function(t) { t.destroy({skip_sync: true}); t.unbind(); });
+		cats.each(function(c) { c.destroy({skip_sync: true}); c.unbind(); });
+
+		return this.parent.apply(this, arguments);
 	},
 
 	get_selected_tags: function()

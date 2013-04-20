@@ -44,7 +44,7 @@ var DashboardController = Composer.Controller.extend({
 			tagit.controllers.pages.trigger('loaded');
 		}.bind(this);
 
-		this.profile.bind_relational('projects', ['reset'], function() {
+		this.profile.bind_relational('projects', ['reset', 'remove'], function() {
 			this.soft_release();
 			do_init();
 		}.bind(this), 'dashboard:init_on_projects');
@@ -68,7 +68,7 @@ var DashboardController = Composer.Controller.extend({
 	release: function()
 	{
 		this.soft_release();
-		this.profile.unbind_relational('projects', ['reset'], 'dashboard:init_on_projects');
+		this.profile.unbind_relational('projects', ['reset', 'remove'], 'dashboard:init_on_projects');
 		this.profile.unbind('change:current_project', 'dashboard:change_project');
 		tagit.keyboard.unbind('S-/', 'dashboard:shortcut:open_help');
 		this.parent.apply(this, arguments);

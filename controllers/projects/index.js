@@ -5,6 +5,8 @@ var ProjectsController = Composer.Controller.extend({
 
 	events: {
 		'click a.add': 'add_project',
+		'click a.edit': 'edit_project',
+		'click a.delete': 'delete_project',
 		'change .project-list select': 'change_project'
 	},
 
@@ -41,6 +43,27 @@ var ProjectsController = Composer.Controller.extend({
 		new ProjectEditController({
 			profile: this.profile
 		});
+	},
+
+	edit_project: function(e)
+	{
+		if(e) e.stop();
+		var current = this.profile.get_current_project();
+		new ProjectEditController({
+			profile: this.profile,
+			project: current
+		});
+	},
+
+	delete_project: function(e)
+	{
+		if(e) e.stop();
+		if(!confirm('Really delete this project, and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
+		var current = this.profile.get_current_project();
+		current.destroy();
+
+		var next = this.profile.get('projects').first() || false;
+		this.profile.set_current_project(next);
 	},
 
 	change_project: function(e)
