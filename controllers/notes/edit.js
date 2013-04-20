@@ -74,7 +74,7 @@ var NoteEditController = Composer.Controller.extend({
 					// it's an image
 					this.note.set({
 						type: 'image',
-						image: val
+						url: val
 					});
 				}
 				else
@@ -82,7 +82,7 @@ var NoteEditController = Composer.Controller.extend({
 					// just a stupid link
 					this.note.set({
 						type: 'link',
-						link: val
+						url: val
 					});
 				}
 			}

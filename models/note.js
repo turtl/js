@@ -43,6 +43,13 @@ var Note = Composer.RelationalModel.extend({
 		});
 	},
 
+	has_tag: function(tagname)
+	{
+		return this.get('tags').find(function(t) {
+			return t.get('name') == tagname;
+		});
+	},
+
 	save: function(options)
 	{
 		options || (options == {});

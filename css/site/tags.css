@@ -1,6 +1,6 @@
 ul.tags {list-style: none;}
 ul.tags li {float: left; margin: 0 10px 10px 0; padding: 3px 5px 4px 5px; font-size: 14px; white-space: nowrap; color: #444; cursor: pointer; background: #d5d5d5; /*border: 1px solid #999;*/ border-radius: 4px;}
-ul.tags li.sel {color: #73b8d1; background: #333; /*border: 1px solid #111;*/}
+ul.tags li.sel {color: #73b8d1 !important; background: #333; /*border: 1px solid #111;*/}
 ul.tags li.sel {
 	background: -moz-linear-gradient(top,  #444444 1%, #222222 100%); /* FF3.6+ */
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(1%,#444444), color-stop(100%,#222222)); /* Chrome,Safari4+ */
@@ -11,4 +11,6 @@ ul.tags li.sel {
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#444444', endColorstr='#222222',GradientType=0 ); /* IE6-9 */
 }
 ul.tags li.exclude {color: #333; background: #ddaaaa;}
+ul.tags li.disabled {color: #aaa;}
+
 

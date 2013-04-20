@@ -12,6 +12,7 @@
 		var cls = '';
 		if(t.selected) cls = 'sel';
 		if(t.excluded) cls = 'exclude';
+		if(t.disabled) cls += ' disabled';
 		?>
 		<li class="<?=cls?>">
 			<?=t.name?>

@@ -4,6 +4,6 @@
 .project-list ul.actions li {display: inline; margin: 0 3px 0 0;}
 .project-list ul.actions a {display: inline-block; opacity: .8;}
 .project-list ul.actions a:hover {opacity: 1;}
-.project-list .add.first {}
+.project-list .add.first {font-weight: bold;}
 
 .project-edit input[type=submit] {float: right;}
