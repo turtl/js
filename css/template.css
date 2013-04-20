@@ -14,6 +14,8 @@ html.loading {cursor: progress;}
 html.loading a {cursor: progress;}
 html.loading header div.loading {visibility: visible;}
 
+html, body {height: 100%;}
+
 body {
 	font-size: 13px;
 	font-family: helvetica, arial, sans-serif; 
