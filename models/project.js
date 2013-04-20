@@ -101,6 +101,9 @@ var Project = Composer.RelationalModel.extend({
 		notes.each(function(n) { n.destroy({skip_sync: true}); n.unbind(); });
 		tags.each(function(t) { t.destroy({skip_sync: true}); t.unbind(); });
 		cats.each(function(c) { c.destroy({skip_sync: true}); c.unbind(); });
+		notes.clear();
+		tags.clear();
+		cats.clear();
 
 		return this.parent.apply(this, arguments);
 	},
