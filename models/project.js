@@ -94,18 +94,23 @@ var Project = Composer.RelationalModel.extend({
 
 	destroy: function(options)
 	{
-		var notes = this.get('notes');
-		var tags = this.get('tags');
-		var cats = this.get('categories');
+		options || (options = {});
+		var success = options.success;
+		options.success = function()
+		{
+			var notes = this.get('notes');
+			var tags = this.get('tags');
+			var cats = this.get('categories');
 
-		notes.each(function(n) { n.destroy({skip_sync: true}); n.unbind(); });
-		tags.each(function(t) { t.destroy({skip_sync: true}); t.unbind(); });
-		cats.each(function(c) { c.destroy({skip_sync: true}); c.unbind(); });
-		notes.clear();
-		tags.clear();
-		cats.clear();
-
-		return this.parent.apply(this, arguments);
+			notes.each(function(n) { n.destroy({skip_sync: true}); n.unbind(); });
+			tags.each(function(t) { t.destroy({skip_sync: true}); t.unbind(); });
+			cats.each(function(c) { c.destroy({skip_sync: true}); c.unbind(); });
+			notes.clear();
+			tags.clear();
+			cats.clear();
+			if(success) success.apply(this, arguments);
+		}.bind(this);
+		return this.parent.apply(this, [options]);
 	},
 
 	get_selected_tags: function()

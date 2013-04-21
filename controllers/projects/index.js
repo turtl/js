@@ -17,12 +17,14 @@ var ProjectsController = Composer.Controller.extend({
 		this.profile.bind_relational('projects', ['add', 'remove', 'reset', 'change:title'], this.render.bind(this), 'projects:change');
 		this.render();
 		tagit.keyboard.bind('x', this.clear_filters.bind(this), 'projects:shortcut:clear_filters');
+		tagit.keyboard.bind('p', this.add_project.bind(this), 'projects:shortcut:add_project');
 	},
 
 	release: function()
 	{
 		this.profile.unbind_relational('projects', ['add', 'remove', 'reset', 'change:title'], 'projects:change');
 		tagit.keyboard.unbind('x', 'projects:shortcut:clear_filters');
+		tagit.keyboard.unbind('p', 'projects:shortcut:add_project');
 		this.parent.apply(this, arguments);
 	},
 
@@ -60,10 +62,19 @@ var ProjectsController = Composer.Controller.extend({
 		if(e) e.stop();
 		if(!confirm('Really delete this project, and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
 		var current = this.profile.get_current_project();
-		current.destroy();
 
-		var next = this.profile.get('projects').first() || false;
-		this.profile.set_current_project(next);
+		tagit.loading(true);
+		current.destroy({
+			success: function() {
+				tagit.loading(false);
+
+				var next = this.profile.get('projects').first() || false;
+				this.profile.set_current_project(next);
+			}.bind(this),
+			error: function() {
+				tagit.loading(false);
+			}
+		});
 	},
 
 	change_project: function(e)

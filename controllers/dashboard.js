@@ -54,7 +54,8 @@ var DashboardController = Composer.Controller.extend({
 		}.bind(this), 'dashboard:init_on_projects');
 		this.profile.bind('change:current_project', function() {
 			this.soft_release();
-			this.profile.get_current_project().load_notes();
+			var current = this.profile.get_current_project();
+			if(this.project) current.load_notes();
 			do_init();
 		}.bind(this), 'dashboard:change_project');
 		do_init();
