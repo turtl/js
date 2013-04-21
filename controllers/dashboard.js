@@ -105,7 +105,6 @@ var DashboardController = Composer.Controller.extend({
 		if(sidepos.top <= scroll && this.sidebar.getStyle('position') != 'fixed')
 		{
 			this._side_orig_top = sidepos.top;
-			console.log('top: ', sidepos.top);
 			this.sidebar.setStyles({
 				position: 'fixed',
 				top: 10
