@@ -26,6 +26,20 @@ var Note = Composer.RelationalModel.extend({
 		'embed'
 	],
 
+	init: function()
+	{
+		var save_old = function() {
+			// keep a delayed record of the last tag set
+			(function() {
+				this.set({old_tags: this.get('tags').map(function(t) {
+					return t.get('name');
+				})}, {silent: true});
+			}).delay(0, this);
+		}.bind(this);
+		this.bind('change:tags', save_old);
+		save_old();
+	},
+
 	add_tag: function(tag)
 	{
 		var tags = this.get('tags');

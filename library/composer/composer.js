@@ -947,7 +947,7 @@
 			{
 				if(this.sortfn(this._models[i], model) > 0)
 				{
-					return i;
+					return i - 1;
 				}
 			}
 			return this._models.length;

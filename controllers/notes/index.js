@@ -51,20 +51,15 @@ var NotesController = Composer.Controller.extend({
 		});
 
 		this.project.bind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], function() {
-			this.filter_list.refresh();
+			this.filter_list.refresh({diff_events: true});
 		}.bind(this), 'notes:listing:track_filters');
 		this.project.bind('change:display_type', this.update_display_type.bind(this), 'notes:listing:display_type');
-		this.filter_list.bind(['add', 'remove', 'reset'], this.render.bind(this), 'notes:listing:reset');
+
+		// track all changes to our sub-controllers
+		this.setup_tracking(this.filter_list);
+
 		this.render();
 		tagit.keyboard.bind('a', this.open_add_note.bind(this), 'notes:shortcut:add_note');
-	},
-
-	release_notes: function()
-	{
-		this.note_item_controllers.each(function(item) {
-			item.release();
-		});
-		this.note_item_controllers = [];
 	},
 
 	release: function()
@@ -74,11 +69,6 @@ var NotesController = Composer.Controller.extend({
 			this.project.unbind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], 'notes:listing:track_filters');
 			this.project.unbind('change:display_type', 'notes:listing:display_type');
 		}
-		if(this.filter_list)
-		{
-			this.filter_list.unbind(['add', 'remove', 'reset'], 'notes:listing:reset');
-		}
-		this.release_notes();
 		tagit.keyboard.unbind('a', 'notes:shortcut:add_note')
 		this.parent.apply(this, arguments);
 	},
@@ -93,8 +83,6 @@ var NotesController = Composer.Controller.extend({
 		{
 			this.display_actions.removeClass('hidden');
 		}
-		this.release_notes();
-		this.filter_list.each(this.add_note.bind(this));
 	},
 
 	open_add_note: function(e)
@@ -105,31 +93,20 @@ var NotesController = Composer.Controller.extend({
 		});
 	},
 
-	add_note: function(note)
+	create_subcontroller: function(note)
 	{
-		//this.remove_note(note);
-		var item = new NoteItemController({
+		return new NoteItemController({
 			inject: this.note_list,
 			project: this.project,
-			note: note,
+			model: note,
 			display_type: this.project.get('display_type')
 		});
-		this.note_item_controllers.push(item);
 	},
 
-	remove_note: function(note)
+	// extended from TrackController
+	remove_subcontroller: function(note)
 	{
-		var note_controller = this.note_item_controllers.filter(function(c) {
-			if(note.id() == c.note.id()) return true;
-			return false;
-		});
-		this.note_item_controllers = this.note_item_controllers.filter(function(c) {
-			if(note_controller.contains(c)) return false;
-			return true;
-		});
-		note_controller.each(function(c) {
-			c.release();
-		});
+		this.parent.apply(this, arguments);
 		if(this.project.get('notes').models().length == 0)
 		{
 			this.display_actions.addClass('hidden');
@@ -156,5 +133,5 @@ var NotesController = Composer.Controller.extend({
 		});
 		$E('li a.'+this.project.get('display_type', 'grid')).addClass('sel');
 	}
-});
+}, TrackController);
 

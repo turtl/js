@@ -15,28 +15,28 @@ var NoteItemController = Composer.Controller.extend({
 	},
 
 	project: null,
-	note: null,
+	model: null,
 	display_type: 'grid',
 
 	init: function()
 	{
-		if(!this.note) return;
-		this.note.bind('change', this.render.bind(this), 'note:item:change:render');
-		this.note.bind('destroy', this.release.bind(this), 'note:item:destroy:release');
+		if(!this.model) return;
+		this.model.bind('change', this.render.bind(this), 'note:item:change:render');
+		this.model.bind('destroy', this.release.bind(this), 'note:item:destroy:release');
 		this.render();
 	},
 
 	release: function()
 	{
-		this.note.unbind('change', 'note:item:change:render');
-		this.note.unbind('destroy', 'note:item:destroy:release');
+		this.model.unbind('change', 'note:item:change:render');
+		this.model.unbind('destroy', 'note:item:destroy:release');
 		this.parent.apply(this, arguments);
 	},
 
 	render: function()
 	{
 		var content = Template.render('notes/list/index', {
-			note: toJSON(this.note)
+			note: toJSON(this.model)
 		});
 
 		var title = '';
@@ -63,14 +63,14 @@ var NoteItemController = Composer.Controller.extend({
 
 		content = view.make_links(content);
 		this.html(content);
-		this.el.className = 'note ' + this.note.get('type');
+		this.el.className = 'note ' + this.model.get('type');
 	},
 
 	view_note: function(e)
 	{
 		if(e) e.stop();
 		new NoteViewController({
-			note: this.note
+			note: this.model
 		});
 	},
 
@@ -90,7 +90,7 @@ var NoteItemController = Composer.Controller.extend({
 		if(e) e.stop();
 		new NoteEditController({
 			project: this.project,
-			note: this.note
+			note: this.model
 		});
 	},
 
@@ -99,7 +99,7 @@ var NoteItemController = Composer.Controller.extend({
 		if(e) e.stop();
 		if(confirm('Really delete this note FOREVER?!'))
 		{
-			this.note.destroy();
+			this.model.destroy();
 		}
 	}
 });

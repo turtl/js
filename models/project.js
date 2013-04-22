@@ -35,14 +35,22 @@ var Project = Composer.RelationalModel.extend({
 
 	init: function()
 	{
-		// make tags auto-update from notes
-		this.bind_relational('notes', 'all', function() {
-			var tags = this.get('tags');
-			if(tags.refresh_from_notes(this.get('notes')))
-			{
-				tags.trigger('update');
-			}
-		}.bind(this), 'project:sync:tags');
+		this.bind_relational('notes', 'add', function(note) {
+			this.get('tags').add_tags_from_note(note);
+			this.get('tags').trigger('update');
+		}.bind(this));
+		this.bind_relational('notes', 'remove', function(note) {
+			this.get('tags').remove_tags_from_note(note);
+			this.get('tags').trigger('update');
+		}.bind(this));
+		this.bind_relational('notes', 'reset', function() {
+			this.get('tags').refresh_from_notes(this.get('notes'));
+			this.get('tags').trigger('update');
+		}.bind(this));
+		this.bind_relational('notes', 'change:tags', function(note) {
+			this.get('tags').diff_tags_from_note(note);
+			this.get('tags').trigger('update');
+		}.bind(this));
 
 		// make category tags auto-update when tags do
 		this.bind_relational('tags', 'update', function() {
@@ -142,30 +150,6 @@ var Project = Composer.RelationalModel.extend({
 	{
 		var tag = this.get_tag_by_name(tagname);
 		return tag ? tag.get('excluded') : false;
-	},
-
-	select_tag: function(tagname)
-	{
-		var tag = this.get_tag_by_name(tagname);
-		tag.set({selected: true});
-	},
-
-	exclude_tag: function(tagname)
-	{
-		var tag = this.get_tag_by_name(tagname);
-		tag.set({excluded: true});
-	},
-
-	unselect_tag: function(tagname)
-	{
-		var tag = this.get_tag_by_name(tagname);
-		tag.unset('selected');
-	},
-
-	unexclude_tag: function(tagname)
-	{
-		var tag = this.get_tag_by_name(tagname);
-		tag.unset('excluded');
 	}
 }, Protected);
 

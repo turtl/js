@@ -12,6 +12,9 @@ function next_tag_up(tag, element)
 	return element.get('tag') == tag ? element : next_tag_up(tag, element.getParent());
 }
 
+// for diffing two arrays against each other
+function arrdiff(arr1, arr2) { return arr1.filter(function(el) { return !arr2.contains(el); }); };
+
 // used in templating. wraps around EVERY image url, and rewrites it to use whatever
 // storage facility we require (probably S3/cloudfront)
 function img(url)
