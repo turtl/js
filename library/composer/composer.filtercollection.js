@@ -29,13 +29,20 @@
 	var FilterCollection	=	new Class({
 		Extends: Composer.Collection,
 
+		/**
+		 * Track this object's type. Useful for debugging, mainly
+		 */
+		__composer_type: 'filtercollection',
+
 		master: null,
 		filter: null,
 		transform: null,
 		limit: false,
 
 		_do_match_action: null,
+
 		forward_all_events: false,
+		refresh_on_change: true,	// performance hit, but needed for backward compat
 
 		initialize: function(master, options)
 		{
@@ -61,7 +68,7 @@
 		attach: function()
 		{
 			if(!this._do_match_action) this._do_match_action = this.match_action.bind(this);
-			this.master.bind('all', this._do_match_action);
+			this.master.bind('all', this._do_match_action, 'filtercollection:all');
 			this.bind('reset', function(options) {
 				options || (options = {});
 				if(options.has_reload) return false;
@@ -131,7 +138,43 @@
 
 			// track the current number of items and reloda the data
 			var num_items	=	this._models.length;
-			this.refresh({silent: true});
+
+			if(this.refresh_on_change)
+			{
+				// the brute force option (re-sort everything, re-filter everything)
+				// VERY expensive
+				this.refresh({silent: true});
+			}
+			else
+			{
+				// a more tactful approach
+				var cur_index = this._models.indexOf(model);
+				var new_index = this.sort_index(model);
+
+				if(cur_index == -1 && this.filter(model))
+				{
+					// welcome to the team!
+					this.add(model, options);
+				}
+				else if(cur_index > -1 && !this.filter(model))
+				{
+					// we feel that your interests no longer align with the team's
+					// ...we're going to ahve to let you go.
+					//
+					// You BASTARDS I've poured my LIFE into this collection!!
+					//
+					// Yes and we're thankful for your hard work, but feel it's
+					// time to move on. Your replacement is a potted plant (come
+					// to think of it, so is your severance). Think of this as a
+					// new beginning! Now get out of my office.
+					this.remove(model, options);
+				}
+				else if(cur_index != new_index)
+				{
+					// sort order changed
+					this.sort(options);
+				}
+			}
 
 			// do nothing if no change
 			if(this._models.length == num_items)
@@ -163,7 +206,7 @@
 			if(typeof(options.transform) == 'undefined') options.transform = true;
 
 			// if we are passing raw data, create a new model from data
-			var model		=	data.__is_model ? data : new this.master.model(data, options);
+			var model		=	data.__composer_type == 'model' ? data : new this.master.model(data, options);
 
 			if(this.transform && options.transform)
 			{
@@ -185,7 +228,9 @@
 			}
 			
 			// add this model into the master (if it's not already in it)
-			return this.master.upsert(model, options);
+			var add = this.master.upsert(model, options);
+			if(this.limit) this._models.splice(this.limit);
+			return add;
 		},
 
 		remove: function(model, options)

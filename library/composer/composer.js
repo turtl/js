@@ -204,6 +204,11 @@
 	 */
 	var Base	=	new Class({
 		/**
+		 * Track this object's type. Useful for debugging, mainly
+		 */
+		__composer_type: 'base',
+
+		/**
 		 * fire_event dtermines whether or not an event should fire. given an event
 		 * name, the passed-in options, and any arbitrary number of arguments,
 		 * determine whether or not the given event should be triggered.
@@ -293,7 +298,13 @@
 		Extends: Base,
 		Implements: [Events],
 
+		/**
+		 * Track this object's type. Useful for debugging, mainly
+		 */
+		__composer_type: 'model',
+
 		// for internal object testing
+		// NOTE: deprecated in favor of __composer_type
 		__is_model: true,
 
 		// the model's unique app id, assigned by composer on instantiation
@@ -694,6 +705,11 @@
 		Extends: Base,
 		Implements: [Events],
 
+		/**
+		 * Track this object's type. Useful for debugging, mainly
+		 */
+		__composer_type: 'collection',
+
 		// the TYPE of model in this collection
 		model: Model,
 
@@ -781,7 +797,7 @@
 			options || (options = {});
 
 			// if we are passing raw data, create a new model from data
-			var model	=	data.__is_model ? data : new this.model(data, options);
+			var model	=	data.__composer_type == 'model' ? data : new this.model(data, options);
 
 			// reference this collection to the model
 			if(!model.collections.contains(this))
@@ -950,6 +966,8 @@
 					return i - 1;
 				}
 			}
+			var index = this._models.indexOf(model);
+			if(index == this._models.length - 1) return index;
 			return this._models.length;
 		},
 
@@ -1063,7 +1081,7 @@
 		 */
 		index_of: function(model_or_id)
 		{
-			var id	=	model_or_id.__is_model ? model_or_id.id() : model_or_id;
+			var id	=	model_or_id.__composer_type == 'model' ? model_or_id.id() : model_or_id;
 			for(var i = 0; i < this._models.length; i++)
 			{
 				if(this._models[i].id() == id)
@@ -1222,6 +1240,11 @@
 	var Controller	=	new Class({
 		Extends: Base,
 		Implements: [Events],
+
+		/**
+		 * Track this object's type. Useful for debugging, mainly
+		 */
+		__composer_type: 'controller',
 
 		// the DOM element to tie this controller to (a container element)
 		el: false,
@@ -1477,6 +1500,11 @@
 	 */
 	var Router	=	new Class({
 		Implements: [Options, Events],
+
+		/**
+		 * Track this object's type. Useful for debugging, mainly
+		 */
+		__composer_type: 'router',
 
 		last_path:	false,
 		_last_url:	null,

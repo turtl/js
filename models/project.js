@@ -41,22 +41,22 @@ var Project = Composer.RelationalModel.extend({
 			if(!this._track_tags) return false;
 			this.get('tags').add_tags_from_note(note);
 			this.get('tags').trigger('update');
-		}.bind(this));
+		}.bind(this), 'project:model:notes:add');
 		this.bind_relational('notes', 'remove', function(note) {
 			if(!this._track_tags) return false;
 			this.get('tags').remove_tags_from_note(note);
 			this.get('tags').trigger('update');
-		}.bind(this));
+		}.bind(this), 'project:model:notes:remove');
 		this.bind_relational('notes', 'reset', function() {
 			if(!this._track_tags) return false;
 			this.get('tags').refresh_from_notes(this.get('notes'));
 			this.get('tags').trigger('update');
-		}.bind(this));
+		}.bind(this), 'project:model:notes:reset');
 		this.bind_relational('notes', 'change:tags', function(note) {
 			if(!this._track_tags) return false;
 			this.get('tags').diff_tags_from_note(note);
 			this.get('tags').trigger('update');
-		}.bind(this));
+		}.bind(this), 'project:model:notes:change:tags');
 
 		// make category tags auto-update when tags do
 		this.bind_relational('tags', 'update', function() {

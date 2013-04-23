@@ -21,7 +21,8 @@ var TagsController = Composer.Controller.extend({
 				if(diff == 0) diff = a.get('name').localeCompare(b.get('name'));
 				return diff;
 			},
-			forward_all_events: true
+			forward_all_events: true,
+			refresh_on_change: false
 		});
 		this.tags.bind('change:count', function() {
 			this.tags.sort();
@@ -39,7 +40,7 @@ var TagsController = Composer.Controller.extend({
 		if(this.tags)
 		{
 			this.tags.unbind(['change:selected', 'change:excluded'], 'tags:listing:gray_disabled');
-			this.tags.unbind('change', 'tags:listing:monitor_sort');
+			this.tags.unbind('change:count', 'tags:listing:monitor_sort');
 		}
 		this.parent.apply(this, arguments);
 	},
@@ -82,13 +83,7 @@ var TagsController = Composer.Controller.extend({
 				set_enable = false;
 			}
 
-			if(set_enable != enabled)
-			{
-				console.log('disable ', tag.get('name'));
-				window._debug = true;
-				tag.set({disabled: !enabled});
-				window._debug = false;
-			}
+			if(set_enable != enabled) tag.set({disabled: !set_enable});
 		}
 	}
 }, TrackController);
