@@ -88,8 +88,10 @@ var ProjectsController = Composer.Controller.extend({
 	{
 		var current = this.profile.get_current_project();
 		current.get('tags').each(function(t) {
-			current.unselect_tag(t.get('name'));
-			current.unexclude_tag(t.get('name'));
+			t.set({
+				selected: false,
+				excluded: false
+			});
 		});
 		current.set({filters: []});
 	}
