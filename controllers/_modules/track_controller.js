@@ -40,7 +40,6 @@ var TrackController = Composer.Controller.extend({
 
 	release_subcontrollers: function()
 	{
-		console.log('release subs');
 		this.sub_controllers.each(function(c) {
 			c.release();
 		});
@@ -59,7 +58,6 @@ var TrackController = Composer.Controller.extend({
 
 	add_subcontroller: function(model)
 	{
-		console.log('add sub');
 		var sub = this.create_subcontroller(model);
 		var sort_index = this.collection.sort_index(model);
 		var list = sub.inject;
@@ -86,7 +84,6 @@ var TrackController = Composer.Controller.extend({
 
 	remove_subcontroller: function(model)
 	{
-		console.log('remove sub');
 		// find all subcontrollers that hold this model
 		var subs = this.sub_controllers.filter(function(c) {
 			return c[this.model_key].id() == model.id();
@@ -106,14 +103,13 @@ var TrackController = Composer.Controller.extend({
 
 	refresh_subcontrollers: function()
 	{
-		console.log('reset subs');
-		if(this.sub_controllers.length == 0) return;
-
 		this.release_subcontrollers();
 		this.collection.each(function(model) {
 			this.add_subcontroller(model);
 		}.bind(this));
 		/*
+		if(this.sub_controllers.length == 0) return;
+
 		this.sub_controllers.sort(function(a, b) {
 			var m1 = a[this.model_key];
 			var m2 = b[this.model_key];

@@ -12,10 +12,11 @@ var Tag = Composer.Model.extend({
 		return this.parent.apply(this, [data, options]);
 	},
 
-	count: function(inc)
+	count: function(inc, options)
 	{
+		options || (options = {});
 		var newcount = this.get('count') + inc;
-		this.set({count: newcount});
+		this.set({count: newcount}, options);
 		return newcount;
 	},
 
@@ -41,12 +42,13 @@ var Tags = Composer.Collection.extend({
 		return this.find(function(t) { return t.get('name') == tagname; });
 	},
 
-	add_tag: function(tag)
+	add_tag: function(tag, options)
 	{
+		options || (options = {});
 		var found = this.find_by_name(tag.get('name'));
 		if(found)
 		{
-			found.count(1);
+			found.count(1, options);
 			return found;
 		}
 		else
@@ -54,21 +56,22 @@ var Tags = Composer.Collection.extend({
 			var json = toJSON(tag);
 			json.count = 1;
 			var copy = new Tag(json);
-			this.add(copy);
+			this.add(copy, options);
 			return copy;
 		}
 	},
 
 	// NOTE: this doesn't actually *remove* the tag unless the count gets to zero
-	remove_tag: function(tag)
+	remove_tag: function(tag, options)
 	{
+		options || (options = {});
 		var found = this.find_by_name(tag.get('name'));
 		if(!found) return false;  // odd, but worth checking for
 
-		var count = found.count(-1);
+		var count = found.count(-1, options);
 		if(count == 0)
 		{
-			this.remove(found);
+			this.remove(found, options);
 			return true;
 		}
 		return found;
@@ -104,14 +107,15 @@ var Tags = Composer.Collection.extend({
 		}, this);
 	},
 
-	refresh_from_notes: function(notes_collection)
+	refresh_from_notes: function(notes_collection, options)
 	{
+		options || (options = {});
 		if(!notes_collection) return false;
 		this.clear();
 		notes_collection.models().each(function(p) {
 			var tags = p.get('tags', []);
 			tags.each(function(t) {
-				this.add_tag(t);
+				this.add_tag(t, options);
 			}.bind(this));
 		}.bind(this));
 		return this;

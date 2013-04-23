@@ -33,27 +33,34 @@ var Project = Composer.RelationalModel.extend({
 	defaults: {
 	},
 
+	_track_tags: true,
+
 	init: function()
 	{
 		this.bind_relational('notes', 'add', function(note) {
+			if(!this._track_tags) return false;
 			this.get('tags').add_tags_from_note(note);
 			this.get('tags').trigger('update');
 		}.bind(this));
 		this.bind_relational('notes', 'remove', function(note) {
+			if(!this._track_tags) return false;
 			this.get('tags').remove_tags_from_note(note);
 			this.get('tags').trigger('update');
 		}.bind(this));
 		this.bind_relational('notes', 'reset', function() {
+			if(!this._track_tags) return false;
 			this.get('tags').refresh_from_notes(this.get('notes'));
 			this.get('tags').trigger('update');
 		}.bind(this));
 		this.bind_relational('notes', 'change:tags', function(note) {
+			if(!this._track_tags) return false;
 			this.get('tags').diff_tags_from_note(note);
 			this.get('tags').trigger('update');
 		}.bind(this));
 
 		// make category tags auto-update when tags do
 		this.bind_relational('tags', 'update', function() {
+			if(!this._track_tags) return false;
 			var cats = this.get('categories');
 			var tags = this.get('tags');
 			cats.each(function(c) {
@@ -65,13 +72,22 @@ var Project = Composer.RelationalModel.extend({
 		}.bind(this));
 	},
 
+	track_tags: function(yesno)
+	{
+		this._track_tags = yesno;
+	},
+
 	load_notes: function(options)
 	{
 		options || (options = {});
 		tagit.api.get('/projects/'+this.id()+'/notes', {}, {
 			success: function(notes) {
 				this.get('notes').clear();
+				this.track_tags(false);
 				this.set({notes: notes});
+				this.track_tags(true);
+				this.get('tags').refresh_from_notes(this.get('notes'), {silent: true});
+				this.get('tags').trigger('reset');
 				if(options.success) options.success(notes);
 			}.bind(this),
 			error: function(e) {

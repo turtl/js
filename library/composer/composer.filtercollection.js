@@ -35,6 +35,7 @@
 		limit: false,
 
 		_do_match_action: null,
+		forward_all_events: false,
 
 		initialize: function(master, options)
 		{
@@ -90,6 +91,8 @@
 				this.change_event(model); break;
 			case 'sort':
 				this.refresh(); break;
+			default:
+				this.forward_event.apply(this, arguments); break;
 			}
 		},
 
@@ -223,6 +226,12 @@
 			if(!this._models.contains(model)) return false;
 			this.refresh({silent: true});
 			this.fire_event('remove', options, model);
+		},
+
+		forward_event: function()
+		{
+			if(!this.forward_all_events) return false;
+			this.trigger.apply(this, arguments);
 		}
 	});
 	FilterCollection.extend	=	function(obj, base)

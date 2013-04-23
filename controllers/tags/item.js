@@ -16,14 +16,12 @@ var TagItemController = Composer.Controller.extend({
 
 	release: function()
 	{
-		console.log('tag item release');
 		this.model.unbind('change', 'tag:item:change:render');
 		this.parent.apply(this, arguments);
 	},
 
 	render: function()
 	{
-		console.log('tag item render');
 		//<? if(tag.category) return false; ?>
 		var content = Template.render('tags/item', {
 			tag: toJSON(this.model)

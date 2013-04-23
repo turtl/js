@@ -20,16 +20,17 @@ var TagsController = Composer.Controller.extend({
 				// secondary alpha sort
 				if(diff == 0) diff = a.get('name').localeCompare(b.get('name'));
 				return diff;
-			}
+			},
+			forward_all_events: true
 		});
-		this.tags.bind('change', function() {
+		this.tags.bind('change:count', function() {
 			this.tags.sort();
 		}.bind(this), 'tags:listing:monitor_sort');
 
 		// track all changes to our sub-controllers
 		this.setup_tracking(this.tags);
 
-		//this.tags.bind(['change:selected', 'change:excluded'], this.gray_tags.bind(this), 'tags:listing:gray_disabled');
+		this.tags.bind(['change:selected', 'change:excluded'], this.gray_tags.bind(this), 'tags:listing:gray_disabled');
 		this.render();
 	},
 
@@ -61,7 +62,6 @@ var TagsController = Composer.Controller.extend({
 	{
 		// yuck. maybe pass in controller?
 		var notes = tagit.controllers.pages.cur_controller.notes_controller.filter_list;
-		console.log('gray tags', notes);
 		if(!notes) return;
 		notes = notes.models();
 		var tags = this.tags.models();
@@ -69,20 +69,25 @@ var TagsController = Composer.Controller.extend({
 		{
 			var tag = tags[x];
 			if(!tag.get) continue;
-			tag.unset('disabled');
-			var enabled = false;
+			var enabled = !tag.get('disabled', false);
+			var set_enable = -1;
 			for(var y in notes)
 			{
 				var note = notes[y];
 				if(note.has_tag && note.has_tag(tag.get('name')))
 				{
-					enabled = true;
+					set_enable = true;
 					break;
 				}
+				set_enable = false;
 			}
-			if(!enabled)
+
+			if(set_enable != enabled)
 			{
-				tag.set({disabled: true});
+				console.log('disable ', tag.get('name'));
+				window._debug = true;
+				tag.set({disabled: !enabled});
+				window._debug = false;
 			}
 		}
 	}

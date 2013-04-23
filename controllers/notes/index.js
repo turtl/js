@@ -51,7 +51,7 @@ var NotesController = Composer.Controller.extend({
 		});
 
 		this.project.bind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], function() {
-			this.filter_list.refresh({diff_events: true});
+			this.filter_list.refresh({diff_events: true, silent: 'reset'});
 		}.bind(this), 'notes:listing:track_filters');
 		this.project.bind('change:display_type', this.update_display_type.bind(this), 'notes:listing:display_type');
 
