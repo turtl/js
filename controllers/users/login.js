@@ -19,6 +19,7 @@ var UserLoginController = Composer.Controller.extend({
 	{
 		var content = Template.render('users/login');
 		this.html(content);
+		this.inp_username.focus();
 	},
 
 	do_login: function(e)
