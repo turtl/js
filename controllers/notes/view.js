@@ -1,5 +1,5 @@
 var NoteViewController = Composer.Controller.extend({
-	className: 'note-view',
+	className: 'note-view content',
 
 	note: null,
 
@@ -31,6 +31,6 @@ var NoteViewController = Composer.Controller.extend({
 			note: toJSON(this.note)
 		});
 		this.html(content);
-		this.el.className = 'note-view '+this.note.get('type');
+		this.el.className = 'note-view content '+this.note.get('type');
 	}
 });

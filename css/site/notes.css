@@ -25,7 +25,7 @@
 .notes div.note-actions ul li a.grid span {background: url(/images/site/notes/icons/grid.png) center center no-repeat;}
 
 /* view note */
-.note-view {padding: 20px; line-height: 1.4em;}
+.note-view {padding: 20px;}
 .modalcontent .note-view h1 {
 	width: 100%;
 	margin: 0 0 8px 0;
@@ -38,11 +38,6 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-.note-view ul {list-style: disc;}
-.note-view ul,
-.note-view ol {margin: 0 0 16px 32px;}
-.note-view p {padding: 0 0 16px 0;}
-.note-view img {max-width: 100%;}
 .note-view.image {text-align: center; background: #000;}
 
 /* add/edit */

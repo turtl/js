@@ -1,0 +1,3 @@
+.userform {width: 300px; margin: 0 auto;}
+.userform form input {width: 95%;}
+.userform form input[type=submit] {width: auto;}

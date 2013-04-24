@@ -6,15 +6,26 @@
 .clear {display: block;}
 /* */
 
-strong {font-weight: bold;}
 .success {color: #5a3;}
 .error {color: #c22;}
 a {color: #73b8d1; outline: none;}
 
 h1 {font-size: 24px; font-weight: bold; color: #444; margin: 0 0 16px 0;}
+h1 small {margin-left: 5px; font-size: 14px; font-weight: normal; color: #999;}
 
-form input[type="text"] {width: 60%; height: 20px; margin: 0 0 16px 0; padding: 3px 5px; border-radius: 4px;}
+form input[type="text"],
+form input[type="password"] {width: 60%; height: 20px; margin: 0 0 16px 0; padding: 3px 5px; border-radius: 4px;}
 form textarea {width: 60%; margin: 0 0 16px 0; padding: 3px 5px; border-radius: 4px;}
+
+.content {line-height: 1.4em;}
+.content ul {list-style: disc;}
+.content ul,
+.content ol {margin: 0 0 16px 32px;}
+.content p {padding: 0 0 16px 0;}
+.content em {font-style: italic;}
+.content strong {font-weight: bold;}
+.content img {max-width: 100%;}
+.content .warn {color: #922;}
 
 /* modal styles */
 .modalcontent {background: #fff url(/images/site/modal/header.png) 0 0 repeat-x !important;}

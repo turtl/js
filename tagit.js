@@ -13,13 +13,8 @@ var tagit	=	{
 	// holds the user model
 	user: null,
 
-	// holds the DOM object that repinterblr does all of its operations within
+	// holds the DOM object that tagit does all of its operations within
 	main_container_selector: '#main',
-
-	// holds all data for repinterblr, either retrieved from local storage or from
-	// downloading/syncing from the API. this is generally where models (or
-	// most likely, composer collections holding models) go.
-	data: {},
 
 	// a place to reference composer controllers by name
 	controllers: {},
@@ -56,9 +51,6 @@ var tagit	=	{
 
 		// create the user model
 		this.user || (this.user = new User());
-
-		// this holds the collection holding the user's profiles
-		this.data	=	{};
 
 		// update the user_profiles collection on login
 		this.user.bind('login', function() {
@@ -173,6 +165,10 @@ var tagit	=	{
 	{
 		options || (options = {});
 		this.setup_router(options);
+		if(!this.user.logged_in && !url.match(/\/users\/login/) && !url.match(/\/users\/join/))
+		{
+			url = '/users/login';
+		}
 		this.router.route(url, options);
 	},
 
@@ -250,7 +246,7 @@ window.addEvent('domready', function() {
 	
 	tagit.load_controller('pages', PagesController);
 
-	// fucking load, repinterblr
+	// fucking load, tagit
 	tagit.init.delay(50, tagit);
 });
 
