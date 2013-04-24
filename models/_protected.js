@@ -24,7 +24,10 @@ var Protected = Composer.RelationalModel.extend({
 
 	set: function(obj, options)
 	{
+		// NOTE: don't use `arguments` here since we need to explicitely pass in
+		// our obj to the parent function
 		options || (options = {});
+		var obj = Object.clone(obj);
 		var set_into_body = function(k, v)
 		{
 			var body	=	this.get('body');
