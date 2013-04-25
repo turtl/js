@@ -28,7 +28,7 @@ var Profile = Composer.RelationalModel.extend({
 				}
 				if(!project) project = this.get('projects').first();
 				if(!project) return;
-				this.set_current_project(project);
+				this.set_current_project(project, {silent: true});
 				project.load_notes({
 					success: function(notes) {
 						if(options.success) options.success();
@@ -43,9 +43,10 @@ var Profile = Composer.RelationalModel.extend({
 		return this.get('current_project', false);
 	},
 
-	set_current_project: function(obj)
+	set_current_project: function(obj, options)
 	{
-		return this.set({current_project: obj});
+		options || (options = {});
+		return this.set({current_project: obj}, options);
 	}
 });
 
