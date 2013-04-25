@@ -16,6 +16,7 @@ var ProjectsController = Composer.Controller.extend({
 	{
 		this.render();
 		this.profile.bind_relational('projects', ['add', 'remove', 'reset', 'change:title'], this.render.bind(this), 'projects:change');
+		this.profile.bind('change:current_project', this.render.bind(this), 'projects:track_current');
 		tagit.keyboard.bind('x', this.clear_filters.bind(this), 'projects:shortcut:clear_filters');
 		tagit.keyboard.bind('p', this.add_project.bind(this), 'projects:shortcut:add_project');
 	},
@@ -23,6 +24,7 @@ var ProjectsController = Composer.Controller.extend({
 	release: function()
 	{
 		this.profile.unbind_relational('projects', ['add', 'remove', 'reset', 'change:title'], 'projects:change');
+		this.profile.unbind('change:current_project', 'projects:track_current');
 		tagit.keyboard.unbind('x', 'projects:shortcut:clear_filters');
 		tagit.keyboard.unbind('p', 'projects:shortcut:add_project');
 		this.parent.apply(this, arguments);
