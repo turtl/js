@@ -4,7 +4,8 @@ var UserJoinController = Composer.Controller.extend({
 	elements: {
 		'input[name=username]': 'inp_username',
 		'input[name=password]': 'inp_password',
-		'input[name=confirm]': 'inp_confirm'
+		'input[name=confirm]': 'inp_confirm',
+		'input[type=submit]': 'submit'
 	},
 
 	events: {
@@ -37,18 +38,36 @@ var UserJoinController = Composer.Controller.extend({
 			return false;
 		}
 
+		if(password.length < 4)
+		{
+			barfr.barf('We don\'t mean to tell you your business, but a password less than four characters won\'t cut it. Try again.');
+			this.inp_password.focus();
+			return false;
+		}
+
+		if(password.toLowerCase() == 'password')
+		{
+			barfr.barf('You want to secure all of your data using <em>that</em> password? Be our guest...');
+		}
+
+		this.submit.disabled = true;
+
 		var user = new User({
 			username: username,
 			password: password
 		});
 		tagit.loading(true);
 		user.join({
-			success: function() {
-				tagit.user.login(user.toJSON());
+			success: function(userdata) {
+				var data = user.toJSON();
+				data.id = userdata.id;
+				tagit.user.login(data);
 				tagit.loading(false);
+				tagit.route('/');
 			}.bind(this),
 			error: function() {
 				tagit.loading(false);
+				this.submit.disabled = false;
 			}.bind(this)
 		});
 	}

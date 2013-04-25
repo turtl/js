@@ -75,7 +75,7 @@ var Note = Composer.RelationalModel.extend({
 				if(options.success) options.success(note_data);
 			}.bind(this),
 			error: function (e) {
-				barfr.barf('There was a problem saving your note.');
+				barfr.barf('There was a problem saving your note: '+ e);
 				if(options.error) options.error(e);
 			}.bind(this)
 		});

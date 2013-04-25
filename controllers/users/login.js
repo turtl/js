@@ -25,5 +25,25 @@ var UserLoginController = Composer.Controller.extend({
 	do_login: function(e)
 	{
 		if(e) e.stop();
+		var username = this.inp_username.get('value');
+		var password = this.inp_password.get('value');
+		var user = new User({
+			username: username,
+			password: password
+		});
+
+		tagit.loading(true);
+		user.test_auth({
+			success: function(id) {
+				var data = user.toJSON();
+				data.id = id;
+				tagit.user.login(data);
+				tagit.loading(false);
+				tagit.route('/');
+			}.bind(this),
+			error: function(e) {
+				tagit.loading(false);
+			}.bind(this)
+		});
 	}
 });

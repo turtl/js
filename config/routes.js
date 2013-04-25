@@ -2,5 +2,7 @@
 config.routes	=	{
 	'/users/login': ['users', 'login'],
 	'/users/join': ['users', 'join'],
-	'/([a-z0-9]*)': ['dashboard', 'load'],
+	'/users/logout': ['users', 'logout'],
+
+	'/([a-z0-9]*)': ['dashboard', 'load']
 }

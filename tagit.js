@@ -56,7 +56,7 @@ var tagit	=	{
 		this.user.bind('login', function() {
 			// if the user is logged in, we'll put their auth info into the api object
 			this.user.bind('change', this.user.write_cookie.bind(this.user), 'user:write_changes_to_cookie');
-			this.api.set_auth(this.user.get_auth_key());
+			this.api.set_auth(this.user.get_key());
 		}.bind(this));
 		this.user.bind('logout', function() {
 			this.user.unbind('change', 'user:write_changes_to_cookie');
@@ -67,6 +67,8 @@ var tagit	=	{
 
 		// load the global keyboard handler
 		this.keyboard	=	new Composer.Keyboard({meta_bind: true});
+
+		this.load_controller('HeaderBar', HeaderBarController, {}, {});
 
 		this.loaded	=	true;
 		if(History.enabled)

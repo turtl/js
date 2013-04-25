@@ -116,7 +116,7 @@ var PagesController	=	Composer.Controller.extend({
 			// trigger the loaded event unless asked not to (presumably by the
 			// handler). also, delay the event just to catch any last-minute
 			// async issues.
-			(function () { this.trigger('loaded'); }).delay(200, this);
+			(function () { this.trigger('loaded'); }).delay(1, this);
 		}
 
 		// return the controller

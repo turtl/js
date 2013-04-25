@@ -1,0 +1,16 @@
+<div class="actions">
+	<ul>
+		<? if(user.id) { ?>
+			<li>
+				<a href="/users/logout"><span>Logout</span></a>
+			</li>
+		<? } else { ?>
+			<li>
+				<a href="/users/login"><span>Login</span></a>
+			</li>
+			<li>
+				<a href="/users/join"><span>Join</span></a>
+			</li>
+		<? } ?>
+	</ul>
+</div>

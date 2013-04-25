@@ -91,7 +91,7 @@ var Project = Composer.RelationalModel.extend({
 				if(options.success) options.success(notes);
 			}.bind(this),
 			error: function(e) {
-				barfr.barf('There was an error loading your notes.');
+				barfr.barf('There was an error loading your notes: '+ e);
 				if(options.error) options.error(e);
 			}
 		});
@@ -110,7 +110,7 @@ var Project = Composer.RelationalModel.extend({
 				if(options.success) options.success(data);
 			}.bind(this),
 			error: function(e) {
-				barfr.barf('Error saving project. Try again!');
+				barfr.barf('Error saving project: '+ e);
 				if(options.error) options.error(e);
 			}
 		});
@@ -181,7 +181,7 @@ var Projects = Composer.Collection.extend({
 				if(options.success) options.success(projects);
 			}.bind(this),
 			error: function(e) {
-				barfr.barf('There was an error loading your projects.');
+				barfr.barf('There was an error loading your projects: '+ e);
 				if(options.error) options.error(e);
 			}
 		});
