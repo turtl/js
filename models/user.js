@@ -37,7 +37,9 @@ var User	=	Composer.Model.extend({
 		{
 			return false;
 		}
-		this.set(JSON.decode(cookie));
+		var userdata = JSON.decode(cookie);
+		userdata.k = CryptoJS.enc.Hex.parse(userdata.k);
+		this.set(userdata);
 		this.logged_in	=	true;
 		this.trigger('login', this);
 	},
@@ -45,7 +47,7 @@ var User	=	Composer.Model.extend({
 	join: function(options)
 	{
 		options || (options = {});
-		tagit.api.post('/users', {data: {k: this.get_key()}}, {
+		tagit.api.post('/users', {data: {a: this.get_auth()}}, {
 			success: options.success,
 			error: function(e) {
 				barfr.barf('Error adding user: '+ e);
@@ -58,12 +60,14 @@ var User	=	Composer.Model.extend({
 	{
 		options || (options = {});
 		var duration	=	options.duration ? options.duration : 30;
-		var key			=	this.get('key') || this.get_key();
-		if(!key) return false;
+		var key			=	this.get_key();
+		var auth		=	this.get_auth();
+		if(!key || !auth) return false;
 
 		var save		=	{
 			id: this.id(),
-			k: this.get('k') || this.get_key()
+			k: key.toString(),
+			a: auth
 		};
 		Cookie.write(config.user_cookie, JSON.encode(save), { duration: duration });
 	},
@@ -86,11 +90,34 @@ var User	=	Composer.Model.extend({
 
 		if(!username || !password) return false;
 
-		var user_record = username +':'+ tcrypt.hash(password);
+		var key = tcrypt.key(password, username + ':a_pinch_of_salt', {keySize: 256/32, iterations: 400});
+
+		// cache it
+		this.set({k: key});
+
+		return key;
+	},
+
+	get_auth: function()
+	{
+		var auth = this.get('a');
+		if(auth) return auth;
+
+		var username = this.get('username');
+		var password = this.get('password');
+
+		if(!username || !password) return false;
+
+		var user_record = tcrypt.hash(password) +':'+ username;
 		// use username as salt/initial vector
-		var key = tcrypt.key(password, username, {keySize: 256/32, iterations: 100});
+		var key = this.get_key();
 		var iv = tcrypt.iv(username);
-		return tcrypt.encrypt(key, user_record, {iv: iv}).toString();
+		var auth =  tcrypt.encrypt(key, user_record, {iv: iv}).toString();
+
+		// cache it
+		this.set({a: auth});
+
+		return auth;
 	},
 
 	load_profile: function(options)
@@ -110,7 +137,7 @@ var User	=	Composer.Model.extend({
 	test_auth: function(options)
 	{
 		options || (options = {});
-		tagit.api.set_auth(this.get_key());
+		tagit.api.set_auth(this.get_auth());
 		tagit.api.post('/auth', {}, {
 			success: options.success,
 			error: options.error

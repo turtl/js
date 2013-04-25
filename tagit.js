@@ -56,7 +56,7 @@ var tagit	=	{
 		this.user.bind('login', function() {
 			// if the user is logged in, we'll put their auth info into the api object
 			this.user.bind('change', this.user.write_cookie.bind(this.user), 'user:write_changes_to_cookie');
-			this.api.set_auth(this.user.get_key());
+			this.api.set_auth(this.user.get_auth());
 		}.bind(this));
 		this.user.bind('logout', function() {
 			this.user.unbind('change', 'user:write_changes_to_cookie');

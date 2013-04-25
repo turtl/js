@@ -42,6 +42,7 @@ var UserLoginController = Composer.Controller.extend({
 				tagit.route('/');
 			}.bind(this),
 			error: function(e) {
+				barfr.barf('Login failed.');
 				tagit.loading(false);
 			}.bind(this)
 		});
