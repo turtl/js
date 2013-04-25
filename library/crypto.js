@@ -60,6 +60,14 @@ var tcrypt = {
 			format: tcrypt.TagitFormatter
 		});
 		if(options.raw) return de;
-		return CryptoJS.enc.Utf8.stringify( de );
+		return CryptoJS.enc.Utf8.stringify(de);
+	},
+
+	hash: function(data, options)
+	{
+		options || (options = {});
+		var hash = CryptoJS.SHA256(data);
+		if(options.raw) return hash;
+		return CryptoJS.enc.Hex.stringify(hash);
 	}
 };

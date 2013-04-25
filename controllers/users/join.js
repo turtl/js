@@ -26,5 +26,30 @@ var UserJoinController = Composer.Controller.extend({
 	do_join: function(e)
 	{
 		if(e) e.stop();
+		var username = this.inp_username.get('value');
+		var password = this.inp_password.get('value');
+		var pconfirm = this.inp_confirm.get('value');
+
+		if(password != pconfirm)
+		{
+			barfr.barf('Your password does not match the confirmation.');
+			this.inp_password.focus();
+			return false;
+		}
+
+		var user = new User({
+			username: username,
+			password: password
+		});
+		tagit.loading(true);
+		user.join({
+			success: function() {
+				tagit.user.login(user.toJSON());
+				tagit.loading(false);
+			}.bind(this),
+			error: function() {
+				tagit.loading(false);
+			}.bind(this)
+		});
 	}
 });

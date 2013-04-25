@@ -1,7 +1,3 @@
-var Users	=	Composer.Collection.extend({
-	model: 'User'
-});
-
 var User	=	Composer.Model.extend({
 	type: 'user',
 
@@ -45,6 +41,17 @@ var User	=	Composer.Model.extend({
 		this.trigger('login', this);
 	},
 
+	join: function(options)
+	{
+		options || (options = {});
+		tagit.api.post('/users', {data: this.get_auth_key()}, {
+			success: options.success,
+			error: function(e) {
+				barfr.barf('Error adding user! Please contact andrew@lyonbros.com.');
+			}.bind(this)
+		});
+	},
+
 	write_cookie: function(options)
 	{
 		options || (options = {});
@@ -58,17 +65,18 @@ var User	=	Composer.Model.extend({
 
 	logout: function()
 	{
-		musio.data.user_profiles.clear();
-		musio.data.user_profiles_loaded = false;
-		musio.data.user_invites.clear();
-		musio.data.user_latest_feed.clear();
-		musio.data.user_last_profile_chosen	= 	null;
-		musio.data.active_invite	= null;
-
 		this.logged_in	=	false;
 		this.clear();
 		Cookie.dispose(config.user_cookie);
 		this.trigger('logout', this);
+	},
+
+	get_auth_key: function()
+	{
+		var username = this.get('username');
+		var password = this.get('password');
+		var user_record = username +':'+ tcrypt.hash(password);
+		return tcrypt.encrypt(password, user_record).toString();
 	},
 
 	load_profile: function(options)
@@ -83,15 +91,6 @@ var User	=	Composer.Model.extend({
 		profile.clear({silent: true});
 		profile.load(options);
 		return profile;
-	},
-
-	get_name: function()
-	{
-		if(!this.get('name'))
-		{
-			return 'User';
-		}
-		return this.get('name').replace(/\s.*/, '');
 	},
 
 	test_auth: function(email, pass, options)
@@ -114,3 +113,8 @@ var User	=	Composer.Model.extend({
 		musio.api.clear_auth();
 	}
 });
+
+var Users	=	Composer.Collection.extend({
+	model: 'User'
+});
+

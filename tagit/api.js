@@ -35,84 +35,13 @@ var Api	=	new Class({
 		this.api_key	=	key;
 	},
 
-	/**
-	 * this wraps set_auth and selects the appropriate auth scheme given the data
-	 * in the passed user model
-	 */
-	authenticate: function(user_model)
+	set_auth: function(auth_key)
 	{
-		// JL HACK ~ support old semi-broken user model data structure with 'auth' instead of 'auth_key'
-		if (user_model.get('auth') && !user_model.get('auth_key'))
-			user_model.set({auth_key: user.model.get('auth')});
+		if(!auth_key) return false;
 
-		var auth	=	{
-			email: user_model.get('email'),
-			auth_key: user_model.get('auth_key')
+		this.user = {
+			auth_key: auth_key
 		};
-		if(auth.email && auth.auth_key)
-		{
-			auth.type	=	'password';
-		}
-		else
-		{
-			var social	=	user_model.get('social');
-
-			if(social)
-			{
-				var network	=	'';
-				var key		=	'';
-				if (social.fb && social.fb.access_token)
-				{
-					network = 'fb';
-					key = social.fb.access_token;
-				}
-				
-				auth.network	=	network;
-				auth.auth_key	=	key;
-			}
-			
-			if(auth.network && auth.auth_key)
-			{
-				auth.type	=	'social';
-			}
-			else
-			{
-				
-				console.log('login failed:', auth, user_model.get('social'));
-				musio.user.logout();
-				return false;
-			}
-		}
-		this.set_auth(auth);
-	},
-
-	set_auth: function(auth_info)
-	{
-		if(!auth_info) return false;
-
-		var type	=	auth_info.type ? auth_info.type : 'password';
-
-		switch(type)
-		{
-		case 'social':
-			var user	=	{
-				type: 'social',
-				network: auth_info.network,
-				auth_key: auth_info.auth_key
-			};
-			break;
-		case 'password':
-		default:
-			var user	=	{
-				type: 'password',
-				email: auth_info.email,
-				password: auth_info.password,
-				auth_key: auth_info.auth_key
-			};
-			break;
-		}
-
-		this.user	=	user;
 	},
 
 	clear_auth: function()
@@ -151,7 +80,6 @@ var Api	=	new Class({
 
 		// should we auth to the server? we don't want to unless we have to
 		var send_auth	=	this.test_auth_needed(method, resource);
-		//console.log('method: '+method+'\nresource: '+resource+'\nauth_needed: '+send_auth+'\nthis.user: '+this.user+'\n----');
 
 		var url	=	api_url + '/' + resource.replace(/^\//, '');
 
@@ -187,21 +115,10 @@ var Api	=	new Class({
 		if(this.user && send_auth)
 		{
 			request.headers['X-Auth-Api-Key']	=	this.api_key;
-			request.headers['X-Auth-Key']		=	this.user.auth_key;
-			request.headers['X-Auth-Type']		=	this.user.type;
 
-			switch(this.user.type)
-			{
-			case 'social':
-				request.headers['X-Auth-Network']	=	this.user.network;
-				break;
-			case 'password':
-			default:
-				//request.user		=	this.user.email;
-				//request.password	=	this.user.password;
-				request.headers['Authorization']	=	'Basic ' + Base64.encode(this.user.email + ':' + this.user.password);
-				break;
-			}
+			//request.user		=	this.user.email;
+			//request.password	=	this.user.password;
+			request.headers['Authorization']	=	'Basic ' + Base64.encode('user:' + this.user.auth_key);
 		}
 
 		//var user_cookie	=	Cookie.read(config.user_cookie);
