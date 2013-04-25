@@ -48,9 +48,9 @@ var TrackController = Composer.Controller.extend({
 
 	release: function()
 	{
+		this.release_subcontrollers();
 		if(this.collection)
 		{
-			this.release_subcontrollers();
 			this.stop_tracking();
 		}
 		return this.parent.apply(this, arguments);
