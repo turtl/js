@@ -25,21 +25,25 @@ var DashboardController = Composer.Controller.extend({
 	{
 		var do_init = function() {
 			this.render();
+
+			var current = this.profile.get_current_project();
+
 			this.projects_controller = new ProjectsController({
 				el: this.projects,
 				profile: this.profile
 			});
+
 			this.categories_controller = new CategoriesController({
 				el: this.categories,
-				profile: this.profile
+				project: current
 			});
 			this.tags_controller = new TagsController({
 				el: this.tags,
-				profile: this.profile
+				project: current
 			});
 			this.notes_controller = new NotesController({
 				el: this.notes,
-				profile: this.profile
+				project: current
 			});
 
 			tagit.controllers.pages.trigger('loaded');
@@ -54,10 +58,6 @@ var DashboardController = Composer.Controller.extend({
 				do_init();
 			}.bind(this)
 		});
-		this.profile.bind_relational('projects', ['reset', 'remove'], function() {
-			this.soft_release();
-			do_init();
-		}.bind(this), 'dashboard:init_on_projects');
 		this.profile.bind('change:current_project', function() {
 			this.soft_release();
 			var current = this.profile.get_current_project();
@@ -88,7 +88,6 @@ var DashboardController = Composer.Controller.extend({
 	release: function()
 	{
 		this.soft_release();
-		this.profile.unbind_relational('projects', ['reset', 'remove'], 'dashboard:init_on_projects');
 		this.profile.unbind('change:current_project', 'dashboard:change_project');
 		tagit.keyboard.unbind('S-/', 'dashboard:shortcut:open_help');
 		tagit.user.unbind('logout', 'dashboard:logout:clear_timer');
@@ -99,8 +98,7 @@ var DashboardController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var content = Template.render('dashboard/index', {
-		});
+		var content = Template.render('dashboard/index');
 		this.html(content);
 	},
 

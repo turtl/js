@@ -5,12 +5,10 @@ var CategoriesController = Composer.Controller.extend({
 	events: {
 	},
 
-	profile: null,
 	project: null,
 
 	init: function()
 	{
-		this.project	=	this.profile.get_current_project();
 		if(!this.project) return false;
 		this.render();
 	},

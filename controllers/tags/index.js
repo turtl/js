@@ -11,7 +11,6 @@ var TagsController = Composer.Controller.extend({
 
 	init: function()
 	{
-		this.project	=	this.profile.get_current_project();
 		if(!this.project) return false;
 		this.tags	=	new TagsFilter(this.project.get('tags'), {
 			filter: function(m) { return true; },

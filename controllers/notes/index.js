@@ -15,7 +15,6 @@ var NotesController = Composer.Controller.extend({
 
 	init: function()
 	{
-		this.project	=	this.profile.get_current_project();
 		if(!this.project) return false;
 		if(!this.project.get('display_type')) this.project.set({display_type: 'grid'});
 
@@ -46,6 +45,8 @@ var NotesController = Composer.Controller.extend({
 
 			sortfn: function(a, b)
 			{
+				var sort = a.get('sort') - b.get('sort');
+				if(sort != 0) return sort;
 				return a.id().localeCompare(b.id());
 			}
 		});
