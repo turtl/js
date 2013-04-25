@@ -12,6 +12,7 @@ var TagsController = Composer.Controller.extend({
 	init: function()
 	{
 		if(!this.project) return false;
+
 		this.tags	=	new TagsFilter(this.project.get('tags'), {
 			filter: function(m) { return true; },
 			sortfn: function(a, b) {
@@ -40,6 +41,7 @@ var TagsController = Composer.Controller.extend({
 		{
 			this.tags.unbind(['change:selected', 'change:excluded'], 'tags:listing:gray_disabled');
 			this.tags.unbind('change:count', 'tags:listing:monitor_sort');
+			this.tags.detach();
 		}
 		this.parent.apply(this, arguments);
 	},
@@ -60,7 +62,7 @@ var TagsController = Composer.Controller.extend({
 
 	gray_tags: function()
 	{
-		// yuck. maybe pass in controller?
+		// heh. maybe pass in controller?
 		var notes = tagit.controllers.pages.cur_controller.notes_controller.filter_list;
 		if(!notes) return;
 		notes = notes.models();

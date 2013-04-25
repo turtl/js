@@ -116,25 +116,37 @@ var Project = Composer.RelationalModel.extend({
 		});
 	},
 
+	destroy_submodels: function()
+	{
+		var notes = this.get('notes');
+		var tags = this.get('tags');
+		var cats = this.get('categories');
+
+		notes.each(function(n) { n.destroy({skip_sync: true}); n.unbind(); });
+		tags.each(function(t) { t.destroy({skip_sync: true}); t.unbind(); });
+		cats.each(function(c) { c.destroy({skip_sync: true}); c.unbind(); });
+		notes.clear();
+		tags.clear();
+		cats.clear();
+	},
+
 	destroy: function(options)
 	{
 		options || (options = {});
 		var success = options.success;
 		options.success = function()
 		{
-			var notes = this.get('notes');
-			var tags = this.get('tags');
-			var cats = this.get('categories');
-
-			notes.each(function(n) { n.destroy({skip_sync: true}); n.unbind(); });
-			tags.each(function(t) { t.destroy({skip_sync: true}); t.unbind(); });
-			cats.each(function(c) { c.destroy({skip_sync: true}); c.unbind(); });
-			notes.clear();
-			tags.clear();
-			cats.clear();
+			this.destroy_submodels();
 			if(success) success.apply(this, arguments);
 		}.bind(this);
-		return this.parent.apply(this, [options]);
+		if(options.skip_sync)
+		{
+			options.success();
+		}
+		else
+		{
+			return this.parent.apply(this, [options]);
+		}
 	},
 
 	get_selected_tags: function()
@@ -172,11 +184,21 @@ var Project = Composer.RelationalModel.extend({
 var Projects = Composer.Collection.extend({
 	model: Project,
 
+	clear: function(options)
+	{
+		options || (options == {});
+		this.each(function(project) {
+			project.clear(options);
+		});
+		return this.parent.apply(this, arguments);
+	},
+
 	load_projects: function(options)
 	{
 		options || (options = {});
 		tagit.api.get('/projects/users/'+tagit.user.id(), {}, {
 			success: function(projects) {
+				this.each(function(p) { p.destroy({skip_sync: true}); });
 				this.reset(projects);
 				if(options.success) options.success(projects);
 			}.bind(this),

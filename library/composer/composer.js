@@ -90,6 +90,7 @@
 		 */
 		bind: function(ev, callback, callback_name)
 		{
+			//console.log('bind: ', ev, callback_name);
 			if(typeof(ev) == 'object' && ev.length)
 			{
 				// it's an array, process each binding separately
@@ -157,6 +158,7 @@
 		 */
 		unbind: function(ev, callback)
 		{
+			//console.log('unbind: ', ev, callback);
 			if(typeof(ev) == 'object' && ev.length)
 			{
 				// it's an array, process each item individually

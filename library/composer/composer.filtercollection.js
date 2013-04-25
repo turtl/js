@@ -78,7 +78,7 @@
 
 		detach: function()
 		{
-			this.master.unbind('all', this._do_match_action);
+			this.master.unbind('all', 'filtercollection:all');
 			this.unbind('reset', 'filtercollection:reset');
 		},
 

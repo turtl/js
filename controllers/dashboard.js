@@ -23,26 +23,21 @@ var DashboardController = Composer.Controller.extend({
 
 	init: function()
 	{
-		var do_init = function() {
-			this.render();
+		this.render();
 
+		var do_init = function() {
 			var current = this.profile.get_current_project();
 
-			this.projects_controller = new ProjectsController({
-				el: this.projects,
-				profile: this.profile
-			});
-
 			this.categories_controller = new CategoriesController({
-				el: this.categories,
+				inject: this.categories,
 				project: current
 			});
 			this.tags_controller = new TagsController({
-				el: this.tags,
+				inject: this.tags,
 				project: current
 			});
 			this.notes_controller = new NotesController({
-				el: this.notes,
+				inject: this.notes,
 				project: current
 			});
 
@@ -53,11 +48,14 @@ var DashboardController = Composer.Controller.extend({
 		}.bind(this);
 
 		this.profile = tagit.user.load_profile({
-			project: this.current_project,
-			success: function() {
-				do_init();
-			}.bind(this)
+			project: this.current_project
 		});
+
+		this.projects_controller = new ProjectsController({
+			el: this.projects,
+			profile: this.profile
+		});
+
 		this.profile.bind('change:current_project', function() {
 			this.soft_release();
 			var current = this.profile.get_current_project();
@@ -79,7 +77,6 @@ var DashboardController = Composer.Controller.extend({
 
 	soft_release: function()
 	{
-		if(this.projects_controller) this.projects_controller.release();
 		if(this.categories_controller) this.categories_controller.release();
 		if(this.tags_controller) this.tags_controller.release();
 		if(this.notes_controller) this.notes_controller.release();
@@ -88,6 +85,7 @@ var DashboardController = Composer.Controller.extend({
 	release: function()
 	{
 		this.soft_release();
+		if(this.projects_controller) this.projects_controller.release();
 		this.profile.unbind('change:current_project', 'dashboard:change_project');
 		tagit.keyboard.unbind('S-/', 'dashboard:shortcut:open_help');
 		tagit.user.unbind('logout', 'dashboard:logout:clear_timer');

@@ -28,12 +28,8 @@ var Profile = Composer.RelationalModel.extend({
 				}
 				if(!project) project = this.get('projects').first();
 				if(!project) return;
-				this.set_current_project(project, {silent: true});
-				project.load_notes({
-					success: function(notes) {
-						if(options.success) options.success();
-					}.bind(this)
-				});
+				this.set_current_project(project);
+				if(options.success) options.success();
 			}.bind(this)
 		});
 	},
@@ -46,6 +42,8 @@ var Profile = Composer.RelationalModel.extend({
 	set_current_project: function(obj, options)
 	{
 		options || (options = {});
+		var cur = this.get_current_project();
+		if(cur && cur.destroy_submodels) cur.destroy_submodels();
 		return this.set({current_project: obj}, options);
 	}
 });

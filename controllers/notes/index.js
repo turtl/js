@@ -18,6 +18,8 @@ var NotesController = Composer.Controller.extend({
 		if(!this.project) return false;
 		if(!this.project.get('display_type')) this.project.set({display_type: 'grid'});
 
+		this.render();
+
 		this.filter_list	=	new NotesFilter(this.project.get('notes'), {
 			filter: function(note)
 			{
@@ -59,7 +61,6 @@ var NotesController = Composer.Controller.extend({
 		// track all changes to our sub-controllers
 		this.setup_tracking(this.filter_list);
 
-		this.render();
 		tagit.keyboard.bind('a', this.open_add_note.bind(this), 'notes:shortcut:add_note');
 	},
 
@@ -69,6 +70,7 @@ var NotesController = Composer.Controller.extend({
 		{
 			this.project.unbind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], 'notes:listing:track_filters');
 			this.project.unbind('change:display_type', 'notes:listing:display_type');
+			this.filter_list.detach();
 		}
 		tagit.keyboard.unbind('a', 'notes:shortcut:add_note')
 		this.parent.apply(this, arguments);

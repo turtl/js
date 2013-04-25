@@ -27,6 +27,12 @@ var TrackController = Composer.Controller.extend({
 		this.collection.bind('remove', this.remove_subcontroller.bind(this), 'tracker:remove');
 		this.collection.bind('clear', this.release_subcontrollers.bind(this), 'tracker:clear');
 		this.collection.bind('reset', this.refresh_subcontrollers.bind(this), 'tracker:reset');
+
+		if(this.collection.models().length != this.sub_controllers.length)
+		{
+			this.refresh_subcontrollers();
+		}
+
 		return this;
 	},
 
