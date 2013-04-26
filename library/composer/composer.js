@@ -956,6 +956,7 @@
 			data.shift();
 			if(data.length == 0)
 			{
+				this.fire_event('reset', options, options);
 				if(options.complete) options.complete()
 				return;
 			}
