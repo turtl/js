@@ -123,4 +123,13 @@ var Tags = Composer.Collection.extend({
 });
 
 var TagsFilter = Composer.FilterCollection.extend({
+	filter: function(m) { return true; },
+	sortfn: function(a, b) {
+		var diff = b.get('count') - a.get('count');
+		// secondary alpha sort
+		if(diff == 0) diff = a.get('name').localeCompare(b.get('name'));
+		return diff;
+	},
+	forward_all_events: true,
+	refresh_on_change: false
 });

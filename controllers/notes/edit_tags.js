@@ -16,7 +16,15 @@ var NoteEditTagController = Composer.Controller.extend({
 
 	init: function()
 	{
-		// TODO: pre-populate suggested tags
+		this.suggested_tags = toJSON(this.project.get('tags'))
+			.sort(function(a, b) {
+				var diff = b.count - a.count;
+				// secondary alpha sort
+				if(diff == 0) diff = a.name.localeCompare(b.name);
+				return diff;
+			})
+			.slice(0, 48)
+			.map(function(t) { return t.name; });
 		this.render();
 		this.note.bind_relational('tags', ['add', 'remove', 'reset', 'change'], this.render.bind(this), 'note:edit:tags:change');
 	},

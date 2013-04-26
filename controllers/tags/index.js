@@ -13,17 +13,7 @@ var TagsController = Composer.Controller.extend({
 	{
 		if(!this.project) return false;
 
-		this.tags	=	new TagsFilter(this.project.get('tags'), {
-			filter: function(m) { return true; },
-			sortfn: function(a, b) {
-				var diff = b.get('count') - a.get('count');
-				// secondary alpha sort
-				if(diff == 0) diff = a.get('name').localeCompare(b.get('name'));
-				return diff;
-			},
-			forward_all_events: true,
-			refresh_on_change: false
-		});
+		this.tags	=	new TagsFilter(this.project.get('tags'));
 		this.tags.bind('change:count', function() {
 			this.tags.sort();
 		}.bind(this), 'tags:listing:monitor_sort');
