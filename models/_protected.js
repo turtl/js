@@ -16,6 +16,10 @@ var Protected = Composer.RelationalModel.extend({
 		body: {
 			type: Composer.HasOne,
 			model: 'Composer.Model'
+		},
+		keys: {
+			type: Composer.HasMany,
+			collection: 'Keys'
 		}
 	},
 
@@ -181,3 +185,4 @@ var Protected = Composer.RelationalModel.extend({
 	}
 });
 
+var Keys = Composer.Collection.extend({});
