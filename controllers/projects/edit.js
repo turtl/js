@@ -45,8 +45,7 @@ var ProjectEditController = Composer.Controller.extend({
 		var success = null;
 		if(this.project.is_new())
 		{
-			this.project = new Project();
-			this.project.set({ title: title });
+			this.project = new Project({title: title});
 			this.project.generate_key();
 			this.project.generate_subkeys();
 			success = function() {

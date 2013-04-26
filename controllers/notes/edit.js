@@ -41,7 +41,7 @@ var NoteEditController = Composer.Controller.extend({
 			note: this.note_copy,
 			project: this.project
 		});
-		this.select_tab(this.note.get('type'));
+		this.select_tab(this.note_copy.get('type'));
 		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
 	},
 
@@ -171,7 +171,7 @@ var NoteEditController = Composer.Controller.extend({
 		var li = this.el.getElement('ul.type li.'+typename);
 		if(li) li.addClass('sel');
 
-		this.note.set({type: typename}, {silent: true});
+		this.note_copy.set({type: typename});
 		var input_sel = typename;
 		if(['link','image'].contains(typename)) input_sel = 'url';
 		if(this['inp_'+input_sel]) this['inp_'+input_sel].focus();
