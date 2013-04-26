@@ -12,6 +12,7 @@ var Note = Composer.RelationalModel.extend({
 		'id',
 		'user_id',
 		'project_id',
+		'keys',
 		'body',
 		'meta',
 		'sort'

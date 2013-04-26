@@ -9,8 +9,8 @@ var tcrypt = {
 			var crypto = cipherParams.ciphertext.toString(CryptoJS.enc.Base64);
 
 			// optionally add iv and salt
-			if(cipherParams.iv) crypto += ':' + cipherParams.iv.toString();
-			if(cipherParams.salt) crypto += ':' + cipherParams.salt.toString();
+			if(cipherParams.iv) crypto += ':i' + cipherParams.iv.toString();
+			if(cipherParams.salt) crypto += ':s' + cipherParams.salt.toString();
 
 			// stringify json object
 			return crypto;
@@ -27,8 +27,12 @@ var tcrypt = {
 			});
 
 			// optionally extract iv and salt
-			if (parts[1]) cipherParams.iv = CryptoJS.enc.Hex.parse(parts[1])
-			if (parts[2]) cipherParams.salt = CryptoJS.enc.Hex.parse(parts[2])
+			parts.shift();
+			parts.each(function(p) {
+				var val = CryptoJS.enc.Hex.parse(p.slice(1));
+				if(p.match(/^i/)) cipherParams.iv = val;
+				if(p.match(/^s/)) cipherParams.salt = val;
+			});
 
 			return cipherParams;
 		}
@@ -43,6 +47,12 @@ var tcrypt = {
 			format: tcrypt.TagitFormatter
 		}, options);
 
+		// auto-generate an initial vector if needed
+		if(!opts.iv && typeOf(key) != 'string')
+		{
+			opts.iv = tcrypt.iv();
+		}
+
 		return CryptoJS.AES.encrypt(data, key, opts);
 	},
 
@@ -54,6 +64,8 @@ var tcrypt = {
 			padding: CryptoJS.pad.AnsiX923,
 			format: tcrypt.TagitFormatter
 		}, options);
+		var params = tcrypt.TagitFormatter.parse(encrypted);
+		if(params.iv) opts.iv = params.iv;
 		var de = CryptoJS.AES.decrypt(encrypted, key, opts);
 		if(options.raw) return de;
 		return CryptoJS.enc.Utf8.stringify(de);
@@ -67,15 +79,23 @@ var tcrypt = {
 
 	iv: function(value)
 	{
+		if(!value) return CryptoJS.lib.WordArray.random(16);
+
 		if(value.length < 16)
 		{
 			value += '4c281987249be78a';
 		}
 		if(value.length > 16)
 		{
-			value.slice(16)
+			value = value.slice(0, 16)
 		}
 		return CryptoJS.enc.Utf8.parse(value);
+	},
+
+	random_key: function(options)
+	{
+		options || (options = {});
+		return CryptoJS.lib.WordArray.random(32);
 	},
 
 	hash: function(data, options)

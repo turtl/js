@@ -21,42 +21,43 @@ var Protected = Composer.RelationalModel.extend({
 
 	public_fields: [],
 	private_fields: [],
+	key: null,
 
 	set: function(obj, options)
 	{
 		// NOTE: don't use `arguments` here since we need to explicitely pass in
 		// our obj to the parent function
 		options || (options = {});
-		var obj = Object.clone(obj);
-		var set_into_body = function(k, v)
+		var ret = this.parent.apply(this, [obj, options]);
+		if(!this.key) this.key = this.find_key(obj.keys);
+		if(!this.key) return false;
+		if(!options.ignore_body) this.process_body(obj, options);
+		return ret;
+	},
+
+	process_body: function(obj, options)
+	{
+		options || (options = {});
+
+		var body = obj['body'];
+		if(!body) return false;
+
+		if(typeOf(body) == 'string')
 		{
-			var body	=	this.get('body');
-			var set		=	{};
-			set[k]		=	v;
-			// make sure the obj set doesn't override the body set
-			delete obj[k];
-			body.set(set);
-		}.bind(this);
-		Object.each(obj, function(v, k) {
-			if(k == 'body')
-			{
-				if(typeOf(v) == 'string')
-				{
-					// TODO: CRYPTO
-					v	=	JSON.decode(v);
-				}
-				if(typeOf(v) == 'object')
-				{
-					this.parent.apply(this, [v, options]);
-					Object.each(v, function(v, k) {
-						set_into_body(k, v);
-					}.bind(this));
-				}
-			}
-		}.bind(this));
-		// we processed the body vars already.
-		delete obj['body'];
-		return this.parent.apply(this, [obj, options]);
+			body = tcrypt.decrypt(this.key, body);
+			body = JSON.decode(body);
+		}
+
+		if(typeOf(body) == 'object')
+		{
+			this.set(body, Object.merge({ignore_body: true}, options));
+			Object.each(body, function(v, k) {
+				var body	=	this.get('body');
+				var set		=	{};
+				set[k]		=	v;
+				body.set(set);
+			}.bind(this));
+		}
 	},
 
 	toJSON: function()
@@ -91,9 +92,64 @@ var Protected = Composer.RelationalModel.extend({
 		else
 		{
 			// TODO: CRYPTO
-			newdata['body']	=	JSON.encode(body);
+			var json = JSON.encode(body);
+			var encbody = tcrypt.encrypt(this.key, json);
+
+			newdata['body']	=	encbody.toString();
 		}
 		return newdata;
+	},
+
+	find_key: function(keys)
+	{
+		var uid = tagit.user.id(true);
+		if(!uid) return false;
+		var found = false;
+		for(x in keys)
+		{
+			var key = keys[x];
+			if(!key.u) continue;
+			if(key.u != uid) continue;
+			found = key.k;
+			break;
+		}
+		if(!found) return false;
+		var key = tcrypt.decrypt(tagit.user.get_key(), found, {raw: true});
+		return key;
+	},
+
+	generate_key: function(options)
+	{
+		options || (options = {});
+
+		if(this.key) return this.key;
+		this.key = tcrypt.random_key();
+		return this.key;
+	},
+
+	generate_subkeys: function(members, options)
+	{
+		options || (options = {});
+		members || (members = []);
+
+		if(!this.key) return false;
+
+		// by default add the user's key
+		if(!options.skip_user_key)
+		{
+			members.push({u: tagit.user.id(), k: tagit.user.get_key()});
+		}
+
+		var keys = [];
+		members.each(function(m) {
+			var key = m.k;
+			var enc = tcrypt.encrypt(key, this.key).toString();
+			m.k = enc;
+			keys.push(m);
+		}.bind(this));
+
+		this.set({keys: keys});
+		return keys;
 	}
 });
 
