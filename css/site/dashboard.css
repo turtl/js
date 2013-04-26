@@ -1,4 +1,4 @@
-.dashboard > .sidebar {position: absolute; float: left; width: 20%; overflow: auto;}
+.dashboard > .sidebar {position: absolute; float: left; width: 20%; height: 200px; overflow: auto;}
 .dashboard > .menu {}
 .dashboard > .notes {float: right; width: 79%;}
 

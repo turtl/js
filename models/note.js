@@ -80,7 +80,22 @@ var Note = Composer.RelationalModel.extend({
 				if(options.error) options.error(e);
 			}.bind(this)
 		});
+	},
+
+	find_key: function(keys, search, options)
+	{
+		options || (options == {});
+		search || (search = {});
+		var project_id = this.get('project_id');
+		var project_key = tagit.user.get('profile').get('projects').find_by_id(project_id).key;
+		if(!search.p && project_id && project_key)
+		{
+			search.p = {id: project_id, k: project_key};
+		}
+		var ret = this.parent(keys, search, options);
+		return ret;
 	}
+
 }, Protected);
 
 var Notes = Composer.Collection.extend({

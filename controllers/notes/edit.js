@@ -144,6 +144,7 @@ var NoteEditController = Composer.Controller.extend({
 			success: function(note_data) {
 				modal.close();
 				tagit.loading(false);
+				this.note.key = this.note_copy.key;
 				this.note.set(note_data);
 				if(isnew) this.project.get('notes').add(this.note);
 				// make sure the current filter applies to the edited note

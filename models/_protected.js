@@ -30,8 +30,6 @@ var Protected = Composer.RelationalModel.extend({
 		// our obj to the parent function
 		options || (options = {});
 		var ret = this.parent.apply(this, [obj, options]);
-		if(!this.key) this.key = this.find_key(obj.keys);
-		if(!this.key) return false;
 		if(!options.ignore_body) this.process_body(obj, options);
 		return ret;
 	},
@@ -42,6 +40,9 @@ var Protected = Composer.RelationalModel.extend({
 
 		var body = obj['body'];
 		if(!body) return false;
+
+		if(!this.key) this.key = this.find_key(obj.keys);
+		if(!this.key) return false;
 
 		if(typeOf(body) == 'string')
 		{
@@ -92,13 +93,21 @@ var Protected = Composer.RelationalModel.extend({
 		}
 		else
 		{
-			// TODO: CRYPTO
 			var json = JSON.encode(body);
 			var encbody = tcrypt.encrypt(this.key, json);
 
 			newdata['body']	=	encbody.toString();
 		}
 		return newdata;
+	},
+
+	clone: function()
+	{
+		window._toJSON_disable_protect = true;
+		var copy = this.parent.apply(this, arguments);
+		window._toJSON_disable_protect = false;
+		copy.key = this.key;
+		return copy;
 	},
 
 	find_key: function(keys, search, options)
@@ -132,7 +141,6 @@ var Protected = Composer.RelationalModel.extend({
 			if(encrypted_key) break;
 		}
 
-		console.log('dec/enc: ', decrypting_key, encrypted_key);
 		if(!decrypting_key || !encrypted_key) return false;
 		var key = tcrypt.decrypt(decrypting_key, encrypted_key, {raw: true});
 		return key;

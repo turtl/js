@@ -15,10 +15,9 @@ var Profile = Composer.RelationalModel.extend({
 	{
 		options || (options = {});
 		this.clear({silent: true});
-		var projects = new Projects();
+		var projects = this.get('projects');
 		projects.load_projects({
 			success: function(data) {
-				this.set({projects: data});
 				var project = null;
 				if(options.project)
 				{
