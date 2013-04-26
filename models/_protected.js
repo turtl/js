@@ -19,9 +19,10 @@ var Protected = Composer.RelationalModel.extend({
 		}
 	},
 
+	key: null,
+
 	public_fields: [],
 	private_fields: [],
-	key: null,
 
 	set: function(obj, options)
 	{
@@ -100,21 +101,40 @@ var Protected = Composer.RelationalModel.extend({
 		return newdata;
 	},
 
-	find_key: function(keys)
+	find_key: function(keys, search, options)
 	{
+		search || (search = {});
+		options || (options = {});
+
 		var uid = tagit.user.id(true);
 		if(!uid) return false;
-		var found = false;
+		search.u = {id: uid, k: tagit.user.get_key()};
+		delete(search.k);  // sorry, "k" is reserved for keys
+		var search_keys = Object.keys(search);
+		var encrypted_key = false;
+		var decrypting_key = false;
+
 		for(x in keys)
 		{
 			var key = keys[x];
-			if(!key.u) continue;
-			if(key.u != uid) continue;
-			found = key.k;
-			break;
+			if(!key.k) continue;
+			var enckey = key.k;
+			delete(key.k);
+			var match = false;
+			Object.each(key, function(v, k) {
+				if(encrypted_key) return;
+				if(search[k] && search[k].id && search[k].id == v)
+				{
+					encrypted_key = enckey;
+					decrypting_key = search[k].k;
+				}
+			});
+			if(encrypted_key) break;
 		}
-		if(!found) return false;
-		var key = tcrypt.decrypt(tagit.user.get_key(), found, {raw: true});
+
+		console.log('dec/enc: ', decrypting_key, encrypted_key);
+		if(!decrypting_key || !encrypted_key) return false;
+		var key = tcrypt.decrypt(decrypting_key, encrypted_key, {raw: true});
 		return key;
 	},
 

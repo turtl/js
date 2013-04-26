@@ -129,6 +129,14 @@ var NoteEditController = Composer.Controller.extend({
 		if(!this.note_copy.get('project_id'))
 			this.note_copy.set({project_id: this.project.id()});
 
+		if(isnew)
+		{
+			this.note_copy.generate_key()
+			this.note_copy.generate_subkeys([
+				{p: this.project.id(), k: this.project.key}
+			]);
+		}
+
 		// save the note copy, and on success, set the resulting data back into
 		// the original note (not the copy)
 		tagit.loading(true);
