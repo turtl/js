@@ -65,7 +65,7 @@ var DashboardController = Composer.Controller.extend({
 		do_init();
 		tagit.keyboard.bind('S-/', this.open_help.bind(this), 'dashboard:shortcut:open_help');
 		tagit.keyboard.bind('S-l', function() {
-			//tagit.route('/users/logout');
+			tagit.route('/users/logout');
 		}, 'dashboard:shortcut:logout');
 
 		// monitor sidebar size changes

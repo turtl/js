@@ -2,7 +2,9 @@
 	<ul>
 		<? if(user.id) { ?>
 			<li>
-				<a href="/users/logout"><span>Logout</span></a>
+				<a href="/users/logout" title="Sign out (shortcut `shift+L`)">
+					<span>Logout</span>
+				</a>
 			</li>
 		<? } else { ?>
 			<li>
