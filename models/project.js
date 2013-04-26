@@ -85,11 +85,23 @@ var Project = Composer.RelationalModel.extend({
 			success: function(notes) {
 				this.get('notes').clear();
 				this.track_tags(false);
+				this.get('notes').reset_async(notes, {
+					silent: true,
+					complete: function() {
+						this.get('notes').trigger('reset');
+						this.track_tags(true);
+						this.get('tags').refresh_from_notes(this.get('notes'), {silent: true});
+						this.get('tags').trigger('reset');
+						if(options.success) options.success(notes);
+					}.bind(this)
+				});
+				/*
 				this.set({notes: notes});
 				this.track_tags(true);
 				this.get('tags').refresh_from_notes(this.get('notes'), {silent: true});
 				this.get('tags').trigger('reset');
 				if(options.success) options.success(notes);
+				*/
 			}.bind(this),
 			error: function(e) {
 				barfr.barf('There was an error loading your notes: '+ e);

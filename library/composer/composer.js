@@ -925,13 +925,43 @@
 		{
 			options || (options = {});
 
-			if(!options.append)
-			{
-				this.clear(options);
-			}
+			if(!options.append) this.clear(options);
 			this.add(data, options);
 
 			this.fire_event('reset', options, options);
+		},
+
+		/**
+		 * reset the collection with all new data. it does this asynchronously
+		 * for each item in the data array passed. this is good for setting
+		 * large amounts of data into a collection whose models may do heavy
+		 * processing. this way, the browser is able to process other events (ie
+		 * not freeze) while adding the models to the collection.
+		 *
+		 * data can be appended by setting the {append: true} flag in the
+		 * options.
+		 *
+		 * when ALL models have been added, this function calls the
+		 * options.complete callback.
+		 */
+		reset_async: function(data, options)
+		{
+			options || (options = {});
+
+			if(typeOf(data) != 'array') data = [data];
+
+			if(!options.append) this.clear();
+			this.add(data[0], options);
+
+			data.shift();
+			if(data.length == 0)
+			{
+				if(options.complete) options.complete()
+				return;
+			}
+			(function() {
+				this.reset_async(data, Object.merge({append: true}, options));
+			}).delay(0 ,this);
 		},
 
 		/**

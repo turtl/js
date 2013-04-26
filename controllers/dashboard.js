@@ -59,7 +59,15 @@ var DashboardController = Composer.Controller.extend({
 		this.profile.bind('change:current_project', function() {
 			this.soft_release();
 			var current = this.profile.get_current_project();
-			if(current) current.load_notes();
+			if(current)
+			{
+				tagit.loading(true);
+				current.load_notes({
+					success: function() {
+						tagit.loading(false);
+					}
+				});
+			}
 			do_init();
 		}.bind(this), 'dashboard:change_project');
 		do_init();

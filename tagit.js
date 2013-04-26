@@ -99,7 +99,9 @@ var tagit	=	{
 
 	loading: function(show)
 	{
-		var show	=	show ? true : false;
+		var show = show ? true : false;
+		var fn = show ? 'addClass' : 'removeClass';
+		$E('html')[fn]('loading');
 		$$('img.loading').each(function(el) {
 			if(show)	el.setStyle('visibility', 'visible');
 			else		el.setStyle('visibility', '');
