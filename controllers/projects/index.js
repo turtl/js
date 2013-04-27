@@ -93,9 +93,11 @@ var ProjectsController = Composer.Controller.extend({
 			t.set({
 				selected: false,
 				excluded: false
-			});
+			}, {silent: true});
 		});
 		current.set({filters: []});
+		current.get('tags').trigger('reset');
+		current.get('tags').trigger('change:selected');
 	}
 });
 
