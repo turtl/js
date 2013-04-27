@@ -948,12 +948,15 @@
 		{
 			options || (options = {});
 
+			if(data == undefined) return;
 			if(typeOf(data) != 'array') data = [data];
 
 			if(!options.append) this.clear();
-			this.add(data[0], options);
-
-			data.shift();
+			if(data.length > 0)
+			{
+				this.add(data[0], options);
+				data.shift();
+			}
 			if(data.length == 0)
 			{
 				this.fire_event('reset', options, options);
