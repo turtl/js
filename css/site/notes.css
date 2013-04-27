@@ -113,7 +113,7 @@ ul.note_list.list_grid > li {
 ul.note_list.list_grid > li.image {width: 232px; height: 232px; padding: 0;}
 ul.note_list.list_grid > li > div.gutter {width: 100%; height: 100%; overflow: hidden;}
 ul.note_list.list_grid > li.image > div.gutter {width: 100%; height: 100%; overflow: hidden;}
-ul.note_list.list_grid > li.image h2 {display: none; position: absolute; bottom: 0; width: 100%; height: 26px; padding: 6px 0 0 0; color: #fff; background: url(/images/site/trans_000_50.png) 0 0;}
+ul.note_list.list_grid > li.image h2 {display: none; position: absolute; bottom: 0; width: 96%; height: 26px; padding: 6px 2% 0 2%; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background: url(/images/site/trans_000_50.png) 0 0;}
 ul.note_list.list_grid > li.image:hover h2 {display: block;}
 ul.note_list.list_grid .note h1 {margin-bottom: 6px;}
 ul.note_list.list_grid .note ul {list-style: disc;}
