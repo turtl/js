@@ -33,7 +33,10 @@ var Protected = Composer.RelationalModel.extend({
 		// NOTE: don't use `arguments` here since we need to explicitely pass in
 		// our obj to the parent function
 		options || (options = {});
+		var body = obj.body;
+		delete obj.body;
 		var ret = this.parent.apply(this, [obj, options]);
+		if(body != undefined) obj.body = body;
 		if(!options.ignore_body) this.process_body(obj, options);
 		return ret;
 	},
