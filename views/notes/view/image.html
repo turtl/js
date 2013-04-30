@@ -3,9 +3,11 @@
 </a>
 <? if(note.title || note.text) { ?>
 	<div class="content">
+		<? if(tags != '') { ?><?=tags?><? } ?>
 		<? if(note.title) { ?>
 			<h1><?=note.title?></h1>
 		<? } ?>
+		<span class="clearMe"></span>
 		<? if(note.text && note.text != '') { ?>
 			<?=markdown.toHTML(note.text)?>
 		<? } ?>

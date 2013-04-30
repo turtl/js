@@ -44,7 +44,7 @@ div.actions ul.dropdown li a span {display: none;}
 .note-view div.actions {padding-left: 0;}
 .note-view:hover div.actions {display: block;}
 .modalcontent .note-view h1 {
-	width: 100%;
+	/*width: 100%;*/
 	margin: 0 0 8px 0;
 	padding: 0;
 	font-size: 20px;
@@ -55,6 +55,12 @@ div.actions ul.dropdown li a span {display: none;}
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+.note-view .note-tags {float: right; max-width: 35%; margin-left: 16px; text-align: right;}
+.note-view .note-tags img.icon {display: block; float: left; margin: 3px 10px 0 0; opacity: .5;}
+.note-view .note-tags:hover img.icon {opacity: .7;}
+.note-view ul.tags {display: inline-block; float: none; margin: 0; padding: 0;}
+.note-view ul.tags li {padding: 1px 4px 2px 4px; margin: 0 6px 4px 0; cursor: default;}
+.note-view ul.tags li span {color: #222;}
 .note-view.image {padding: 0; text-align: center; background: #000;}
 .note-view.image a.img {padding: 0; line-height: 1em; text-align: center; background: #000;}
 .note-view.image .content {padding: 20px; margin-top: -2px; background: #fff;}

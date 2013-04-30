@@ -1,0 +1,10 @@
+<? if(tags.length > 0) { ?>
+	<div class="note-tags clear">
+		<!--<img src="/images/site/icons/tag_16x16_black.png" class="icon" title="tags" width="16" height="16" alt="tags" />-->
+		<ul class="tags clear">
+			<? tags.each(function(t) { ?>
+				<li><span><?=t.name?></span></li>
+			<? }); ?>
+		</ul>
+	</div>
+<? } ?>
