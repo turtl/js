@@ -1,7 +1,7 @@
 <a class="img clear" href="<?=note.url?>" target="_blank">
 	<img src="<?=note.url?>">
 </a>
-<? if(note.title || note.text) { ?>
+<? if(note.title || note.text || tags != '') { ?>
 	<div class="content">
 		<? if(tags != '') { ?><?=tags?><? } ?>
 		<? if(note.title) { ?>

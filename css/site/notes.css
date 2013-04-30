@@ -55,7 +55,7 @@ div.actions ul.dropdown li a span {display: none;}
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-.note-view .note-tags {float: right; max-width: 35%; margin-left: 16px; text-align: right;}
+.note-view .note-tags {float: right; max-width: 40%; margin-left: 16px; text-align: right;}
 .note-view .note-tags img.icon {display: block; float: left; margin: 3px 10px 0 0; opacity: .5;}
 .note-view .note-tags:hover img.icon {opacity: .7;}
 .note-view ul.tags {display: inline-block; float: none; margin: 0; padding: 0;}
