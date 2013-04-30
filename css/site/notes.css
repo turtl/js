@@ -61,7 +61,7 @@ div.actions ul.dropdown li a span {display: none;}
 .note-view ul.tags {display: inline-block; float: none; margin: 0; padding: 0;}
 .note-view ul.tags li {padding: 1px 4px 2px 4px; margin: 0 6px 4px 0; cursor: default;}
 .note-view ul.tags li span {color: #222;}
-.note-view.image {padding: 0; text-align: center; background: #000;}
+.note-view.image {padding: 0; overflow: hidden; text-align: center; background: #000;}
 .note-view.image a.img {padding: 0; line-height: 1em; text-align: center; background: #000;}
 .note-view.image .content {padding: 20px; margin-top: -2px; background: #fff;}
 

@@ -8,6 +8,6 @@
 <? var tags = Template.render('notes/view/tags', { tags: note.tags }); ?>
 <?=Template.render('notes/view/'+note.type, {
 	note: note,
-	tags: tags
+	tags: tags.clean()
 })?>
 
