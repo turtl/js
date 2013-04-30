@@ -1,3 +1,13 @@
-<a class="img" href="<?=note.url?>" target="_blank">
+<a class="img clear" href="<?=note.url?>" target="_blank">
 	<img src="<?=note.url?>">
 </a>
+<? if(note.title || note.text) { ?>
+	<div class="content">
+		<? if(note.title) { ?>
+			<h1><?=note.title?></h1>
+		<? } ?>
+		<? if(note.text && note.text != '') { ?>
+			<?=markdown.toHTML(note.text)?>
+		<? } ?>
+	</div>
+<? } ?>

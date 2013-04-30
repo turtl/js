@@ -24,8 +24,25 @@
 .notes div.note-actions ul li a.list span {background: url(/images/site/notes/icons/list.png) center center no-repeat;}
 .notes div.note-actions ul li a.grid span {background: url(/images/site/notes/icons/grid.png) center center no-repeat;}
 
+/* individual note actions */
+div.actions {display: none; position: absolute; top: 0; right: 0; height: 24px; padding: 0 0 0 4px; opacity: .95; background: #222; border: 1px solid #333;}
+div.actions a {opacity: .6;}
+div.actions a:hover {opacity: 1;}
+div.actions > a.open {display: inline-block; width: 16px; height: 24px; padding-left: 3px; background: url(/images/site/icons/open_16x16.png) center right no-repeat;}
+div.actions > a.menu {display: inline-block; width: 21px; height: 24px; margin: 0 0 0 3px; padding: 0 4px 0 6px; background: url(/images/site/icons/menu_19x16.png) 6px center no-repeat; border-left: 1px solid #2b2b2b;}
+div.actions > a span {display: none;}
+div.actions ul.dropdown {display: none; position: absolute; top: 25px; right: -1px; list-style: none; width: 36px; background: #222;}
+div.actions ul.dropdown.open {display: block;}
+div.actions ul.dropdown li {display: block; border-bottom: 1px solid #333;}
+div.actions ul.dropdown li a {display: block; width: 21px; height: 16px; padding: 6px 5px;}
+div.actions ul.dropdown li a.edit {background: url(/images/site/icons/edit_16x16.png) 10px center no-repeat;}
+div.actions ul.dropdown li a.delete {background: url(/images/site/icons/delete_16x16.png) 10px center no-repeat;}
+div.actions ul.dropdown li a span {display: none;}
+
 /* view note */
-.note-view {padding: 20px;}
+.note-view {position: relative; padding: 20px;}
+.note-view div.actions {padding-left: 0;}
+.note-view:hover div.actions {display: block;}
 .modalcontent .note-view h1 {
 	width: 100%;
 	margin: 0 0 8px 0;
@@ -38,7 +55,9 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-.note-view.image {text-align: center; background: #000;}
+.note-view.image {padding: 0; text-align: center; background: #000;}
+.note-view.image a.img {padding: 0; line-height: 1em; text-align: center; background: #000;}
+.note-view.image .content {padding: 20px; margin-top: -2px; background: #fff;}
 
 /* add/edit */
 .note-edit ul.type {list-style: none; position: absolute; top: 32px; left: 200px;}
@@ -60,20 +79,7 @@
 /* note listing */
 ul.note_list {list-style: none;}
 ul.note_list > li {position: relative;}
-ul.note_list > li > div.actions {display: none; position: absolute; top: 0; right: 0; height: 24px; padding: 0 0 0 4px; opacity: .95; background: #222; border: 1px solid #333;}
 ul.note_list > li:hover > div.actions {display: inline-block;}
-ul.note_list > li > div.actions a {opacity: .6;}
-ul.note_list > li > div.actions a:hover {opacity: 1;}
-ul.note_list > li > div.actions > a.open {display: inline-block; width: 16px; height: 24px; padding-left: 3px; background: url(/images/site/icons/open_16x16.png) center right no-repeat;}
-ul.note_list > li > div.actions > a.menu {display: inline-block; width: 21px; height: 24px; margin: 0 0 0 3px; padding: 0 4px 0 6px; background: url(/images/site/icons/menu_19x16.png) 6px center no-repeat; border-left: 1px solid #2b2b2b;}
-ul.note_list > li > div.actions > a span {display: none;}
-ul.note_list > li > div.actions ul.dropdown {display: none; position: absolute; top: 25px; right: -1px; list-style: none; width: 36px; background: #222;}
-ul.note_list > li > div.actions ul.dropdown.open {display: block;}
-ul.note_list > li > div.actions ul.dropdown li {display: block; border-bottom: 1px solid #333;}
-ul.note_list > li > div.actions ul.dropdown li a {display: block; width: 21px; height: 16px; padding: 6px 5px;}
-ul.note_list > li > div.actions ul.dropdown li a.edit {background: url(/images/site/icons/edit_16x16.png) 10px center no-repeat;}
-ul.note_list > li > div.actions ul.dropdown li a.delete {background: url(/images/site/icons/delete_16x16.png) 10px center no-repeat;}
-ul.note_list > li > div.actions ul.dropdown li a span {display: none;}
 
 ul.note_list .note {line-height: 1.4em;}
 ul.note_list .note h1 {

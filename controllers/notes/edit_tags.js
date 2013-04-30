@@ -49,8 +49,9 @@ var NoteEditTagController = Composer.Controller.extend({
 		var tag = this.inp_tag.value.clean().toLowerCase();
 		var tags = tag.split(/, ?/g);
 		tags.each(function(tag) {
-			if(tag.clean() == '') return;
-			if(this.note.add_tag(tag.clean().toLowerCase()))
+			tag = tag.clean();
+			if(tag == '') return;
+			if(this.note.add_tag(tag.clean().toLowerCase()) && !this.suggested_tags.contains(tag))
 			{
 				this.suggested_tags.push(tag);
 			}

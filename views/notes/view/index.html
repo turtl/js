@@ -1,4 +1,11 @@
-<?=Template.render('notes/list/'+note.type, {
+<div class="actions">
+	<a class="menu" href="#menu" title="Note menu"><span>Note menu</span></a>
+	<ul class="dropdown">
+		<li><a href="#edit" class="edit" title="Edit note"><span>Edit note</span></a></li>
+		<li><a href="#delete" class="delete" title="Delete note"><span>Delete note</span></a></li>
+	</ul>
+</div>
+<?=Template.render('notes/view/'+note.type, {
 	note: note
 })?>
 

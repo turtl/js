@@ -70,7 +70,8 @@ var NoteItemController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		new NoteViewController({
-			note: this.model
+			model: this.model,
+			project: this.project,
 		});
 	},
 

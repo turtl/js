@@ -58,6 +58,17 @@ var NotesController = Composer.Controller.extend({
 		}.bind(this), 'notes:listing:track_filters');
 		this.project.bind('change:display_type', this.update_display_type.bind(this), 'notes:listing:display_type');
 
+		this.project.get('notes').bind(['add', 'remove', 'reset', 'clear'], function() {
+			if(this.project.get('notes').models().length == 0)
+			{
+				this.display_actions.addClass('hidden');
+			}
+			else
+			{
+				this.display_actions.removeClass('hidden');
+			}
+		}.bind(this), 'notes:listing:show_display_buttons');
+
 		// track all changes to our sub-controllers
 		this.setup_tracking(this.filter_list);
 
@@ -70,6 +81,7 @@ var NotesController = Composer.Controller.extend({
 		{
 			this.project.unbind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], 'notes:listing:track_filters');
 			this.project.unbind('change:display_type', 'notes:listing:display_type');
+			this.project.get('notes').unbind(['add', 'remove', 'reset', 'clear'], 'notes:listing:show_display_buttons');
 			this.filter_list.detach();
 		}
 		tagit.keyboard.unbind('a', 'notes:shortcut:add_note')
@@ -82,10 +94,6 @@ var NotesController = Composer.Controller.extend({
 			display_type: this.project.get('display_type')
 		});
 		this.html(content);
-		if(this.project.get('notes').models().length > 0)
-		{
-			this.display_actions.removeClass('hidden');
-		}
 	},
 
 	open_add_note: function(e)
