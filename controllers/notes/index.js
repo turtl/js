@@ -159,9 +159,9 @@ var NotesController = Composer.Controller.extend({
 		{
 			this.setup_masonry();
 		}
-		else if(this.masonry)
+		else
 		{
-			this.masonry.detach()
+			if(this.masonry) this.masonry.detach()
 			this.masonry = null;
 			this.note_list.getElements('> li').each(function(li) {
 				li.setStyles({
