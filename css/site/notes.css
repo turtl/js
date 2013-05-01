@@ -21,8 +21,9 @@
 .notes div.note-actions ul li {float: left;}
 .notes div.note-actions ul li a {width: 40px; border-left: 0;}
 .notes div.note-actions ul li a span {width: 40px; height: 40px; opacity: .3;}
-.notes div.note-actions ul li a.list span {background: url(/images/site/notes/icons/list.png) center center no-repeat;}
 .notes div.note-actions ul li a.grid span {background: url(/images/site/notes/icons/grid.png) center center no-repeat;}
+.notes div.note-actions ul li a.masonry span {background: url(/images/site/notes/icons/masonry.png) center center no-repeat;}
+.notes div.note-actions ul li a.list span {background: url(/images/site/notes/icons/list.png) center center no-repeat;}
 
 /* individual note actions */
 div.actions {display: none; position: absolute; top: 0; right: 0; height: 24px; padding: 0 0 0 4px; opacity: .95; background: #222; border: 1px solid #333;}
@@ -136,6 +137,29 @@ ul.note_list.list_grid .note p {padding: 0 0 16px 0;}
 ul.note_list.list_grid .note p:first-child {padding: 0 0 0 0; margin: 0;}
 ul.note_list.list_grid .note img {max-width: 100%; max-height: 100%;}
 ul.note_list.list_grid .note a.img {display: table-cell; width: 232px; height: 232px; vertical-align: middle; text-align: center; background: #000;}
+
+/* masonry */
+ul.note_list.list_masonry > li {
+	float: left;
+	display: block;
+	width: 200px;
+	margin: 0 16px 16px 0;
+	padding: 16px;
+	background: #fff;
+}
+ul.note_list.list_masonry > li.image {width: 232px; padding: 0;}
+ul.note_list.list_masonry > li > div.gutter {width: 100%; overflow: hidden;}
+ul.note_list.list_masonry > li.image > div.gutter {width: 100%; overflow: hidden;}
+ul.note_list.list_masonry > li.image h2 {display: none; position: absolute; bottom: 0; width: 96%; height: 26px; padding: 6px 2% 0 2%; line-height: 1em; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background: url(/images/site/trans_000_50.png) 0 0;}
+ul.note_list.list_masonry > li.image:hover h2 {display: block;}
+ul.note_list.list_masonry .note h1 {margin-bottom: 6px;}
+ul.note_list.list_masonry .note ul {list-style: disc;}
+ul.note_list.list_masonry .note ul,
+ul.note_list.list_masonry .note ol {margin: 0 0 16px 32px;}
+ul.note_list.list_masonry .note p {padding: 0 0 16px 0;}
+ul.note_list.list_masonry .note p:first-child {padding: 0 0 0 0; margin: 0;}
+ul.note_list.list_masonry .note img {max-width: 100%; max-height: 100%;}
+ul.note_list.list_masonry .note a.img {display: block; width: 232px; line-height: 0; text-align: center; background: #000;}
 
 /* list */
 ul.note_list.list_list > li {

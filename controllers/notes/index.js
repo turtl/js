@@ -13,6 +13,8 @@ var NotesController = Composer.Controller.extend({
 	filter_list: null,
 	note_item_controllers: [],
 
+	masonry: null,
+
 	init: function()
 	{
 		if(!this.project) return false;
@@ -55,8 +57,16 @@ var NotesController = Composer.Controller.extend({
 
 		this.project.bind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], function() {
 			this.filter_list.refresh({diff_events: true, silent: 'reset'});
+			if(this.project.get('display_type') == 'masonry')
+			{
+				this.setup_masonry();
+			}
 		}.bind(this), 'notes:listing:track_filters');
+
 		this.project.bind('change:display_type', this.update_display_type.bind(this), 'notes:listing:display_type');
+		this.filter_list.bind('reset', function() {
+			this.update_display_type.delay(10, this);
+		}.bind(this), 'notes:listing:display_type');
 
 		this.project.get('notes').bind(['add', 'remove', 'reset', 'clear'], function() {
 			if(this.project.get('notes').models().length == 0)
@@ -81,6 +91,7 @@ var NotesController = Composer.Controller.extend({
 		{
 			this.project.unbind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], 'notes:listing:track_filters');
 			this.project.unbind('change:display_type', 'notes:listing:display_type');
+			this.filter_list.unbind('reset', 'notes:listing:display_type');
 			this.project.get('notes').unbind(['add', 'remove', 'reset', 'clear'], 'notes:listing:show_display_buttons');
 			this.filter_list.detach();
 		}
@@ -137,12 +148,37 @@ var NotesController = Composer.Controller.extend({
 
 	update_display_type: function()
 	{
+		var type = this.project.get('display_type', 'grid');
 		this.note_list.className = this.note_list.className.replace(/list_[\w]+/g, '');
-		this.note_list.addClass('list_'+this.project.get('display_type', 'grid'));
+		this.note_list.addClass('list_'+type);
 		$ES('li a', this.display_actions).each(function(a) {
 			a.removeClass('sel');
 		});
 		$E('li a.'+this.project.get('display_type', 'grid')).addClass('sel');
+		if(type == 'masonry')
+		{
+			this.setup_masonry();
+		}
+		else if(this.masonry)
+		{
+			this.masonry.detach()
+			this.masonry = null;
+			this.note_list.getElements('> li').each(function(li) {
+				li.setStyles({
+					position: '',
+					left: '',
+					top: ''
+				});
+			});
+		}
+	},
+
+	setup_masonry: function()
+	{
+		this.masonry = this.note_list.masonry({
+			singleMode: true,
+			itemSelector: '> li'
+		});
 	}
 }, TrackController);
 

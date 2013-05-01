@@ -4,15 +4,22 @@
 	</a>
 	<ul class="list-type hidden">
 		<li>
-			<a class="grid <? if(display_type == 'grid') { ?>sel<? } ?>" href="#grid" title="Display notes as a grid">
+			<a class="grid <? if(display_type == 'grid') { ?>sel<? } ?>" href="#grid" title="Display notes as a boring grid">
 				<span>&nbsp;</span>
 			</a>
 		</li>
+		<li>
+			<a class="masonry <? if(display_type == 'masonry') { ?>sel<? } ?>" href="#listing" title="Display notes as an arranged grid">
+				<span>&nbsp;</span>
+			</a>
+		</li>
+		<!--
 		<li>
 			<a class="list <? if(display_type == 'list') { ?>sel<? } ?>" href="#listing" title="Display notes as a list">
 				<span>&nbsp;</span>
 			</a>
 		</li>
+		-->
 	</ul>
 </div>
 <ul class="clear note_list list_<?=display_type?>"></ul>
