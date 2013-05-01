@@ -175,10 +175,17 @@ var NotesController = Composer.Controller.extend({
 
 	setup_masonry: function()
 	{
-		this.masonry = this.note_list.masonry({
-			singleMode: true,
-			itemSelector: '> li'
-		});
+		if(this.masonry)
+		{
+			this.masonry.go();
+		}
+		else
+		{
+			this.masonry = this.note_list.masonry({
+				singleMode: true,
+				itemSelector: '> li'
+			});
+		}
 	}
 }, TrackController);
 
