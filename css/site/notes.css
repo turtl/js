@@ -59,7 +59,8 @@ div.actions ul.dropdown li a span {display: none;}
 .note-view .note-tags img.icon {display: block; float: left; margin: 3px 10px 0 0; opacity: .5;}
 .note-view .note-tags:hover img.icon {opacity: .7;}
 .note-view ul.tags {display: inline-block; float: none; margin: 0; padding: 0;}
-.note-view ul.tags li {padding: 1px 4px 2px 4px; margin: 0 6px 4px 0; cursor: default;}
+.note-view ul.tags li {display: inline-block; float: none; padding: 1px 4px 2px 4px; margin: 0 0 4px 6px; cursor: default;}
+.note-view ul.tags li:last-child {margin-right: 4px;} /* don't know why this doesn't line up, but here's the fix */
 .note-view ul.tags li span {color: #222;}
 .note-view.image {padding: 0; overflow: hidden; text-align: center; background: #000;}
 .note-view.image a.img {padding: 0; line-height: 1em; text-align: center; background: #000;}

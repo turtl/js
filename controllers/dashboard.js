@@ -82,7 +82,7 @@ var DashboardController = Composer.Controller.extend({
 		this.timer.start();
 		tagit.user.bind('logout', function() {
 			this.timer.stop();
-			this.timer.end = function() {};
+			this.release();
 		}.bind(this), 'dashboard:logout:clear_timer');
 	},
 
@@ -101,7 +101,7 @@ var DashboardController = Composer.Controller.extend({
 		tagit.keyboard.unbind('S-/', 'dashboard:shortcut:open_help');
 		tagit.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
 		tagit.user.unbind('logout', 'dashboard:logout:clear_timer');
-		this.timer.end = null;
+		if(this.timer && this.timer.end) this.timer.end = null;
 		this.timer = null;
 		this.parent.apply(this, arguments);
 	},

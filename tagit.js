@@ -60,6 +60,7 @@ var tagit	=	{
 		}.bind(this));
 		this.user.bind('logout', function() {
 			this.user.unbind('change', 'user:write_changes_to_cookie');
+			modal.close();
 		}.bind(this));
 
 		// if a user exists, log them in
