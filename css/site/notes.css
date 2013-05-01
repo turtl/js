@@ -148,7 +148,7 @@ ul.note_list.list_masonry > li {
 	background: #fff;
 }
 ul.note_list.list_masonry > li.image {width: 232px; padding: 0;}
-ul.note_list.list_masonry > li > div.gutter {width: 100%; overflow: hidden;}
+ul.note_list.list_masonry > li > div.gutter {width: 100%; max-height: 500px; overflow: hidden;}
 ul.note_list.list_masonry > li.image > div.gutter {width: 100%; overflow: hidden;}
 ul.note_list.list_masonry > li.image h2 {display: none; position: absolute; bottom: 0; width: 96%; height: 26px; padding: 6px 2% 0 2%; line-height: 1em; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background: url(/images/site/trans_000_50.png) 0 0;}
 ul.note_list.list_masonry > li.image:hover h2 {display: block;}
