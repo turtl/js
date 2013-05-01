@@ -45,6 +45,7 @@ var NoteViewController = Composer.Controller.extend({
 		var content = Template.render('notes/view/index', {
 			note: toJSON(this.model)
 		});
+		content = view.make_links(content);
 		this.html(content);
 		this.el.className = 'note-view content '+this.model.get('type');
 	},
