@@ -18,7 +18,7 @@ var NotesController = Composer.Controller.extend({
 	init: function()
 	{
 		if(!this.project) return false;
-		if(!this.project.get('display_type')) this.project.set({display_type: 'grid'});
+		if(!this.project.get('display_type')) this.project.set({display_type: 'masonry'});
 
 		this.render();
 
