@@ -172,7 +172,6 @@ ul.note_list.list_list > li {
 ul.note_list.list_list > li > div.gutter { overflow: hidden; line-height: 1em;}
 
 ul.note_list.list_list .note {line-height: 1.5em; white-space: nowrap; overflow: hidden;}
-ul.note_list.list_list .note p {padding: 0 0 16px 0;}
 ul.note_list.list_list .note img {max-height: 100px;}
 ul.note_list.list_list .note p {width: 78%; padding: 6px 0 0 0; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 ul.note_list.list_list .note p:first-child {padding: 0; margin: 0;}
