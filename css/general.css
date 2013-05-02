@@ -32,6 +32,16 @@ form textarea {width: 60%; margin: 0 0 16px 0; padding: 3px 5px; border-radius: 
 /*.modalcontent {background: url(/images/site/trans_111_90.png) 0 0 !important;}*/
 .modalcontent > div > h1 {margin: -4px 0 24px 0; font-size: 20px; font-weight: normal; color: #999; text-transform: uppercase;}
 
+/* tooltips */
+span.tooltip {display: inline; cursor: help;}
+.tip-container {position: relative; z-index: 2000; background: url(/images/site/trans_111_90.png) top left;}
+.tip {color: #fff; width: 250px; z-index: 13000; border: 1px solid #404040; padding: 0; margin: 0; text-align: left;}
+.tip-title {font-weight: bold; font-size: 11px; margin: 0; color: #9fb8c9; padding: 6px 16px 4px 8px;}
+.tip-text {font-size: 11px; padding:  0 8px 6px 8px; color: #eee; line-height: 1.8em;}
+.tip-text ul {margin-left: 30px; list-style: disc;}
+.tip-text em {color: #d6a587; font-style: normal;}
+
+
 /*
 ::-webkit-input-placeholder { color: #777; }
 :-moz-placeholder { color: #777; }

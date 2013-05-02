@@ -23,6 +23,7 @@ var NoteEditController = Composer.Controller.extend({
 	note: null,
 	note_copy: null,
 	tag_controller: null,
+	tips: null,
 
 	init: function()
 	{
@@ -49,6 +50,7 @@ var NoteEditController = Composer.Controller.extend({
 	{
 		if(this.tag_controller) this.tag_controller.release();
 		tagit.keyboard.attach(); // re-enable shortcuts
+		if(this.tips) this.tips.detach();
 		this.parent.apply(this, arguments);
 	},
 
@@ -59,6 +61,10 @@ var NoteEditController = Composer.Controller.extend({
 			project: toJSON(this.project)
 		});
 		this.html(content);
+		if(this.tips) this.tips.detach();
+		this.tips = new TagitTips(this.el.getElements('.tooltip'), {
+			className: 'tip-container'
+		});
 	},
 
 	edit_note: function(e)
