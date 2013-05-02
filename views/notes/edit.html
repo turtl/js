@@ -54,5 +54,23 @@ var action = note.id ? 'Edit' : 'Add';
 		<div class="submit">
 			<input tabindex="3" type="submit" value="<?=action?> note">
 		</div>
+		<div class="colors">
+			Color: <span class="tooltip" title="Color :: Note colors can be used to visually classify your notes. How you do this is up to you!">?</span>&nbsp;
+			<? var colors = ['none','blue','red','green','purple','pink','brown','black']; ?>
+			<? colors.each(function(c, i) { ?>
+				<? i++; ?>
+				<label for="inp_color_<?=i?>" title="<?=c?>">
+					<span class="color <?=c?>"></span>
+				</label>
+				<input
+					type="radio"
+					id="inp_color_<?=i?>"
+					name="color"
+					value="<?=i?>"
+					<? if(note.color == i) { ?>checked<? } ?>
+					title="<?=c?>">
+				&nbsp;
+			<? }); ?>
+		</div>
 	</form>
 </div>

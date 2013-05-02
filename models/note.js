@@ -24,7 +24,8 @@ var Note = Composer.RelationalModel.extend({
 		'tags',
 		'url',
 		'text',
-		'embed'
+		'embed',
+		'color'
 	],
 
 	init: function()

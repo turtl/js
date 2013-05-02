@@ -125,6 +125,11 @@ var NoteEditController = Composer.Controller.extend({
 			}
 		}
 
+		var inp_color = this.el.getElement('input[name=color]:checked');
+		var color = null;
+		if(inp_color) color = parseInt(inp_color.get('value'));
+		if(color) this.note_copy.set({color: color});
+
 		var isnew	=	this.note_copy.is_new();
 		if(!this.note_copy.get('project_id'))
 			this.note_copy.set({project_id: this.project.id()});

@@ -26,7 +26,7 @@
 .notes div.note-actions ul li a.list span {background: url(/images/site/notes/icons/list.png) center center no-repeat;}
 
 /* individual note actions */
-div.actions {display: none; position: absolute; top: 0; right: 0; height: 24px; padding: 0 0 0 4px; opacity: .95; background: #222; border: 1px solid #333;}
+div.actions {display: none; z-index: 2; position: absolute; top: 0; right: 0; height: 24px; padding: 0 0 0 4px; opacity: .95; background: #222; border: 1px solid #333;}
 div.actions a {opacity: .6;}
 div.actions a:hover {opacity: 1;}
 div.actions > a.open {display: inline-block; width: 16px; height: 24px; padding-left: 3px; background: url(/images/site/icons/open_16x16.png) center right no-repeat;}
@@ -39,6 +39,21 @@ div.actions ul.dropdown li a {display: block; width: 21px; height: 16px; padding
 div.actions ul.dropdown li a.edit {background: url(/images/site/icons/edit_16x16.png) 10px center no-repeat;}
 div.actions ul.dropdown li a.delete {background: url(/images/site/icons/delete_16x16.png) 10px center no-repeat;}
 div.actions ul.dropdown li a span {display: none;}
+
+/* note color circles */
+.note-view .color,
+ul.note_list .note .color {display: block; position: absolute; width: 8px; height: 8px; margin: -12px 0 0 -12px; border-radius: 4px;}
+.note-edit .colors input[type=radio] {margin: 0;}
+.note-edit .color {display: inline-block; width: 8px; height: 8px; border-radius: 4px;}
+.color.none {color: #aaa; background: none;}
+.note-edit .color.none {background: #ddd;}
+.color.blue {color: #89dad7; background: #89dad7;}
+.color.red {color: #e85c5c; background: #e85c5c;}
+.color.green {color: #7bde76; background: #7bde76;}
+.color.purple {color: #9476de; background: #9476de;}
+.color.pink {color: #de76d3; background: #de76d3;}
+.color.brown {color: #7f4e4e; background: #7f4e4e;}
+.color.black {color: #111; background: #111;}
 
 /* view note */
 .note-view {position: relative; padding: 20px;}
@@ -85,7 +100,7 @@ div.actions ul.dropdown li a span {display: none;}
 .note-edit div.submit {padding: 16px 0 0 0; margin: 16px 0 0 0; border-top: 1px solid #ddd;}
 
 /* note listing */
-ul.note_list {list-style: none;}
+ul.note_list {list-style: none; -webkit-transform: translateZ(0);}
 ul.note_list > li {position: relative;}
 ul.note_list > li:hover > div.actions {display: inline-block;}
 
@@ -112,6 +127,9 @@ ul.note_list .note h4 {font-size: 12px;}
 ul.note_list .note h5 {font-size: 11px;}
 ul.note_list .note em {font-style: italic;}
 ul.note_list .note h5 {font-weight: bold;}
+
+.note-view.image .color,
+ul.note_list .note.image .color {margin: 4px 0 0 4px;}
 
 /* grid */
 ul.note_list.list_grid > li {

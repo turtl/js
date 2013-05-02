@@ -59,7 +59,7 @@ var NotesController = Composer.Controller.extend({
 			this.filter_list.refresh({diff_events: true, silent: 'reset'});
 			if(this.project.get('display_type') == 'masonry')
 			{
-				this.setup_masonry();
+				this.setup_masonry.delay(10, this);
 			}
 		}.bind(this), 'notes:listing:track_filters');
 
@@ -186,6 +186,13 @@ var NotesController = Composer.Controller.extend({
 				itemSelector: '> li'
 			});
 		}
+		$ES('li.note.image a.img img').each(function(img) {
+			if(img.complete || (img.naturalWidth && img.naturalWidth > 0)) return;
+			img.onload = function() {
+				img.onload = null;
+				this.setup_masonry();
+			}.bind(this);
+		}.bind(this));
 	}
 }, TrackController);
 

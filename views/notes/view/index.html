@@ -1,3 +1,8 @@
+<?
+var color = note.color;
+if(color) color = ['none','blue','red','green','purple','pink','brown','black'][parseInt(color)-1];
+?>
+<? if(color) { ?><span class="color <?=color?>"></span><? } ?>
 <div class="actions">
 	<a class="menu" href="#menu" title="Note menu"><span>Note menu</span></a>
 	<ul class="dropdown">
