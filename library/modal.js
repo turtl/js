@@ -357,7 +357,7 @@ var modal_interface	=	new Class({
 		var cheight		=	height ? height : 500;							// if height isn't specified, use a height in our calculations so the box isn't halfway down the screen
 		var wincoords	=	window.getCoordinates();
 		var left		=	(wincoords.width / 2) - (width / 2);
-		var top			=	(wincoords.height / 2) - (cheight / 1.5);		// notice we make use of "cheight" here when calculating the top position of the window
+		var top			=	(wincoords.height / 2) - (cheight / 1.3);		// notice we make use of "cheight" here when calculating the top position of the window
 		
 		// make sure our top value is not above the cutoff (this way the box is never cut off by the top of the browser)
 		if(top < this.options.top_cutoff)
