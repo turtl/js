@@ -47,7 +47,7 @@ ul.note_list .note .color {display: block; position: absolute; width: 8px; heigh
 .note-edit .color {display: inline-block; width: 8px; height: 8px; border-radius: 4px;}
 .color.none {color: #aaa; background: none;}
 .note-edit .color.none {background: #ddd;}
-.color.blue {color: #89dad7; background: #89dad7;}
+.color.blue {color: #89dad7; background: #89dad7; background: #73b8d1;}
 .color.red {color: #e85c5c; background: #e85c5c;}
 .color.green {color: #7bde76; background: #7bde76;}
 .color.purple {color: #9476de; background: #9476de;}
