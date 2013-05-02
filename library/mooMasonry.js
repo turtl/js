@@ -110,7 +110,8 @@ var MasonryClass = new Class({
 		
 		if (this.options.columnWidth == undefined) {
 			var b = this.bricks[0];
-			this.colW = b.getSize().x + b.getStyle('margin-left').toInt() + b.getStyle('margin-right').toInt();
+			if(b) this.colW = b.getSize().x + b.getStyle('margin-left').toInt() + b.getStyle('margin-right').toInt();
+			else this.colW = 232;
 		} else {
 			this.colW = this.options.columnWidth;
 		}
