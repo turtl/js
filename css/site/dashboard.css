@@ -1,4 +1,6 @@
 .dashboard > .sidebar {position: absolute; float: left; width: 20%; height: 200px; overflow: auto;}
+/* fixes a chrome (and webkit?) performance issue with fixed divs */
+.dashboard > .sidebar {-webkit-transform: translateZ(0);}
 .dashboard > .menu {}
 .dashboard > .notes {float: right; width: 79%;}
 

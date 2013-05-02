@@ -136,17 +136,21 @@ var DashboardController = Composer.Controller.extend({
 				top: ''
 			});
 		}
-		var sidepos = this.sidebar.getCoordinates();  // recalculate (sidebar pos may have changed)
-		var wheight = window.getCoordinates().height;
-		var mtop = sidepos.top;
-		var height = wheight - mtop;
+
 		if(this.sidebar.getStyle('position') != 'fixed')
 		{
-			height += scroll;
+			var sidepos = this.sidebar.getCoordinates();  // recalculate (sidebar pos may have changed)
+			var wheight = window.getCoordinates().height;
+			var mtop = sidepos.top;
+			var height = wheight - mtop;
+			if(this.sidebar.getStyle('position') != 'fixed')
+			{
+				height += scroll;
+			}
+			this.sidebar.setStyles({
+				height: height - 5
+			});
 		}
-		this.sidebar.setStyles({
-			height: height - 5
-		});
 		this.timer.start();
 	}
 });
