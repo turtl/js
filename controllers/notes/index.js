@@ -56,9 +56,7 @@ var NotesController = Composer.Controller.extend({
 		});
 
 		this.project.bind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], function() {
-			var start = performance.now();
 			this.filter_list.refresh({diff_events: true, silent: 'reset'});
-			console.log('filter time: ', performance.now() - start);
 			if(this.project.get('display_type') == 'masonry')
 			{
 				this.setup_masonry.delay(10, this);
