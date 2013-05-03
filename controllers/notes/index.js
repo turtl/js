@@ -56,7 +56,9 @@ var NotesController = Composer.Controller.extend({
 		});
 
 		this.project.bind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], function() {
+			var start = performance.now();
 			this.filter_list.refresh({diff_events: true, silent: 'reset'});
+			console.log('filter time: ', performance.now() - start);
 			if(this.project.get('display_type') == 'masonry')
 			{
 				this.setup_masonry.delay(10, this);
@@ -125,16 +127,6 @@ var NotesController = Composer.Controller.extend({
 		});
 	},
 
-	// extended from TrackController
-	remove_subcontroller: function(note)
-	{
-		this.parent.apply(this, arguments);
-		if(this.project.get('notes').models().length == 0)
-		{
-			this.display_actions.addClass('hidden');
-		}
-	},
-
 	change_list_type: function(e)
 	{
 		if(!e) return;
@@ -175,17 +167,11 @@ var NotesController = Composer.Controller.extend({
 
 	setup_masonry: function()
 	{
-		if(this.masonry)
-		{
-			this.masonry.go();
-		}
-		else
-		{
-			this.masonry = this.note_list.masonry({
-				singleMode: true,
-				itemSelector: '> li'
-			});
-		}
+		if(this.masonry) this.masonry.detach();
+		this.masonry = this.note_list.masonry({
+			singleMode: true,
+			itemSelector: '> li.note:not(.hide)'
+		});
 		$ES('li.note.image a.img img').each(function(img) {
 			if(img.complete || (img.naturalWidth && img.naturalWidth > 0)) return;
 			img.onload = function() {
@@ -193,6 +179,41 @@ var NotesController = Composer.Controller.extend({
 				this.setup_masonry();
 			}.bind(this);
 		}.bind(this));
+	},
+
+	// -------------------------------------------------------------------------
+	// NOTE:
+	// the following two functions override the TrackController's versions
+	// specifically for performance enhancements. Instead of removing the
+	// sub controllers from the DOM, they are simply given the class "hide"
+	// which saves performance, but achieves the same goal.
+
+	add_subcontroller: function(model)
+	{
+		var sub = this.sub_controller_index[model.id()];
+		if(sub)
+		{
+			sub.el.removeClass('hide');
+		}
+		else
+		{
+			sub = this.create_subcontroller(model);
+			this.sub_controllers.push(sub);
+			this.sub_controller_index[model.id()] = sub;
+		}
+	},
+
+	remove_subcontroller: function(model)
+	{
+		//this.parent.apply(this, arguments);
+		var sub = this.sub_controller_index[model.id()];
+		sub.el.addClass('hide');
+
+		if(this.project.get('notes').models().length == 0)
+		{
+			this.display_actions.addClass('hidden');
+		}
 	}
+	// -------------------------------------------------------------------------
 }, TrackController);
 

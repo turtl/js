@@ -103,6 +103,7 @@ ul.note_list .note .color {display: block; position: absolute; width: 8px; heigh
 ul.note_list {list-style: none; -webkit-transform: translateZ(0);}
 ul.note_list > li {position: relative;}
 ul.note_list > li:hover > div.actions {display: inline-block;}
+ul.note_list > li.hide {position: absolute !important; display: none !important;}
 
 ul.note_list .note {line-height: 1.4em;}
 ul.note_list .note h1 {
