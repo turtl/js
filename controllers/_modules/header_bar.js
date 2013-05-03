@@ -15,7 +15,6 @@ var HeaderBarController = Composer.Controller.extend({
 
 	render: function()
 	{
-		console.log('fuck shit');
 		var content = Template.render('modules/header_bar', {
 			user: toJSON(tagit.user)
 		});
