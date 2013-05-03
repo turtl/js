@@ -100,7 +100,7 @@ ul.note_list .note .color {display: block; position: absolute; width: 8px; heigh
 .note-edit div.submit {padding: 16px 0 0 0; margin: 16px 0 0 0; border-top: 1px solid #ddd;}
 
 /* note listing */
-ul.note_list {list-style: none; -webkit-transform: translateZ(0);}
+ul.note_list {list-style: none; -webkit-transform: translateZ(0); margin-left: 16px;}
 ul.note_list > li {position: relative;}
 ul.note_list > li:hover > div.actions {display: inline-block;}
 ul.note_list > li.hide {position: absolute !important; display: none !important;}
