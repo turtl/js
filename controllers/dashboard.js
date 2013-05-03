@@ -137,20 +137,22 @@ var DashboardController = Composer.Controller.extend({
 			});
 		}
 
-		if(this.sidebar.getStyle('position') != 'fixed')
+		var wheight = window.getCoordinates().height;
+		var height = 500;
+		if(this.sidebar.getStyle('position') == 'fixed')
+		{
+			height = wheight;
+		}
+		else
 		{
 			var sidepos = this.sidebar.getCoordinates();  // recalculate (sidebar pos may have changed)
-			var wheight = window.getCoordinates().height;
 			var mtop = sidepos.top;
-			var height = wheight - mtop;
-			if(this.sidebar.getStyle('position') != 'fixed')
-			{
-				height += scroll;
-			}
-			this.sidebar.setStyles({
-				height: height - 5
-			});
+			height = wheight - mtop;
+			height += scroll;
 		}
+		this.sidebar.setStyles({
+			height: height - 5
+		});
 		this.timer.start();
 	}
 });
