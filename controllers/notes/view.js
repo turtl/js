@@ -1,5 +1,5 @@
 var NoteViewController = Composer.Controller.extend({
-	className: 'note-view content',
+	className: 'note-view notes content',
 
 	elements: {
 		'ul.dropdown': 'dropdown_menu'
@@ -47,7 +47,7 @@ var NoteViewController = Composer.Controller.extend({
 		});
 		content = view.make_links(content);
 		this.html(content);
-		this.el.className = 'note-view content '+this.model.get('type');
+		this.el.className = 'note-view notes content '+this.model.get('type');
 	},
 
 	open_menu: function(e)
