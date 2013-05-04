@@ -15,13 +15,15 @@ function _t_bookmarklet()
 		}
 	}
 
-	if(i) d += '  \\n![image]('+i+')';
+	if(i) d = '![image]('+i+')  \\n'+d;
 	d = encodeURIComponent(d);
 
 	var req = new XMLHttpRequest();
 	req.open('GET', document.location, false);
 	req.send(null);
 	var headers = req.getAllResponseHeaders().toLowerCase();
+	// TODO: uncomment line below when creating main link
+	// TODO: convert this regex to new RegExp format so no escaping/commenting is needed
 	//var content = headers.match(/content-type: image\\/([\\w]+)/);
 	if(content && content[1])
 	{
@@ -29,7 +31,7 @@ function _t_bookmarklet()
 		t = '';
 	}
 
-    f = '<?=__site_url?>/bookmark?url='+ u +'&title='+ t +'&text='+ d +'&type='+ y;
+    f = '<?=site_url?>/bookmark?url='+ u +'&title='+ t +'&text='+ d +'&type='+ y;
 	t = function()
 	{
 		if(!window.open(f, 'tagit', 'location=yes,links=no,scrollbars=no,toolbar=no,width=740,height=525'))

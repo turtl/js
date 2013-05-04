@@ -14,7 +14,6 @@ var bookmark = {
 			return false;
 		}
 
-		tagit.controllers.pages.load(BookmarkController, {
-		});
+		tagit.controllers.pages.load(BookmarkController, {});
 	}
 };
