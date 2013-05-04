@@ -1,6 +1,6 @@
 <div class="project-list">
 	<? if(projects.length > 0) { ?>
-		<select>
+		<select id="project_selector">
 			<? projects.each(function(p) { ?>
 				<option
 					value="<?=p.id?>"

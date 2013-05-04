@@ -3,7 +3,7 @@ var BookmarkController = Composer.Controller.extend({
 	className: 'bookmark modalcontent',
 
 	elements: {
-		'div.projects': 'project_container',
+		'div.project': 'project_container',
 		'div.edit': 'edit_container'
 	},
 
@@ -27,6 +27,7 @@ var BookmarkController = Composer.Controller.extend({
 			project.load_notes({
 				success: function() {
 					tagit.loading(false);
+					this.soft_release();
 					var note = new Note({
 						type: 'link',
 						url: this.linkdata.url,
@@ -34,15 +35,18 @@ var BookmarkController = Composer.Controller.extend({
 						text: this.linkdata.text
 					});
 					this.project_controller = new ProjectsController({
-						el: this.project_container,
+						inject: this.project_container,
 						profile: this.profile
 					});
 					this.edit_controller = new NoteEditController({
-						el: this.edit_container,
+						inject: this.edit_container,
 						note: note,
 						project: project,
 						edit_in_modal: false
 					});
+					this.edit_controller.bind('release', function() {
+						window.close();
+					}, 'bookmark:edit_note:release');
 					(function() {
 						this.edit_controller.tag_controller.inp_tag.focus();
 					}).delay(10, this);
@@ -54,18 +58,24 @@ var BookmarkController = Composer.Controller.extend({
 	soft_release: function()
 	{
 		if(this.project_controller) this.project_controller.release();
-		if(this.edit_controller) this.edit_controller.release();
+		if(this.edit_controller)
+		{
+			this.edit_controller.release({silent: 'release'});
+			this.edit_controller.unbind('release', 'bookmark:edit_note:release');
+		}
 	},
 
 	release: function()
 	{
+		this.soft_release();
 		document.body.removeClass('bare');
 		return this.parent.apply(this, arguments);
 	},
 
 	render: function()
 	{
-		this.html('<div class="projects"></div><div class="edit"></div>');
+		var content = Template.render('bookmark/index');
+		this.html(content);
 		document.body.addClass('bare');
 	}
 });

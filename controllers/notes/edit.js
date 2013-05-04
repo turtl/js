@@ -33,12 +33,15 @@ var NoteEditController = Composer.Controller.extend({
 		// clone the note so any changes to it pre-save don't show up in the listings.
 		this.note_copy = this.note.clone();
 		this.render();
-		if(this.edit_in_modal) modal.open(this.el);
-		var close_fn = function() {
-			this.release();
-			modal.removeEvent('close', close_fn);
-		}.bind(this);
-		modal.addEvent('close', close_fn);
+		if(this.edit_in_modal)
+		{
+			modal.open(this.el);
+			var close_fn = function() {
+				this.release();
+				modal.removeEvent('close', close_fn);
+			}.bind(this);
+			modal.addEvent('close', close_fn);
+		}
 		this.tag_controller = new NoteEditTagController({
 			inject: this.tags,
 			note: this.note_copy,
@@ -155,7 +158,8 @@ var NoteEditController = Composer.Controller.extend({
 		tagit.loading(true);
 		this.note_copy.save({
 			success: function(note_data) {
-				modal.close();
+				if(this.edit_in_modal) modal.close();
+				else this.release();
 				tagit.loading(false);
 				this.note.key = this.note_copy.key;
 				this.note.set(note_data);

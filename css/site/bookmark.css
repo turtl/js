@@ -1,5 +1,7 @@
 .bookmark {position: relative; padding: 16px; border-radius: 4px;}
 .bookmark > .projects {float: right;}
+.bookmark > .projects label {float: left; margin: 3px 6px 0 0; cursor: pointer; color: #888;}
+.bookmark > .projects .project {display: inline-block;}
 .bookmark > .projects .project-list {margin: 0; padding: 0;}
 .bookmark > .projects ul.actions {display: none;}
 .bookmark .note-edit ul.type {top: 20px;}
