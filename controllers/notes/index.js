@@ -219,6 +219,17 @@ var NotesController = Composer.Controller.extend({
 		}
 
 		var sub = this.sub_controller_index[model.id()];
+		if(!sub) return;
+		if(!sub.el)
+		{
+			delete this.sub_controller_index[model.id()];
+			this.sub_controllers = this.sub_controllers.filter(function(s) {
+				if(s == sub) return false;
+				return true;
+			});
+			this.setup_masonry();
+			return;
+		}
 		sub.el.addClass('hide');
 	}
 	// -------------------------------------------------------------------------
