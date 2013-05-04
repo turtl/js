@@ -7,6 +7,8 @@ var NoteItemController = Composer.Controller.extend({
 	},
 
 	events: {
+		'mouseenter': 'select_note',
+		'mouseleave': 'unselect_note',
 		'click .actions a.open': 'view_note',
 		'click .actions a.menu': 'open_menu',
 		'mouseleave ul.dropdown': 'close_menu',
@@ -64,6 +66,16 @@ var NoteItemController = Composer.Controller.extend({
 		content = view.make_links(content);
 		this.html(content);
 		this.el.className = 'note ' + this.model.get('type');
+	},
+
+	select_note: function(e)
+	{
+		this.model.set({selected: true}, {silent: true});
+	},
+
+	unselect_note: function(e)
+	{
+		this.model.unset('selected', {silent: true});
 	},
 
 	view_note: function(e)

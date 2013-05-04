@@ -30,6 +30,8 @@ var NoteViewController = Composer.Controller.extend({
 
 		this.model.bind('change', this.render.bind(this), 'note:view:render');
 		this.model.bind('destroy', this.release.bind(this), 'note:view:destroy');
+		tagit.keyboard.bind('e', this.open_edit.bind(this), 'notes:view:shortcut:edit_note');
+		tagit.keyboard.bind('delete', this.delete_note.bind(this), 'notes:view:shortcut:delete_note');
 	},
 
 	release: function()
@@ -37,6 +39,8 @@ var NoteViewController = Composer.Controller.extend({
 		modal.close();
 		this.model.unbind('change', 'note:view:render');
 		this.model.unbind('destroy', 'note:view:destroy');
+		tagit.keyboard.unbind('e', 'notes:view:shortcut:edit_note');
+		tagit.keyboard.unbind('delete', 'notes:view:shortcut:delete_note');
 		this.parent.apply(this, arguments);
 	},
 

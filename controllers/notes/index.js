@@ -92,6 +92,9 @@ var NotesController = Composer.Controller.extend({
 		this.setup_tracking(this.filter_list);
 
 		tagit.keyboard.bind('a', this.open_add_note.bind(this), 'notes:shortcut:add_note');
+		tagit.keyboard.bind('enter', this.sub_view_note.bind(this), 'notes:shortcut:view_note');
+		tagit.keyboard.bind('e', this.sub_edit_note.bind(this), 'notes:shortcut:edit_note');
+		tagit.keyboard.bind('delete', this.sub_delete_note.bind(this), 'notes:shortcut:delete_note');
 	},
 
 	release: function()
@@ -105,6 +108,9 @@ var NotesController = Composer.Controller.extend({
 			this.filter_list.detach();
 		}
 		tagit.keyboard.unbind('a', 'notes:shortcut:add_note')
+		tagit.keyboard.unbind('enter', 'notes:shortcut:view_note');
+		tagit.keyboard.unbind('e', 'notes:shortcut:edit_note');
+		tagit.keyboard.unbind('delete', 'notes:shortcut:delete_note');
 		this.parent.apply(this, arguments);
 	},
 
@@ -122,6 +128,37 @@ var NotesController = Composer.Controller.extend({
 		new NoteEditController({
 			project: this.project
 		});
+	},
+
+	get_selected_note_controller: function()
+	{
+		var note = this.filter_list.find(function(m) {
+			return m.get('selected', false);
+		});
+		if(!note) return false;
+		var con = this.sub_controller_index[note.id()];
+		return con;
+	},
+
+	sub_view_note: function()
+	{
+		var con = this.get_selected_note_controller();
+		if(!con) return false;
+		con.view_note();
+	},
+
+	sub_edit_note: function()
+	{
+		var con = this.get_selected_note_controller();
+		if(!con) return false;
+		con.open_edit();
+	},
+
+	sub_delete_note: function()
+	{
+		var con = this.get_selected_note_controller();
+		if(!con) return false;
+		con.delete_note();
 	},
 
 	create_subcontroller: function(note)
