@@ -128,6 +128,21 @@ var empty	=	function(obj)
 	}
 };
 
+var parse_querystring = function(qs)
+{
+	if(!qs) qs = window.location.search.replace(/^\?/, '');
+	qs = qs.split('&');
+	var data = {};
+	qs.each(function(kv) {
+		kv = kv.split('=');
+		var key = kv[0];
+		var val = kv[1];
+		val = unescape(val);
+		data[key] = val;
+	});
+	return data;
+};
+
 var view	=	{
 	escape: function(str)
 	{

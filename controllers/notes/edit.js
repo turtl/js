@@ -19,6 +19,8 @@ var NoteEditController = Composer.Controller.extend({
 		'image': ['url', 'title', 'text']
 	},
 
+	edit_in_modal: true,
+
 	project: null,
 	note: null,
 	note_copy: null,
@@ -31,7 +33,7 @@ var NoteEditController = Composer.Controller.extend({
 		// clone the note so any changes to it pre-save don't show up in the listings.
 		this.note_copy = this.note.clone();
 		this.render();
-		modal.open(this.el);
+		if(this.edit_in_modal) modal.open(this.el);
 		var close_fn = function() {
 			this.release();
 			modal.removeEvent('close', close_fn);

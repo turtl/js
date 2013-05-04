@@ -10,13 +10,18 @@ var UserLoginController = Composer.Controller.extend({
 		'submit form': 'do_login'
 	},
 
+	redirect: '/',
+
 	init: function()
 	{
+		var qs = parse_querystring();
+		if(qs.redirect) this.redirect = Base64.decode(qs.redirect);
 		this.render();
 	},
 
 	render: function()
 	{
+		// TODO: save redirect in JOIN link
 		var content = Template.render('users/login');
 		this.html(content);
 		this.inp_username.focus();
@@ -39,7 +44,7 @@ var UserLoginController = Composer.Controller.extend({
 				data.id = id;
 				tagit.user.login(data);
 				tagit.loading(false);
-				tagit.route('/');
+				tagit.route(this.redirect);
 			}.bind(this),
 			error: function(e) {
 				barfr.barf('Login failed.');

@@ -23,6 +23,11 @@ body {
 	background: #f0f0f0;
 	background: #ededed;
 }
+body.bare {background: #fff;}
+body.bare header {display: none;}
+body.bare #main {padding: 0;}
+body.bare footer {display: none;}
+
 a { text-decoration: none; }
 
 header {height: 40px; margin: 0 0 32px 0; border-bottom: 1px solid #333;}

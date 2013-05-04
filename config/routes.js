@@ -4,5 +4,7 @@ config.routes	=	{
 	'/users/join': ['users', 'join'],
 	'/users/logout': ['users', 'logout'],
 
-	'/([a-z0-9]*)': ['dashboard', 'load']
+	'/bookmark': ['bookmark', 'index'],
+
+	'/': ['dashboard', 'load']
 }

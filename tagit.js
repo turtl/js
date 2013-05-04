@@ -170,7 +170,12 @@ var tagit	=	{
 	{
 		options || (options = {});
 		this.setup_router(options);
-		if(!this.user.logged_in && !url.match(/\/users\/login/) && !url.match(/\/users\/join/))
+		if(
+			!this.user.logged_in &&
+			!url.match(/\/users\/login/) &&
+			!url.match(/\/users\/join/) &&
+			!url.match(/\/bookmark/)
+		)
 		{
 			url = '/users/login';
 		}
