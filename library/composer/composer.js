@@ -1429,11 +1429,11 @@
 				}
 			}
 
-			// remove all events from controller
-			if(!options.keep_events) this.unbind();
-
 			this.el	=	false;
 			this.fire_event('release', options, this);
+
+			// remove all events from controller
+			if(!options.keep_events) this.unbind();
 		},
 
 		/**
