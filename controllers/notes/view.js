@@ -37,6 +37,7 @@ var NoteViewController = Composer.Controller.extend({
 
 	release: function()
 	{
+		if(modal.is_open) modal.close();
 		this.model.unbind('change', 'note:view:render');
 		this.model.unbind('destroy', 'note:view:destroy');
 		tagit.keyboard.unbind('e', 'notes:view:shortcut:edit_note');
