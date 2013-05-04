@@ -1,5 +1,5 @@
 /* modalbox stuff */
-#modalbox {position: absolute; display: block; z-index: 2000;}
+#modalbox {position: absolute; display: block; z-index: 2000; margin-bottom: 32px;}
 #modalbox.loading {text-align: center;}
 #modalbox .modalgutter {display: block; padding: 12px;}
 #modalbox .modalgutter .modalcontent {display: block; padding: 16px; overflow: auto; background: #fff; border-radius: 4px;}
