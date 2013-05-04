@@ -14,13 +14,7 @@ var bookmark = {
 			return false;
 		}
 
-		var linkdata = {
-			url: qs.url,
-			title: qs.title,
-			text: qs.text
-		};
 		tagit.controllers.pages.load(BookmarkController, {
-			linkdata: linkdata
 		});
 	}
 };

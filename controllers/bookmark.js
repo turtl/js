@@ -15,8 +15,10 @@ var BookmarkController = Composer.Controller.extend({
 
 	init: function()
 	{
+		this.linkdata = parse_querystring();
 		this.render();
 
+		console.log('linkdata: ', this.linkdata);
 		tagit.loading(true);
 		this.profile = tagit.user.load_profile({
 			project: tagit.user.get('last_project')
@@ -29,7 +31,7 @@ var BookmarkController = Composer.Controller.extend({
 					tagit.loading(false);
 					this.soft_release();
 					var note = new Note({
-						type: 'link',
+						type: this.linkdata.type,
 						url: this.linkdata.url,
 						title: this.linkdata.title,
 						text: this.linkdata.text
