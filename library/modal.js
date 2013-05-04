@@ -136,6 +136,8 @@ var modal_interface	=	new Class({
 		overlay:		false,
 		events:			false
 	},
+
+	is_open: false,
 	
 	/**
 	 * Create our initial divs used for the modal interface, and a few other objects used in the opening process.
@@ -539,6 +541,8 @@ var modal_interface	=	new Class({
 		
 		// make sure our "close [x]" link gets shoved in there at the top
 		this.objects.close.inject(this.objects.content, 'top');
+
+		this.is_open	=	true;
 		
 		// fire our complete event
 		this.fireEvent('complete');
@@ -619,6 +623,8 @@ var modal_interface	=	new Class({
 				return false;
 			}
 		}
+
+		this.is_open	=	false;
 		
 		// close (hide) the container
 		this.objects.container.setStyles({

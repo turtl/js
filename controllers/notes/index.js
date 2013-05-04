@@ -149,6 +149,7 @@ var NotesController = Composer.Controller.extend({
 
 	sub_edit_note: function()
 	{
+		if(modal.is_open) return false;
 		var con = this.get_selected_note_controller();
 		if(!con) return false;
 		con.open_edit();
@@ -156,6 +157,7 @@ var NotesController = Composer.Controller.extend({
 
 	sub_delete_note: function()
 	{
+		if(modal.is_open) return false;
 		var con = this.get_selected_note_controller();
 		if(!con) return false;
 		con.delete_note();
