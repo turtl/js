@@ -1,5 +1,4 @@
-function _t_bookmarklet()
-{
+(function () {
 	var u = encodeURIComponent(window.location.href);
 	var t = encodeURIComponent(document.title);
 	var m = document.getElementsByTagName('meta');
@@ -22,16 +21,14 @@ function _t_bookmarklet()
 	req.open('GET', document.location, false);
 	req.send(null);
 	var headers = req.getAllResponseHeaders().toLowerCase();
-	// TODO: uncomment line below when creating main link
-	// TODO: convert this regex to new RegExp format so no escaping/commenting is needed
-	//var content = headers.match(/content-type: image\\/([\\w]+)/);
+	var content = headers.match(new RegExp('content-type: image/([\\\\w]+)'));
 	if(content && content[1])
 	{
 		y = 'image';
 		t = '';
 	}
 
-    f = '<?=site_url?>/bookmark?url='+ u +'&title='+ t +'&text='+ d +'&type='+ y;
+    f = '<?=window.location.protocol?>//<?=window.location.host?>/bookmark?url='+ u +'&title='+ t +'&text='+ d +'&type='+ y;
 	t = function()
 	{
 		if(!window.open(f, 'tagit', 'location=yes,links=no,scrollbars=no,toolbar=no,width=740,height=525'))
@@ -41,5 +38,4 @@ function _t_bookmarklet()
     };
     if(/Firefox/.test(navigator.userAgent)) setTimeout(t, 0);
 	else t();
-}
-
+})();
