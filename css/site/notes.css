@@ -13,6 +13,7 @@
 	border-left: 1px solid #111;
 	border-right: 1px solid #111;
 }
+.notes div.note-actions {margin-left: 15px;}
 .notes div.note-actions a.sel {background: #202020;}
 .notes div.note-actions a.add-note {float: left; width: 96px;}
 .notes div.note-actions a.add-note span {padding: 13px 0 13px 31px; color: #73b8d1; font-weight: normal; text-transform: uppercase; font-size: 11px; line-height: 12px; background: url(/images/site/icons/add_16x16.png) 9px center no-repeat;}
