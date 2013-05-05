@@ -26,6 +26,7 @@ var BookmarkController = Composer.Controller.extend({
 
 		this.profile.bind('change:current_project', function() {
 			var project = this.profile.get_current_project();
+			tagit.user.set({last_project: project.get('title')});
 			project.load_notes({
 				success: function() {
 					tagit.loading(false);

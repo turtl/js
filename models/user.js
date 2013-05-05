@@ -59,6 +59,7 @@ var User	=	Composer.Model.extend({
 	write_cookie: function(options)
 	{
 		options || (options = {});
+		console.log('write cookie');
 		var duration	=	options.duration ? options.duration : 30;
 		var key			=	this.get_key();
 		var auth		=	this.get_auth();
@@ -67,7 +68,8 @@ var User	=	Composer.Model.extend({
 		var save		=	{
 			id: this.id(),
 			k: key.toString(),
-			a: auth
+			a: auth,
+			last_project: this.get('last_project')
 		};
 		Cookie.write(config.user_cookie, JSON.encode(save), { duration: duration });
 	},
