@@ -17,6 +17,8 @@ form input[type="text"],
 form input[type="password"] {width: 60%; height: 20px; margin: 0 0 16px 0; padding: 3px 5px; border-radius: 4px;}
 form textarea {width: 60%; margin: 0 0 16px 0; padding: 3px 5px; border-radius: 4px;}
 
+img.loading {visibility: hidden;}
+
 .content {line-height: 1.4em; text-align: left;}
 .content ul {list-style: disc;}
 .content ul,

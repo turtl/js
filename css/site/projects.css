@@ -1,4 +1,5 @@
 .project-list {padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #ddd;}
+.project-list img.loading {display: none;}
 .project-list select {float: left; display: block; width: 160px; margin: 0 10px 0 0;}
 .project-list ul.actions {float: left; padding: 3px 0 0 0; list-style: none;}
 .project-list ul.actions li {display: inline; margin: 0 3px 0 0;}

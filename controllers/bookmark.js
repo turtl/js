@@ -18,7 +18,6 @@ var BookmarkController = Composer.Controller.extend({
 		this.linkdata = parse_querystring();
 		this.render();
 
-		console.log('linkdata: ', this.linkdata);
 		tagit.loading(true);
 		this.profile = tagit.user.load_profile({
 			project: tagit.user.get('last_project')
@@ -27,9 +26,11 @@ var BookmarkController = Composer.Controller.extend({
 		this.profile.bind('change:current_project', function() {
 			var project = this.profile.get_current_project();
 			tagit.user.set({last_project: project.get('title')});
+			tagit.loading(true);
 			project.load_notes({
 				success: function() {
 					tagit.loading(false);
+					this.render();
 					this.soft_release();
 					var note = new Note({
 						type: this.linkdata.type,
@@ -47,6 +48,7 @@ var BookmarkController = Composer.Controller.extend({
 						project: project,
 						edit_in_modal: false
 					});
+					$E('.projects', this.el).dispose().inject($E('h1', this.edit_controller.el), 'after');
 					this.edit_controller.bind('release', function() {
 						window.close();
 					}, 'bookmark:edit_note:release');
