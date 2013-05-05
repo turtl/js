@@ -68,7 +68,7 @@ var Note = Composer.RelationalModel.extend({
 
 	save: function(options)
 	{
-		options || (options == {});
+		options || (options = {});
 		var url	=	this.id(true) ? '/notes/'+this.id() : '/projects/'+this.get('project_id')+'/notes';
 		var fn	=	(this.id(true) ? tagit.api.put : tagit.api.post).bind(tagit.api);
 		fn(url, {data: this.toJSON()}, {
@@ -85,7 +85,7 @@ var Note = Composer.RelationalModel.extend({
 
 	find_key: function(keys, search, options)
 	{
-		options || (options == {});
+		options || (options = {});
 		search || (search = {});
 		var project_id = this.get('project_id');
 		var project_key = tagit.user.get('profile').get('projects').find_by_id(project_id).key;

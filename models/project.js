@@ -112,7 +112,7 @@ var Project = Composer.RelationalModel.extend({
 
 	save: function(options)
 	{
-		options || (options == {});
+		options || (options = {});
 		var url	=	this.id(true) ?
 			'/projects/'+this.id() :
 			'/projects/users/'+tagit.user.id();
@@ -199,7 +199,7 @@ var Projects = Composer.Collection.extend({
 
 	clear: function(options)
 	{
-		options || (options == {});
+		options || (options = {});
 		this.each(function(project) {
 			project.clear(options);
 		});
