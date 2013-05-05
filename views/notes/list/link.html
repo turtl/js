@@ -1,4 +1,6 @@
 <?
+if(!note.url) note.url = '';
+
 var link = note.url;
 if(!link.match(/^[\w]+:\/\//)) link = 'http://' + link;
 var title = note.title;
