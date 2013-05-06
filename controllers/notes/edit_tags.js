@@ -23,7 +23,6 @@ var NoteEditTagController = Composer.Controller.extend({
 				if(diff == 0) diff = a.name.localeCompare(b.name);
 				return diff;
 			})
-			.slice(0, 48)
 			.map(function(t) { return t.name; });
 		this.render();
 		this.note.bind_relational('tags', ['add', 'remove', 'reset', 'change'], this.render.bind(this), 'note:edit:tags:change');
@@ -39,9 +38,11 @@ var NoteEditTagController = Composer.Controller.extend({
 	{
 		var content = Template.render('notes/edit_tags', {
 			note: toJSON(this.note),
-			suggested_tags: this.suggested_tags
+			suggested_tags: this.suggested_tags.slice(0, 48)
 		});
 		this.html(content);
+		new Autocomplete(this.inp_tag, this.suggested_tags, {
+		});
 	},
 
 	add_tag_btn: function(e)
