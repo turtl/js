@@ -51,6 +51,7 @@ var TrackController = Composer.Controller.extend({
 			c.release();
 		});
 		this.sub_controllers = [];
+		this.sub_controller_index = {};
 	},
 
 	release: function()
@@ -88,20 +89,26 @@ var TrackController = Composer.Controller.extend({
 		}
 		this.sub_controllers.push(sub);
 		this.sub_controller_index[model.id()] = sub;
+		sub.bind('release', function() {
+			this.do_remove_subcontroller(sub, model.id());
+		}.bind(this));
 	},
 
-	remove_subcontroller: function(model)
+	do_remove_subcontroller: function(sub, model_id)
 	{
-		// find all subcontrollers that hold this model
-		var sub = this.sub_controller_index[model.id()];
-
 		// remove the above subcontrollers from our tracking list
 		this.sub_controllers = this.sub_controllers.filter(function(c) {
 			if(sub == c) return false;
 			return true;
 		});
 		// delete the index entry
-		delete this.sub_controller_index[model.id()];
+		delete this.sub_controller_index[model_id];
+	},
+
+	remove_subcontroller: function(model)
+	{
+		// find all subcontrollers that hold this model
+		var sub = this.sub_controller_index[model.id()];
 
 		// release the matching subcontrollers
 		sub.release();

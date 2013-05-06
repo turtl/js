@@ -95,6 +95,11 @@ var NotesController = Composer.Controller.extend({
 		tagit.keyboard.bind('enter', this.sub_view_note.bind(this), 'notes:shortcut:view_note');
 		tagit.keyboard.bind('e', this.sub_edit_note.bind(this), 'notes:shortcut:edit_note');
 		tagit.keyboard.bind('delete', this.sub_delete_note.bind(this), 'notes:shortcut:delete_note');
+
+		if(this.project.get('display_type') == 'masonry')
+		{
+			this.setup_masonry.delay(10, this);
+		}
 	},
 
 	release: function()
@@ -106,6 +111,7 @@ var NotesController = Composer.Controller.extend({
 			this.filter_list.unbind('reset', 'notes:listing:display_type');
 			this.project.get('notes').unbind(['add', 'remove', 'reset', 'clear'], 'notes:listing:show_display_buttons');
 			this.filter_list.detach();
+			this.release_subcontrollers();
 		}
 		tagit.keyboard.unbind('a', 'notes:shortcut:add_note')
 		tagit.keyboard.unbind('enter', 'notes:shortcut:view_note');
@@ -246,6 +252,9 @@ var NotesController = Composer.Controller.extend({
 			sub = this.create_subcontroller(model);
 			this.sub_controllers.push(sub);
 			this.sub_controller_index[model.id()] = sub;
+			sub.bind('release', function() {
+				this.do_remove_subcontroller(sub, model.id());
+			}.bind(this));
 		}
 	},
 

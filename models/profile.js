@@ -42,7 +42,7 @@ var Profile = Composer.RelationalModel.extend({
 	{
 		options || (options = {});
 		var cur = this.get_current_project();
-		if(cur && cur.destroy_submodels) cur.destroy_submodels();
+		//if(cur && cur.destroy_submodels) cur.destroy_submodels();
 		return this.set({current_project: obj}, options);
 	}
 });

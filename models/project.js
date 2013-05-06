@@ -83,31 +83,40 @@ var Project = Composer.RelationalModel.extend({
 		options || (options = {});
 		tagit.api.get('/projects/'+this.id()+'/notes', {}, {
 			success: function(notes) {
-				this.get('notes').clear();
-				this.track_tags(false);
-				this.get('notes').reset_async(notes, {
-					silent: true,
-					complete: function() {
-						this.get('notes').trigger('reset');
-						this.track_tags(true);
-						this.get('tags').refresh_from_notes(this.get('notes'), {silent: true});
-						this.get('tags').trigger('reset');
-						if(options.success) options.success(notes);
-					}.bind(this)
-				});
-				/*
-				this.set({notes: notes});
-				this.track_tags(true);
-				this.get('tags').refresh_from_notes(this.get('notes'), {silent: true});
-				this.get('tags').trigger('reset');
-				if(options.success) options.success(notes);
-				*/
+				this.update_notes(notes, options);
 			}.bind(this),
 			error: function(e) {
 				barfr.barf('There was an error loading your notes: '+ e);
 				if(options.error) options.error(e);
 			}
 		});
+	},
+
+	update_notes: function(note_data, options)
+	{
+		options || (options = {});
+		this.get('notes').clear();
+		this.track_tags(false);
+		(function() {
+			this.get('notes').reset_async(note_data, {
+				silent: true,
+				complete: function() {
+					this.get('notes').trigger('reset');
+					this.track_tags(true);
+					this.get('tags').refresh_from_notes(this.get('notes'), {silent: true});
+					this.get('tags').trigger('reset');
+					this.trigger('notes_updated');
+					if(options.success) options.success(note_data);
+				}.bind(this)
+			});
+		}).delay(0, this);
+		/*
+		this.set({notes: notes});
+		this.track_tags(true);
+		this.get('tags').refresh_from_notes(this.get('notes'), {silent: true});
+		this.get('tags').trigger('reset');
+		if(options.success) options.success(notes);
+		*/
 	},
 
 	save: function(options)
@@ -209,10 +218,18 @@ var Projects = Composer.Collection.extend({
 	load_projects: function(options)
 	{
 		options || (options = {});
-		tagit.api.get('/projects/users/'+tagit.user.id(), {}, {
+		tagit.api.get('/projects/users/'+tagit.user.id(), {get_notes: 1}, {
 			success: function(projects) {
 				this.each(function(p) { p.destroy({skip_sync: true}); });
-				this.reset(projects);
+				this.clear();
+				projects.each(function(pdata) {
+					var notes = pdata.notes;
+					delete pdata.notes;
+					var project = new Project(pdata);
+					this.add(project);
+					project.update_notes(notes);
+				}.bind(this));
+				//this.reset(projects);
 				if(options.success) options.success(projects);
 			}.bind(this),
 			error: function(e) {

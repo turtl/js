@@ -13,6 +13,8 @@ var TagsController = Composer.Controller.extend({
 	{
 		if(!this.project) return false;
 
+		this.render();
+
 		this.tags	=	new TagsFilter(this.project.get('tags'));
 		this.tags.bind('change:count', function() {
 			this.tags.sort();
@@ -22,7 +24,6 @@ var TagsController = Composer.Controller.extend({
 		this.setup_tracking(this.tags);
 
 		this.tags.bind(['change:selected', 'change:excluded'], this.gray_tags.bind(this), 'tags:listing:gray_disabled');
-		this.render();
 	},
 
 	release: function()

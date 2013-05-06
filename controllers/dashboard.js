@@ -25,7 +25,7 @@ var DashboardController = Composer.Controller.extend({
 	{
 		this.render();
 
-		var do_init = function() {
+		var do_load = function() {
 			var current = this.profile.get_current_project();
 
 			this.categories_controller = new CategoriesController({
@@ -42,35 +42,34 @@ var DashboardController = Composer.Controller.extend({
 			});
 
 			tagit.controllers.pages.trigger('loaded');
-
-			var current = this.profile.get_current_project();
-			if(current) current.get('notes').trigger('reset');
+			//if(current) current.get('notes').trigger('reset');
 		}.bind(this);
 
 		this.profile = tagit.user.load_profile({
 			project: this.current_project
 		});
 
+		tagit.loading(true);
+		var has_load = false;
+		this.profile.bind('change:current_project', function() {
+			this.soft_release();
+			var current = this.profile.get_current_project();
+			if(current && !has_load)
+			{
+				has_load = true;
+				current.bind('notes_updated', function() {
+					tagit.loading(false);
+					current.unbind('notes_updated', 'project:loading:notes_updated');
+				}, 'project:loading:notes_updated');
+			}
+			do_load();
+		}.bind(this), 'dashboard:change_project');
+
 		this.projects_controller = new ProjectsController({
 			el: this.projects,
 			profile: this.profile
 		});
 
-		this.profile.bind('change:current_project', function() {
-			this.soft_release();
-			var current = this.profile.get_current_project();
-			if(current)
-			{
-				tagit.loading(true);
-				current.load_notes({
-					success: function() {
-						tagit.loading(false);
-					}
-				});
-			}
-			do_init();
-		}.bind(this), 'dashboard:change_project');
-		do_init();
 		tagit.keyboard.bind('S-/', this.open_help.bind(this), 'dashboard:shortcut:open_help');
 		tagit.keyboard.bind('S-l', function() {
 			tagit.route('/users/logout');
@@ -81,6 +80,7 @@ var DashboardController = Composer.Controller.extend({
 		this.timer.end = this.resize_sidebar.bind(this);
 		this.timer.start();
 		tagit.user.bind('logout', function() {
+			this.timer.end = function() {};
 			this.timer.stop();
 			this.release();
 		}.bind(this), 'dashboard:logout:clear_timer');
