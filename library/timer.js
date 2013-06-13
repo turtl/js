@@ -25,7 +25,7 @@ var Timer = new Class({
 		
 		if((t - this.start_ms) >= this.ms) {
 			this.stop();
-			this.end();
+			if(this.end) this.end();
 		} else {
 			this.run.delay(50, this);
 		}
