@@ -159,8 +159,11 @@ var view	=	{
 		return project_name;
 	},
 
+	// TODO: figure out why this sucks and breaks links.
+	// TODO: figure out if actually needed anyway?
 	make_links: function(text)
 	{
+		return text;
 		text = text.replace(/"([\w]+):(\/\/([\.\-\w_\/:\?\+\&~#=%,\(\)]+))/gi, '"$1::$2"');
 		text = text.replace(/([\w]+:\/\/)([\.\-\w_\/:\?\+\&~#=%,\(\)]+)/gi, '<a target="_blank" href="$1$2">$2</a>');
 		text = text.replace(/"([\w]+)::(\/\/([\.\-\w_\/:\?\+\&~#=%,\(\)]+))/gi, '"$1:$2"');
