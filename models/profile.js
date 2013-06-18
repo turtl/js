@@ -52,6 +52,26 @@ var Profile = Composer.RelationalModel.extend({
 		var sync_time = this.get('sync_time');
 		tagit.api.post('/sync', {time: sync_time}, {
 			success: function(sync) {
+				this.set({sync_time: sync.time});
+				sync.notes.each(function(note_data) {
+					var project = this.get('projects').find_by_id(note_data.project_id);
+					if(!project) return;
+					var note = project.get('notes').find_by_id(note_data.id);
+					if(note && note_data.deleted)
+					{
+						project.get('notes').remove(note);
+						note.destroy({skip_sync: true});
+						note.unbind();
+					}
+					else if(note)
+					{
+						note.set(note_data);
+					}
+					else if(!note_data.deleted)
+					{
+						project.get('notes').add(note_data);
+					}
+				}.bind(this));
 			}.bind(this),
 			error: function(e) {
 				barfr.barf('Error syncing user profile with server: '+ e);
