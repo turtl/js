@@ -205,8 +205,9 @@ var tagit	=	{
 	}
 };
 
-var modal	=	null;
-var barfr	=	null;
+var modal		=	null;
+var barfr		=	null;
+var markdown	=	null;
 
 window.addEvent('domready', function() {
 	window._header_tags		=	[];
@@ -253,6 +254,10 @@ window.addEvent('domready', function() {
 
 	// create the barfr
 	barfr	=	new Barfr('barfr', {});
+
+	// create markdown converter
+	markdown = new Markdown.Converter();
+	markdown.toHTML = markdown.makeHtml;
 	
 	tagit.load_controller('pages', PagesController);
 
