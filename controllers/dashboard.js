@@ -26,6 +26,8 @@ var DashboardController = Composer.Controller.extend({
 	{
 		this.render();
 
+		this.profile = tagit.profile;
+
 		var do_load = function() {
 			var current = this.profile.get_current_project();
 
@@ -45,10 +47,6 @@ var DashboardController = Composer.Controller.extend({
 			tagit.controllers.pages.trigger('loaded');
 			//if(current) current.get('notes').trigger('reset');
 		}.bind(this);
-
-		this.profile = tagit.user.load_profile({
-			project: this.current_project
-		});
 
 		tagit.loading(true);
 		var has_load = false;

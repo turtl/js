@@ -7,8 +7,11 @@ var Profile = Composer.RelationalModel.extend({
 		}
 	},
 
+	loaded: false,
+
 	init: function()
 	{
+		this.loaded = false;
 	},
 
 	load: function(options)
@@ -20,6 +23,7 @@ var Profile = Composer.RelationalModel.extend({
 		projects.load_projects({
 			success: function(data) {
 				var project = null;
+				this.loaded = true;
 				if(options.project)
 				{
 					project = this.get('projects').find(function(p) {

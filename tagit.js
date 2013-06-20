@@ -57,6 +57,13 @@ var tagit	=	{
 			// if the user is logged in, we'll put their auth info into the api object
 			this.user.bind('change', this.user.write_cookie.bind(this.user), 'user:write_changes_to_cookie');
 			this.api.set_auth(this.user.get_auth());
+			tagit.show_loading_screen(true);
+			this.profile = this.user.load_profile({
+				success: function() {
+					tagit.show_loading_screen(false);
+					this.route('/');
+				}.bind(this)
+			});
 		}.bind(this));
 		this.user.bind('logout', function() {
 			this.user.unbind('change', 'user:write_changes_to_cookie');
@@ -107,6 +114,11 @@ var tagit	=	{
 			if(show)	el.setStyle('visibility', 'visible');
 			else		el.setStyle('visibility', '');
 		});
+	},
+
+	show_loading_screen: function(show)
+	{
+		console.log(show ? 'LOADING' : 'NOT LOADING');
 	},
 
 	unload: function()

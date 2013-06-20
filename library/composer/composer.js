@@ -1786,6 +1786,7 @@
 
 			// check if we are routing to the same exact page. if we are, return
 			// (unless we force the route)
+			console.log('route (sc): ', path, force)
 			if(this.last_path == path && !force)
 			{
 				// no need to reload
