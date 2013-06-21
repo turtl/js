@@ -58,9 +58,12 @@ var tagit	=	{
 			this.user.bind('change', this.user.write_cookie.bind(this.user), 'user:write_changes_to_cookie');
 			this.api.set_auth(this.user.get_auth());
 			tagit.show_loading_screen(true);
+			this.controllers.pages.release_current();
 			this.profile = this.user.load_profile({
 				success: function() {
 					tagit.show_loading_screen(false);
+					this.controllers.pages.release_current();
+					this.last_url = '';
 					this.route('/');
 				}.bind(this)
 			});

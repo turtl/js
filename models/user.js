@@ -131,7 +131,7 @@ var User	=	Composer.Model.extend({
 			this.set({ profile: profile });
 		}
 		profile.clear({silent: true});
-		profile.load(options);
+		profile.load_data(options);
 		return profile;
 	},
 

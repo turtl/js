@@ -14,6 +14,11 @@ var Profile = Composer.RelationalModel.extend({
 		this.loaded = false;
 	},
 
+	load_data: function(options)
+	{
+
+	},
+
 	load: function(options)
 	{
 		options || (options = {});
