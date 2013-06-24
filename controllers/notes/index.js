@@ -171,8 +171,9 @@ var NotesController = Composer.Controller.extend({
 	sub_move_note: function()
 	{
 		if(modal.is_open) return false;
-		// TODO: build
-		return false
+		var con = this.get_selected_note_controller();
+		if(!con) return false;
+		con.open_move();
 	},
 
 	sub_delete_note: function()

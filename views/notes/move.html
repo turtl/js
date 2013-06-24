@@ -1,0 +1,11 @@
+<h1>Move this note to another project</h1>
+
+<select name="project">
+	<? projects.each(function(p) { ?>
+		<option value="<?=p.id?>"
+				<? if(note.project_id == p.id) { ?>selected<? } ?> >
+			<?=p.title?>
+		</option>
+	<? }); ?>
+</select>
+

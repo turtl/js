@@ -82,6 +82,10 @@ var NoteViewController = Composer.Controller.extend({
 	open_move: function(e)
 	{
 		if(e) e.stop();
+		new NoteMoveController({
+			project: this.project,
+			note: this.model
+		});
 	},
 
 	delete_note: function(e)
