@@ -43,6 +43,12 @@ span.tooltip {display: inline; cursor: help; color: #73b8d1;}
 .tip-text ul {margin-left: 30px; list-style: disc;}
 .tip-text em {color: #d6a587; font-style: normal;}
 
+/* LOADING overlay */
+#loading-overlay {display: none; z-index: 2; position: fixed; left: 0; top: 40px; width: 100%; height: 100%; margin: 0 auto; text-align: center; background: url(/images/site/trans_fff_60.png);}
+#loading-overlay > div {display: table-cell; vertical-align: middle;}
+#loading-overlay span {display: inline-block; font-size: 64px; font-family: impact;}
+#loading-overlay img {display: block; margin: 12px auto;}
+#loading-overlay span.spin {width: 20px; margin-left: 16px;}
 
 /*
 ::-webkit-input-placeholder { color: #777; }

@@ -120,9 +120,33 @@ var tagit	=	{
 		});
 	},
 
+	stop_spinner: false,
+
 	show_loading_screen: function(show)
 	{
-		console.log(show ? 'LOADING' : 'NOT LOADING');
+		var overlay = $('loading-overlay');
+		if(!overlay) return;
+		overlay.setStyle('display', show ? 'table' : '');
+		if(show)
+		{
+			this.stop_spinner = false;
+			var chars = ['/', '-', '\\', '|'];
+			var idx = 0;
+			var spinner = $E('.spin', overlay);
+			var spin = function()
+			{
+				if(this.stop_spinner || !spinner) return;
+				console.log('spin!');
+				spinner.set('html', chars[idx]);
+				idx = (idx + 1) % chars.length;
+				spin.delay(100, this);
+			}.bind(this);
+			spin();
+		}
+		else
+		{
+			this.stop_spinner = true;
+		}
 	},
 
 	unload: function()
