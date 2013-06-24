@@ -98,6 +98,7 @@ var NotesController = Composer.Controller.extend({
 		tagit.keyboard.bind('a', this.open_add_note.bind(this), 'notes:shortcut:add_note');
 		tagit.keyboard.bind('enter', this.sub_view_note.bind(this), 'notes:shortcut:view_note');
 		tagit.keyboard.bind('e', this.sub_edit_note.bind(this), 'notes:shortcut:edit_note');
+		tagit.keyboard.bind('m', this.sub_move_note.bind(this), 'notes:shortcut:move_note');
 		tagit.keyboard.bind('delete', this.sub_delete_note.bind(this), 'notes:shortcut:delete_note');
 
 		if(this.project.get('display_type') == 'masonry')
@@ -121,6 +122,7 @@ var NotesController = Composer.Controller.extend({
 		tagit.keyboard.unbind('a', 'notes:shortcut:add_note')
 		tagit.keyboard.unbind('enter', 'notes:shortcut:view_note');
 		tagit.keyboard.unbind('e', 'notes:shortcut:edit_note');
+		tagit.keyboard.unbind('m', 'notes:shortcut:move_note');
 		tagit.keyboard.unbind('delete', 'notes:shortcut:delete_note');
 		this.parent.apply(this, arguments);
 	},
@@ -164,6 +166,13 @@ var NotesController = Composer.Controller.extend({
 		var con = this.get_selected_note_controller();
 		if(!con) return false;
 		con.open_edit();
+	},
+
+	sub_move_note: function()
+	{
+		if(modal.is_open) return false;
+		// TODO: build
+		return false
 	},
 
 	sub_delete_note: function()

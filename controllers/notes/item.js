@@ -13,6 +13,7 @@ var NoteItemController = Composer.Controller.extend({
 		'click .actions a.menu': 'open_menu',
 		'mouseleave ul.dropdown': 'close_menu',
 		'click ul.dropdown a.edit': 'open_edit',
+		'click ul.dropdown a.move': 'open_move',
 		'click ul.dropdown a.delete': 'delete_note'
 	},
 
@@ -105,6 +106,11 @@ var NoteItemController = Composer.Controller.extend({
 			project: this.project,
 			note: this.model
 		});
+	},
+
+	open_move: function(e)
+	{
+		if(e) e.stop();
 	},
 
 	delete_note: function(e)
