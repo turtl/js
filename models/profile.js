@@ -90,8 +90,18 @@ var Profile = Composer.RelationalModel.extend({
 					}
 				}.bind(this));
 			}.bind(this),
-			error: function(e) {
-				barfr.barf('Error syncing user profile with server: '+ e);
+			error: function(e, xhr) {
+				if(xhr.status == 0)
+				{
+					barfr.barf(
+						'Error connecting with server. Your changes may not be saved.<br><br><a href="#" onclick="window.location.reload()">Try reloading</a>.',
+						{message_persist: 'persist'}
+					);
+				}
+				else
+				{
+					barfr.barf('Error syncing user profile with server: '+ e);
+				}
 				if(options.error) options.error(e);
 			}.bind(this)
 		});

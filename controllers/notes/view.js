@@ -9,6 +9,7 @@ var NoteViewController = Composer.Controller.extend({
 		'click .actions a.menu': 'open_menu',
 		'mouseleave ul.dropdown': 'close_menu',
 		'click ul.dropdown a.edit': 'open_edit',
+		'click ul.dropdown a.move': 'open_move',
 		'click ul.dropdown a.delete': 'delete_note'
 	},
 
@@ -32,6 +33,7 @@ var NoteViewController = Composer.Controller.extend({
 		this.model.bind('change', this.render.bind(this), 'note:view:render');
 		this.model.bind('destroy', this.release.bind(this), 'note:view:destroy');
 		tagit.keyboard.bind('e', this.open_edit.bind(this), 'notes:view:shortcut:edit_note');
+		tagit.keyboard.bind('m', this.open_move.bind(this), 'notes:view:shortcut:move_note');
 		tagit.keyboard.bind('delete', this.delete_note.bind(this), 'notes:view:shortcut:delete_note');
 	},
 
@@ -41,6 +43,7 @@ var NoteViewController = Composer.Controller.extend({
 		this.model.unbind('change', 'note:view:render');
 		this.model.unbind('destroy', 'note:view:destroy');
 		tagit.keyboard.unbind('e', 'notes:view:shortcut:edit_note');
+		tagit.keyboard.unbind('m', 'notes:view:shortcut:move_note');
 		tagit.keyboard.unbind('delete', 'notes:view:shortcut:delete_note');
 		this.parent.apply(this, arguments);
 	},
@@ -71,6 +74,15 @@ var NoteViewController = Composer.Controller.extend({
 		if(e) e.stop();
 		this.release();
 		new NoteEditController({
+			project: this.project,
+			note: this.model
+		});
+	},
+
+	open_move: function(e)
+	{
+		if(e) e.stop();
+		new NoteMoveController({
 			project: this.project,
 			note: this.model
 		});

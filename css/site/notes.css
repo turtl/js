@@ -38,6 +38,7 @@
 .notes div.actions ul.dropdown li {display: block; border-bottom: 1px solid #333;}
 .notes div.actions ul.dropdown li a {display: block; width: 21px; height: 16px; padding: 6px 5px;}
 .notes div.actions ul.dropdown li a.edit {background: url(/images/site/icons/edit_16x16.png) 10px center no-repeat;}
+.notes div.actions ul.dropdown li a.move {background: url(/images/site/icons/briefcase_16x16.png) 10px center no-repeat;}
 .notes div.actions ul.dropdown li a.delete {background: url(/images/site/icons/delete_16x16.png) 10px center no-repeat;}
 .notes div.actions ul.dropdown li a span {display: none;}
 

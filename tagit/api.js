@@ -106,7 +106,7 @@ var Api	=	new Class({
 			onFailure: function(xhr)
 			{
 				var err	=	JSON.decode(xhr.responseText);
-				cb_fail(err);
+				cb_fail(err, xhr);
 			},
 			evalScripts: false,
 			evalResponse: false
