@@ -167,7 +167,8 @@ var NoteEditController = Composer.Controller.extend({
 				// make sure the current filter applies to the edited note
 				this.project.get('tags').trigger('change:selected');
 			}.bind(this),
-			error: function() {
+			error: function(e) {
+				barfr.barf('There was a problem saving your note: '+ e);
 				tagit.loading(false);
 			}
 		});
