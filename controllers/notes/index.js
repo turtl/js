@@ -34,8 +34,6 @@ var NotesController = Composer.Controller.extend({
 				var excluded	=	this.excluded_tags;
 				var note_tags	=	note.get('tags').map(function(t) { return t.get('name'); });
 
-				if(note.get('project_id') != project_id) return false;
-
 				if(selected.length == 0 && excluded.length == 0) return true;
 				if(selected.length > note_tags.length) return false;
 				for(var x in selected)
@@ -60,6 +58,7 @@ var NotesController = Composer.Controller.extend({
 			}
 		});
 
+		// Main search event
 		this.project.bind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], function() {
 			//var start = performance.now();
 			// pre-cache our selected/excluded tags

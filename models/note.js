@@ -39,6 +39,7 @@ var Note = Composer.RelationalModel.extend({
 			}).delay(0, this);
 		}.bind(this);
 		this.bind('change:tags', save_old);
+		this.bind('change', this.track_sync.bind(this));
 		save_old();
 	},
 
@@ -95,8 +96,12 @@ var Note = Composer.RelationalModel.extend({
 		}
 		var ret = this.parent(keys, search, options);
 		return ret;
-	}
+	},
 
+	track_sync: function()
+	{
+		tagit.profile.track_sync_changes(this.id());
+	}
 }, Protected);
 
 var Notes = Composer.Collection.extend({

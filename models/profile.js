@@ -11,6 +11,11 @@ var Profile = Composer.RelationalModel.extend({
 	// also used to indicate whether or not initial data sync has occured yet
 	profile_data: false,
 
+	// tracks items to ignore when a sync occurs. this is useful for ignoring
+	// things that the user just changed which can overwrite data with older
+	// versions.
+	sync_ignore: [],
+
 	init: function()
 	{
 	},
@@ -63,6 +68,14 @@ var Profile = Composer.RelationalModel.extend({
 		return this.set({current_project: obj}, options);
 	},
 
+	/**
+	 * Keeps track of items to IGNORE when a sync happens
+	 */
+	track_sync_changes: function(id)
+	{
+		this.sync_ignore.push(id);
+	},
+
 	sync: function(options)
 	{
 		options || (options = {});
@@ -71,9 +84,18 @@ var Profile = Composer.RelationalModel.extend({
 			success: function(sync) {
 				this.set({sync_time: sync.time});
 				sync.notes.each(function(note_data) {
-					var project = this.get('projects').find_by_id(note_data.project_id);
+					// don't sync ignored items
+					if(this.sync_ignore.contains(note_data.id)) return false;
+
+					var project = false;
+					var note = false;
+					this.get('projects').each(function(p) {
+						if(note) return;
+						note = p.get('notes').find_by_id(note_data.id)
+						if(note) project = p;
+					});
 					if(!project) return;
-					var note = project.get('notes').find_by_id(note_data.id);
+
 					if(note && note_data.deleted)
 					{
 						project.get('notes').remove(note);
@@ -82,13 +104,24 @@ var Profile = Composer.RelationalModel.extend({
 					}
 					else if(note)
 					{
+						var newproject = this.get('projects').find_by_id(note_data.project_id);
 						note.set(note_data);
+
+						// switch projects if moved
+						if(newproject && project.id() != newproject.id())
+						{
+							project.get('notes').remove(note);
+							newproject.get('notes').add(note);
+						}
 					}
 					else if(!note_data.deleted)
 					{
 						project.get('notes').add(note_data);
 					}
 				}.bind(this));
+
+				// reset ignore list
+				this.sync_ignore	=	[];
 			}.bind(this),
 			error: function(e, xhr) {
 				if(xhr.status == 0)
