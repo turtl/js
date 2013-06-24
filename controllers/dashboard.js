@@ -88,6 +88,8 @@ var DashboardController = Composer.Controller.extend({
 		tagit.user.bind('logout', function() {
 			this.release();
 		}.bind(this), 'dashboard:logout:clear_timer');
+
+		this.profile.load();
 	},
 
 	soft_release: function()

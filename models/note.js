@@ -88,7 +88,7 @@ var Note = Composer.RelationalModel.extend({
 		options || (options = {});
 		search || (search = {});
 		var project_id = this.get('project_id');
-		var project_key = tagit.user.get('profile').get('projects').find_by_id(project_id).key;
+		var project_key = tagit.profile.get('projects').find_by_id(project_id).key;
 		if(!search.p && project_id && project_key)
 		{
 			search.p = {id: project_id, k: project_key};

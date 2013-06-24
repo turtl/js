@@ -215,28 +215,18 @@ var Projects = Composer.Collection.extend({
 		return this.parent.apply(this, arguments);
 	},
 
-	load_projects: function(options)
+	load_projects: function(projects)
 	{
-		options || (options = {});
-		tagit.api.get('/projects/users/'+tagit.user.id(), {get_notes: 1}, {
-			success: function(projects) {
-				this.each(function(p) { p.destroy({skip_sync: true}); });
-				this.clear();
-				projects.each(function(pdata) {
-					var notes = pdata.notes;
-					delete pdata.notes;
-					var project = new Project(pdata);
-					this.add(project);
-					project.update_notes(notes);
-				}.bind(this));
-				//this.reset(projects);
-				if(options.success) options.success(projects);
-			}.bind(this),
-			error: function(e) {
-				barfr.barf('There was an error loading your projects: '+ e);
-				if(options.error) options.error(e);
-			}
-		});
+		this.each(function(p) { p.destroy({skip_sync: true}); });
+		this.clear();
+		projects.each(function(pdata) {
+			var notes = pdata.notes;
+			delete pdata.notes;
+			var project = new Project(pdata);
+			this.add(project);
+			project.update_notes(notes);
+		}.bind(this));
+		//this.reset(projects);
 	},
 
 	get_project: function(project_name)

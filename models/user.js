@@ -124,13 +124,7 @@ var User	=	Composer.Model.extend({
 	load_profile: function(options)
 	{
 		options || (options = {});
-		var profile = this.get('profile', false);
-		if(!profile)
-		{
-			profile = new Profile();
-			this.set({ profile: profile });
-		}
-		profile.clear({silent: true});
+		var profile = new Profile();
 		profile.load_data(options);
 		return profile;
 	},

@@ -7,16 +7,27 @@ var Profile = Composer.RelationalModel.extend({
 		}
 	},
 
-	loaded: false,
+	// stores ALL data for the profile, synced once during init from server.
+	// also used to indicate whether or not initial data sync has occured yet
+	profile_data: false,
 
 	init: function()
 	{
-		this.loaded = false;
 	},
 
 	load_data: function(options)
 	{
-
+		tagit.api.get('/profiles/users/'+tagit.user.id(), {}, {
+			success: function(profile) {
+				this.profile_data = profile;
+				if(options.init) this.load(options);
+				if(options.success) options.success(profile);
+			}.bind(this),
+			error: function(e) {
+				barfr.barf('Error loading user profile: ', e);
+				if(options.error) options.error(e);
+			}
+		});
 	},
 
 	load: function(options)
@@ -25,22 +36,19 @@ var Profile = Composer.RelationalModel.extend({
 		this.clear({silent: true});
 		this.get_sync_time();
 		var projects = this.get('projects');
-		projects.load_projects({
-			success: function(data) {
-				var project = null;
-				this.loaded = true;
-				if(options.project)
-				{
-					project = this.get('projects').find(function(p) {
-						return p.get('title') == options.project.clean();
-					});
-				}
-				if(!project) project = this.get('projects').first();
-				if(!project) return;
-				this.set_current_project(project);
-				if(options.success) options.success();
-			}.bind(this)
-		});
+		var project_data = this.profile_data.projects;
+		projects.load_projects(project_data);
+		var project = null;
+		this.loaded = true;
+		if(options.project)
+		{
+			project = this.get('projects').find(function(p) {
+				return p.get('title') == options.project.clean();
+			});
+		}
+		if(!project) project = this.get('projects').first();
+		if(!project) return;
+		this.set_current_project(project);
 	},
 
 	get_current_project: function()
@@ -58,7 +66,7 @@ var Profile = Composer.RelationalModel.extend({
 	sync: function(options)
 	{
 		options || (options = {});
-		var sync_time = this.get('sync_time');
+		var sync_time = this.get('sync_time', 9999999);
 		tagit.api.post('/sync', {time: sync_time}, {
 			success: function(sync) {
 				this.set({sync_time: sync.time});

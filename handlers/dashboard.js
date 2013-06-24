@@ -2,13 +2,11 @@ var dashboard = {
 	load: function(project)
 	{
 		project = null;
-		console.log('load dash?');
-		if(!tagit.profile.loaded)
+		if(!tagit.profile.profile_data)
 		{
 			tagit.controllers.pages.trigger('loaded');
 			return;
 		}
-		console.log('paid the troll toll');
 		tagit.controllers.pages.load(DashboardController, {
 			current_project: project
 		});

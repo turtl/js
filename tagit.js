@@ -60,6 +60,7 @@ var tagit	=	{
 			tagit.show_loading_screen(true);
 			this.controllers.pages.release_current();
 			this.profile = this.user.load_profile({
+				init: false,		// TODO: try to get this working when `true`
 				success: function() {
 					tagit.show_loading_screen(false);
 					this.controllers.pages.release_current();
