@@ -9,4 +9,5 @@
 
 #modalbox.bare .modalgutter {padding: 0;}
 #modalbox.bare .modalgutter .modalcontent {min-height: 100px; padding: 0; border-radius: 0; background: #fff !important;}
-#modalbox.bare .closelink {position: absolute; top: 4px; right: -22px; display: block; width: 40px; height: 40px; margin: 0; padding: 0; background: url(/images/site/modal/close_filled.png) 0 0 no-repeat;}
+/*#modalbox.bare .closelink {position: absolute; top: 4px; right: -22px; display: block; width: 40px; height: 40px; margin: 0; padding: 0; background: url(/images/site/modal/close_filled.png) 0 0 no-repeat;}*/
+#modalbox.bare .closelink {position: absolute; top: 16px; right: -20px; display: block; width: 20px; height: 20px; margin: 0; padding: 0; background: #fff url(/images/site/modal/close_filled.png) center center no-repeat;}
