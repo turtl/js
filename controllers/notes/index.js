@@ -83,7 +83,7 @@ var NotesController = Composer.Controller.extend({
 			}
 		}.bind(this), 'notes:listing:update_masonry');
 
-		this.project.get('notes').bind(['add', 'remove', 'reset', 'clear'], function() {
+		this.project.get('notes').bind(['add', 'remove', 'reset', 'clear', 'misc'], function() {
 			if(this.project.get('notes').models().length == 0)
 			{
 				this.display_actions.addClass('hidden');
@@ -117,7 +117,7 @@ var NotesController = Composer.Controller.extend({
 			this.project.unbind('change:display_type', 'notes:listing:display_type');
 			this.filter_list.unbind('reset', 'notes:listing:display_type');
 			this.filter_list.unbind(['add', 'remove', 'change'], 'notes:listing:update_masonry');
-			this.project.get('notes').unbind(['add', 'remove', 'reset', 'clear'], 'notes:listing:show_display_buttons');
+			this.project.get('notes').unbind(['add', 'remove', 'reset', 'clear', 'misc'], 'notes:listing:show_display_buttons');
 			this.filter_list.detach();
 			this.release_subcontrollers();
 		}
@@ -135,6 +135,9 @@ var NotesController = Composer.Controller.extend({
 			display_type: this.project.get('display_type')
 		});
 		this.html(content);
+
+		// make sure display type buttons show up
+		(function() { this.project.get('notes').trigger('misc'); }).delay(10, this);
 	},
 
 	open_add_note: function(e)
