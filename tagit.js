@@ -136,7 +136,6 @@ var tagit	=	{
 			var spin = function()
 			{
 				if(this.stop_spinner || !spinner) return;
-				console.log('spin!');
 				spinner.set('html', chars[idx]);
 				idx = (idx + 1) % chars.length;
 				spin.delay(100, this);
