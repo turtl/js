@@ -1,7 +1,7 @@
 <?
 var format_tag = function(tagname, selected)
 {
-	var t = '<li class="'+view.tagetize(tagname)+' '+(selected ? 'sel': '')+'">';
+	var t = '<li class="'+view.tagetize(tagname).replace(/["]/g, '')+' '+(selected ? 'sel': '')+'">';
 	t += view.tagetize(tagname);
 	t += '</li>';
 	return t;

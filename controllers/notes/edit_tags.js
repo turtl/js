@@ -41,8 +41,7 @@ var NoteEditTagController = Composer.Controller.extend({
 			suggested_tags: this.suggested_tags.slice(0, 48)
 		});
 		this.html(content);
-		new Autocomplete(this.inp_tag, this.suggested_tags, {
-		});
+		new Autocomplete(this.inp_tag, this.suggested_tags, {});
 	},
 
 	add_tag_btn: function(e)

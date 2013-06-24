@@ -229,7 +229,7 @@ var NotesController = Composer.Controller.extend({
 			singleMode: true,
 			itemSelector: '> li.note:not(.hide)'
 		});
-		$ES('li.note.image a.img img').each(function(img) {
+		$ES('li.note img', this.note_list).each(function(img) {
 			if(img.complete || (img.naturalWidth && img.naturalWidth > 0)) return;
 			img.onload = function() {
 				img.onload = null;
