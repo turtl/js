@@ -26,12 +26,15 @@ var NotesController = Composer.Controller.extend({
 
 		this.render();
 
+		var project_id = this.project.id();
 		this.filter_list	=	new NotesFilter(this.project.get('notes'), {
 			filter: function(note)
 			{
 				var selected	=	this.selected_tags;
 				var excluded	=	this.excluded_tags;
 				var note_tags	=	note.get('tags').map(function(t) { return t.get('name'); });
+
+				if(note.get('project_id') != project_id) return false;
 
 				if(selected.length == 0 && excluded.length == 0) return true;
 				if(selected.length > note_tags.length) return false;
