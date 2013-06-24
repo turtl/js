@@ -117,12 +117,32 @@ var Protected = Composer.RelationalModel.extend({
 		return copy;
 	},
 
+	/**
+	 * Given a set of keys for an object and a search pattern, find the matching
+	 * key and decrypt it using one of the decrypting keys provided by the
+	 * search object. This in turn allows the object to be decrypted.
+	 * 
+	 * Keys are in the format
+	 *   {p: <id>, k: <encrypted key>}
+	 *   {u: <id>, k: <encrypted key>}
+	 * "p" "u" and "a" correspond to project, user, account (aka persona)
+	 * restecpfully.
+	 *
+	 * Search is in the format:
+	 *
+	 * {
+	 *   u: {id: <user id>, k: <user's key>}
+	 *   p: {id: <project id>, k: <project's key>}
+	 *   ...
+	 * }
+	 */
 	find_key: function(keys, search, options)
 	{
 		search || (search = {});
 		options || (options = {});
 
 		var uid = tagit.user.id(true);
+		// TODO: investigate removing this for public projects??
 		if(!uid) return false;
 		search.u = {id: uid, k: tagit.user.get_key()};
 		delete(search.k);  // sorry, "k" is reserved for keys
@@ -162,6 +182,22 @@ var Protected = Composer.RelationalModel.extend({
 		return this.key;
 	},
 
+	/**
+	 * (re)generate the keys for this object. `members` is an object describing
+	 * what items will ahve access to this object, and is in the format:
+	 *
+	 * [
+	 *   {p: <project id>, k: <project's key>},
+	 *   {u: <user id>, k: <user's key>}
+	 * ]
+	 *
+	 * Note that an entry for the current user is automatically generated unless
+	 * options.skip_user_key is specified.
+	 *
+	 * Also note that this operation *wipes out all subkeys for this object* and
+	 * replaces them. You must pass in all required data each time!
+	 * TODO: possibly remove above restriction.
+	 */
 	generate_subkeys: function(members, options)
 	{
 		options || (options = {});
@@ -188,4 +224,5 @@ var Protected = Composer.RelationalModel.extend({
 	}
 });
 
+// Simple container collection to hold subkeys in an object
 var Keys = Composer.Collection.extend({});
