@@ -14,6 +14,11 @@ var bookmark = {
 			return false;
 		}
 
+		if(!tagit.profile.profile_data)
+		{
+			return false;
+		}
+
 		tagit.controllers.pages.load(BookmarkController, {});
 	}
 };

@@ -48,7 +48,7 @@ var Profile = Composer.RelationalModel.extend({
 		if(options.project)
 		{
 			project = this.get('projects').find(function(p) {
-				return p.get('title') == options.project.clean();
+				return p.id() == options.project.clean();
 			});
 		}
 		if(!project) project = this.get('projects').first();

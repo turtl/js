@@ -16,20 +16,25 @@ var NoteEditTagController = Composer.Controller.extend({
 
 	init: function()
 	{
-		this.suggested_tags = toJSON(this.project.get('tags'))
-			.sort(function(a, b) {
-				var diff = b.count - a.count;
-				// secondary alpha sort
-				if(diff == 0) diff = a.name.localeCompare(b.name);
-				return diff;
-			})
-			.map(function(t) { return t.name; });
-		this.render();
+		var load_suggestions = function()
+		{
+			this.suggested_tags = toJSON(this.project.get('tags'))
+				.sort(function(a, b) {
+					var diff = b.count - a.count;
+					// secondary alpha sort
+					if(diff == 0) diff = a.name.localeCompare(b.name);
+					return diff;
+				})
+				.map(function(t) { return t.name; });
+			this.render();
+		}.bind(this);
+		this.project.bind_relational('tags', ['add', 'remove', 'reset', 'change'], load_suggestions, 'note:edit:suggested_tags');
 		this.note.bind_relational('tags', ['add', 'remove', 'reset', 'change'], this.render.bind(this), 'note:edit:tags:change');
 	},
 
 	release: function()
 	{
+		this.project.unbind_relational('tags', ['add', 'remove', 'reset', 'change'], 'note:edit:suggested_tags');
 		this.note.unbind_relational('tags', ['add', 'remove', 'reset', 'change'], 'note:edit:tags:change');
 		this.parent.apply(this, arguments);
 	},

@@ -49,6 +49,19 @@ var tagit	=	{
 		var _main = $E(this.main_container_selector);
 		if(_main) _main.set('html', '');
 
+		if(History.enabled)
+		{
+			var initial_route	=	window.location.pathname+window.location.search;
+			if(initial_route == '/' && window.location.hash.match(/^#!\//))
+			{
+				initial_route	=	new String(window.location.hash).replace(/^[#!]+/, '');
+			}
+		}
+		else
+		{
+			var initial_route	=	window.location.hash != '' ? window.location.hash : window.location.pathname;
+		}
+
 		// create the user model
 		this.user || (this.user = new User());
 
@@ -65,7 +78,7 @@ var tagit	=	{
 					tagit.show_loading_screen(false);
 					this.controllers.pages.release_current();
 					this.last_url = '';
-					this.route('/');
+					this.route(initial_route);
 				}.bind(this)
 			});
 		}.bind(this));
@@ -83,18 +96,6 @@ var tagit	=	{
 		this.load_controller('HeaderBar', HeaderBarController, {}, {});
 
 		this.loaded	=	true;
-		if(History.enabled)
-		{
-			var initial_route	=	window.location.pathname+window.location.search;
-			if(initial_route == '/' && window.location.hash.match(/^#!\//))
-			{
-				initial_route	=	new String(window.location.hash).replace(/^[#!]+/, '');
-			}
-		}
-		else
-		{
-			var initial_route	=	window.location.hash != '' ? window.location.hash : window.location.pathname;
-		}
 		this.route(initial_route);
 	},
 

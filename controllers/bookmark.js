@@ -18,46 +18,38 @@ var BookmarkController = Composer.Controller.extend({
 		this.linkdata = parse_querystring();
 		this.render();
 
-		tagit.loading(true);
-		this.profile = tagit.user.load_profile({
-			project: tagit.user.get('last_project')
-		});
-
+		this.profile	=	tagit.profile;
 		this.profile.bind('change:current_project', function() {
 			var project = this.profile.get_current_project();
-			tagit.user.set({last_project: project.get('title')});
-			tagit.loading(true);
-			project.load_notes({
-				success: function() {
-					tagit.loading(false);
-					this.render();
-					this.soft_release();
-					var note = new Note({
-						type: this.linkdata.type,
-						url: this.linkdata.url,
-						title: this.linkdata.title,
-						text: this.linkdata.text
-					});
-					this.project_controller = new ProjectsController({
-						inject: this.project_container,
-						profile: this.profile
-					});
-					this.edit_controller = new NoteEditController({
-						inject: this.edit_container,
-						note: note,
-						project: project,
-						edit_in_modal: false
-					});
-					$E('.projects', this.el).dispose().inject($E('h1', this.edit_controller.el), 'after');
-					this.edit_controller.bind('release', function() {
-						window.close();
-					}, 'bookmark:edit_note:release');
-					(function() {
-						this.edit_controller.tag_controller.inp_tag.focus();
-					}).delay(10, this);
-				}.bind(this)
+			tagit.user.set({last_project: project.id()});
+			this.render();
+			this.soft_release();
+			var note = new Note({
+				type: this.linkdata.type,
+				url: this.linkdata.url,
+				title: this.linkdata.title,
+				text: this.linkdata.text
 			});
+			this.project_controller = new ProjectsController({
+				inject: this.project_container,
+				profile: this.profile
+			});
+			this.edit_controller = new NoteEditController({
+				inject: this.edit_container,
+				note: note,
+				project: project,
+				edit_in_modal: false
+			});
+			$E('.projects', this.el).dispose().inject($E('h1', this.edit_controller.el), 'after');
+			this.edit_controller.bind('release', function() {
+				window.close();
+			}, 'bookmark:edit_note:release');
+			(function() {
+				this.edit_controller.tag_controller.inp_tag.focus();
+			}).delay(400, this);
 		}.bind(this), 'bookmark:change_project');
+
+		this.profile.load({project: tagit.user.get('last_project')});
 	},
 
 	soft_release: function()
