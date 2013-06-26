@@ -68,7 +68,7 @@
 		attach: function()
 		{
 			if(!this._do_match_action) this._do_match_action = this.match_action.bind(this);
-			this.master.bind('all', this._do_match_action, 'filtercollection:all');
+			this.master.bind('all', this._do_match_action, 'filtercollection:'+this._cid+':all');
 			this.bind('reset', function(options) {
 				options || (options = {});
 				if(options.has_reload) return false;
@@ -78,7 +78,7 @@
 
 		detach: function()
 		{
-			this.master.unbind('all', 'filtercollection:all');
+			this.master.unbind('all', 'filtercollection:'+this._cid+':all');
 			this.unbind('reset', 'filtercollection:reset');
 		},
 

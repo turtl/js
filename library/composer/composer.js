@@ -824,7 +824,7 @@
 			}
 
 			// listen to the model's events so we can propogate them
-			model.bind('all', this._model_event.bind(this));
+			model.bind('all', this._model_event.bind(this), 'collection:'+this._cid+':listen:model:all');
 
 			this.fire_event('add', options, model, this, options);
 
@@ -904,10 +904,22 @@
 			// save to trigger change event if needed
 			var num_rec	=	this._models.length;
 
+			/*
+			 * AL - What was I thinking?
+			 *  1. collection.remove can work on an array of items already
+			 *  2. it's stupid to call _remove_reference instead of remove...why
+			 *     not use existing remove code??
+			 *  3. it's stupid to fire the remove event *on the model*
+			 *
+			 * I'm leaving this here in case there's *actually* a reason for
+			 * what I did.
 			this._models.each(function(model) {
 				this._remove_reference(model);
 				if(options.fire_remove_events) model.trigger('remove');
 			}, this);
+			*/
+
+			this.remove(this._models, options);
 			this._models	=	[];
 
 			// if the number actually change, trigger our change event
@@ -1245,7 +1257,7 @@
 			model.collections.erase(this);
 
 			// don't listen to this model anymore
-			model.unbind('all', this._model_event.bind(this));
+			model.unbind('all', 'collection:'+this._cid+':listen:model:all');
 		},
 
 		/**
