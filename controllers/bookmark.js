@@ -46,7 +46,7 @@ var BookmarkController = Composer.Controller.extend({
 			}, 'bookmark:edit_note:release');
 			(function() {
 				this.edit_controller.tag_controller.inp_tag.focus();
-			}).delay(400, this);
+			}).delay(10, this);
 		}.bind(this), 'bookmark:change_project');
 
 		this.profile.load({project: tagit.user.get('last_project')});
