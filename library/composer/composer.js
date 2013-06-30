@@ -211,6 +211,20 @@
 		__composer_type: 'base',
 
 		/**
+		 * Every Composer object has an assigned unique id (regardless of the
+		 * object's actual app ID). It is stored here.
+		 */
+		_cid: false,
+
+		/**
+		 * Pull out the object's unique Composer ID
+		 */
+		cid: function()
+		{
+			return this._cid;
+		},
+
+		/**
 		 * fire_event dtermines whether or not an event should fire. given an event
 		 * name, the passed-in options, and any arbitrary number of arguments,
 		 * determine whether or not the given event should be triggered.
@@ -308,9 +322,6 @@
 		// for internal object testing
 		// NOTE: deprecated in favor of __composer_type
 		__is_model: true,
-
-		// the model's unique app id, assigned by composer on instantiation
-		_cid: false,
 
 		options: {},
 
@@ -582,15 +593,7 @@
 			var id	=	this.get(this.id_key);
 			if(id) return id;
 			if(no_cid) return false;
-			return this._cid;
-		},
-
-		/**
-		 * get the model's unique app id (cid)
-		 */
-		cid: function()
-		{
-			return this._cid;
+			return this.cid();
 		},
 
 		/**
@@ -824,7 +827,7 @@
 			}
 
 			// listen to the model's events so we can propogate them
-			model.bind('all', this._model_event.bind(this), 'collection:'+this._cid+':listen:model:all');
+			model.bind('all', this._model_event.bind(this), 'collection:'+this.cid()+':listen:model:all');
 
 			this.fire_event('add', options, model, this, options);
 
@@ -1257,7 +1260,7 @@
 			model.collections.erase(this);
 
 			// don't listen to this model anymore
-			model.unbind('all', 'collection:'+this._cid+':listen:model:all');
+			model.unbind('all', 'collection:'+this.cid()+':listen:model:all');
 		},
 
 		/**
