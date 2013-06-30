@@ -47,12 +47,13 @@ header h1 a span {display: inline-block; padding: 0 2px;}
 header h1 a:hover span {color: #73b8d1;}
 header div.loading {visibility: hidden; float: left; margin: 13px 16px 0 16px;}
 
-header div.actions {float: right; margin-right: 16px;}
-header div.actions ul {list-style: none;}
+/* logged out menu */
+header div.actions {float: right; margin: 0;}
+header div.actions ul {list-style: none; margin: 0 16px 0 0;}
 header div.actions ul li {display: block; margin: 0; float: left;}
-header div.actions a {display: block; height: 40px;}
-header div.actions a span {display: block; padding: 13px 8px; color: #73b8d1; font-weight: normal; text-transform: uppercase; font-size: 11px; line-height: 12px;}
-header div.actions a {
+header div.actions ul a {display: block; height: 40px;}
+header div.actions ul a span {display: block; padding: 13px 8px; color: #73b8d1; font-weight: normal; text-transform: uppercase; font-size: 11px; line-height: 12px;}
+header div.actions ul a {
 	background: #333; /* Old browsers */
 	background: -moz-linear-gradient(top, #444444 1%, #222222 100%); /* FF3.6+ */
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(1%,#444444), color-stop(100%,#222222)); /* Chrome,Safari4+ */
@@ -64,7 +65,19 @@ header div.actions a {
 	border-right: 1px solid #111;
 }
 header div.actions li:first-child a {border-left: 1px solid #111;}
-header div.actions a.sel {background: #202020;}
+header div.actions ul a.sel {background: #202020;}
+
+/* logged in menu */
+header div.actions > a.menu {display: inline-block; height: 36px; margin: 4px 8px 0 0; opacity: .9;}
+header div.actions > a.menu:hover {opacity: 1;}
+header div.actions ul.menu {display: none; position: absolute; right: 8px; z-index: 10; width: 230px; margin: 0; list-style: none; background: #111;}
+header div.actions ul.menu.open {display: block;}
+header div.actions ul.menu li {display: block; float: none; margin: 0;}
+header div.actions ul.menu li.logout {margin-top: 4px;}
+header div.actions ul.menu a {height: 30px;}
+header div.actions ul.menu a img {float: right; margin: 7px 7px 0 0; opacity: .7}
+header div.actions ul.menu a:hover img {opacity: .9;}
+header div.actions ul.menu a span {padding: 9px 8px;}
 
 #main {min-height: 500px; padding: 0 10px;}
 
