@@ -8,6 +8,7 @@ var HeaderBarController = Composer.Controller.extend({
 	events: {
 		'click a.menu': 'toggle_menu',
 		'click li.bookmarklet a': 'bookmarklet',
+		'click li.persona a': 'open_personas',
 		'mouseenter ul.menu': 'cancel_close_menu',
 		'mouseleave ul.menu': 'close_menu'
 	},
@@ -66,5 +67,11 @@ var HeaderBarController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		alert('Drag me to your bookmarks!');
+	},
+
+	open_personas: function(e)
+	{
+		if(e) e.stop();
+		new PersonasController();
 	}
 });

@@ -73,6 +73,7 @@ header div.actions > a.menu:hover {opacity: 1;}
 header div.actions ul.menu {display: none; position: absolute; right: 8px; z-index: 10; width: 230px; margin: 0; list-style: none; background: #111;}
 header div.actions ul.menu.open {display: block;}
 header div.actions ul.menu li {display: block; float: none; margin: 0;}
+header div.actions ul.menu li.bookmarklet {margin-top: 4px;}
 header div.actions ul.menu li.logout {margin-top: 4px;}
 header div.actions ul.menu a {height: 30px;}
 header div.actions ul.menu a img {float: right; margin: 7px 7px 0 0; opacity: .7}

@@ -1,0 +1,42 @@
+<div class="personas">
+	<h1>Your personas</h1>
+	<div class="content">
+		<p>
+			Persona's let you give a "Face" to your account. By default, your
+			profile is private and your account is hidden. Persona's allow you to
+			share your data (and be shared with).
+		</p>
+	</div>
+
+	<? if(personas.length > 0) { ?>
+		<ul class="personas">
+			<? personas.each(function(p) { ?>
+				<li class="persona_<?=p.id?>">
+					<h3><?=p.screenname?></h3>
+					<ul>
+						<li>
+							<a href="#edit-persona">
+								<img src="/images/site/icons/edit_16x16.png" width="16" height="16" alt="edit">
+							</a>
+						</li>
+						<li>
+							<a href="#delete-persona">
+								<img src="/images/site/icons/delete_16x16.png" width="16" height="16" alt="delete">
+							</a>
+						</li>
+					</ul>
+				</li>
+			<? }); ?>
+		</ul>
+	<? } else { ?>
+		<div class="content">
+			<p>
+				You have no personas. <a href="#add-persona">Add one</a> to start
+				sharing.
+			</p>
+		</div>
+	<? } ?>
+	<div class="button add <? if(personas.length > 0) { ?>disabled<? } ?>">
+		Add a persona
+	</div>
+</div>
