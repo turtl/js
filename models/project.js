@@ -97,26 +97,12 @@ var Project = Composer.RelationalModel.extend({
 		options || (options = {});
 		this.get('notes').clear();
 		this.track_tags(false);
-		(function() {
-			this.get('notes').reset_async(note_data, {
-				silent: true,
-				complete: function() {
-					this.get('notes').trigger('reset');
-					this.track_tags(true);
-					this.get('tags').refresh_from_notes(this.get('notes'), {silent: true});
-					this.get('tags').trigger('reset');
-					this.trigger('notes_updated');
-					if(options.success) options.success(note_data);
-				}.bind(this)
-			});
-		}).delay(0, this);
-		/*
-		this.set({notes: notes});
+		this.get('notes').reset(note_data, {silent: true})
+		this.get('notes').trigger('reset');
 		this.track_tags(true);
 		this.get('tags').refresh_from_notes(this.get('notes'), {silent: true});
 		this.get('tags').trigger('reset');
-		if(options.success) options.success(notes);
-		*/
+		this.trigger('notes_updated');
 	},
 
 	save: function(options)
@@ -215,16 +201,17 @@ var Projects = Composer.Collection.extend({
 		return this.parent.apply(this, arguments);
 	},
 
-	load_projects: function(projects)
+	load_projects: function(projects, options)
 	{
+		options || (options = {});
 		this.each(function(p) { p.destroy({skip_sync: true}); });
-		this.clear();
+		this.clear(options);
 		projects.each(function(pdata) {
 			var notes = pdata.notes;
 			delete pdata.notes;
 			var project = new Project(pdata);
-			this.add(project);
-			project.update_notes(notes);
+			this.add(project, options);
+			project.update_notes(notes, options);
 		}.bind(this));
 		//this.reset(projects);
 	},

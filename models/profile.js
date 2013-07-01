@@ -42,7 +42,7 @@ var Profile = Composer.RelationalModel.extend({
 		this.get_sync_time();
 		var projects = this.get('projects');
 		var project_data = this.profile_data.projects;
-		projects.load_projects(project_data);
+		projects.load_projects(project_data, options);
 		var project = null;
 		this.loaded = true;
 		if(options.project)

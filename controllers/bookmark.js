@@ -22,7 +22,6 @@ var BookmarkController = Composer.Controller.extend({
 		this.profile.bind('change:current_project', function() {
 			var project = this.profile.get_current_project();
 			tagit.user.set({last_project: project.id()});
-			this.render();
 			this.soft_release();
 			var note = new Note({
 				type: this.linkdata.type,
@@ -44,9 +43,6 @@ var BookmarkController = Composer.Controller.extend({
 			this.edit_controller.bind('release', function() {
 				window.close();
 			}, 'bookmark:edit_note:release');
-			(function() {
-				this.edit_controller.tag_controller.inp_tag.focus();
-			}).delay(10, this);
 		}.bind(this), 'bookmark:change_project');
 
 		this.profile.load({project: tagit.user.get('last_project')});
