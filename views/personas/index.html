@@ -1,5 +1,5 @@
+<h1>Your personas</h1>
 <div class="personas">
-	<h1>Your personas</h1>
 	<div class="content">
 		<p>
 			Persona's let you give a "Face" to your account. By default, your
@@ -28,7 +28,11 @@
 				</li>
 			<? }); ?>
 		</ul>
-	<? } else { ?>
+	<? } ?>
+	<div class="button add <? if(personas.length > 0) { ?>disabled<? } ?>">
+		<span>Add a persona</span>
+	</div>
+	<? if(personas.length == 0) { ?>
 		<div class="content">
 			<p>
 				You have no personas. <a href="#add-persona">Add one</a> to start
@@ -36,7 +40,4 @@
 			</p>
 		</div>
 	<? } ?>
-	<div class="button add <? if(personas.length > 0) { ?>disabled<? } ?>">
-		Add a persona
-	</div>
 </div>

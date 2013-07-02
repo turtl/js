@@ -1,0 +1,4 @@
+/* only applies when no personas listed */
+.personas .content + .button + .content {padding-top: 16px; border-top: 1px dashed #555;}
+.personas div.button.add {float: right;}
+
