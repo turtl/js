@@ -3,6 +3,8 @@ var PersonasController = Composer.Controller.extend({
 	},
 
 	events: {
+		'click .button.add': 'add_persona',
+		'click a.add': 'add_persona'
 	},
 
 	init: function()
@@ -19,6 +21,7 @@ var PersonasController = Composer.Controller.extend({
 	release: function()
 	{
 		if(modal.is_open) modal.close();
+		this.parent.apply(this, arguments);
 	},
 
 	render: function()
@@ -27,5 +30,12 @@ var PersonasController = Composer.Controller.extend({
 			personas: tagit.user.get('personas', [])
 		});
 		this.html(content);
+	},
+
+	add_persona: function(e)
+	{
+		if(e) e.stop();
+		this.release();
+		new PersonaEditController();
 	}
 });

@@ -68,7 +68,7 @@ header div.actions li:first-child a {border-left: 1px solid #111;}
 header div.actions ul a.sel {background: #202020;}
 
 /* logged in menu */
-header div.actions > a.menu {display: inline-block; height: 36px; margin: 4px 8px 0 0; opacity: .9;}
+header div.actions > a.menu {display: inline-block; height: 36px; margin: 5px 8px 0 0; opacity: .9;}
 header div.actions > a.menu:hover {opacity: 1;}
 header div.actions ul.menu {display: none; position: absolute; right: 8px; z-index: 10; width: 230px; margin: 0; list-style: none; background: #111;}
 header div.actions ul.menu.open {display: block;}

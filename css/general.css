@@ -29,6 +29,12 @@ img.loading {visibility: hidden;}
 .content img {max-width: 100%;}
 .content .warn {color: #922;}
 
+form.standard-form input[type=text] {width: 95%;}
+form.standard-form textarea {width: 95%;}
+form.standard-form .form-note {color: #aaa;}
+form.standard-form input[type=submit] {float: right;}
+form.standard-form .error {border-color: #f88;}
+
 /* generic (non-header) buttons */
 div.button {display: inline-block; cursor: pointer; border: 1px solid #111; border-radius: 5px;}
 div.button {

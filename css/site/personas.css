@@ -1,4 +1,8 @@
 /* only applies when no personas listed */
 .personas .content + .button + .content {padding-top: 16px; border-top: 1px dashed #555;}
-.personas div.button.add {float: right;}
+.personas div.button.add {float: right; margin-top: 12px;}
+
+/* persona edit form */
+.persona-edit form {float: left; width: 60%;}
+.persona-edit .info {float: right; width: 36%; padding-left: 2.2%; border-left: 1px solid #ddd;}
 

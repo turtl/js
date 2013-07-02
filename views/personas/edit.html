@@ -1,0 +1,24 @@
+<?
+var action = persona.id ? 'Edit' : 'Add';
+?>
+<h1><?=action?> persona</h1>
+<div class="persona-edit">
+	<form class="standard-form">
+		<input tabindex="1" type="text" name="screenname" value="<?=persona.screenname?>" placeholder="Screen name">
+		<span class="taken">&nbsp;</span>
+
+		<input tabindex="2" type="text" name="email" value="<?=persona.email?>" placeholder="Email (optional)">
+	</form>
+	<div class="info content">
+		<p>
+			Personas give your account a face. Because of this, your personas
+			are stored in plaintext in the database, allowing other users to
+			find you and share with you (and also allowing you to share with
+			others).
+		</p>
+		<p>
+			The only required information for a persona is the screen name,
+			which must be unique.
+		</p>
+	</div>
+</div>
