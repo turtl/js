@@ -1,11 +1,11 @@
 <?
 var action = persona.id ? 'Edit' : 'Add';
 ?>
-<h1><?=action?> persona</h1>
+<h1><?=action?> persona <small><a href="#personas">&laquo; Back to personas</a></small></h1>
 <div class="persona-edit">
 	<form class="standard-form">
-		<input tabindex="1" type="text" name="screenname" value="<?=persona.screenname?>" placeholder="Screen name">
-		<span class="taken">&nbsp;</span>
+		<input tabindex="1" type="text" name="screenname" value="<?=persona.screenname?>" placeholder="Screen name (A-Z, 0-9, .)">
+		<p class="taken">&nbsp;</p>
 
 		<input tabindex="2" type="text" name="email" value="<?=persona.email?>" placeholder="Email (optional)">
 	</form>

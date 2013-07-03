@@ -580,7 +580,7 @@ var modal_interface	=	new Class({
 		this.test_escape	=	function(e)
 		{
 			// pretty simple
-			if(e.key.toLowerCase() == 'esc')
+			if(e.key.toLowerCase && e.key.toLowerCase() == 'esc')
 			{
 				this.close();
 			}
