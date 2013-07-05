@@ -153,7 +153,7 @@ ul.note_list.list_grid .note ol {margin: 0 0 16px 32px;}
 ul.note_list.list_grid .note p {padding: 0 0 16px 0;}
 ul.note_list.list_grid .note p:first-child {padding: 0 0 0 0; margin: 0;}
 ul.note_list.list_grid .note img {max-width: 100%; max-height: 100%;}
-ul.note_list.list_grid .note a.img {display: table-cell; width: 232px; height: 232px; vertical-align: middle; text-align: center; background: #000;}
+ul.note_list.list_grid .note a.img {display: table-cell; width: 232px; max-width: 232px; height: 232px; vertical-align: middle; text-align: center; background: #000;}
 
 /* masonry */
 ul.note_list.list_masonry > li {
