@@ -33,6 +33,7 @@ var User	=	Composer.RelationalModel.extend({
 	{
 		this.logged_in		=	false;
 
+		// add new personas to user settings (where the shared secret is stored)
 		this.bind_relational('personas', ['saved'], function() {
 			var persona_settings	=	this.get('settings').get_by_key('personas');
 			var personas = {};
@@ -42,6 +43,15 @@ var User	=	Composer.RelationalModel.extend({
 			persona_settings.value(personas);
 		}.bind(this), 'user:track_personas');
 
+		// make sure personas that are deleted are removed from user settings
+		this.bind_relational('personas', ['destroy'], function(persona) {
+			var persona_settings	=	this.get('settings').get_by_key('personas');
+			var personas = Object.clone(persona_settings.value());
+			delete personas[persona.id()];
+			persona_settings.value(personas);
+		}.bind(this), 'user:track_personas:destroy');
+
+		// whenever the user settings change, automatically save them (encrypted)
 		this.bind_relational('settings', ['change'], function() {
 			this.save({
 				success: function(res) {

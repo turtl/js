@@ -21,11 +21,13 @@ var PersonasController = Composer.Controller.extend({
 			this.release();
 		}.bind(this);
 		modal.addEvent('close', modalclose);
+		this.collection.bind(['change', 'add', 'remove', 'destroy', 'reset'], this.render.bind(this), 'personas:monitor:render');
 	},
 
 	release: function()
 	{
 		if(modal.is_open) modal.close();
+		this.collection.unbind(['change', 'add', 'remove', 'destroy', 'reset'], 'personas:monitor:render');
 		this.parent.apply(this, arguments);
 	},
 
@@ -75,5 +77,7 @@ var PersonasController = Composer.Controller.extend({
 		var pid = this.get_persona_id(e.target);
 		var persona = this.collection.find_by_id(pid);
 		if(!persona) return false;
+		if(!confirm('Really delete this persona? It will be gone forever, along with its keys (both public and private). All data shared with this persona will no longer be accessible to you. THIS IS IRREVERSIBLE.')) return false;
+		persona.destroy_persona();
 	}
 });

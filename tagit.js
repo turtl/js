@@ -33,7 +33,7 @@ var tagit	=	{
 	scroll_to_top: true,
 
 	// whether or not to sync data w/ server
-	sync: false,
+	sync: true,
 
 	init: function()
 	{
@@ -342,8 +342,8 @@ Composer.sync	=	function(method, model, options)
 	}
 	args = options.args;
 	args || (args = {});
-	// don't want to send all data over a GET
-	if(method != 'get') args.data = data;
+	// don't want to send all data over a GET or DELETE
+	if(method != 'get' && method != '_delete') args.data = data;
 	tagit.api[method](model.get_url(), args, {
 		success: options.success,
 		error: options.error

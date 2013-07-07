@@ -14,6 +14,19 @@ var Persona = Composer.Model.extend({
 		'privkey'
 	],
 
+	destroy_persona: function(options)
+	{
+		options || (options = {});
+		this.get_challenge({
+			success: function(res) {
+				var challenge = res;
+				options.args = {challenge: this.generate_response(challenge)};
+				this.destroy(options);
+			}.bind(this),
+			error: options.error
+		});
+	},
+
 	get_by_screenname: function(screenname, options)
 	{
 		options || (options = {});
@@ -36,6 +49,11 @@ var Persona = Composer.Model.extend({
 	get_challenge: function(options)
 	{
 		tagit.api.post('/personas/'+this.id()+'/challenge', {}, options);
+	},
+
+	generate_response: function(challenge)
+	{
+		return tcrypt.hash(this.get('secret') + challenge);
 	}
 }, Protected);
 

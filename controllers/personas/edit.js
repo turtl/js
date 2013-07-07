@@ -120,7 +120,7 @@ var PersonaEditController = Composer.Controller.extend({
 					var challenge = res;
 					// set the challenge/response into the args sent with the save.
 					// this lets the server know we own the persona.
-					args.challenge = tcrypt.hash(this.model.get('secret') + challenge);
+					args.challenge = this.model.generate_response(challenge);
 					do_save();
 				}.bind(this),
 				error: function(model, err) {
