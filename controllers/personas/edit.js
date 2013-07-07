@@ -9,7 +9,7 @@ var PersonaEditController = Composer.Controller.extend({
 
 	events: {
 		'keyup input[name=screenname]': 'check_screenname',
-		'submit form': 'add_persona',
+		'submit form': 'edit_persona',
 		'click h1 a': 'open_personas'
 	},
 
@@ -21,6 +21,12 @@ var PersonaEditController = Composer.Controller.extend({
 	{
 		if(!this.model) this.model = new Persona();
 		this.model.key = tagit.user.get_key();	// persona uses same key as user
+
+		if(this.model.is_new() && this.collection.models().length > 0)
+		{
+			this.open_personas();
+			return false;
+		}
 
 		this.render();
 		modal.open(this.el);
@@ -52,12 +58,17 @@ var PersonaEditController = Composer.Controller.extend({
 		(function() { this.inp_screenname.focus(); }).delay(1, this);
 	},
 
-	add_persona: function(e)
+	edit_persona: function(e)
 	{
 		if(e) e.stop();
+		// TODO: if you add to these, remove them from the model below
 		var screenname = this.inp_screenname.get('value');
 		var name = this.inp_name.get('value').clean();
 		var email = this.inp_email.get('value').clean();
+
+		this.model.unset('screenname');
+		this.model.unset('name');
+		this.model.unset('email');
 
 		if(!this.screenname_valid(screenname))
 		{
@@ -67,31 +78,56 @@ var PersonaEditController = Composer.Controller.extend({
 			return false;
 		}
 
-		var set = {screenname: screenname};
+		var set		=	{screenname: screenname};
+		var args	=	{};
 		if(name != '') set.name = name;
 		if(email != '') set.email = email;
-		var is_new = !this.model.id(true);
+		var is_new = this.model.is_new();
 		if(is_new)
 		{
 			var symkey	=	tcrypt.gen_symmetric_keys(tagit.user);
 			set.pubkey	=	symkey.public;
 			set.privkey	=	symkey.private;
 			set.secret	=	this.model.generate_secret(tagit.user.get_key());
+			args.secret	=	set.secret;
 		}
 		this.model.set(set);
 		tagit.loading(true);
-		this.model.save({
-			success: function(res) {
-				tagit.loading(false);
-				if(is_new) this.collection.add(this.model);
-				this.model.trigger('saved');
-				this.open_personas();
-			}.bind(this),
-			error: function(err, xhr) {
-				tagit.loading(false);
-				barfr.barf('There was a problem '+ (is_new ? 'adding' : 'updating') +' your persona: '+ err);
-			}.bind(this)
-		});
+		var do_save = function()
+		{
+			this.model.save({
+				args: args,
+				success: function(res) {
+					tagit.loading(false);
+					if(is_new) this.collection.add(this.model);
+					this.model.trigger('saved');
+					this.open_personas();
+				}.bind(this),
+				error: function(model, err) {
+					tagit.loading(false);
+					barfr.barf('There was a problem '+ (is_new ? 'adding' : 'updating') +' your persona: '+ err);
+				}.bind(this)
+			});
+		}.bind(this);
+		if(is_new)
+		{
+			do_save();
+		}
+		else
+		{
+			this.model.get_challenge({
+				success: function(res) {
+					var challenge = res;
+					// set the challenge/response into the args sent with the save.
+					// this lets the server know we own the persona.
+					args.challenge = tcrypt.hash(this.model.get('secret') + challenge);
+					do_save();
+				}.bind(this),
+				error: function(model, err) {
+					barfr.barf('There was a problem verifying your ownership of this persona: '+ err);
+				}.bind(this)
+			});
+		}
 	},
 
 	get_screenname: function()

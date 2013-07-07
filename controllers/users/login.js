@@ -42,6 +42,10 @@ var UserLoginController = Composer.Controller.extend({
 			success: function(id) {
 				var data = user.toJSON();
 				data.id = id;
+				tagit.user.set({
+					username: user.get('username'),
+					password: user.get('password')
+				});
 				tagit.user.login(data);
 				tagit.loading(false);
 				tagit.route(this.redirect);

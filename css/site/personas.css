@@ -12,6 +12,8 @@
 
 /* listing */
 .personas ul.personas {list-style: none;}
-.personas ul.personas li {display: block;}
-.personas ul.personas li h3 {display: inline-block;}
-.personas ul.personas li > ul {float: right;}
+.personas ul.personas > li {display: block; padding: 6px 4px; border-bottom: 1px dashed #aaa;}
+.personas ul.personas > li h3 {display: inline-block;}
+.personas ul.personas > li small {display: inline-block; margin: 0 0 0 12px; font-size: 12px; color: #888;}
+.personas ul.personas > li > ul {float: right; list-style: none;}
+.personas ul.personas > li > ul li {display: inline-block; margin: 0 0 0 3px;}

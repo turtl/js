@@ -4,7 +4,9 @@ var PersonasController = Composer.Controller.extend({
 
 	events: {
 		'click .button.add': 'add_persona',
-		'click a.add': 'add_persona'
+		'click a.add': 'add_persona',
+		'click a[href=#edit]': 'edit_persona',
+		'click a[href=#delete]': 'delete_persona'
 	},
 
 	collection: null,
@@ -45,5 +47,33 @@ var PersonasController = Composer.Controller.extend({
 		new PersonaEditController({
 			collection: this.collection
 		});
+	},
+
+	get_persona_id: function(target)
+	{
+		return next_tag_up('li', next_tag_up('li', target).getParent()).className.replace(/^.*persona_([0-9a-f-]+).*?$/, '$1');
+	},
+
+	edit_persona: function(e)
+	{
+		if(!e) return false;
+		e.stop();
+		var pid		=	this.get_persona_id(e.target);
+		var persona	=	this.collection.find_by_id(pid);
+		if(!persona) return false;
+		this.release();
+		new PersonaEditController({
+			collection: this.collection,
+			model: persona
+		});
+	},
+
+	delete_persona: function(e)
+	{
+		if(!e) return false;
+		e.stop();
+		var pid = this.get_persona_id(e.target);
+		var persona = this.collection.find_by_id(pid);
+		if(!persona) return false;
 	}
 });

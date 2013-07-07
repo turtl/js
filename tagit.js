@@ -33,7 +33,7 @@ var tagit	=	{
 	scroll_to_top: true,
 
 	// whether or not to sync data w/ server
-	sync: true,
+	sync: false,
 
 	init: function()
 	{
@@ -82,6 +82,7 @@ var tagit	=	{
 					this.controllers.pages.release_current();
 					this.last_url = '';
 					this.route(initial_route);
+					this.user.load_personas();
 				}.bind(this)
 			});
 		}.bind(this));
@@ -341,7 +342,8 @@ Composer.sync	=	function(method, model, options)
 	}
 	args = options.args;
 	args || (args = {});
-	args.data = data;
+	// don't want to send all data over a GET
+	if(method != 'get') args.data = data;
 	tagit.api[method](model.get_url(), args, {
 		success: options.success,
 		error: options.error

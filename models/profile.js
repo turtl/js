@@ -25,11 +25,12 @@ var Profile = Composer.RelationalModel.extend({
 		tagit.api.get('/profiles/users/'+tagit.user.id(), {}, {
 			success: function(profile) {
 				this.profile_data = profile;
+				tagit.user.set(profile.user);
 				if(options.init) this.load(options);
 				if(options.success) options.success(profile);
 			}.bind(this),
-			error: function(e) {
-				barfr.barf('Error loading user profile: ', e);
+			error: function(err) {
+				barfr.barf('Error loading user profile: '+ err);
 				if(options.error) options.error(e);
 			}
 		});

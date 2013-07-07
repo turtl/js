@@ -14,13 +14,6 @@ var Persona = Composer.Model.extend({
 		'privkey'
 	],
 
-	save: function(options)
-	{
-		var args = options.args || {};
-		args.secret = this.get('secret');
-		return this.parent.apply(this, arguments);
-	},
-
 	get_by_screenname: function(screenname, options)
 	{
 		options || (options = {});
@@ -38,6 +31,11 @@ var Persona = Composer.Model.extend({
 	generate_secret: function(key)
 	{
 		return tcrypt.encrypt(key, tcrypt.uuid()).toString().replace(/:.*/, '');
+	},
+
+	get_challenge: function(options)
+	{
+		tagit.api.post('/personas/'+this.id()+'/challenge', {}, options);
 	}
 }, Protected);
 

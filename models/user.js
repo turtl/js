@@ -1,24 +1,57 @@
 var User	=	Composer.RelationalModel.extend({
-	type: 'user',
+	base_url: '/users',
+	type: 'user',  // WTF is this for?
 
 	relations: {
 		personas: {
 			type: Composer.HasMany,
 			collection: 'Personas',
 			forward_events: true
+		},
+
+		settings: {
+			type: Composer.HasMany,
+			collection: 'Settings',
+			forward_events: true
 		}
 	},
 
-	base_url: '/users',
+	public_fields: [
+		'id'
+	],
+
+	private_fields: [
+		'settings'
+	],
 
 	logged_in: false,
-	latest_feed: null,
+
+	auth: null,
+	key: null,
 
 	init: function()
 	{
 		this.logged_in		=	false;
+
 		this.bind_relational('personas', ['saved'], function() {
-		}.bind(this), 'user:save_personas');
+			var persona_settings	=	this.get('settings').get_by_key('personas');
+			var personas = {};
+			this.get('personas').each(function(persona) {
+				personas[persona.id()] = persona.get('secret');
+			});
+			persona_settings.value(personas);
+		}.bind(this), 'user:track_personas');
+
+		this.bind_relational('settings', ['change'], function() {
+			this.save({
+				success: function(res) {
+					this.trigger('saved', res);
+				}.bind(this),
+				error: function(model, err) {
+					barfr.barf('There was an error saving your persona: '+ err);
+				}.bind(this)
+			});
+		}.bind(this), 'user:save_settings');
 	},
 
 	login: function(data, remember, silent)
@@ -26,7 +59,7 @@ var User	=	Composer.RelationalModel.extend({
 		(remember === true) || (remember = false);
 		(silent === true) || (silent = false);
 		this.set(data);
-		this.set({k: this.get_key()});
+		this.get_auth();
 		this.unset('username');
 		this.unset('password');
 		this.logged_in	=	true;
@@ -47,8 +80,13 @@ var User	=	Composer.RelationalModel.extend({
 		{
 			return false;
 		}
-		var userdata = JSON.decode(cookie);
-		userdata.k = CryptoJS.enc.Hex.parse(userdata.k);
+		var userdata	=	JSON.decode(cookie);
+		var key			=	userdata.k;
+		var auth		=	userdata.a;
+		delete userdata.k;
+		delete userdata.a;
+		this.key	=	CryptoJS.enc.Hex.parse(key);
+		this.auth	=	auth;
 		this.set(userdata);
 		this.logged_in	=	true;
 		this.trigger('login', this);
@@ -93,7 +131,7 @@ var User	=	Composer.RelationalModel.extend({
 
 	get_key: function()
 	{
-		var key = this.get('k');
+		var key = this.key;
 		if(key) return key;
 
 		var username = this.get('username');
@@ -104,14 +142,14 @@ var User	=	Composer.RelationalModel.extend({
 		var key = tcrypt.key(password, username + ':a_pinch_of_salt', {keySize: 256/32, iterations: 400});
 
 		// cache it
-		this.set({k: key});
+		this.key = key;
 
 		return key;
 	},
 
 	get_auth: function()
 	{
-		var auth = this.get('a');
+		var auth = this.auth;
 		if(auth) return auth;
 
 		var username = this.get('username');
@@ -126,7 +164,7 @@ var User	=	Composer.RelationalModel.extend({
 		var auth =  tcrypt.encrypt(key, user_record, {iv: iv}).toString();
 
 		// cache it
-		this.set({a: auth});
+		this.auth = auth;
 
 		return auth;
 	},
@@ -139,6 +177,27 @@ var User	=	Composer.RelationalModel.extend({
 		return profile;
 	},
 
+	load_personas: function(options)
+	{
+		var persona_keys = this.get('settings').get_by_key('personas').value();
+		if(!persona_keys) return false;
+		var num_reqs = 0;
+		var target_reqs = Object.getLength(persona_keys);
+		var finish = function(persona)
+		{
+			this.get('personas').add(persona);
+			if(num_reqs >= target_reqs && options.success) options.success()
+		}.bind(this);
+		Object.each(persona_keys, function(secret, id) {
+			var persona = new Persona({
+				id: id,
+				secret: secret
+			});
+			persona.key = this.get_key();	// assign user key to persona
+			persona.fetch({ success: finish });
+		}.bind(this));
+	},
+
 	test_auth: function(options)
 	{
 		options || (options = {});
@@ -149,5 +208,5 @@ var User	=	Composer.RelationalModel.extend({
 		});
 		tagit.api.clear_auth();
 	}
-});
+}, Protected);
 
