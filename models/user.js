@@ -1,5 +1,13 @@
-var User	=	Composer.Model.extend({
+var User	=	Composer.RelationalModel.extend({
 	type: 'user',
+
+	relations: {
+		personas: {
+			type: Composer.HasMany,
+			collection: 'Personas',
+			forward_events: true
+		}
+	},
 
 	base_url: '/users',
 
@@ -9,6 +17,8 @@ var User	=	Composer.Model.extend({
 	init: function()
 	{
 		this.logged_in		=	false;
+		this.bind_relational('personas', ['saved'], function() {
+		}.bind(this), 'user:save_personas');
 	},
 
 	login: function(data, remember, silent)

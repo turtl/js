@@ -32,6 +32,9 @@ var tagit	=	{
 	// window after a page load
 	scroll_to_top: true,
 
+	// whether or not to sync data w/ server
+	sync: true,
+
 	init: function()
 	{
 		this.initial_load();
@@ -336,7 +339,10 @@ Composer.sync	=	function(method, model, options)
 		}
 		data	=	newdata;
 	}
-	tagit.api[method](model.get_url(), {data: data}, {
+	args = options.args;
+	args || (args = {});
+	args.data = data;
+	tagit.api[method](model.get_url(), args, {
 		success: options.success,
 		error: options.error
 	});

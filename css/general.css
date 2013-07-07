@@ -34,9 +34,10 @@ form.standard-form textarea {width: 95%;}
 form.standard-form .form-note {color: #aaa;}
 form.standard-form input[type=submit] {float: right;}
 form.standard-form .error {border-color: #f88;}
+form.standard-form img.load {display: none; float: right; position: absolute; margin: 6px 0 0 -21px;}
 
 /* generic (non-header) buttons */
-div.button {display: inline-block; cursor: pointer; border: 1px solid #111; border-radius: 5px;}
+div.button {display: inline-block; cursor: pointer; line-height: 10px; border: 1px solid #111; border-radius: 5px;}
 div.button {
 	background: #333; /* Old browsers */
 	background: -moz-linear-gradient(top, #444444 1%, #222222 100%); /* FF3.6+ */

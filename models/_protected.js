@@ -101,6 +101,7 @@ var Protected = Composer.RelationalModel.extend({
 		else
 		{
 			var json = JSON.encode(body);
+			// TODO: crypto: initial padding?
 			var encbody = tcrypt.encrypt(this.key, json);
 
 			newdata['body']	=	encbody.toString();

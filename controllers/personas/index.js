@@ -7,8 +7,11 @@ var PersonasController = Composer.Controller.extend({
 		'click a.add': 'add_persona'
 	},
 
+	collection: null,
+
 	init: function()
 	{
+		if(!this.collection) this.collection = tagit.user.get('personas');
 		this.render();
 		modal.open(this.el);
 		var modalclose = function() {
@@ -26,8 +29,11 @@ var PersonasController = Composer.Controller.extend({
 
 	render: function()
 	{
+		var personas = this.collection.map(function(persona) {
+			return toJSON(persona);
+		});
 		var content = Template.render('personas/index', {
-			personas: tagit.user.get('personas', [])
+			personas: personas
 		});
 		this.html(content);
 	},
@@ -36,6 +42,8 @@ var PersonasController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		this.release();
-		new PersonaEditController();
+		new PersonaEditController({
+			collection: this.collection
+		});
 	}
 });

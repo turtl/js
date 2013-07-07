@@ -104,5 +104,36 @@ var tcrypt = {
 		var hash = CryptoJS.SHA256(data);
 		if(options.raw) return hash;
 		return CryptoJS.enc.Hex.stringify(hash);
+	},
+
+	random_number: function()
+	{
+		if(window.crypto.getRandomValues)
+		{
+			return window.crypto.getRandomValues(new Uint32Array(1))[0] / (Math.pow(2, 32) - 1);
+		}
+		else
+		{
+			// TODO: crypto: use real crypto-PRNG
+			return Math.random();
+		}
+	},
+
+	uuid: function()
+	{
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+			var r = tcrypt.random_number()*16|0;
+			var v = c == 'x' ? r : (r&0x3|0x8);
+			return v.toString(16);
+		});
+	},
+
+	// TODO: do, obvis
+	gen_symmetric_keys: function(seed)
+	{
+		return {
+			public: '1234',
+			private: '5678'
+		};
 	}
 };
