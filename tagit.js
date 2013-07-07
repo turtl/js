@@ -81,6 +81,7 @@ var tagit	=	{
 					tagit.show_loading_screen(false);
 					this.controllers.pages.release_current();
 					this.last_url = '';
+					if(initial_route.match(/^\/users\//)) initial_route = '/';
 					this.route(initial_route);
 					this.user.load_personas();
 				}.bind(this)
