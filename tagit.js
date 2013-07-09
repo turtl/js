@@ -35,6 +35,16 @@ var tagit	=	{
 	// whether or not to sync data w/ server
 	sync: true,
 
+	// -------------------------------------------------------------------------
+	// Data section
+	// -------------------------------------------------------------------------
+	// holds messages for all the user's personas
+	messages: null,
+
+	// holds project/note data for the user
+	profile: null,
+	// -------------------------------------------------------------------------
+
 	init: function()
 	{
 		this.initial_load();
@@ -75,6 +85,7 @@ var tagit	=	{
 			this.api.set_auth(this.user.get_auth());
 			tagit.show_loading_screen(true);
 			this.controllers.pages.release_current();
+			this.messages = new Messages();
 			this.profile = this.user.load_profile({
 				init: false,		// TODO: try to get this working when `true`
 				success: function() {

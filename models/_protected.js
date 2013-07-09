@@ -225,5 +225,8 @@ var Protected = Composer.RelationalModel.extend({
 	}
 });
 
+var ProtectedShared = Composer.RelationalModel.extend({
+}, Protected);
+
 // Simple container collection to hold subkeys in an object
 var Keys = Composer.Collection.extend({});

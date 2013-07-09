@@ -141,6 +141,8 @@ var Profile = Composer.RelationalModel.extend({
 				if(options.error) options.error(e);
 			}.bind(this)
 		});
+
+		tagit.messages.sync();
 	},
 
 	get_sync_time: function()
