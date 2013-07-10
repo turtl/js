@@ -142,6 +142,12 @@ var Protected = Composer.RelationalModel.extend({
 		search || (search = {});
 		options || (options = {});
 
+		// clone the keys since we perform destructive operations on them during
+		// processing and without copying it destroys the original key object,
+		// meaning this object can never be decrypted without re-downloading.
+		// not good.
+		var keys = Object.clone(keys);
+
 		var uid = tagit.user.id(true);
 		// TODO: investigate removing this for public projects??
 		if(!uid) return false;

@@ -61,6 +61,10 @@ var UserJoinController = Composer.Controller.extend({
 			success: function(userdata) {
 				var data = user.toJSON();
 				data.id = userdata.id;
+				tagit.user.set({
+					username: user.get('username'),
+					password: user.get('password')
+				});
 				tagit.user.login(data);
 				tagit.loading(false);
 				tagit.route('/');
