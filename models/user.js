@@ -133,9 +133,14 @@ var User	=	Composer.RelationalModel.extend({
 
 	logout: function()
 	{
+		this.auth = null;
+		this.key = null;
 		this.logged_in	=	false;
-		this.clear();
+		this.clear({clear_relations: true});
 		Cookie.dispose(config.user_cookie);
+		this.unbind_relational('personas', ['saved'], 'user:track_personas');
+		this.unbind_relational('personas', ['destroy'], 'user:track_personas:destroy');
+		this.unbind_relational('settings', ['change'], 'user:save_settings');
 		this.trigger('logout', this);
 	},
 

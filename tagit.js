@@ -88,7 +88,9 @@ var tagit	=	{
 			});
 		}.bind(this));
 		this.user.bind('logout', function() {
+			tagit.show_loading_screen(false);
 			this.user.unbind('change', 'user:write_changes_to_cookie');
+			tagit.api.clear_auth();
 			modal.close();
 		}.bind(this));
 
