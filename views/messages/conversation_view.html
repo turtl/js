@@ -1,0 +1,31 @@
+<? if(messages.length > 0) { ?>
+	<ul>
+		<? messages.each(function(message) { ?>
+			<li class="message">
+				<h1><?=message.data.subject?></h1>
+				<p class="headers">
+					TODO
+				</p>
+				<div class="body">
+					<?=message.data.body?>
+				</div>
+			</li>
+		<? }); ?>
+	</ul>
+<? } else if (num_personas == 0) { ?>
+	<div class="content personas">
+		<p>
+			You have no personas. Before you can send or receive messages, you
+			need to set one up.
+		</p>
+		<div class="persona button add">
+			<span>Add a persona</span>
+		</div>
+	</div>
+<? } else { ?>
+	<div class="content">
+		<p>
+			Select a conversation on the left to view it here.
+		</p>
+	</div>
+<? } ?>

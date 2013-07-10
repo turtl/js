@@ -34,6 +34,7 @@ var tagit	=	{
 
 	// whether or not to sync data w/ server
 	sync: true,
+	sync_timer: null,
 
 	// -------------------------------------------------------------------------
 	// Data section
@@ -94,7 +95,13 @@ var tagit	=	{
 					this.last_url = '';
 					if(initial_route.match(/^\/users\//)) initial_route = '/';
 					this.route(initial_route);
-					this.user.load_personas();
+					this.setup_syncing();
+					this.user.load_personas({
+						success: function() {
+							// when all personas are loaded, sync messages
+							tagit.messages.sync();
+						}
+					});
 				}.bind(this)
 			});
 		}.bind(this));
@@ -137,6 +144,23 @@ var tagit	=	{
 			if(show)	el.setStyle('visibility', 'visible');
 			else		el.setStyle('visibility', '');
 		});
+	},
+
+	setup_syncing: function()
+	{
+		// monitor for sync changes
+		this.sync_timer = new Timer(10000);
+		this.sync_timer.end = function()
+		{
+			tagit.profile.sync({
+				error: function()
+				{
+					// show barfr error
+				}
+			});
+			this.sync_timer.start();
+		}.bind(this);
+		this.sync_timer.start();
 	},
 
 	stop_spinner: false,
@@ -327,7 +351,12 @@ window.addEvent('domready', function() {
 Composer.sync	=	function(method, model, options)
 {
 	options || (options = {});
-	if(options.skip_sync) return;
+	if(options.skip_sync && method == 'delete')
+	{
+		options.success();
+		return;
+	}
+	else if(options.skip_sync) return;
 	switch(method)
 	{
 	case 'create':

@@ -86,6 +86,7 @@ var HeaderBarController = Composer.Controller.extend({
 		{
 			var a = next_tag_up('a', e.target);
 		}
+		if(!a) return false;
 		this.el.getElements('.apps li a').each(function(el) { el.removeClass('sel'); });
 		a.addClass('sel');
 		return true;

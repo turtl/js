@@ -20,7 +20,6 @@ var DashboardController = Composer.Controller.extend({
 	tags_controller: null,
 
 	sidebar_timer: null,
-	sync_timer: null,
 
 	init: function()
 	{
@@ -76,11 +75,6 @@ var DashboardController = Composer.Controller.extend({
 			tagit.route('/users/logout');
 		}, 'dashboard:shortcut:logout');
 
-		// monitor for sync changes
-		this.sync_timer = new Timer(10000);
-		this.sync_timer.end = this.sync.bind(this);
-		this.sync_timer.start();
-
 		// monitor sidebar size changes
 		this.sidebar_timer = new Timer(50);
 		this.sidebar_timer.end = this.resize_sidebar.bind(this);
@@ -109,7 +103,6 @@ var DashboardController = Composer.Controller.extend({
 		tagit.keyboard.unbind('S-/', 'dashboard:shortcut:open_help');
 		tagit.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
 		tagit.user.unbind('logout', 'dashboard:logout:clear_timer');
-		if(this.sync_timer && this.sync_timer.end) this.sync_timer.end = null;
 		if(this.sidebar_timer && this.sidebar_timer.end) this.sidebar_timer.end = null;
 		this.parent.apply(this, arguments);
 	},
@@ -123,17 +116,6 @@ var DashboardController = Composer.Controller.extend({
 	open_help: function()
 	{
 		console.log('help!!');
-	},
-
-	sync: function()
-	{
-		this.profile.sync({
-			error: function()
-			{
-				// show barfr error
-			}
-		});
-		this.sync_timer.start();
 	},
 
 	resize_sidebar: function()

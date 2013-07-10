@@ -200,6 +200,7 @@ var User	=	Composer.RelationalModel.extend({
 		var target_reqs = Object.getLength(persona_keys);
 		var finish = function(persona)
 		{
+			num_reqs++;
 			this.get('personas').add(persona);
 			if(num_reqs >= target_reqs && options.success) options.success()
 		}.bind(this);

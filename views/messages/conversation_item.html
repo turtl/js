@@ -1,0 +1,10 @@
+<?
+var them_names = their_personas.map(function(p) { 
+	return p.name ? p.name : p.screenname;
+});
+var me_names = my_personas.map(function(p) {
+	return p.name ? p.name : p.screenname;
+});
+?>
+<h3>Conversation between <?=them_names.join(', ')?> and <?=me_names.join(', ')?></h3>
+

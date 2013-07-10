@@ -111,7 +111,9 @@
 			{
 				var old_models	=	this._models;
 			}
-			this._models	=	this.master._models.filter(this.filter);
+			this._models	=	this.master._models.filter(function(model) {
+				return this.filter(model, this);
+			}.bind(this));
 			this.sort({silent: true});
 			if(this.limit) this._models.splice(this.limit);
 			if(options.diff_events)
@@ -134,7 +136,7 @@
 			options || (options = {});
 
 			// see if this model even belongs to this collection
-			if(model && !this.filter(model)) return false;
+			if(model && !this.filter(model, this)) return false;
 
 			// track the current number of items and reloda the data
 			var num_items	=	this._models.length;
@@ -151,12 +153,12 @@
 				var cur_index = this._models.indexOf(model);
 				var new_index = this.sort_index(model);
 
-				if(cur_index == -1 && this.filter(model))
+				if(cur_index == -1 && this.filter(model, this))
 				{
 					// welcome to the team!
 					this.add(model, options);
 				}
-				else if(cur_index > -1 && !this.filter(model))
+				else if(cur_index > -1 && !this.filter(model, this))
 				{
 					// we feel that your interests no longer align with the team's
 					// ...we're going to ahve to let you go.
@@ -214,7 +216,7 @@
 			}
 
 			// model doesn't match filter. NICE TRY
-			if(!this.filter(model)) return false;
+			if(!this.filter(model, this)) return false;
 
 			if(typeof(options.at) == 'number')
 			{
@@ -261,7 +263,7 @@
 
 		add_event: function(model, options)
 		{
-			if(!this.filter(model)) return false;
+			if(!this.filter(model, this)) return false;
 			this.refresh({silent: true});
 			this.fire_event('add', options, model, this, options);
 		},

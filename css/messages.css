@@ -1,0 +1,20 @@
+/* layout shit */
+.messages > .sidebar {position: absolute; float: left; width: 20%; height: 200px; overflow: auto;}
+.messages > .menu {}
+.messages > .message {float: right; width: 79%;}
+
+/* general */
+div.button.compose span {padding-left: 25px; background: url(/images/site/icons/compose_16x16.png) 4px center no-repeat;}
+
+/* sidebar */
+.messages > .sidebar > h1 {display: inline-block; font-size: 24px; font-weight: normal;}
+.messages > .sidebar > div.button {float: right;}
+.messages > .sidebar > ul.actions {float: right; list-style: none;}
+.messages > .sidebar > ul.actions li {display: inline-block;}
+
+/* message pane (rain down pain) */
+.messages > .message .gutter {padding: 0 24px;}
+.messages > .message .content {font-size: 16px;}
+.messages > .message .content.personas {padding: 20px; text-align: center; font-size: 20px; background: #cce0f0; border-radius: 10px;}
+.messages > .message .content.personas .button {display: inline-block; margin: 0 auto; float: none;}
+.messages > .message .content.personas p {}
