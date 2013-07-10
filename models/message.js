@@ -48,7 +48,7 @@ var Messages = Composer.Collection.extend({
 		});
 	},
 
-	send: function(from_persona, challenge, to_persona_id, body, options)
+	send: function(from_persona, challenge, to_persona, body, options)
 	{
 		options || (options = {});
 	},
