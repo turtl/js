@@ -26,6 +26,8 @@ var DashboardController = Composer.Controller.extend({
 	{
 		this.render();
 
+		tagit.controllers.HeaderBar.select_app(null, 'notes');
+
 		this.profile = tagit.profile;
 
 		var do_load = function() {

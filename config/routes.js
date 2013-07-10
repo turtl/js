@@ -6,5 +6,7 @@ config.routes	=	{
 
 	'/bookmark': ['bookmark', 'index'],
 
+	'/messages': ['messages', 'index'],
+
 	'/': ['dashboard', 'load']
 }

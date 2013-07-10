@@ -210,6 +210,7 @@ var Projects = Composer.Collection.extend({
 			var notes = pdata.notes;
 			delete pdata.notes;
 			var project = new Project(pdata);
+			pdata.notes = notes;
 			this.add(project, options);
 			project.update_notes(notes, options);
 		}.bind(this));

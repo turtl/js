@@ -52,7 +52,6 @@ var Persona = Composer.Model.extend({
 		var args = {};
 		if(options.expire) args.expire = options.expire;
 		if(options.persist) args.persist = 1;
-		console.log('args: ', args);
 		tagit.api.post('/personas/'+this.id()+'/challenge', args, {
 			success: function(challenge) {
 				if(options.persist) this.challenge = challenge;

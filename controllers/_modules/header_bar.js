@@ -10,7 +10,8 @@ var HeaderBarController = Composer.Controller.extend({
 		'click li.bookmarklet a': 'bookmarklet',
 		'click li.persona a': 'open_personas',
 		'mouseenter ul.menu': 'cancel_close_menu',
-		'mouseleave ul.menu': 'close_menu'
+		'mouseleave ul.menu': 'close_menu',
+		'click div.apps a': 'select_app'
 	},
 
 	close_timer: null,
@@ -73,5 +74,20 @@ var HeaderBarController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		new PersonasController();
+	},
+
+	select_app: function(e, name)
+	{
+		if(!e && name)
+		{
+			var a = this.el.getElement('.apps li a.'+name);
+		}
+		else
+		{
+			var a = next_tag_up('a', e.target);
+		}
+		this.el.getElements('.apps li a').each(function(el) { el.removeClass('sel'); });
+		a.addClass('sel');
+		return true;
 	}
 });
