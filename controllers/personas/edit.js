@@ -123,7 +123,7 @@ var PersonaEditController = Composer.Controller.extend({
 					args.challenge = this.model.generate_response(challenge);
 					do_save();
 				}.bind(this),
-				error: function(model, err) {
+				error: function(err, xhr) {
 					barfr.barf('There was a problem verifying your ownership of this persona: '+ err);
 				}.bind(this)
 			});

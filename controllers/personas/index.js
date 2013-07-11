@@ -1,5 +1,6 @@
 var PersonasController = Composer.Controller.extend({
 	elements: {
+		'div.personas-list': 'personas_list'
 	},
 
 	events: {
@@ -10,6 +11,7 @@ var PersonasController = Composer.Controller.extend({
 	},
 
 	collection: null,
+	list_controller: null,
 
 	init: function()
 	{
@@ -27,6 +29,7 @@ var PersonasController = Composer.Controller.extend({
 	release: function()
 	{
 		if(modal.is_open) modal.close();
+		if(this.list_controller) this.list_controller.release();
 		this.collection.unbind(['change', 'add', 'remove', 'destroy', 'reset'], 'personas:monitor:render');
 		this.parent.apply(this, arguments);
 	},
@@ -37,9 +40,17 @@ var PersonasController = Composer.Controller.extend({
 			return toJSON(persona);
 		});
 		var content = Template.render('personas/index', {
-			personas: personas
+			num_personas: personas.length
 		});
 		this.html(content);
+		if(this.list_controller) this.list_controller.release();
+		if(this.personas_list)
+		{
+			this.list_controller = new PersonaListController({
+				inject: this.personas_list,
+				personas: personas
+			});
+		}
 	},
 
 	add_persona: function(e)

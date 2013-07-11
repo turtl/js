@@ -8,35 +8,11 @@
 		</p>
 	</div>
 
-	<? if(personas.length > 0) { ?>
-		<ul class="personas">
-			<? personas.each(function(p) { ?>
-				<?
-					var attr = [];
-					if(p.name) attr.push(p.name);
-					if(p.email) attr.push(p.email);
-				?>
-				<li class="persona_<?=p.id?> clear">
-					<h3><?=p.screenname?></h3>
-					<small><?=attr.join('&nbsp;&nbsp;-&nbsp;&nbsp;')?></small>
-					<ul>
-						<li>
-							<a href="#edit">
-								<img src="/images/site/icons/edit_16x16_black.png" width="16" height="16" alt="edit">
-							</a>
-						</li>
-						<li>
-							<a href="#delete">
-								<img src="/images/site/icons/delete_16x16_black.png" width="16" height="16" alt="delete">
-							</a>
-						</li>
-					</ul>
-				</li>
-			<? }); ?>
-		</ul>
+	<? if(num_personas > 0) { ?>
+		<div class="personas-list"></div>
 	<? } ?>
-	<? if(personas.length == 0) { ?>
-		<div class="button add <? if(personas.length > 0) { ?>disabled<? } ?>">
+	<? if(num_personas == 0) { ?>
+		<div class="button add <? if(num_personas > 0) { ?>disabled<? } ?>">
 			<span>Add a persona</span>
 		</div>
 		<div class="content">

@@ -11,9 +11,9 @@
 .persona-edit .info {float: right; width: 36%; padding-left: 2.2%; border-left: 1px solid #ddd;}
 
 /* listing */
-.personas ul.personas {list-style: none;}
-.personas ul.personas > li {display: block; padding: 6px 4px; font-size: 16px; border-bottom: 1px dashed #aaa;}
-.personas ul.personas > li h3 {display: inline-block;}
-.personas ul.personas > li small {display: inline-block; margin: 0 0 0 12px; font-size: 12px; color: #888;}
-.personas ul.personas > li > ul {float: right; list-style: none;}
-.personas ul.personas > li > ul li {display: inline-block; margin: 0 0 0 3px;}
+.personas div.personas-list > ul {list-style: none;}
+.personas div.personas-list > ul > li {display: block; padding: 6px 4px; font-size: 16px; border-bottom: 1px dashed #aaa;}
+.personas div.personas-list > ul > li h3 {display: inline-block;}
+.personas div.personas-list > ul > li small {display: inline-block; margin: 0 0 0 12px; font-size: 12px; color: #888;}
+.personas div.personas-list > ul > li > ul {float: right; list-style: none;}
+.personas div.personas-list > ul > li > ul li {display: inline-block; margin: 0 0 0 3px;}

@@ -1,11 +1,15 @@
 var MessageComposeController = Composer.Controller.extend({
 	elements: {
+		'div.to': 'selector'
 	},
 
+	model: null,
 	persona_selector: null,
 
 	init: function()
 	{
+		if(!this.model) this.model = new Conversation();
+
 		this.render();
 		modal.open(this.el);
 		var modalclose = function() {
@@ -34,12 +38,14 @@ var MessageComposeController = Composer.Controller.extend({
 		}
 		var content = Template.render('messages/compose', {
 			to: to_persona ? toJSON(to_persona) : null,
-			conversation: this.model ? toJSON(this.model) : {}
+			conversation: toJSON(this.model)
 		});
 		this.html(content);
 		if(this.persona_selector) this.persona_selector.release();
 		this.persona_selector = new PersonaSelector({
-			persona: to_persona
+			inject: this.selector,
+			persona: to_persona,
+			lock: true
 		});
 	}
 });

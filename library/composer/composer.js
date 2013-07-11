@@ -1399,7 +1399,9 @@
 			// make sure we have an el
 			this._ensure_el();
 
-			var container	=	document.getElement(this.inject);
+			var container	=	typeof(this.inject) == 'string' ?
+									document.getElement(this.inject):
+									$(this.inject);
 			if(!container)
 			{
 				return false;
