@@ -1,3 +1,6 @@
+// Simple container collection to hold subkeys in an object
+var Keys = Composer.Collection.extend({});
+
 /**
  * This is a SPECIAL model type that allows you to treat it like a normal model.
  * The difference is that when you save data to this model, any data stored in
@@ -23,31 +26,82 @@ var Protected = Composer.RelationalModel.extend({
 		}
 	},
 
+	// when serializing/deserializing the encrypted payload for the private
+	// fields will be stored under this key in the resulting object
 	body_key: 'body',
 
+	// holds the cryptographic key to encrypt/decrypt model data with
 	key: null,
 
+	/**
+	 * Note that any field NOT specified in the following two public/private
+	 * fields containers will be ignored during serialization.
+	 */
+	// holds the fields in the model that are designated "public" and should not
+	// be encrypted when serializing/deserislizing this model
 	public_fields: [],
+	// holds the fields in the model that are designated "private" and should
+	// absolutely be stored encrypted when serializing the model.
 	private_fields: [],
 
+	/**
+	 * This is the main function for data decryption for any extending model.
+	 * It provides a standard interface, using the current key, to decrypt the
+	 * model's data.
+	 *
+	 * It can be extended, for instance in the case of shared-key decryption,
+	 * where instead of this.key it could use this.private_key.
+	 */
+	decrypt: function(data)
+	{
+		return tcrypt.decrypt(this.key, data);
+	},
+
+	/**
+	 * This is the main function for data encryption for any extending model.
+	 * It provides a standard interface, using the current key, to encrypt the
+	 * model's data.
+	 *
+	 * It can be extended, for instance in the case of shared-key encryption,
+	 * where instead of this.key it could use this.public_key.
+	 */
+	encrypt: function(data)
+	{
+		// TODO: crypto: investigate prefixing/suffixing padding with random
+		// bytes. Should be easy enough to filter out when deserializing (since
+		// it's always JSON), but would give an attacker less data about the
+		// payload (it wouldn't ALWAYS start with "{")
+		return tcrypt.encrypt(this.key, data);
+	},
+
+	/**
+	 * Override Model.set in order to provide a way to hook into a model's data
+	 * and extract encrypted components into our protected storage.
+	 */
 	set: function(obj, options)
 	{
 		// NOTE: don't use `arguments` here since we need to explicitely pass in
 		// our obj to the parent function
 		options || (options = {});
-		var _body = obj[this.body_key];
+		var _body	=	obj[this.body_key];
 		delete obj[this.body_key];
-		var ret = this.parent.apply(this, [obj, options]);
+		var ret		=	this.parent.apply(this, [obj, options]);
 		if(_body != undefined) obj[this.body_key] = _body;
 		if(!options.ignore_body) this.process_body(obj, options);
 		return ret;
 	},
 
+	/**
+	 * Takes data being set into the model, and pieces it off based on whether
+	 * it's public or private data. Public data is set like any model data, but
+	 * private data is stored separately in the Model._body sub-model, which
+	 * when serislizing, is JSON-encoded and encrypted.
+	 */
 	process_body: function(obj, options)
 	{
 		options || (options = {});
 
-		var _body = obj[this.body_key];
+		var _body	=	obj[this.body_key];
 		if(!_body) return false;
 
 		if(!this.key) this.key = this.find_key(obj.keys);
@@ -55,8 +109,8 @@ var Protected = Composer.RelationalModel.extend({
 
 		if(typeOf(_body) == 'string')
 		{
-			_body = tcrypt.decrypt(this.key, _body);
-			_body = JSON.decode(_body);
+			_body	=	this.decrypt(_body);
+			_body	=	JSON.decode(_body);
 		}
 
 		if(typeOf(_body) == 'object')
@@ -71,52 +125,59 @@ var Protected = Composer.RelationalModel.extend({
 		}
 	},
 
+	/**
+	 * Special toJSON function that serializes the model making sure to put any
+	 * protected fields into an encrypted container before returning.
+	 */
 	toJSON: function()
 	{
+		// grab the normal serialization
 		var data	=	this.parent();
 		var _body	=	{};
 		var newdata	=	{};
+
+		// detect if we're even using encryption (on by default). it's useful to
+		// disable decryption when serializing a model to a view.
+		var disable_encryption	=	window._toJSON_disable_protect;
+
+		// just return normally if encryption is disabled (no need to do
+		// anything special)
+		if(disable_encryption) return data;
+
+		// this process only pulls fields from public_fields/private_fields, so
+		// any fields not specified will be ignore during serialization.
+		//
+		// if encryption is disabled, the model is serialized as 
 		Object.each(data, function(v, k) {
 			if(this.public_fields.contains(k))
 			{
+				// public field, store it in our main return container
 				newdata[k]	=	v;
 			}
-			else
+			else if(this.private_fields.contains(k))
 			{
-				if(this.private_fields.length > 0)
-				{
-					if(this.private_fields.contains(k) || window._toJSON_disable_protect)
-					{
-						_body[k]	=	v;
-					}
-				}
-				else
-				{
-					_body[k]		=	v;
-				}
+				// private field, store it in protected container
+				_body[k]	=	v;
 			}
 		}.bind(this));
-		if(window._toJSON_disable_protect)
-		{
-			Object.merge(newdata, _body);
-		}
-		else
-		{
-			var json = JSON.encode(_body);
-			// TODO: crypto: initial padding?
-			var encbody = tcrypt.encrypt(this.key, json);
+		var json	=	JSON.encode(_body);
+		var encbody	=	this.encrypt(json);
 
-			newdata[this.body_key]	=	encbody.toString();
-		}
+		newdata[this.body_key]	=	encbody.toString();
 		return newdata;
 	},
 
+	/**
+	 * Since clone uses Model.toJSON (which by default will return encrypted
+	 * data), we have to explicitely tell it we don't want encrypted
+	 * serialization when cloning.
+	 */
 	clone: function()
 	{
 		window._toJSON_disable_protect = true;
-		var copy = this.parent.apply(this, arguments);
+		var copy	=	this.parent.apply(this, arguments);
 		window._toJSON_disable_protect = false;
-		copy.key = this.key;
+		copy.key	=	this.key;
 		return copy;
 	},
 
@@ -151,37 +212,43 @@ var Protected = Composer.RelationalModel.extend({
 		var keys = Object.clone(keys);
 
 		var uid = tagit.user.id(true);
-		// TODO: investigate removing this for public projects??
+		// TODO: investigate removing this restriction for public projects??
 		if(!uid) return false;
 		search.u = {id: uid, k: tagit.user.get_key()};
 		delete(search.k);  // sorry, "k" is reserved for keys
-		var search_keys = Object.keys(search);
-		var encrypted_key = false;
-		var decrypting_key = false;
+		var search_keys		=	Object.keys(search);
+		var encrypted_key	=	false;
+		var decrypting_key	=	false;
 
 		for(x in keys)
 		{
-			var key = keys[x];
+			var key		=	keys[x];
 			if(!key.k) continue;
-			var enckey = key.k;
+			var enckey	=	key.k;
 			delete(key.k);
-			var match = false;
+			var match	=	false;
 			Object.each(key, function(v, k) {
 				if(encrypted_key) return;
 				if(search[k] && search[k].id && search[k].id == v)
 				{
-					encrypted_key = enckey;
-					decrypting_key = search[k].k;
+					encrypted_key	=	enckey;
+					decrypting_key	=	search[k].k;
 				}
 			});
 			if(encrypted_key) break;
 		}
 
 		if(!decrypting_key || !encrypted_key) return false;
+		// NOTE: we don't use Protected.decrypt since we're not using this.key
 		var key = tcrypt.decrypt(decrypting_key, encrypted_key, {raw: true});
 		return key;
 	},
 
+	/**
+	 * Generate a random key for this model.
+	 *
+	 * TODO: base this off of the current user's key instead of just randomness.
+	 */
 	generate_key: function(options)
 	{
 		options || (options = {});
@@ -223,6 +290,8 @@ var Protected = Composer.RelationalModel.extend({
 		var keys = [];
 		members.each(function(m) {
 			var key = m.k;
+			// NOTE: we don't use Protected.encrypt here since we're not
+			// encrypting via this.key
 			var enc = tcrypt.encrypt(key, this.key).toString();
 			m.k = enc;
 			keys.push(m);
@@ -236,5 +305,3 @@ var Protected = Composer.RelationalModel.extend({
 var ProtectedShared = Composer.RelationalModel.extend({
 }, Protected);
 
-// Simple container collection to hold subkeys in an object
-var Keys = Composer.Collection.extend({});
