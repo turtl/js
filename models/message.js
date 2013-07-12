@@ -1,4 +1,4 @@
-var Message = Composer.RelationalModel.extend({
+var Message = ProtectedShared.extend({
 	base_url: '/messages',
 
 	body_key: 'data',
@@ -21,7 +21,7 @@ var Message = Composer.RelationalModel.extend({
 		'subject',
 		'body'
 	]
-}, ProtectedShared);
+});
 
 var Messages = Composer.Collection.extend({
 	model: 'Message',

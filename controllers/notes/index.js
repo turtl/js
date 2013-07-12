@@ -1,4 +1,4 @@
-var NotesController = Composer.Controller.extend({
+var NotesController = TrackController.extend({
 	elements: {
 		'ul.note_list': 'note_list',
 		'ul.list-type': 'display_actions'
@@ -301,5 +301,5 @@ var NotesController = Composer.Controller.extend({
 		sub.el.addClass('hide');
 	}
 	// -------------------------------------------------------------------------
-}, TrackController);
+});
 

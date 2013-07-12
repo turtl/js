@@ -318,7 +318,12 @@ var Protected = Composer.RelationalModel.extend({
 	}
 });
 
-var ProtectedShared = Composer.RelationalModel.extend({
+/**
+ * Provides what the Protected model does (a way to have public/private auto-
+ * encrypted fields in a model) but with shared-key encryption instead of
+ * symmetric.
+ */
+var ProtectedShared = Protected.extend({
 	public_key: null,
 	private_key: null,
 
@@ -340,5 +345,5 @@ var ProtectedShared = Composer.RelationalModel.extend({
 		if(!this.public_key || !this.private_key) return false;
 		return true;
 	}
-}, Protected);
+});
 
