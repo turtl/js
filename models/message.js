@@ -20,7 +20,15 @@ var Message = ProtectedShared.extend({
 		'conversation_id',
 		'subject',
 		'body'
-	]
+	],
+
+	init: function()
+	{
+		// NOTE: although the persona is not serialized with the message, not
+		// having a persona key will break message serialization anyway. this is
+		// hard to get around, so we add a little hack here.
+		this.get('persona').key	=	tcrypt.random_key();
+	}
 });
 
 var Messages = Composer.Collection.extend({
