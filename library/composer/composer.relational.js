@@ -255,7 +255,7 @@
 	RelationalModel.extend	=	function(obj, base)
 	{
 		obj || (obj = {});
-		base || (base = RelationalModel);
+		base || (base = this);
 
 		// hijack _do_extend to not wrap our object in a class since we need to do
 		// more mods before this happens

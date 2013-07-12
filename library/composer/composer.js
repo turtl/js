@@ -690,7 +690,7 @@
 	Model.extend	=	function(obj, base)
 	{
 		obj || (obj = {});
-		base || (base = Model);
+		base || (base = this);
 		obj	=	Base.extend.call(this, obj, base);
 		return this._do_extend(obj, base);
 	};
@@ -1295,7 +1295,7 @@
 	Collection.extend	=	function(obj, base)
 	{
 		obj || (obj = {});
-		base || (base = Collection);
+		base || (base = this);
 		obj	=	Base.extend.call(this, obj, base);
 		return this._do_extend(obj, base);
 	};
@@ -1538,7 +1538,7 @@
 	Controller.extend	=	function(obj, base)
 	{
 		obj || (obj = {});
-		base || (base = Controller);
+		base || (base = this);
 		obj	=	Base.extend.call(this, obj, base);
 
 		// have to do some annoying trickery here to get the actual events/elements
@@ -2055,19 +2055,33 @@
 	Composer.eq	=	eq;
 
 
+	/**
+	 * Provides wrapping of extending via function (as opposed to
+	 * Extend: Composer.Model) for Composer objects (and objects that extend
+	 * them).
+	 */
 	Composer._export	=	function(exports)
 	{
 		exports.each(function(name) {
 			var _do_try	=	function(classname) { return 'try{'+classname+'}catch(e){false}'; };
-			var cls	=	eval(_do_try(name)) || eval(_do_try('Composer.'+name));
+			var cls		=	eval(_do_try(name)) || eval(_do_try('Composer.'+name));
 			if(!cls) return false;
 
-			cls._do_extend	=	function(obj, base)
+			// This function creates a new class with the given attributes that
+			// extends the given base. If no base is given, it uses the object's
+			// default constructor.
+			//
+			// The resulting class is also assigned extend/_do_extend functions
+			// (which are added to the class, NOT insteances of the class).
+			var do_extend	=	function(obj, base)
 			{
-				var obj	=	Object.merge({Extends: (base || this.$constructor)}, obj);
-				var cls	=	new Class(obj);
-				return cls;
+				var classobj		=	Object.merge({Extends: base}, obj);
+				var newclass		=	new Class(classobj);
+				newclass.extend		=	base.extend.bind(newclass);
+				newclass._do_extend	=	do_extend;
+				return newclass;
 			};
+			cls._do_extend	=	do_extend;
 			Composer[name]	=	cls;
 		}, this);
 	}.bind(this);

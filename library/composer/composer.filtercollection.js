@@ -284,7 +284,7 @@
 	FilterCollection.extend	=	function(obj, base)
 	{
 		obj || (obj = {});
-		base || (base = FilterCollection);
+		base || (base = this);
 		obj	=	Composer.Base.extend.call(this, obj, base);
 		return this._do_extend(obj, base);
 	};
