@@ -2077,7 +2077,7 @@
 			{
 				var classobj		=	Object.merge({Extends: base}, obj);
 				var newclass		=	new Class(classobj);
-				newclass.extend		=	base.extend.bind(newclass);
+				newclass.extend		=	base.extend;
 				newclass._do_extend	=	do_extend;
 				return newclass;
 			};
