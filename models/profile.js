@@ -80,7 +80,7 @@ var Profile = Composer.RelationalModel.extend({
 	sync: function(options)
 	{
 		options || (options = {});
-		if(!tagit.sync) return false;
+		if(!tagit.sync || !tagit.user.logged_in) return false;
 
 		var sync_time = this.get('sync_time', 9999999);
 		tagit.api.post('/sync', {time: sync_time}, {
