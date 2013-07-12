@@ -2,18 +2,18 @@
  * This is a SPECIAL model type that allows you to treat it like a normal model.
  * The difference is that when you save data to this model, any data stored in
  * non-public fields (as determined by the member var `public_fields`) is stored
- * in a sub-model under the "body" key.
+ * in a sub-model under the "_body" key.
  *
  * The idea of this is that when converting this model to JSON (or converting
  * from JSON) you have a set of fields that are allowed to be plaintext, and
- * one field ("body") that stores all the protected data.
+ * one field ("_body") that stores all the protected data.
  *
  * This way, if you want to encrypt your protected data, you can do so on one
  * field when converting to JSON, and vice vera when converting from JSON.
  */
 var Protected = Composer.RelationalModel.extend({
 	relations: {
-		body: {
+		_body: {
 			type: Composer.HasOne,
 			model: 'Composer.Model'
 		},
@@ -22,6 +22,8 @@ var Protected = Composer.RelationalModel.extend({
 			collection: 'Keys'
 		}
 	},
+
+	body_key: 'body',
 
 	key: null,
 
@@ -33,10 +35,10 @@ var Protected = Composer.RelationalModel.extend({
 		// NOTE: don't use `arguments` here since we need to explicitely pass in
 		// our obj to the parent function
 		options || (options = {});
-		var body = obj.body;
-		delete obj.body;
+		var _body = obj[this.body_key];
+		delete obj[this.body_key];
 		var ret = this.parent.apply(this, [obj, options]);
-		if(body != undefined) obj.body = body;
+		if(_body != undefined) obj[this.body_key] = _body;
 		if(!options.ignore_body) this.process_body(obj, options);
 		return ret;
 	},
@@ -45,26 +47,26 @@ var Protected = Composer.RelationalModel.extend({
 	{
 		options || (options = {});
 
-		var body = obj['body'];
-		if(!body) return false;
+		var _body = obj[this.body_key];
+		if(!_body) return false;
 
 		if(!this.key) this.key = this.find_key(obj.keys);
 		if(!this.key) return false;
 
-		if(typeOf(body) == 'string')
+		if(typeOf(_body) == 'string')
 		{
-			body = tcrypt.decrypt(this.key, body);
-			body = JSON.decode(body);
+			_body = tcrypt.decrypt(this.key, _body);
+			_body = JSON.decode(_body);
 		}
 
-		if(typeOf(body) == 'object')
+		if(typeOf(_body) == 'object')
 		{
-			this.set(body, Object.merge({ignore_body: true}, options));
-			Object.each(body, function(v, k) {
-				var body	=	this.get('body');
+			this.set(_body, Object.merge({ignore_body: true}, options));
+			Object.each(_body, function(v, k) {
+				var _body	=	this.get('_body');
 				var set		=	{};
 				set[k]		=	v;
-				body.set(set);
+				_body.set(set);
 			}.bind(this));
 		}
 	},
@@ -72,7 +74,7 @@ var Protected = Composer.RelationalModel.extend({
 	toJSON: function()
 	{
 		var data	=	this.parent();
-		var body	=	{};
+		var _body	=	{};
 		var newdata	=	{};
 		Object.each(data, function(v, k) {
 			if(this.public_fields.contains(k))
@@ -85,26 +87,26 @@ var Protected = Composer.RelationalModel.extend({
 				{
 					if(this.private_fields.contains(k) || window._toJSON_disable_protect)
 					{
-						body[k]	=	v;
+						_body[k]	=	v;
 					}
 				}
 				else
 				{
-					body[k]		=	v;
+					_body[k]		=	v;
 				}
 			}
 		}.bind(this));
 		if(window._toJSON_disable_protect)
 		{
-			Object.merge(newdata, body);
+			Object.merge(newdata, _body);
 		}
 		else
 		{
-			var json = JSON.encode(body);
+			var json = JSON.encode(_body);
 			// TODO: crypto: initial padding?
 			var encbody = tcrypt.encrypt(this.key, json);
 
-			newdata['body']	=	encbody.toString();
+			newdata[this.body_key]	=	encbody.toString();
 		}
 		return newdata;
 	},
