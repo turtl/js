@@ -136,7 +136,12 @@ var User	=	Composer.RelationalModel.extend({
 		this.auth = null;
 		this.key = null;
 		this.logged_in	=	false;
-		this.clear({clear_relations: true});
+		this.clear();
+		this.get('personas').each(function(p) {
+			p.unbind();
+			p.destroy({silent: true, skip_sync: true});
+		});
+		this.get('personas').clear();
 		Cookie.dispose(config.user_cookie);
 		this.unbind_relational('personas', ['saved'], 'user:track_personas');
 		this.unbind_relational('personas', ['destroy'], 'user:track_personas:destroy');

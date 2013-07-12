@@ -41,6 +41,13 @@ var Persona = Composer.Model.extend({
 		tagit.api.get('/personas/screenname/'+screenname, args, options);
 	},
 
+	search_by_screenname: function(screenname, options)
+	{
+		options || (options = {});
+
+		tagit.api.get('/personas/screenname/'+screenname+'*', {}, options);
+	},
+
 	generate_secret: function(key)
 	{
 		return tcrypt.encrypt(key, tcrypt.uuid()).toString().replace(/:.*/, '');

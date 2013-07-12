@@ -1,10 +1,36 @@
-var Message = Composer.Model.extend({
+var Message = Composer.RelationalModel.extend({
+	base_url: '/messages',
+
+	body_key: 'data',
+
+	relations: {
+		persona: {
+			type: Composer.HasOne,
+			model: 'Persona'
+		}
+	},
+
+	public_fields: [
+		'id',
+		'to',
+		'from'
+	],
+
+	private_fields: [
+		'conversation_id',
+		'subject',
+		'body'
+	]
 }, ProtectedShared);
 
 var Messages = Composer.Collection.extend({
 	model: 'Message',
 
 	conversations: null,
+
+	last_id: null,
+
+	sortfn: function(a, b) { return a.id().localeCompare(b.id()); },
 
 	init: function()
 	{
@@ -19,6 +45,11 @@ var Messages = Composer.Collection.extend({
 			// add to the conversations list
 			if(!conversation) this.conversations.add({id: conversation_id});
 		}.bind(this), 'messages:monitor_conversations:add');
+
+		// track the last (greatest) ID of the synced messages
+		this.bind('add', function(model) {
+			this.last_id = this.last().id();
+		}.bind(this), 'messages:track_last_id')
 	},
 
 	get_messages_for_persona: function(persona, challenge, options)
@@ -85,6 +116,7 @@ var Messages = Composer.Collection.extend({
 		options || (options = {});
 		tagit.user.get('personas').each(function(persona) {
 			this.get_messages_for_persona(persona, persona.challenge, {
+				after: this.last_id,
 				success: options.success,
 				error: function(err, xhr) {
 					barfr.barf('There was a problem grabbing messages from your persona '+persona.get('screenname')+': '+ err);
@@ -148,11 +180,16 @@ var Conversation = Composer.RelationalModel.extend({
 		personas.clear();
 		this.get('messages').each(function(m) {
 			var from_persona = m.get('persona');
-			if(from_persona) personas.upsert(from_persona);
+			if(from_persona) personas.upsert(new Persona(from_persona));
 			var to_persona_id = m.get('to');
 			var to_persona = tagit.user.get('personas').find_by_id(to_persona_id);
-			if(to_persona) personas.upsert(to_persona);
+			if(to_persona) personas.upsert(new Persona(to_persona));
 		}.bind(this));
+	},
+
+	generate_id: function()
+	{
+		return tcrypt.uuid();
 	}
 });
 

@@ -18,3 +18,10 @@ div.button.compose span {padding-left: 25px; background: url(/images/site/icons/
 .messages > .message .content.personas {padding: 20px; text-align: center; font-size: 20px; background: #cce0f0; border-radius: 10px;}
 .messages > .message .content.personas .button {display: inline-block; margin: 0 auto; float: none;}
 .messages > .message .content.personas p {}
+
+/* compose */
+.message-compose .header {margin-bottom: 16px;}
+.message-compose .header > h2 {width: 7%; float: left; padding: 7px 0 0 0; font-size: 18px; font-weight: normal; color: #777;}
+.message-compose .header > .select  {width: 91%; float: right;}
+.message-compose .header .personas li {cursor: pointer;}
+

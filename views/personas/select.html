@@ -1,9 +1,29 @@
 <div class="select-persona">
-	<? if(!lock) { ?>
-		<form class="standard-form">
-			<input type="text" name="screenname" placeholder="Type the screenname of the person you're searching for.">
-			<img class="load" src="/images/site/icons/load_16x16.gif" width="16" height="16" alt="WORKING!!!1">
-		</form>
+	<? if(persona.id) { ?>
+		<div class="persona">
+			<h3><?=persona.screenname?></h3>
+			<? if(!lock) { ?>
+				<a href="#change" title="Pick another persona">change</a>
+			<? } ?>
+			<p>
+				<?
+				var attr = [];
+				if(persona.name) attr.push(persona.name);
+				if(persona.email) attr.push(persona.email);
+				?>
+				<?=attr.join(' - ')?>
+			</p>
+		</div>
+	<? } else { ?>
+		<div class="search">
+			<form class="standard-form">
+				<input <? if(tabindex) { ?>tabindex="<?=tabindex?>"<? } ?> type="text" name="screenname" placeholder="Type the screenname of the person you're searching for.">
+				<img class="load" src="/images/site/icons/load_16x16.gif" width="16" height="16" alt="WORKING!!!1">
+			</form>
+			<div class="personas">
+				<div class="personas-list"></div>
+			</div>
+		</div>
 	<? } ?>
-	<ul class="personas"></ul>
 </div>
+

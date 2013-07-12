@@ -75,6 +75,20 @@ var Protected = Composer.RelationalModel.extend({
 	},
 
 	/**
+	 * Make sure that a symmetric key exists for this model. If not, returns
+	 * false, if so returns the key.
+	 *
+	 * Takes a set of key data holding the encrypted key in case the key simply
+	 * needs to be found/decrypted.
+	 */
+	ensure_key_exists: function(keydata)
+	{
+		if(!this.key) this.key = this.find_key(keydata);
+		if(!this.key) return false;
+		return this.key;
+	},
+
+	/**
 	 * Override Model.set in order to provide a way to hook into a model's data
 	 * and extract encrypted components into our protected storage.
 	 */
@@ -104,8 +118,7 @@ var Protected = Composer.RelationalModel.extend({
 		var _body	=	obj[this.body_key];
 		if(!_body) return false;
 
-		if(!this.key) this.key = this.find_key(obj.keys);
-		if(!this.key) return false;
+		if(!this.ensure_key_exists(obj.keys)) return false;
 
 		if(typeOf(_body) == 'string')
 		{
@@ -214,7 +227,10 @@ var Protected = Composer.RelationalModel.extend({
 		var uid = tagit.user.id(true);
 		// TODO: investigate removing this restriction for public projects??
 		if(!uid) return false;
+
+		// automatically add a user entry to the key search
 		search.u = {id: uid, k: tagit.user.get_key()};
+
 		delete(search.k);  // sorry, "k" is reserved for keys
 		var search_keys		=	Object.keys(search);
 		var encrypted_key	=	false;
@@ -303,5 +319,26 @@ var Protected = Composer.RelationalModel.extend({
 });
 
 var ProtectedShared = Composer.RelationalModel.extend({
+	public_key: null,
+	private_key: null,
+
+	decrypt: function(data)
+	{
+		return data;
+	},
+
+	encrypt: function(data)
+	{
+		return data;
+	},
+
+	ensure_key_exists: function()
+	{
+		// TODO: remove me once shared key generation works
+		return true;
+
+		if(!this.public_key || !this.private_key) return false;
+		return true;
+	}
 }, Protected);
 

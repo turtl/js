@@ -94,8 +94,15 @@ var tcrypt = {
 
 	random_key: function(options)
 	{
-		options || (options = {});
-		return CryptoJS.lib.WordArray.random(32);
+		// NOTE: this was taken directly from CryptoJS' random() function, but
+		// updated to use tcrypt.random_number() instead of Math.random().
+		var nBytes = 32;
+		var words = [];
+		for (var i = 0; i < nBytes; i += 4) {
+			words.push((tcrypt.random_number() * 0x100000000) | 0);
+		}
+
+		return new CryptoJS.lib.WordArray.init(words, nBytes);
 	},
 
 	hash: function(data, options)
@@ -115,8 +122,13 @@ var tcrypt = {
 		else
 		{
 			// TODO: crypto: use real crypto-PRNG
-			return Math.random();
+			alert('Your browser does not support cryptographically secure random numbers. Please either update your browser or don\'t use this app =[.');
 		}
+	},
+
+	random_hash: function()
+	{
+		return tcrypt.hash(Date.now() + tcrypt.uuid());
 	},
 
 	uuid: function()
