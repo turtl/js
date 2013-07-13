@@ -51,6 +51,7 @@ var Protected = Composer.RelationalModel.extend({
 	 */
 	deserialize: function(data, parentobj)
 	{
+		if(!this.key) return false;
 		var decrypted	=	tcrypt.decrypt(this.key, data);
 		return JSON.decode(decrypted);
 	},

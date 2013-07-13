@@ -29,6 +29,15 @@ var Message = ProtectedShared.extend({
 		// having a persona key will break message serialization anyway. this is
 		// hard to get around, so we add a little hack here.
 		this.get('persona').key	=	tcrypt.random_key();
+
+		// keep the "created" timestamp updated (not that the ID changes, but w/e)
+		this.bind('change:id', function() {
+			var ts		=	parseInt(this.id().substr(0, 8), 16);
+			if(!ts) return;
+			var date	=	new Date(ts * 1000);
+			this.set({created: date});
+		}.bind(this), 'message:track_timestamp');
+		this.trigger('change:id');
 	}
 });
 
@@ -101,7 +110,14 @@ var Messages = Composer.Collection.extend({
 		var response = persona.generate_response(challenge);
 		tagit.api.get('/messages/personas/'+persona.id(), { after: options.after, challenge: response }, {
 			success: function(res) {
-				this.add(res);
+				var my_personas	=	tagit.user.get('personas');
+				this.add(res.received);
+				this.add(res.sent.map(function(sent) {
+					var persona		=	my_personas.find_by_id(sent.from);
+					if(!persona) return false;
+					sent.persona	=	persona.toJSON();
+					return sent;
+				}));
 				if(options.success) options.success(res);
 			}.bind(this),
 			error: function(err, xhr) {

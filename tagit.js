@@ -372,21 +372,24 @@ Composer.sync	=	function(method, model, options)
 		return false;
 	}
 
-	var data	=	model.toJSON();
-	if(options.subset)
-	{
-		var newdata	=	{};
-		for(x in data)
-		{
-			if(!options.subset.contains(x)) continue;
-			newdata[x]	=	data[x];
-		}
-		data	=	newdata;
-	}
-	args = options.args;
-	args || (args = {});
 	// don't want to send all data over a GET or DELETE
-	if(method != 'get' && method != '_delete') args.data = data;
+	var args	=	options.args;
+	args || (args = {});
+	if(method != 'get' && method != '_delete')
+	{
+		var data	=	model.toJSON();
+		if(options.subset)
+		{
+			var newdata	=	{};
+			for(x in data)
+			{
+				if(!options.subset.contains(x)) continue;
+				newdata[x]	=	data[x];
+			}
+			data	=	newdata;
+		}
+		args.data = data;
+	}
 	tagit.api[method](model.get_url(), args, {
 		success: options.success,
 		error: options.error

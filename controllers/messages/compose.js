@@ -104,8 +104,10 @@ var MessageComposeController = Composer.Controller.extend({
 		});
 
 		// make sure we generate keys for this recipient
+		message.add_recipient(this.from_persona);
 		message.add_recipient(this.to_persona);
 
+		// TODO: fix code duplication: messages/conversation_view.js
 		tagit.loading(true);
 		this.from_persona.get_challenge({
 			success: function(challenge) {
@@ -114,6 +116,8 @@ var MessageComposeController = Composer.Controller.extend({
 					success: function() {
 						tagit.loading(false);
 						barfr.barf('Message sent.');
+						message.persona	=	this.from_persona.toJSON();
+						tagit.messages.add(message);
 						this.release();
 					}.bind(this),
 					error: function(_, err) {
@@ -126,7 +130,6 @@ var MessageComposeController = Composer.Controller.extend({
 				tagit.loading(false);
 				barfr.barf('Problem verifying ownership of your persona '+ this.from_persona.get('screenname') +': '+ err +'. Try again.');
 			}.bind(this)
-
 		});
 	}
 });
