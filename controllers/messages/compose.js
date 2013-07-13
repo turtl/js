@@ -102,6 +102,10 @@ var MessageComposeController = Composer.Controller.extend({
 			subject: subject,
 			body: body
 		});
+
+		// make sure we generate keys for this recipient
+		message.add_recipient(this.to_persona);
+
 		tagit.loading(true);
 		this.from_persona.get_challenge({
 			success: function(challenge) {

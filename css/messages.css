@@ -1,5 +1,5 @@
 /* layout shit */
-.messages > .sidebar {position: absolute; float: left; width: 20%; height: 200px; overflow: auto;}
+.messages > .sidebar {position: absolute; float: left; width: 20%;}
 .messages > .menu {}
 .messages > .message {float: right; width: 79%;}
 
@@ -11,12 +11,32 @@ div.button.compose span {padding-left: 25px; background: url(/images/site/icons/
 .messages > .sidebar > div.button {float: right;}
 .messages > .sidebar > ul.actions {float: right; list-style: none;}
 .messages > .sidebar > ul.actions li {display: inline-block;}
+/* conversation list (sidebar) */
+.messages .conversations ul li {display: block; height: 60px; padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #ccc;}
+.messages .conversations ul li {
+	background: rgb(229,229,229); /* Old browsers */
+	background: -moz-linear-gradient(top, rgba(229,229,229,1) 0%, rgba(208,208,208,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(229,229,229,1)), color-stop(100%,rgba(208,208,208,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, rgba(229,229,229,1) 0%,rgba(208,208,208,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, rgba(229,229,229,1) 0%,rgba(208,208,208,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, rgba(229,229,229,1) 0%,rgba(208,208,208,1) 100%); /* IE10+ */
+	background: linear-gradient(to bottom, rgba(229,229,229,1) 0%,rgba(208,208,208,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e5e5e5', endColorstr='#d0d0d0',GradientType=0 ); /* IE6-9 */
+}
+.messages .conversations {list-style: none; border-top: 1px solid #ccc;}
+.messages .conversations ul li.sel {padding-left: 8px; background: #e9e9e9; border-left: 4px solid #73b8d1;}
+.messages .conversations ul li h3 {margin: 0 0 6px 0; font-size: 17px; color: #4695b1;}
+.messages .conversations ul li small {display: block; margin: 0 0 6px 0;}
+.messages .conversations ul li p {line-height: 1.3em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #555;}
 
 /* message pane (rain down pain) */
 .messages > .message .gutter {padding: 0 24px;}
+.messages > .message ul {list-style: none;}
+.messages > .message ul li h1 {list-style: none;}
 .messages > .message .content {font-size: 16px;}
 .messages > .message .content.personas {padding: 20px; text-align: center; font-size: 20px; background: #cce0f0; border-radius: 10px;}
 .messages > .message .content.personas .button {display: inline-block; margin: 0 auto; float: none;}
+.messages > .message .content.personas p {}
 .messages > .message .content.personas p {}
 
 /* compose */

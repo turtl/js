@@ -1,13 +1,13 @@
 <? if(messages.length > 0) { ?>
+	<h1><?=messages[0].subject?></h1>
 	<ul>
 		<? messages.each(function(message) { ?>
 			<li class="message">
-				<h1><?=message.data.subject?></h1>
 				<p class="headers">
 					TODO
 				</p>
 				<div class="body">
-					<?=message.data.body?>
+					<?=message.body?>
 				</div>
 			</li>
 		<? }); ?>
@@ -29,3 +29,4 @@
 		</p>
 	</div>
 <? } ?>
+

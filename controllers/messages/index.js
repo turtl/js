@@ -26,13 +26,14 @@ var MessagesController = Composer.Controller.extend({
 		tagit.controllers.HeaderBar.select_app(null, 'messages');
 
 		this.conversations_controller = new ConversationListController({
-			inject: this.messages_container,
+			inject: this.conversations,
 			collection: this.messages.conversations
 		});
+		this.conversations_controller.bind('select', this.show_conversation.bind(this), 'conversations:list:select');
 
 		this.view_controller = new ConversationViewController({
 			inject: this.message_pane,
-			model: this.messages.conversations.first()
+			model: null
 		});
 	},
 
@@ -63,6 +64,18 @@ var MessagesController = Composer.Controller.extend({
 		if(e) e.stop();
 		new PersonaEditController({
 			collection: tagit.user.get('personas')
+		});
+	},
+
+	show_conversation: function(model, el)
+	{
+		var convos = this.el.getElements('.conversations ul li');
+		if(convos) convos.each(function(el) { el.removeClass('sel'); });
+		el.addClass('sel');
+		if(this.view_controller) this.view_controller.release();
+		this.view_controller	=	new ConversationViewController({
+			inject: this.message_pane,
+			model: model
 		});
 	}
 });

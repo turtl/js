@@ -28,6 +28,5 @@ var ConversationViewController = Composer.Controller.extend({
 			num_personas: tagit.user.get('personas').models().length
 		});
 		this.html(content);
-		if(this.model) this.setup_compose();
 	}
 });
