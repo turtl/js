@@ -30,7 +30,7 @@ var Protected = Composer.RelationalModel.extend({
 	// fields will be stored under this key in the resulting object
 	body_key: 'body',
 
-	// holds the cryptographic key to encrypt/decrypt model data with
+	// holds the symmetric key to encrypt/decrypt model data with
 	key: null,
 
 	/**
@@ -45,33 +45,45 @@ var Protected = Composer.RelationalModel.extend({
 	private_fields: [],
 
 	/**
-	 * This is the main function for data decryption for any extending model.
+	 * This is the main function for data deserialization for any extending model.
 	 * It provides a standard interface, using the current key, to decrypt the
-	 * model's data.
-	 *
-	 * It can be extended, for instance in the case of shared-key decryption,
-	 * where instead of this.key it could use this.private_key.
+	 * model's protected data.
 	 */
-	decrypt: function(data)
+	deserialize: function(data, parentobj)
 	{
-		return tcrypt.decrypt(this.key, data);
+		var decrypted	=	tcrypt.decrypt(this.key, data);
+		return JSON.decode(decrypted);
 	},
 
 	/**
-	 * This is the main function for data encryption for any extending model.
+	 * This is the main function for data serialization for any extending model.
 	 * It provides a standard interface, using the current key, to encrypt the
-	 * model's data.
-	 *
-	 * It can be extended, for instance in the case of shared-key encryption,
-	 * where instead of this.key it could use this.public_key.
+	 * model's protected data.
 	 */
-	encrypt: function(data)
+	serialize: function(data, parentobj)
 	{
+		var json	=	JSON.encode(data);
 		// TODO: crypto: investigate prefixing/suffixing padding with random
 		// bytes. Should be easy enough to filter out when deserializing (since
 		// it's always JSON), but would give an attacker less data about the
 		// payload (it wouldn't ALWAYS start with "{")
-		return tcrypt.encrypt(this.key, data);
+		return tcrypt.encrypt(this.key, json);
+	},
+
+	/**
+	 * Handles decryption of any/all subkeys.
+	 */
+	decrypt_key: function(decrypting_key, encrypted_key)
+	{
+		return tcrypt.decrypt(decrypting_key, encrypted_key, {raw: true});
+	},
+
+	/**
+	 * Handles encryption of any/all subkeys.
+	 */
+	encrypt_key: function(key, key_to_encrypt)
+	{
+		return tcrypt.encrypt(key, key_to_encrypt);
 	},
 
 	/**
@@ -122,8 +134,8 @@ var Protected = Composer.RelationalModel.extend({
 
 		if(typeOf(_body) == 'string')
 		{
-			_body	=	this.decrypt(_body);
-			_body	=	JSON.decode(_body);
+			// decrypt/deserialize the body
+			_body	=	this.deserialize(_body, obj);
 		}
 
 		if(typeOf(_body) == 'object')
@@ -173,8 +185,9 @@ var Protected = Composer.RelationalModel.extend({
 				_body[k]	=	v;
 			}
 		}.bind(this));
-		var json	=	JSON.encode(_body);
-		var encbody	=	this.encrypt(json);
+
+		// serialize the body (encrypted)
+		var encbody	=	this.serialize(_body, newdata);
 
 		newdata[this.body_key]	=	encbody.toString();
 		return newdata;
@@ -202,15 +215,24 @@ var Protected = Composer.RelationalModel.extend({
 	 * Keys are in the format
 	 *   {p: <id>, k: <encrypted key>}
 	 *   {u: <id>, k: <encrypted key>}
-	 * "p" "u" and "a" correspond to project, user, account (aka persona)
+	 * "p" "u" and "a" correspond to project, user, avatar (aka persona)
 	 * restecpfully.
 	 *
 	 * Search is in the format:
-	 *
 	 * {
 	 *   u: {id: <user id>, k: <user's key>}
 	 *   p: {id: <project id>, k: <project's key>}
 	 *   ...
+	 * }
+	 *
+	 * Search keys can also be arrays, if you are looking for multiple items
+	 * under that key:
+	 * {
+	 *   u: [
+	 *     {id: <user1 id>, k: <user1's key>},
+	 *     {id: <user2 id>, k: <user2's key>}
+	 *   ],
+	 *   p: {id: <project id>, k: <project's key>}
 	 * }
 	 */
 	find_key: function(keys, search, options)
@@ -243,27 +265,39 @@ var Protected = Composer.RelationalModel.extend({
 			var enckey	=	key.k;
 			delete(key.k);
 			var match	=	false;
-			Object.each(key, function(v, k) {
+			Object.each(key, function(id, type) {
 				if(encrypted_key) return;
-				if(search[k] && search[k].id && search[k].id == v)
+				if(search[type] && search[type].id && search[type].id == id)
 				{
 					encrypted_key	=	enckey;
-					decrypting_key	=	search[k].k;
+					decrypting_key	=	search[type].k;
+				}
+				else if(typeOf(search[type] == 'array'))
+				{
+					var entries	=	search[type];
+					for(x in entries)
+					{
+						var entry	=	entries[x];
+						if(!entry.k || !entry.id) return;
+						if(entry.id == id)
+						{
+							encrypted_key	=	enckey;
+							decrypting_key	=	entry.k;
+							break;
+						}
+					}
 				}
 			});
 			if(encrypted_key) break;
 		}
 
 		if(!decrypting_key || !encrypted_key) return false;
-		// NOTE: we don't use Protected.decrypt since we're not using this.key
-		var key = tcrypt.decrypt(decrypting_key, encrypted_key, {raw: true});
+		var key = this.decrypt_key(decrypting_key, encrypted_key);
 		return key;
 	},
 
 	/**
 	 * Generate a random key for this model.
-	 *
-	 * TODO: base this off of the current user's key instead of just randomness.
 	 */
 	generate_key: function(options)
 	{
@@ -306,9 +340,7 @@ var Protected = Composer.RelationalModel.extend({
 		var keys = [];
 		members.each(function(m) {
 			var key = m.k;
-			// NOTE: we don't use Protected.encrypt here since we're not
-			// encrypting via this.key
-			var enc = tcrypt.encrypt(key, this.key).toString();
+			var enc = this.encrypt_key(key, this.key).toString();
 			m.k = enc;
 			keys.push(m);
 		}.bind(this));
@@ -322,19 +354,65 @@ var Protected = Composer.RelationalModel.extend({
  * Provides what the Protected model does (a way to have public/private auto-
  * encrypted fields in a model) but with shared-key encryption instead of
  * symmetric.
+ *
+ * The process is this: all normal serialization/deserialization happens in the
+ * Protected model (using the symmetric AES key for that model). Then either
+ * before or after (depending on whether deserializing/serializing) the model's
+ * AES key is encrypted/decrypted via the ProtectedModel's public/private keys.
+ *
+ * This is how PGP works, and allows sharing of data without re-encrypting the
+ * whole payload: encrypt once, then send encrypted keys to recipients via their
+ * public keys.
  */
 var ProtectedShared = Protected.extend({
-	public_key: null,
+	recipients: [],
 	private_key: null,
 
-	decrypt: function(data)
+	initialize: function()
 	{
-		return data;
+		var ret	=	this.parent.apply(this, arguments);
+		if(!this.key) this.key = tcrypt.random_key();
+		return ret;
 	},
 
-	encrypt: function(data)
+	deserialize: function(data, parentobj)
 	{
-		return data;
+		var search	=	{
+			a: tagit.user.get('personas').map(function(p) {
+				return {id: p.id(), k: p.get('privkey')};
+			})
+		};
+		this.key	=	this.find_key(parentobj.keys, search);
+		if(!this.key) return false;
+		return this.parent.apply(this, arguments);
+	},
+
+	serialize: function(data, parentobj)
+	{
+		return this.parent.apply(this, arguments);
+	},
+
+	decrypt_key: function(decrypting_key, encrypted_key)
+	{
+		if(typeOf(encrypted_key) == 'string')
+		{
+			encrypted_key	=	CryptoJS.enc.Hex.parse(encrypted_key);
+		}
+		return encrypted_key;
+	},
+
+	encrypt_key: function(key, key_to_encrypt)
+	{
+		return key_to_encrypt;
+	},
+
+	add_recipient: function(persona)
+	{
+		this.recipients.push({
+			a: persona.id(),
+			k: persona.get('pubkey')
+		});
+		this.generate_subkeys(this.recipients, {skip_user_key: true});
 	},
 
 	ensure_key_exists: function()

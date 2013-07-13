@@ -13,7 +13,8 @@ var Message = ProtectedShared.extend({
 	public_fields: [
 		'id',
 		'to',
-		'from'
+		'from',
+		'keys'
 	],
 
 	private_fields: [
@@ -48,10 +49,12 @@ var Messages = Composer.Collection.extend({
 			if(!conversation_id) return;
 
 			var conversation = this.conversations.find_by_id(conversation_id);
+			if(conversation) return;
 
 			// if a conversation doesn't exist for this message, create one and
 			// add to the conversations list
-			if(!conversation) this.conversations.add({id: conversation_id});
+			conversation = new Conversation({id: conversation_id})
+			this.conversations.upsert(conversation, {silent: true});
 		}.bind(this), 'messages:monitor_conversations:add');
 
 		// track the last (greatest) ID of the synced messages
@@ -143,7 +146,6 @@ var MessagesFilterConversation = Composer.FilterCollection.extend({
 
 	filter: function(msg, collection)
 	{
-		//return true;
 		var conversation = collection.get_parent();
 		return msg.get('conversation_id') == conversation.id();
 	}
@@ -161,7 +163,8 @@ var Conversation = Composer.RelationalModel.extend({
 
 		personas: {
 			type: Composer.HasMany,
-			collection: 'Personas'
+			collection: 'Personas',
+			forward_events: true
 		}
 	},
 
@@ -179,20 +182,42 @@ var Conversation = Composer.RelationalModel.extend({
 		// keep personas up-to-date
 		this.bind_relational('messages', ['add', 'remove', 'change'], function(model) {
 			this.refresh_personas();
+			this.refresh_subject();
 		}.bind(this));
 	},
 
 	refresh_personas: function()
 	{
-		var personas = this.get('personas');
+		var personas		=	this.get('personas');
+		var my_persona_ids	=	tagit.user.get('personas').map(function(p) { return p.id(); });
 		personas.clear();
 		this.get('messages').each(function(m) {
 			var from_persona = m.get('persona');
-			if(from_persona) personas.upsert(new Persona(from_persona));
+			if(from_persona)
+			{
+				personas.upsert(from_persona);
+				if(my_persona_ids.contains(from_persona.id())) from_persona.set({mine: true});
+			}
 			var to_persona_id = m.get('to');
 			var to_persona = tagit.user.get('personas').find_by_id(to_persona_id);
-			if(to_persona) personas.upsert(new Persona(to_persona));
+			if(to_persona)
+			{
+				personas.upsert(to_persona);
+				if(my_persona_ids.contains(to_persona.id())) to_persona.set({mine: true});
+			}
 		}.bind(this));
+		this.trigger('personas');
+	},
+
+	refresh_subject: function()
+	{
+		var subject	=	false;
+		var first	=	this.get('messages').first();
+
+		if(first) subject = first.get('subject');
+		if(!subject) return false;
+
+		this.set({ subject: subject });
 	},
 
 	generate_id: function()
@@ -203,4 +228,7 @@ var Conversation = Composer.RelationalModel.extend({
 
 var Conversations = Composer.Collection.extend({
 	model: 'Conversation'
+});
+
+var ConversationsFilter = Composer.FilterCollection.extend({
 });
