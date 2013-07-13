@@ -20,6 +20,7 @@
  */
 (function() {
 	// set up relationship types
+	// TODO: deprecate these...
 	Composer.HasOne		=	1;
 	Composer.HasMany	=	2;
 
@@ -168,29 +169,42 @@
 			var _data	=	options.data;
 			delete options.data;
 
-			var obj	=	this._get_key(this.relation_data, obj_key);
-			switch(relation.type)
+			// check if the object being passed in is already a Composer object
+			if(_data && _data.__composer_type && _data.__composer_type != '')
 			{
-			case Composer.HasOne:
-				obj || (obj = new relation.model());
-				if(options.set_parent) this.set_parent(this, obj);	// NOTE: happens BEFORE setting data
-				if(_data) obj.set(_data);
-				break;
-			case Composer.HasMany:
-				if(!obj)
+				// yes, we passed in a composer object...set it directly into
+				// the relational data as a replacement for the old one.
+				// TODO: maybe provide an option to specify replace/update
+				var obj	=	_data;
+			}
+			else
+			{
+				// data passed is just a plain old object (or, at least, not a
+				// Composer object). set the data into the relation object.
+				var obj	=	this._get_key(this.relation_data, obj_key);
+				switch(relation.type)
 				{
-					if(relation.collection)
+				case Composer.HasOne:
+					obj || (obj = new relation.model());
+					if(options.set_parent) this.set_parent(this, obj);	// NOTE: happens BEFORE setting data
+					if(_data) obj.set(_data);
+					break;
+				case Composer.HasMany:
+					if(!obj)
 					{
-						obj	=	new relation.collection();
+						if(relation.collection)
+						{
+							obj	=	new relation.collection();
+						}
+						else if(relation.filter_collection)
+						{
+							obj	=	new relation.filter_collection(relation.master(), Object.merge({skip_initial_sync: true}, relation.options));
+						}
 					}
-					else if(relation.filter_collection)
-					{
-						obj	=	new relation.filter_collection(relation.master(), Object.merge({skip_initial_sync: true}, relation.options));
-					}
+					if(options.set_parent) this.set_parent(this, obj);	// NOTE: happens BEFORE setting data
+					if(_data) obj.reset(_data, options);
+					break;
 				}
-				if(options.set_parent) this.set_parent(this, obj);	// NOTE: happens BEFORE setting data
-				if(_data) obj.reset(_data, options);
-				break;
 			}
 
 			// set the object back into our relational data objects
