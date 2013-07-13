@@ -2,6 +2,13 @@ var tcrypt = {
 	// NOTE: completely unused
 	cipher: 'AES',
 
+	/**
+	 * Formats data like so:
+	 *
+	 *   <payload>:i<initial vector>:s<salt>
+	 *
+	 * This scheme assumes Base64 encoding (otherwise : would be a bad separator)
+	 */
 	TagitFormatter: {
 		stringify: function (cipherParams)
 		{
@@ -71,32 +78,22 @@ var tcrypt = {
 		return CryptoJS.enc.Utf8.stringify(de);
 	},
 
+	/**
+	 * Generate a key from a password/salt
+	 */
 	key: function(passphrase, salt, options)
 	{
 		options || (options = {});
 		return CryptoJS.PBKDF2(passphrase, salt, options);
 	},
 
-	iv: function(value)
-	{
-		if(!value) return CryptoJS.lib.WordArray.random(16);
-
-		if(value.length < 16)
-		{
-			value += '4c281987249be78a';
-		}
-		if(value.length > 16)
-		{
-			value = value.slice(0, 16)
-		}
-		return CryptoJS.enc.Utf8.parse(value);
-	},
-
-	random_key: function(options)
+	/**
+	 * Generate N random bytes, returned as a WordArray
+	 */
+	random_bytes: function(nBytes)
 	{
 		// NOTE: this was taken directly from CryptoJS' random() function, but
 		// updated to use tcrypt.random_number() instead of Math.random().
-		var nBytes = 32;
 		var words = [];
 		for (var i = 0; i < nBytes; i += 4) {
 			words.push((tcrypt.random_number() * 0x100000000) | 0);
@@ -105,6 +102,39 @@ var tcrypt = {
 		return new CryptoJS.lib.WordArray.init(words, nBytes);
 	},
 
+	/**
+	 * Generate an initial vector. If given a seed, will generate it based off
+	 * the seed, otherwise will return a random 16 byte WordArray
+	 */
+	iv: function(value)
+	{
+		// if no seed given, return 16 random bytes
+		if(!value) return tcrypt.random_bytes(16);
+
+		if(value.length < 16)
+		{
+			// if the IV seed is less than 16 bytes, append random data
+			value += CryptoJS.enc.Hex.stringify(tcrypt.random_bytes(16));
+		}
+		if(value.length > 16)
+		{
+			// only grab 16 bytes of seed
+			value = value.slice(0, 16)
+		}
+		return CryptoJS.enc.Utf8.parse(value);
+	},
+
+	/**
+	 * Generate a random 256bit key.
+	 */
+	random_key: function(options)
+	{
+		return tcrypt.random_bytes(32);
+	},
+
+	/**
+	 * SHA256 the given data.
+	 */
 	hash: function(data, options)
 	{
 		options || (options = {});
@@ -113,10 +143,18 @@ var tcrypt = {
 		return CryptoJS.enc.Hex.stringify(hash);
 	},
 
+	/**
+	 * Generate a random number between 0 and 1.
+	 *
+	 * Uses window.crypto for random generation, and if not available, bitches
+	 * about how insecure your browser is.
+	 */
 	random_number: function()
 	{
 		if(window.crypto.getRandomValues)
 		{
+			// TODO: verify dividing Uint32 / 2^32 is still random
+			// TODO: handle QuotaExceededError error in FF (maybe the same in chrome)
 			return window.crypto.getRandomValues(new Uint32Array(1))[0] / (Math.pow(2, 32) - 1);
 		}
 		else
@@ -126,13 +164,20 @@ var tcrypt = {
 		}
 	},
 
+	/**
+	 * Generate a random SHA256 hash
+	 */
 	random_hash: function()
 	{
 		return tcrypt.hash(Date.now() + tcrypt.uuid());
 	},
 
+	/**
+	 * Generate a *random* UUID.
+	 */
 	uuid: function()
 	{
+		// taken from stackoverflow.com, modified to use tcrypt's random generator
 		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 			var r = tcrypt.random_number()*16|0;
 			var v = c == 'x' ? r : (r&0x3|0x8);
