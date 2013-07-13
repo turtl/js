@@ -53,7 +53,6 @@ var ConversationListController = TrackController.extend({
 	{
 		this.release_subcontrollers();
 		this.filter.unbind(['add', 'remove', 'reset'], 'messages:list:render_on_state_change');
-		this.unbind('select', 'conversations:list:select');
 		this.filter.detach();
 		return this.parent.apply(this, arguments);
 	},
@@ -68,14 +67,10 @@ var ConversationListController = TrackController.extend({
 
 	create_subcontroller: function(message)
 	{
-		var con	=	new ConversationItemController({
+		return new ConversationItemController({
 			inject: this.conversation_list,
 			model: message
 		});
-		con.bind('select', function(model, el) {
-			this.trigger('select', model, el);
-		}.bind(this), 'conversations:item:select');
-		return con;
 	}
 });
 

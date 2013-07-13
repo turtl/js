@@ -37,12 +37,13 @@ var ConversationItemController = Composer.Controller.extend({
 			their_personas: their_personas
 		});
 		this.html(content);
-		this.className = 'conversation_'+this.model.id();
+		if(this.model.get('selected', false)) this.el.addClass('sel');
+		else this.el.removeClass('sel');
 	},
 
 	select_conversation: function(e)
 	{
 		if(e) e.stop();
-		this.trigger('select', this.model, this.el);
+		this.model.set({selected: true});
 	}
 });

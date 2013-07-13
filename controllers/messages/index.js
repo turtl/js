@@ -29,18 +29,20 @@ var MessagesController = Composer.Controller.extend({
 			inject: this.conversations,
 			collection: this.messages.conversations
 		});
-		this.conversations_controller.bind('select', this.show_conversation.bind(this), 'conversations:list:select');
 
 		this.view_controller = new ConversationViewController({
 			inject: this.message_pane,
 			model: null
 		});
+
+		this.messages.conversations.bind('change:selected', this.show_conversation.bind(this), 'conversations:select:'+this.cid());
 	},
 
 	release: function()
 	{
 		if(this.conversations_controller) this.conversations_controller.release();
 		if(this.view_controller) this.view_controller.release();
+		this.messages.conversations.unbind('change:selected', 'conversations:select:'+this.cid());
 		return this.parent.apply(this, arguments);
 	},
 
@@ -55,8 +57,7 @@ var MessagesController = Composer.Controller.extend({
 	open_compose: function(e)
 	{
 		if(e) e.stop();
-		new MessageComposeController({
-		});
+		new MessageComposeController();
 	},
 
 	open_personas: function(e)
@@ -67,11 +68,12 @@ var MessagesController = Composer.Controller.extend({
 		});
 	},
 
-	show_conversation: function(model, el)
+	show_conversation: function(model)
 	{
-		var convos = this.el.getElements('.conversations ul li');
-		if(convos) convos.each(function(el) { el.removeClass('sel'); });
-		el.addClass('sel');
+		this.messages.conversations.each(function(c) {
+			if(c.id() == model.id()) return;
+			c.set({selected: false}, {silent: 'change:selected'});
+		});
 		if(this.view_controller) this.view_controller.release();
 		this.view_controller	=	new ConversationViewController({
 			inject: this.message_pane,
