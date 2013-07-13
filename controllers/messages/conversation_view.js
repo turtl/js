@@ -87,9 +87,8 @@ var ConversationViewController = Composer.Controller.extend({
 							success: function() {
 								tagit.loading(false);
 								barfr.barf('Message sent.');
-								message.persona	=	my_persona.toJSON();
+								message.set({persona: my_persona});
 								tagit.messages.add(message);
-								this.release();
 							}.bind(this),
 							error: function(_, err) {
 								tagit.loading(false);
