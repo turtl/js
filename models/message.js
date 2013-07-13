@@ -32,6 +32,8 @@ var Message = ProtectedShared.extend({
 
 		// keep the "created" timestamp updated (not that the ID changes, but w/e)
 		this.bind('change:id', function() {
+			var id		=	this.id(true);
+			if(!id) return;
 			var ts		=	parseInt(this.id().substr(0, 8), 16);
 			if(!ts) return;
 			var date	=	new Date(ts * 1000);
@@ -211,14 +213,18 @@ var Conversation = Composer.RelationalModel.extend({
 			var from_persona = m.get('persona');
 			if(from_persona)
 			{
+				window._toJSON_disable_protect = true;
 				personas.upsert(from_persona);
+				window._toJSON_disable_protect = false;
 				if(my_persona_ids.contains(from_persona.id())) from_persona.set({mine: true});
 			}
 			var to_persona_id = m.get('to');
 			var to_persona = tagit.user.get('personas').find_by_id(to_persona_id);
 			if(to_persona)
 			{
+				window._toJSON_disable_protect = true;
 				personas.upsert(to_persona);
+				window._toJSON_disable_protect = false;
 				if(my_persona_ids.contains(to_persona.id())) to_persona.set({mine: true});
 			}
 		}.bind(this));
