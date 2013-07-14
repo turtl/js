@@ -149,6 +149,7 @@ var tagit	=	{
 	setup_syncing: function()
 	{
 		// monitor for sync changes
+		tagit.profile.get_sync_time();
 		this.sync_timer = new Timer(10000);
 		this.sync_timer.end = function()
 		{
