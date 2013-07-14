@@ -116,7 +116,7 @@ var MessageComposeController = Composer.Controller.extend({
 					success: function() {
 						tagit.loading(false);
 						barfr.barf('Message sent.');
-						message.persona	=	this.from_persona.toJSON();
+						message.set({persona: this.from_persona});
 						tagit.messages.add(message);
 						this.release();
 					}.bind(this),

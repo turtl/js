@@ -70,7 +70,10 @@ var Persona = Composer.Model.extend({
 
 	generate_response: function(challenge)
 	{
-		return tcrypt.hash(this.get('secret') + challenge);
+		var secret	=	this.get('secret');
+		if(!secret) secret = tagit.user.get('settings').get_by_key('personas').value()[this.id()];
+		if(!secret) return false;
+		return tcrypt.hash(secret + challenge);
 	}
 }, Protected);
 

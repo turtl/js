@@ -50,6 +50,11 @@ var ConversationViewController = Composer.Controller.extend({
 		var my_persona	=	this.model.get('personas').find(function(p) {
 			return my_personas.contains(p.id());
 		});
+		if(!my_persona)
+		{
+			barfr.barf('Error sending message: do you have any personas?');
+			return false;
+		}
 
 		// do some annoying persona lookups here to get the recipient's persona id
 		var to_personas	=	this.model.get('personas').map(function(p) { return p.id(); });
@@ -59,9 +64,9 @@ var ConversationViewController = Composer.Controller.extend({
 		var to_persona_id	=	to_personas.filter(function(id) {
 			return !my_personas.contains(id);
 		})[0];
-		if(!my_persona)
+		if(!to_persona_id)
 		{
-			barfr.barf('Error sending message: do you have any personas?');
+			barfr.barf('Error loading recipient data.');
 			return false;
 		}
 		var message		=	new Message({
