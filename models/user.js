@@ -195,7 +195,7 @@ var User	=	Composer.RelationalModel.extend({
 		var user_record = tcrypt.hash(password) +':'+ username;
 		// use username as salt/initial vector
 		var key = this.get_key();
-		var iv = tcrypt.iv(username);
+		var iv = tcrypt.iv(username+'4c281987249be78a');	// make sure IV always has 16 bytes
 		var auth =  tcrypt.encrypt(key, user_record, {iv: iv}).toString();
 
 		// cache it
