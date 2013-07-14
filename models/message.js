@@ -47,8 +47,9 @@ var Message = ProtectedShared.extend({
 		var lowest_read_id	=	unread.lowest || '';
 		var specific_unread	=	unread.list || [];
 		if(	this.id(true) &&
+			!this.get('mine') &&
 			(this.id().localeCompare(highest_read_id) > 0 ||
-			 this.id().localCompare(lowest_read_id) < 0 ||
+			 this.id().localeCompare(lowest_read_id) < 0 ||
 			 specific_unread.contains(this.id())) )
 		{
 			this.set({unread: true});

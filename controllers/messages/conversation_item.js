@@ -40,6 +40,14 @@ var ConversationItemController = Composer.Controller.extend({
 		this.html(content);
 		if(this.model.get('selected', false)) this.el.addClass('sel');
 		else this.el.removeClass('sel');
+		if(this.model.get('messages').select({unread: true}).length > 0)
+		{
+			this.el.addClass('unread');
+		}
+		else
+		{
+			this.el.removeClass('unread');
+		}
 	},
 
 	select_conversation: function(e)

@@ -66,8 +66,9 @@ header .apps a.sel {background: #202020;}
 header .apps ul {float: left; list-style: none; margin: 0 0 0 0; border-left: 1px solid #111;}
 header .apps ul.hidden {display: none;}
 header .apps ul li {float: left;}
-header .apps ul li a {width: 40px; border-left: 0;}
+header .apps ul li a {position: relative; width: 40px; border-left: 0;}
 header .apps ul li a span {width: 40px; height: 40px; opacity: .6;}
+header .apps ul li a small {position: absolute; z-index: 4; right: 0; bottom: 0; display: block; padding: 1px 4px; font-size: 11px; font-weight: bold; color: #fff; background: #c44;}
 header .apps ul li a.notes span {background: url(/images/template/app_notes_24x24.png) center center no-repeat;}
 header .apps ul li a.messages span {background: url(/images/template/app_messages_24x24.png) center center no-repeat;}
 

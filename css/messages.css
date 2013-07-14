@@ -24,7 +24,8 @@ div.button.compose span {padding-left: 25px; background: url(/images/site/icons/
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e5e5e5', endColorstr='#d0d0d0',GradientType=0 ); /* IE6-9 */
 }
 .messages .conversations {list-style: none; border-top: 1px solid #ccc;}
-.messages .conversations ul li.sel {padding-left: 8px; background: #f0f0f0; border-left: 4px solid #73b8d1;}
+.messages .conversations ul li.sel {padding-left: 8px; background: #f0f0f0; border-left: 4px solid #ccc;}
+.messages .conversations ul li.unread {padding-left: 8px; border-left: 4px solid #73b8d1;}
 .messages .conversations ul li h3 {margin: 0 0 6px 0; font-size: 17px; color: #4695b1;}
 .messages .conversations ul li .info {margin: 0 0 6px 0;}
 .messages .conversations ul li .info em {font-weight: bold; color: #222;}

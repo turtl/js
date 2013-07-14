@@ -24,6 +24,24 @@ var HeaderBarController = Composer.Controller.extend({
 		this.close_timer.end = function() {
 			this.menu.removeClass('open');
 		}.bind(this);
+
+		tagit.messages.bind(['add', 'remove', 'change:unread', 'mark_read'], function() {
+			var num_unread	=	tagit.messages.select({unread: true}).length;
+			if(num_unread > 0)
+			{
+				var notif	=	this.el.getElement('li a.messages small');
+				if(notif) notif.destroy();
+				var notif	=	new Element('small').set('html', num_unread+'');
+				var a		=	this.el.getElement('li a.messages');
+				if(!a) return;
+				notif.inject(a);
+			}
+			else
+			{
+				var notif	=	this.el.getElement('li a.messages small');
+				if(notif) notif.destroy();
+			}
+		}.bind(this), 'header_bar:monitor_messages');
 	},
 
 	release: function()
