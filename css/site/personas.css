@@ -21,4 +21,4 @@
 /* selector */
 .select-persona .persona h3 {display: inline-block; margin: 0 16px 3px 0; font-size: 16px;}
 .select-persona .persona p {color: #666;}
-
+.select-persona .personas-list ul li:hover {background: #eeeeff;}
