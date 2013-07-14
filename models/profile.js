@@ -42,18 +42,21 @@ var Profile = Composer.RelationalModel.extend({
 		this.clear({silent: true});
 		var projects = this.get('projects');
 		var project_data = this.profile_data.projects;
-		projects.load_projects(project_data, options);
-		var project = null;
-		this.loaded = true;
-		if(options.project)
-		{
-			project = this.get('projects').find(function(p) {
-				return p.id() == options.project.clean();
-			});
-		}
-		if(!project) project = this.get('projects').first();
-		if(!project) return;
-		this.set_current_project(project);
+		projects.load_projects(project_data, Object.merge({}, options, {
+			complete: function() {
+				var project = null;
+				this.loaded = true;
+				if(options.project)
+				{
+					project = this.get('projects').find(function(p) {
+						return p.id() == options.project.clean();
+					});
+				}
+				if(!project) project = this.get('projects').first();
+				if(!project) return;
+				this.set_current_project(project);
+			}.bind(this)
+		}));
 	},
 
 	get_current_project: function()

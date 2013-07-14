@@ -78,31 +78,26 @@ var Project = Composer.RelationalModel.extend({
 		this._track_tags = yesno;
 	},
 
-	load_notes: function(options)
-	{
-		options || (options = {});
-		tagit.api.get('/projects/'+this.id()+'/notes', {}, {
-			success: function(notes) {
-				this.update_notes(notes, options);
-			}.bind(this),
-			error: function(e) {
-				barfr.barf('There was an error loading your notes: '+ e);
-				if(options.error) options.error(e);
-			}
-		});
-	},
-
+	/**
+	 * Given a set of note data, reset this project's notes, async, with said
+	 * data.
+	 */
 	update_notes: function(note_data, options)
 	{
 		options || (options = {});
 		this.get('notes').clear();
 		this.track_tags(false);
-		this.get('notes').reset(note_data, {silent: true})
-		this.get('notes').trigger('reset');
-		this.track_tags(true);
-		this.get('tags').refresh_from_notes(this.get('notes'), {silent: true});
-		this.get('tags').trigger('reset');
-		this.trigger('notes_updated');
+		this.get('notes').reset_async(note_data, {
+			silent: true,
+			complete: function() {
+				this.get('notes').trigger('reset');
+				this.track_tags(true);
+				this.get('tags').refresh_from_notes(this.get('notes'), {silent: true});
+				this.get('tags').trigger('reset');
+				this.trigger('notes_updated');
+				if(options.complete) options.complete();
+			}.bind(this)
+		})
 	},
 
 	save: function(options)
@@ -206,15 +201,28 @@ var Projects = Composer.Collection.extend({
 		options || (options = {});
 		this.each(function(p) { p.destroy({skip_sync: true}); });
 		this.clear(options);
+		var tally		=	0;
+		var nprojects	=	projects.length;
+
+		// tracks the completion of note updating for each project.
+		var complete	=	function()
+		{
+			tally++;
+			if(tally >= nprojects && options.complete)
+			{
+				options.complete();
+			}
+		};
+
 		projects.each(function(pdata) {
 			var notes = pdata.notes;
 			delete pdata.notes;
 			var project = new Project(pdata);
 			pdata.notes = notes;
 			this.add(project, options);
-			project.update_notes(notes, options);
+			// this is async (notes added one by one), so track completion
+			project.update_notes(notes, Object.merge({}, options, {complete: complete}));
 		}.bind(this));
-		//this.reset(projects);
 	},
 
 	get_project: function(project_name)
