@@ -113,13 +113,30 @@ var Messages = Composer.Collection.extend({
 		tagit.api.get('/messages/personas/'+persona.id(), { after: options.after, challenge: response }, {
 			success: function(res) {
 				var my_personas	=	tagit.user.get('personas');
-				this.add(res.received);
+
+				// add our messages into the pool (marking them explicitly as unread)
+				this.add(res.received.map(function(recv) {
+					recv.unread = true;
+					return recv;
+				}));
+				// messages we sent have the "to" persona replaced with our own for
+				// display purposes
 				this.add(res.sent.map(function(sent) {
 					var persona		=	my_personas.find_by_id(sent.from);
 					if(!persona) return false;
 					sent.persona	=	persona.toJSON();
 					return sent;
 				}));
+
+				/*
+				// save all unread messages into the user's settings
+				var unread	=	Array.clone(tagit.user.get('settings').get_by_key('msg_unread').value() || []);
+				if(res.received.length > 0) res.received.each(function(recv) {
+					unread.push(recv.id);
+				});
+				tagit.user.get('settings').get_by_key('msg_unread').value(unread);
+				*/
+
 				if(options.success) options.success(res);
 			}.bind(this),
 			error: function(err, xhr) {
