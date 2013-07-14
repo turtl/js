@@ -27,7 +27,7 @@
 	?>
 	<ul>
 		<? messages.each(function(message) { ?>
-			<li class="message">
+			<li class="message <? if(message.unread) { ?>unread<? } ?>">
 				<?
 				var from = message.persona.name ? message.persona.name : message.persona.screenname;
 				?>

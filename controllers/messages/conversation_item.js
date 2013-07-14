@@ -15,6 +15,13 @@ var ConversationItemController = Composer.Controller.extend({
 		if(!this.model) return false;
 		this.render();
 		this.model.bind(['personas', 'change'], this.render.bind(this), 'conversations:item:render');
+
+		// if new messages come in while this convo is open, mark them read
+		this.model.bind('message_refresh', function() {
+			// actually, it's debatable whether this is a good idea...
+			return;
+			if(this.model.get('selected', false)) this.model.mark_read();
+		}.bind(this), 'conversation:item:refresh:mark_read');
 	},
 
 	release: function()

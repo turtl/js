@@ -30,21 +30,27 @@ var Conversation = Composer.RelationalModel.extend({
 		this.bind_relational('messages', ['add', 'remove', 'change'], function(model) {
 			this.refresh_personas();
 			this.refresh_subject();
+			this.trigger('message_refresh');
 		}.bind(this));
 
 		this.bind('change:selected', function() {
 			if(!this.get('selected', false)) return false;
-			// mark all my messages as read
-			//
-			// also, we delay here so anyone who needs the 'which messages are
-			// unread' has a chance to get it before the list vanishes
-			(function() {
-				this.get('messages').each(function(msg) {
-					msg.mark_read();
-				});
-				tagit.messages.trigger('mark_read');
-			}).delay(1, this);
+			this.mark_read();
 		}.bind(this), 'conversation:monitor:selected');
+	},
+
+	mark_read: function()
+	{
+		// mark all my messages as read
+		//
+		// also, we delay here so anyone who needs the 'which messages are
+		// unread' has a chance to get it before the list vanishes
+		(function() {
+			this.get('messages').each(function(msg) {
+				msg.mark_read();
+			});
+			tagit.messages.trigger('mark_read');
+		}).delay(10, this);
 	},
 
 	refresh_personas: function()

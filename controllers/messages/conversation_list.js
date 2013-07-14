@@ -23,10 +23,9 @@ var ConversationListController = TrackController.extend({
 				return b_last.id().localeCompare(a_last.id());
 			}
 		});
-		this.filter.bind('add', function(model) {
-			//if(model.get('messages').models().length == 0) console.trace();
-			console.log('filter: add: ', model.get('messages').models());
-		}.bind(this));
+		this.collection.bind('message_refresh', function() {
+			this.filter.trigger('reset');
+		}.bind(this), 'conversations:list:reset_on_message_refresh');
 
 		this.render();
 
@@ -46,14 +45,15 @@ var ConversationListController = TrackController.extend({
 			
 		}.bind(this);
 
-		this.filter.bind(['add', 'remove', 'reset'], empty_check, 'messages:list:render_on_state_change');
+		this.filter.bind(['add', 'remove', 'reset'], empty_check, 'conversations:list:render_on_state_change');
 	},
 
 	release: function()
 	{
 		this.release_subcontrollers();
-		this.filter.unbind(['add', 'remove', 'reset'], 'messages:list:render_on_state_change');
+		this.filter.unbind(['add', 'remove', 'reset'], 'conversations:list:render_on_state_change');
 		this.filter.detach();
+		this.collection.unbind('message_refresh', 'conversations:list:reset_on_message_refresh');
 		return this.parent.apply(this, arguments);
 	},
 
