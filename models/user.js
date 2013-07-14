@@ -29,6 +29,8 @@ var User	=	Composer.RelationalModel.extend({
 	auth: null,
 	key: null,
 
+	settings_timer: null,
+
 	init: function()
 	{
 		this.logged_in		=	false;
@@ -51,16 +53,17 @@ var User	=	Composer.RelationalModel.extend({
 			persona_settings.value(personas);
 		}.bind(this), 'user:track_personas:destroy');
 
-		// whenever the user settings change, automatically save them (encrypted)
+		// used to throttle user settings saves
+		this.settings_timer		=	new Timer(10, 10);
+		this.settings_timer.end	=	this.save_settings.bind(this);
+
+		// whenever the user settings change, automatically save them (encrypted).
+		// however, sometimes many settings will change at once, and instead of
+		// stupidly doing a save for each successive change, we have a timer that
+		// waits a set time before saving. if any more settings change happen in
+		// that time, the timer is reset.
 		this.bind_relational('settings', ['change'], function() {
-			this.save({
-				success: function(res) {
-					this.trigger('saved', res);
-				}.bind(this),
-				error: function(model, err) {
-					barfr.barf('There was an error saving your persona: '+ err);
-				}.bind(this)
-			});
+			this.settings_timer.reset();
 		}.bind(this), 'user:save_settings');
 	},
 
@@ -147,6 +150,18 @@ var User	=	Composer.RelationalModel.extend({
 		this.unbind_relational('personas', ['destroy'], 'user:track_personas:destroy');
 		this.unbind_relational('settings', ['change'], 'user:save_settings');
 		this.trigger('logout', this);
+	},
+
+	save_settings: function()
+	{
+		this.save({
+			success: function(res) {
+				this.trigger('saved', res);
+			}.bind(this),
+			error: function(model, err) {
+				barfr.barf('There was an error saving your user settings:'+ err);
+			}.bind(this)
+		});
 	},
 
 	get_key: function()

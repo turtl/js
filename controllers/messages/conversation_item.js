@@ -34,7 +34,8 @@ var ConversationItemController = Composer.Controller.extend({
 		var content = Template.render('messages/conversation_item', {
 			conversation: toJSON(this.model),
 			my_personas: my_personas,
-			their_personas: their_personas
+			their_personas: their_personas,
+			num_unread: this.model.get('messages').select({unread: true}).length
 		});
 		this.html(content);
 		if(this.model.get('selected', false)) this.el.addClass('sel');

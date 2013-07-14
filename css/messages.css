@@ -26,7 +26,8 @@ div.button.compose span {padding-left: 25px; background: url(/images/site/icons/
 .messages .conversations {list-style: none; border-top: 1px solid #ccc;}
 .messages .conversations ul li.sel {padding-left: 8px; background: #f0f0f0; border-left: 4px solid #73b8d1;}
 .messages .conversations ul li h3 {margin: 0 0 6px 0; font-size: 17px; color: #4695b1;}
-.messages .conversations ul li small {display: block; margin: 0 0 6px 0;}
+.messages .conversations ul li .info {margin: 0 0 6px 0;}
+.messages .conversations ul li .info em {font-weight: bold; color: #222;}
 .messages .conversations ul li p {line-height: 1.3em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #555;}
 
 /* message pane (rain down pain) */

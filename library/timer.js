@@ -5,17 +5,19 @@ var Timer = new Class({
 	// the callback function when a timer has successfully counted down
 	end: function() {},
 
-	initialize: function (ms) {
+	initialize: function (ms, poll) {
+		poll || (poll = 50);
 		this.start_ms	=	0;
 		this.ms			=	ms;
 		this.is_started	=	false;
+		this.poll		=	poll;
 	},
 
 	start: function () {
 		d=new Date();
 		this.start_ms	=	d.getTime();
 		this.is_started	=	true;
-		this.run.delay(50, this);
+		this.run.delay(this.poll, this);
 	},
 
 	run: function () {
@@ -27,7 +29,7 @@ var Timer = new Class({
 			this.stop();
 			if(this.end) this.end();
 		} else {
-			this.run.delay(50, this);
+			this.run.delay(this.poll, this);
 		}
 	},
 

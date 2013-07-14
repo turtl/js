@@ -12,7 +12,12 @@ if(empty(subject)) subject = '(no subject)';
 <h3>
 	<?=subject?>
 </h3>
-<small><?=num?> message<?=(num == 1 ? '' : 's')?></small>
+<div class="info">
+	<small><?=num?> message<?=(num == 1 ? '' : 's')?></small>
+	<? if(num_unread > 0) { ?>
+		<em>(<?=num_unread?> unread)</em>
+	<? } ?>
+</div>
 <p>
 	<em><?=my_names.join(', ') ?></em>,
 	<em><?=their_names.join(', ') ?></em>

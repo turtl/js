@@ -31,6 +31,20 @@ var Conversation = Composer.RelationalModel.extend({
 			this.refresh_personas();
 			this.refresh_subject();
 		}.bind(this));
+
+		this.bind('change:selected', function() {
+			if(!this.get('selected', false)) return false;
+			// mark all my messages as read
+			//
+			// also, we delay here so anyone who needs the 'which messages are
+			// unread' has a chance to get it before the list vanishes
+			(function() {
+				this.get('messages').each(function(msg) {
+					msg.mark_read();
+				});
+				tagit.messages.trigger('mark_read');
+			}).delay(1, this);
+		}.bind(this), 'conversation:monitor:selected');
 	},
 
 	refresh_personas: function()
