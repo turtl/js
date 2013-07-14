@@ -84,11 +84,11 @@ var tagit	=	{
 			// if the user is logged in, we'll put their auth info into the api object
 			this.user.bind('change', this.user.write_cookie.bind(this.user), 'user:write_changes_to_cookie');
 			this.api.set_auth(this.user.get_auth());
-			tagit.show_loading_screen(true);
 			this.controllers.pages.release_current();
 			this.messages = new Messages();
+			tagit.show_loading_screen(true);
 			this.profile = this.user.load_profile({
-				init: false,		// TODO: try to get this working when `true`
+				init: true,
 				success: function() {
 					tagit.show_loading_screen(false);
 					this.controllers.pages.release_current();
@@ -166,30 +166,36 @@ var tagit	=	{
 
 	stop_spinner: false,
 
-	show_loading_screen: function(show)
+	show_loading_screen: function(show, delay)
 	{
 		var overlay = $('loading-overlay');
 		if(!overlay) return;
-		overlay.setStyle('display', show ? 'table' : '');
-		if(show)
+		var do_show	=	function()
 		{
-			this.stop_spinner = false;
-			var chars = ['/', '-', '\\', '|'];
-			var idx = 0;
-			var spinner = $E('.spin', overlay);
-			var spin = function()
+			overlay.setStyle('display', show ? 'table' : '');
+			if(show)
 			{
-				if(this.stop_spinner || !spinner) return;
-				spinner.set('html', chars[idx]);
-				idx = (idx + 1) % chars.length;
-				spin.delay(100, this);
-			}.bind(this);
-			spin();
-		}
-		else
-		{
-			this.stop_spinner = true;
-		}
+				this.stop_spinner = false;
+				var chars = ['/', '-', '\\', '|'];
+				var idx = 0;
+				var spinner = $E('.spin', overlay);
+				var spin = function()
+				{
+					if(this.stop_spinner || !spinner) return;
+					spinner.set('html', chars[idx]);
+					idx = (idx + 1) % chars.length;
+					spin.delay(100, this);
+				}.bind(this);
+				spin();
+			}
+			else
+			{
+				this.stop_spinner = true;
+			}
+		};
+
+		if(delay && delay > 0) do_show.delay(delay);
+		else do_show();
 	},
 
 	unload: function()

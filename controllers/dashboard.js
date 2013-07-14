@@ -46,7 +46,6 @@ var DashboardController = Composer.Controller.extend({
 			});
 
 			tagit.controllers.pages.trigger('loaded');
-			//if(current) current.get('notes').trigger('reset');
 		}.bind(this);
 
 		tagit.loading(true);
@@ -85,7 +84,7 @@ var DashboardController = Composer.Controller.extend({
 			this.release();
 		}.bind(this), 'dashboard:logout:clear_timer');
 
-		this.profile.load();
+		this.profile.trigger('change:current_project');
 	},
 
 	soft_release: function()

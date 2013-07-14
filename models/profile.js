@@ -7,8 +7,7 @@ var Profile = Composer.RelationalModel.extend({
 		}
 	},
 
-	// stores ALL data for the profile, synced once during init from server.
-	// also used to indicate whether or not initial data sync has occured yet
+	// stores whether or not all profile data has been downloaded
 	profile_data: false,
 
 	// tracks items to ignore when a sync occurs. this is useful for ignoring
@@ -24,10 +23,14 @@ var Profile = Composer.RelationalModel.extend({
 	{
 		tagit.api.get('/profiles/users/'+tagit.user.id(), {}, {
 			success: function(profile) {
-				this.profile_data = profile;
+				this.profile_data = true;
 				tagit.user.set(profile.user);
-				if(options.init) this.load(options);
-				if(options.success) options.success(profile);
+				if(options.init) this.load(profile, Object.merge({}, options, {
+					complete: function() {
+						if(options.success) options.success(profile);
+					}.bind(this)
+				}));
+				else if(options.success) options.success(profile);
 			}.bind(this),
 			error: function(err) {
 				barfr.barf('Error loading user profile: '+ err);
@@ -36,12 +39,12 @@ var Profile = Composer.RelationalModel.extend({
 		});
 	},
 
-	load: function(options)
+	load: function(data, options)
 	{
 		options || (options = {});
 		this.clear({silent: true});
 		var projects = this.get('projects');
-		var project_data = this.profile_data.projects;
+		var project_data = data.projects;
 		projects.load_projects(project_data, Object.merge({}, options, {
 			complete: function() {
 				var project = null;
@@ -55,6 +58,7 @@ var Profile = Composer.RelationalModel.extend({
 				if(!project) project = this.get('projects').first();
 				if(!project) return;
 				this.set_current_project(project);
+				if(options.complete) options.complete();
 			}.bind(this)
 		}));
 	},
@@ -67,7 +71,11 @@ var Profile = Composer.RelationalModel.extend({
 	set_current_project: function(obj, options)
 	{
 		options || (options = {});
-		var cur = this.get_current_project();
+		if(typeOf(obj) == 'string')
+		{
+			obj	=	this.get('projects').find_by_id(obj);
+		}
+		if(!obj) return false;
 		return this.set({current_project: obj}, options);
 	},
 
