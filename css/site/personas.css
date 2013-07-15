@@ -12,7 +12,7 @@
 
 /* listing */
 .personas div.personas-list > ul {list-style: none;}
-.personas div.personas-list > ul > li {display: block; padding: 6px 4px; font-size: 16px; border-bottom: 1px dashed #aaa;}
+.personas div.personas-list > ul > li {display: block; padding: 6px 4px; font-size: 16px; border-bottom: 1px dashed #ccc;}
 .personas div.personas-list > ul > li h3 {display: inline-block;}
 .personas div.personas-list > ul > li small {display: inline-block; margin: 0 0 0 12px; font-size: 12px; color: #888;}
 .personas div.personas-list > ul > li > ul {float: right; list-style: none;}

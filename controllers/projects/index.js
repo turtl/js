@@ -5,8 +5,7 @@ var ProjectsController = Composer.Controller.extend({
 
 	events: {
 		'click a.add': 'add_project',
-		'click a.edit': 'edit_project',
-		'click a.delete': 'delete_project',
+		'click a.manage': 'manage_projects',
 		'change .project-list select': 'change_project'
 	},
 
@@ -49,6 +48,15 @@ var ProjectsController = Composer.Controller.extend({
 		});
 	},
 
+	manage_projects: function(e)
+	{
+		if(e) e.stop();
+		new ProjectManageController({
+			collection: this.profile.get('projects')
+		});
+	},
+
+	/*
 	edit_project: function(e)
 	{
 		if(e) e.stop();
@@ -78,6 +86,7 @@ var ProjectsController = Composer.Controller.extend({
 			}
 		});
 	},
+	*/
 
 	change_project: function(e)
 	{

@@ -187,7 +187,20 @@ var Project = Composer.RelationalModel.extend({
 var Projects = Composer.Collection.extend({
 	model: Project,
 
-	sortfn: function(a, b) { return a.id().localeCompare(b.id()); },
+	sortfn: function(a, b)
+	{
+		var psort	=	tagit.user.get('settings').get_by_key('project_sort').value() || {};
+		var a_sort	=	psort[a.id()] || psort[a.id()] === 0 ? psort[a.id()] : 99999;
+		var b_sort	=	psort[b.id()] || psort[b.id()] === 0 ? psort[b.id()] : 99999;
+		if(a_sort - b_sort != 0)
+		{
+			return a_sort - b_sort;
+		}
+		else
+		{
+			return a.id().localeCompare(b.id());
+		}
+	},
 
 	clear: function(options)
 	{

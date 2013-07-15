@@ -24,6 +24,8 @@ var PersonasController = Composer.Controller.extend({
 		}.bind(this);
 		modal.addEvent('close', modalclose);
 		this.collection.bind(['change', 'add', 'remove', 'destroy', 'reset'], this.render.bind(this), 'personas:monitor:render');
+
+		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
 	},
 
 	release: function()
@@ -31,6 +33,7 @@ var PersonasController = Composer.Controller.extend({
 		if(modal.is_open) modal.close();
 		if(this.list_controller) this.list_controller.release();
 		this.collection.unbind(['change', 'add', 'remove', 'destroy', 'reset'], 'personas:monitor:render');
+		tagit.keyboard.attach(); // re-enable shortcuts
 		this.parent.apply(this, arguments);
 	},
 

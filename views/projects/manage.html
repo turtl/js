@@ -1,0 +1,29 @@
+<h1>Manage projects</h1>
+<div class="project-manage">
+	<h2>My projects</h2>
+	<ul class="mine">
+		<? projects.each(function(p) { ?>
+			<li class="clear project_<?=p.id?>">
+				<span class="sort" title="Drag to sort projects"></span>
+				<h3><?=p.title?></h3>
+				<ul class="actions">
+					<li>
+						<a href="#share" class="<?=p.id?>" title="Share project">
+							<img src="/images/site/icons/share_16x16_black.png" alt="share" width="16" height="16">
+						</a>
+					</li>
+					<li>
+						<a href="#edit" class="<?=p.id?>" title="Edit project">
+							<img src="/images/site/icons/edit_16x16_black.png" alt="Edit" width="16" height="16">
+						</a>
+					</li>
+					<li>
+						<a href="#delete" class="<?=p.id?>" title="Delete project (and all contained data)">
+							<img src="/images/site/icons/delete_16x16_black.png" alt="Delete" width="16" height="16">
+						</a>
+					</li>
+				</ul>
+			</li>
+		<? }); ?>
+	</ul>
+</div>
