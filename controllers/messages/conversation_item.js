@@ -60,6 +60,7 @@ var ConversationItemController = Composer.Controller.extend({
 	select_conversation: function(e)
 	{
 		if(e) e.stop();
+		if(this.model.get('selected', false)) this.model.mark_read();
 		this.model.set({selected: true});
 	}
 });

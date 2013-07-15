@@ -70,9 +70,6 @@ var DashboardController = Composer.Controller.extend({
 		});
 
 		tagit.keyboard.bind('S-/', this.open_help.bind(this), 'dashboard:shortcut:open_help');
-		tagit.keyboard.bind('S-l', function() {
-			tagit.route('/users/logout');
-		}, 'dashboard:shortcut:logout');
 
 		// monitor sidebar size changes
 		this.sidebar_timer = new Timer(50);
@@ -100,7 +97,6 @@ var DashboardController = Composer.Controller.extend({
 		if(this.projects_controller) this.projects_controller.release();
 		this.profile.unbind('change:current_project', 'dashboard:change_project');
 		tagit.keyboard.unbind('S-/', 'dashboard:shortcut:open_help');
-		tagit.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
 		tagit.user.unbind('logout', 'dashboard:logout:clear_timer');
 		if(this.sidebar_timer && this.sidebar_timer.end) this.sidebar_timer.end = null;
 		this.parent.apply(this, arguments);

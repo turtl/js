@@ -27,23 +27,8 @@ var HeaderBarController = Composer.Controller.extend({
 
 		var notifications = function()
 		{
-			tagit.messages.bind(['add', 'remove', 'change:unread', 'mark_read'], function() {
-				var num_unread	=	tagit.messages.select({unread: true}).length;
-				if(num_unread > 0)
-				{
-					var notif	=	this.el.getElement('li a.messages small');
-					if(notif) notif.destroy();
-					var notif	=	new Element('small').set('html', num_unread+'');
-					var a		=	this.el.getElement('li a.messages');
-					if(!a) return;
-					notif.inject(a);
-				}
-				else
-				{
-					var notif	=	this.el.getElement('li a.messages small');
-					if(notif) notif.destroy();
-				}
-			}.bind(this), 'header_bar:monitor_messages');
+			tagit.messages.bind(['add', 'remove', 'change:unread', 'mark_read'], this.msg_notify.bind(this), 'header_bar:monitor_messages');
+			this.msg_notify();
 		}.bind(this);
 
 		if(tagit.user.logged_in)
@@ -123,5 +108,24 @@ var HeaderBarController = Composer.Controller.extend({
 		this.el.getElements('.apps li a').each(function(el) { el.removeClass('sel'); });
 		a.addClass('sel');
 		return true;
+	},
+
+	msg_notify: function()
+	{
+		var num_unread	=	tagit.messages.select({unread: true}).length;
+		if(num_unread > 0)
+		{
+			var notif	=	this.el.getElement('li a.messages small');
+			if(notif) notif.destroy();
+			var notif	=	new Element('small').set('html', num_unread+'');
+			var a		=	this.el.getElement('li a.messages');
+			if(!a) return;
+			notif.inject(a);
+		}
+		else
+		{
+			var notif	=	this.el.getElement('li a.messages small');
+			if(notif) notif.destroy();
+		}
 	}
 });

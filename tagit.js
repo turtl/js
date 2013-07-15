@@ -76,6 +76,9 @@ var tagit	=	{
 			var initial_route	=	window.location.hash != '' ? window.location.hash : window.location.pathname;
 		}
 
+		// load the global keyboard handler
+		this.keyboard	=	new Composer.Keyboard({meta_bind: true});
+
 		// create the user model
 		this.user || (this.user = new User());
 
@@ -104,8 +107,14 @@ var tagit	=	{
 					});
 				}.bind(this)
 			});
+
+			// logout shortcut
+			tagit.keyboard.bind('S-l', function() {
+				tagit.route('/users/logout');
+			}, 'dashboard:shortcut:logout');
 		}.bind(this));
 		this.user.bind('logout', function() {
+			tagit.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
 			tagit.show_loading_screen(false);
 			this.user.unbind('change', 'user:write_changes_to_cookie');
 			tagit.api.clear_auth();
@@ -114,9 +123,6 @@ var tagit	=	{
 
 		// if a user exists, log them in
 		this.user.login_from_cookie();
-
-		// load the global keyboard handler
-		this.keyboard	=	new Composer.Keyboard({meta_bind: true});
 
 		this.load_controller('HeaderBar', HeaderBarController, {}, {});
 
