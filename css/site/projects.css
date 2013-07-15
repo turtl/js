@@ -7,8 +7,9 @@
 .project-list ul.actions a:hover {opacity: 1;}
 .project-list .add.first {font-weight: bold;}
 
+.project-manage .button {float: right; margin-top: -6px;}
 .project-manage h2 {margin: 0 0 8px 0; font-size: 16px; font-weight: normal; text-transform: uppercase; color: #999;}
-.project-manage > ul {list-style: none;}
+.project-manage > ul {list-style: none; padding-top: 6px;}
 .project-manage > ul > li {display: block; padding: 6px 4px; font-size: 16px; border-bottom: 1px dashed #ccc;}
 .project-manage > ul > li > .sort {display: block; float: left; width: 12px; height: 16px; padding: 0 8px 0 0; opacity: .25; cursor: move; background: url(/images/site/icons/sort_handle_12x16.png) 0 0 no-repeat;}
 .project-manage > ul > li > h3 {float: left;}

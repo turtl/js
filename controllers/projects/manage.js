@@ -4,6 +4,7 @@ var ProjectManageController = Composer.Controller.extend({
 	},
 
 	events: {
+		'click .button.add': 'open_add',
 		'click a[href=#edit]': 'open_edit',
 		'click a[href=#delete]': 'delete_project'
 	},
@@ -70,6 +71,16 @@ var ProjectManageController = Composer.Controller.extend({
 		});
 	},
 
+	open_add: function(e)
+	{
+		if(e) e.stop();
+		this.release();
+		new ProjectEditController({
+			return_to_manage: true,
+			profile: tagit.profile
+		});
+	},
+
 	open_edit: function(e)
 	{
 		if(!e) return;
@@ -77,7 +88,9 @@ var ProjectManageController = Composer.Controller.extend({
 		var pid		=	next_tag_up('a', e.target).className;
 		var project	=	this.collection.find_by_id(pid);
 		if(!project) return;
+		this.release();
 		new ProjectEditController({
+			return_to_manage: true,
 			profile: tagit.profile,
 			project: project
 		});

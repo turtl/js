@@ -4,11 +4,15 @@ var ProjectEditController = Composer.Controller.extend({
 	},
 
 	events: {
+		'click a[href=#manage]': 'open_manager',
 		'submit form': 'edit_project'
 	},
 
 	project: null,
 	profile: null,
+
+	// if true, opens management modal after successful update
+	return_to_manage: false,
 
 	init: function()
 	{
@@ -33,6 +37,7 @@ var ProjectEditController = Composer.Controller.extend({
 	render: function()
 	{
 		var content = Template.render('projects/edit', {
+			return_to_manage: this.return_to_manage,
 			project: toJSON(this.project)
 		});
 		this.html(content);
@@ -63,12 +68,29 @@ var ProjectEditController = Composer.Controller.extend({
 			success: function() {
 				tagit.loading(false);
 				if(success) success();
-			},
-			error: function() {
+				modal.close();
+
+				if(this.return_to_manage)
+				{
+					this.open_manager();
+				}
+			}.bind(this),
+			error: function(_, err) {
 				tagit.loading(false);
+				barfr.barf('There was a problem saving your project: '+ err);
 			}
 		});
+	},
+
+	open_manager: function(e)
+	{
+		if(e) e.stop();
 		modal.close();
+
+		// open management back up
+		new ProjectManageController({
+			collection: this.profile.get('projects')
+		});
 	}
 });
 

@@ -56,38 +56,6 @@ var ProjectsController = Composer.Controller.extend({
 		});
 	},
 
-	/*
-	edit_project: function(e)
-	{
-		if(e) e.stop();
-		var current = this.profile.get_current_project();
-		new ProjectEditController({
-			profile: this.profile,
-			project: current
-		});
-	},
-
-	delete_project: function(e)
-	{
-		if(e) e.stop();
-		if(!confirm('Really delete this project, and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
-		var current = this.profile.get_current_project();
-
-		tagit.loading(true);
-		current.destroy({
-			success: function() {
-				tagit.loading(false);
-
-				var next = this.profile.get('projects').first() || false;
-				this.profile.set_current_project(next);
-			}.bind(this),
-			error: function() {
-				tagit.loading(false);
-			}
-		});
-	},
-	*/
-
 	change_project: function(e)
 	{
 		var project_id = this.selector.value;
