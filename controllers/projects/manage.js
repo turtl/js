@@ -4,6 +4,8 @@ var ProjectManageController = Composer.Controller.extend({
 	},
 
 	events: {
+		'click a[href=#edit]': 'open_edit',
+		'click a[href=#delete]': 'delete_project'
 	},
 
 	collection: null,
@@ -18,6 +20,8 @@ var ProjectManageController = Composer.Controller.extend({
 		}.bind(this);
 		modal.addEvent('close', close_fn);
 
+		this.collection.bind(['add', 'remove', 'change', 'reset'], this.render.bind(this), 'projects:manage:render');
+
 		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
 	},
 
@@ -25,6 +29,7 @@ var ProjectManageController = Composer.Controller.extend({
 	{
 		if(modal.is_open) modal.close();
 		if(this.my_sort) this.my_sort.detach();
+		this.collection.unbind(['add', 'remove', 'change', 'reset'], 'projects:manage:render');
 		tagit.keyboard.attach(); // re-enable shortcuts
 		this.parent.apply(this, arguments);
 	},
@@ -62,6 +67,42 @@ var ProjectManageController = Composer.Controller.extend({
 				tagit.user.get('settings').get_by_key('project_sort').value(sort);
 				this.collection.sort();
 			}.bind(this)
+		});
+	},
+
+	open_edit: function(e)
+	{
+		if(!e) return;
+		e.stop();
+		var pid		=	next_tag_up('a', e.target).className;
+		var project	=	this.collection.find_by_id(pid);
+		if(!project) return;
+		new ProjectEditController({
+			profile: tagit.profile,
+			project: project
+		});
+	},
+
+	delete_project: function(e)
+	{
+		if(!e) return;
+		e.stop();
+		var pid		=	next_tag_up('a', e.target).className;
+		var project	=	this.collection.find_by_id(pid);
+		if(!project) return;
+		if(!confirm('Really delete this project, and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
+
+		tagit.loading(true);
+		project.destroy({
+			success: function() {
+				tagit.loading(false);
+
+				var next = this.collection.first() || false;
+				tagit.profile.set_current_project(next);
+			}.bind(this),
+			error: function() {
+				tagit.loading(false);
+			}
 		});
 	}
 });
