@@ -591,9 +591,11 @@ var modal_interface	=	new Class({
 		this.test_click		=	function(e)
 		{
 			// this.params.mouse_in_box is set to true if the mouse is over any of the children of the box. see comments above
-			if(e.page.x == 0 && e.page.y == 0 || (this.options.no_close_on_child_click && this.params.mouse_in_box))
+			if(	e.page.x == 0 && (e.page.y == 0 || e.page.y == window.getScroll().y) ||
+				(this.options.no_close_on_child_click && this.params.mouse_in_box) )
 			{
 				// some terrible glitch in mootools, registering a form submission as a click at (0,0)
+				// also, in FF, the click registers at (0, window.getScroll().y)
 				return true;
 			}
 			
