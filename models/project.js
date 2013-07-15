@@ -187,6 +187,8 @@ var Project = Composer.RelationalModel.extend({
 var Projects = Composer.Collection.extend({
 	model: Project,
 
+	sortfn: function(a, b) { return a.id().localeCompare(b.id()); },
+
 	clear: function(options)
 	{
 		options || (options = {});
