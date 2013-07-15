@@ -174,6 +174,7 @@ var User	=	Composer.RelationalModel.extend({
 
 		if(!username || !password) return false;
 
+		// TODO: abstract key generation a bit better (iterations/keysize mainly)
 		var key = tcrypt.key(password, username + ':a_pinch_of_salt', {keySize: 256/32, iterations: 400});
 
 		// cache it
