@@ -214,15 +214,22 @@ var Projects = Composer.Collection.extend({
 			}
 		};
 
-		projects.each(function(pdata) {
-			var notes = pdata.notes;
-			delete pdata.notes;
-			var project = new Project(pdata);
-			pdata.notes = notes;
-			this.add(project, options);
-			// this is async (notes added one by one), so track completion
-			project.update_notes(notes, Object.merge({}, options, {complete: complete}));
-		}.bind(this));
+		if(nprojects > 0)
+		{
+			projects.each(function(pdata) {
+				var notes = pdata.notes;
+				delete pdata.notes;
+				var project = new Project(pdata);
+				pdata.notes = notes;
+				this.add(project, options);
+				// this is async (notes added one by one), so track completion
+				project.update_notes(notes, Object.merge({}, options, {complete: complete}));
+			}.bind(this));
+		}
+		else
+		{
+			complete();
+		}
 	},
 
 	get_project: function(project_name)

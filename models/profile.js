@@ -56,8 +56,7 @@ var Profile = Composer.RelationalModel.extend({
 					});
 				}
 				if(!project) project = this.get('projects').first();
-				if(!project) return;
-				this.set_current_project(project);
+				if(project) this.set_current_project(project);
 				if(options.complete) options.complete();
 			}.bind(this)
 		}));
