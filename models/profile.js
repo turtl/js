@@ -100,36 +100,43 @@ var Profile = Composer.RelationalModel.extend({
 					// don't sync ignored items
 					if(this.sync_ignore.contains(note_data.id)) return false;
 
-					var project = false;
+					// check if the note is already in an existing project. if
+					// so, save both the original project (and existing note)
+					// for later
+					var oldproject = false;
 					var note = false;
 					this.get('projects').each(function(p) {
 						if(note) return;
 						note = p.get('notes').find_by_id(note_data.id)
-						if(note) project = p;
+						if(note) oldproject = p;
 					});
-					if(!project) return;
 
+					// get the note's current project
+					var newproject	=	this.get('projects').find_by_id(note_data.project_id);
+
+					// note was deleted, remove it
 					if(note && note_data.deleted)
 					{
-						project.get('notes').remove(note);
+						oldproject.get('notes').remove(note);
 						note.destroy({skip_sync: true});
 						note.unbind();
 					}
-					else if(note)
+					// this is an existing note. update it, and be mindful of the
+					// possibility of it moving projects
+					else if(note && oldproject)
 					{
-						var newproject = this.get('projects').find_by_id(note_data.project_id);
 						note.set(note_data);
-
-						// switch projects if moved
-						if(newproject && project.id() != newproject.id())
+						if(newproject && oldproject.id() != newproject.id())
 						{
-							project.get('notes').remove(note);
+							// note switched project IDs. move it.
+							oldproject.get('notes').remove(note);
 							newproject.get('notes').add(note);
 						}
 					}
+					// note isn't existing and isn't being deleted. add it!
 					else if(!note_data.deleted)
 					{
-						project.get('notes').add(note_data);
+						newproject.get('notes').add(note_data);
 					}
 				}.bind(this));
 
