@@ -105,7 +105,8 @@ var Note = Composer.RelationalModel.extend({
 }, Protected);
 
 var Notes = Composer.Collection.extend({
-	model: Note
+	model: Note,
+	sortfn: function(a, b) { return a.id().localeCompare(b.id()); }
 });
 
 var NotesFilter = Composer.FilterCollection.extend({

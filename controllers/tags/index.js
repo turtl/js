@@ -15,7 +15,10 @@ var TagsController = Composer.Controller.extend({
 
 		this.render();
 
-		this.tags	=	new TagsFilter(this.board.get('tags'));
+		this.tags	=	new TagsFilter(this.board.get('tags'), {
+			sort_event: true,
+			refresh_on_change: false
+		});
 		this.tags.bind('change:count', function() {
 			this.tags.sort();
 		}.bind(this), 'tags:listing:monitor_sort');

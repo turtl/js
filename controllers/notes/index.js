@@ -28,6 +28,7 @@ var NotesController = TrackController.extend({
 
 		var board_id = this.board.id();
 		this.filter_list	=	new NotesFilter(this.board.get('notes'), {
+			sort_event: true,
 			filter: function(note)
 			{
 				var selected	=	this.selected_tags;

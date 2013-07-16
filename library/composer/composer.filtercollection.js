@@ -43,6 +43,7 @@
 
 		forward_all_events: false,
 		refresh_on_change: true,	// performance hit, but needed for backward compat
+		sort_event: false,			// if true, fires a 'sort' event instead of 'reset' when sorting
 
 		initialize: function(master, options)
 		{
@@ -174,7 +175,15 @@
 				else if(cur_index != new_index)
 				{
 					// sort order changed
-					this.sort(options);
+					if(this.sort_event)
+					{
+						this.sort(Object.merge({}, options, {silent: true}));
+						this.fire_event('sort', options);
+					}
+					else
+					{
+						this.sort(options);
+					}
 				}
 			}
 

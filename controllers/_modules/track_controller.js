@@ -27,6 +27,7 @@ var TrackController = Composer.Controller.extend({
 		this.collection.bind('add', this.add_subcontroller.bind(this), 'tracker:add');
 		this.collection.bind('remove', this.remove_subcontroller.bind(this), 'tracker:remove');
 		this.collection.bind('clear', this.release_subcontrollers.bind(this), 'tracker:clear');
+		this.collection.bind('sort', this.sort_subcontrollers.bind(this), 'tracker:sort');
 		this.collection.bind('reset', this.refresh_subcontrollers.bind(this), 'tracker:reset');
 
 		if(this.collection.models().length != this.sub_controllers.length)
@@ -42,6 +43,7 @@ var TrackController = Composer.Controller.extend({
 		this.collection.unbind('add', 'tracker:add');
 		this.collection.unbind('remove', 'tracker:remove');
 		this.collection.unbind('clear', 'tracker:clear');
+		this.collection.unbind('sort', 'tracker:sort');
 		this.collection.unbind('reset', 'tracker:reset');
 	},
 
@@ -114,13 +116,8 @@ var TrackController = Composer.Controller.extend({
 		sub.release();
 	},
 
-	refresh_subcontrollers: function()
+	sort_subcontrollers: function()
 	{
-		this.release_subcontrollers();
-		this.collection.each(function(model) {
-			this.add_subcontroller(model);
-		}.bind(this));
-		/*
 		if(this.sub_controllers.length == 0) return;
 
 		this.sub_controllers.sort(function(a, b) {
@@ -136,6 +133,13 @@ var TrackController = Composer.Controller.extend({
 		this.sub_controllers.each(function(c) {
 			c.el.inject(list, 'bottom');
 		});
-		*/
+	},
+
+	refresh_subcontrollers: function()
+	{
+		this.release_subcontrollers();
+		this.collection.each(function(model) {
+			this.add_subcontroller(model);
+		}.bind(this));
 	}
 });
