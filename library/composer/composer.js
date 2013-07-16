@@ -90,7 +90,6 @@
 		 */
 		bind: function(ev, callback, callback_name)
 		{
-			//console.log('bind: ', ev, callback_name);
 			if(typeof(ev) == 'object' && ev.length)
 			{
 				// it's an array, process each binding separately
@@ -158,7 +157,6 @@
 		 */
 		unbind: function(ev, callback)
 		{
-			//console.log('unbind: ', ev, callback);
 			if(typeof(ev) == 'object' && ev.length)
 			{
 				// it's an array, process each item individually
@@ -1012,11 +1010,13 @@
 		{
 			if(!this.sortfn) return false;
 
+			if(this._models.length == 0) return 0;
+
 			for(var i = 0; i < this._models.length; i++)
 			{
 				if(this.sortfn(this._models[i], model) > 0)
 				{
-					return i - 1;
+					return i;
 				}
 			}
 			var index = this._models.indexOf(model);
