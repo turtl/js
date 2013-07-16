@@ -56,7 +56,12 @@ var ProjectEditController = Composer.Controller.extend({
 			success = function() {
 				var projects = this.profile.get('projects');
 				if(projects) projects.add(this.project);
-				this.profile.set_current_project(this.project);
+				if(!this.return_to_manage)
+				{
+					// only set the new project as current if we are NOT going
+					// back to the manage modal.
+					this.profile.set_current_project(this.project);
+				}
 			}.bind(this);
 		}
 		else

@@ -5,6 +5,7 @@ var ProjectManageController = Composer.Controller.extend({
 
 	events: {
 		'click .button.add': 'open_add',
+		'click a[href=#share]': 'open_share',
 		'click a[href=#edit]': 'open_edit',
 		'click a[href=#delete]': 'delete_project'
 	},
@@ -78,6 +79,19 @@ var ProjectManageController = Composer.Controller.extend({
 		new ProjectEditController({
 			return_to_manage: true,
 			profile: tagit.profile
+		});
+	},
+
+	open_share: function(e)
+	{
+		if(!e) return;
+		e.stop();
+		var pid		=	next_tag_up('a', e.target).className;
+		var project	=	this.collection.find_by_id(pid);
+		if(!project) return;
+		this.release();
+		new ProjectShareController({
+			project: project
 		});
 	},
 

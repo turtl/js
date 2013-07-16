@@ -1,0 +1,32 @@
+<h1>Share a project</h1>
+<div class="message-compose">
+	<div class="header from clear">
+		<h2>From:</h2>
+		<div class="select select-persona">
+			<div class="persona">
+				<h3><?=from.screenname?></h3>
+				<p>
+					<?
+					var attr = [];
+					if(from.name) attr.push(from.name);
+					if(from.email) attr.push(from.email);
+					?>
+					<?=attr.join(' - ')?>
+				</p>
+			</div>
+		</div>
+	</div>
+	<div class="header to clear">
+		<h2>To:</h2>
+		<div class="select clear"></div>
+	</div>
+	<form class="standard-form">
+		<input tabindex="2" type="text" name="subject" value="<?=conversation.subject?>" placeholder="Subject">
+		<textarea tabindex="3" name="body" placeholder="Your message"></textarea>
+
+		<div class="submit">
+			<input tabindex="4" type="submit" value="Send">
+		</div>
+	</form>
+</div>
+
