@@ -1,19 +1,19 @@
 var NoteMoveController = Composer.Controller.extend({
 	elements: {
-		'select[name=project]': 'inp_select'
+		'select[name=board]': 'inp_select'
 	},
 
 	events: {
-		'change select': 'select_project',
-		'click select': 'select_project'  	// keeps modal from closing on select
+		'change select': 'select_board',
+		'click select': 'select_board'  	// keeps modal from closing on select
 	},
 
 	note: null,
-	project: null,
+	board: null,
 
 	init: function()
 	{
-		if(!this.note || !this.project) return false;
+		if(!this.note || !this.board) return false;
 
 		this.render();
 
@@ -35,32 +35,32 @@ var NoteMoveController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var projects = tagit.profile.get('projects').map(function(p) {
+		var boards = tagit.profile.get('boards').map(function(p) {
 			return {id: p.id(), title: p.get('title')};
 		});
-		//projects.sort(function(a, b) { return a.title.localeCompare(b.title); });
+		//boards.sort(function(a, b) { return a.title.localeCompare(b.title); });
 		var content = Template.render('notes/move', {
 			note: toJSON(this.note),
-			projects: projects
+			boards: boards
 		});
 		this.html(content);
 	},
 
-	select_project: function(e)
+	select_board: function(e)
 	{
 		if(e) e.stop();
 		if(e.type == 'click') return false;		// fuck you, click
-		var pid = this.inp_select.get('value');
-		var curpid = this.note.get('project_id');
-		if(curpid == pid) return false;
+		var bid = this.inp_select.get('value');
+		var curbid = this.note.get('board_id');
+		if(curbid == bid) return false;
 
-		var projectfrom = tagit.profile.get('projects').find_by_id(curpid);
-		var projectto = tagit.profile.get('projects').find_by_id(pid);
-		if(!projectfrom || !projectto) return false;
+		var boardfrom = tagit.profile.get('boards').find_by_id(curbid);
+		var boardto = tagit.profile.get('boards').find_by_id(bid);
+		if(!boardfrom || !boardto) return false;
 
-		this.note.set({project_id: pid});
+		this.note.set({board_id: bid});
 		this.note.generate_subkeys([
-			{p: pid, k: projectto.key}
+			{b: bid, k: boardto.key}
 		]);
 
 		tagit.loading(true);
@@ -69,9 +69,9 @@ var NoteMoveController = Composer.Controller.extend({
 				modal.close();
 				tagit.loading(false);
 				this.note.set(note_data);
-				projectfrom.get('notes').remove(this.note);
-				//projectfrom.get('tags').trigger('change:selected');
-				projectto.get('notes').add(this.note);
+				boardfrom.get('notes').remove(this.note);
+				//boardfrom.get('tags').trigger('change:selected');
+				boardto.get('notes').add(this.note);
 			}.bind(this),
 			error: function(e) {
 				barfr.barf('There was a problem moving your note: '+ e);

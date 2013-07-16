@@ -1,14 +1,14 @@
-var ProjectEditController = Composer.Controller.extend({
+var BoardEditController = Composer.Controller.extend({
 	elements: {
 		'input[type="text"]': 'inp_title'
 	},
 
 	events: {
 		'click a[href=#manage]': 'open_manager',
-		'submit form': 'edit_project'
+		'submit form': 'edit_board'
 	},
 
-	project: null,
+	board: null,
 	profile: null,
 
 	// if true, opens management modal after successful update
@@ -16,7 +16,7 @@ var ProjectEditController = Composer.Controller.extend({
 
 	init: function()
 	{
-		if(!this.project) this.project = new Project();
+		if(!this.board) this.board = new Board();
 		this.render();
 		modal.open(this.el);
 		var close_fn = function() {
@@ -36,40 +36,40 @@ var ProjectEditController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var content = Template.render('projects/edit', {
+		var content = Template.render('boards/edit', {
 			return_to_manage: this.return_to_manage,
-			project: toJSON(this.project)
+			board: toJSON(this.board)
 		});
 		this.html(content);
 	},
 
-	edit_project: function(e)
+	edit_board: function(e)
 	{
 		if(e) e.stop();
 		var title = this.inp_title.get('value');
 		var success = null;
-		if(this.project.is_new())
+		if(this.board.is_new())
 		{
-			this.project = new Project({title: title});
-			this.project.generate_key();
-			this.project.generate_subkeys();
+			this.board = new Board({title: title});
+			this.board.generate_key();
+			this.board.generate_subkeys();
 			success = function() {
-				var projects = this.profile.get('projects');
-				if(projects) projects.add(this.project);
+				var boards = this.profile.get('boards');
+				if(boards) boards.add(this.board);
 				if(!this.return_to_manage)
 				{
-					// only set the new project as current if we are NOT going
+					// only set the new board as current if we are NOT going
 					// back to the manage modal.
-					this.profile.set_current_project(this.project);
+					this.profile.set_current_board(this.board);
 				}
 			}.bind(this);
 		}
 		else
 		{
-			this.project.set({title: title});
+			this.board.set({title: title});
 		}
 		tagit.loading(true);
-		this.project.save({
+		this.board.save({
 			success: function() {
 				tagit.loading(false);
 				if(success) success();
@@ -82,7 +82,7 @@ var ProjectEditController = Composer.Controller.extend({
 			}.bind(this),
 			error: function(_, err) {
 				tagit.loading(false);
-				barfr.barf('There was a problem saving your project: '+ err);
+				barfr.barf('There was a problem saving your board: '+ err);
 			}
 		});
 	},
@@ -93,8 +93,8 @@ var ProjectEditController = Composer.Controller.extend({
 		modal.close();
 
 		// open management back up
-		new ProjectManageController({
-			collection: this.profile.get('projects')
+		new BoardManageController({
+			collection: this.profile.get('boards')
 		});
 	}
 });

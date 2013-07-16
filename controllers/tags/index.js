@@ -6,16 +6,16 @@ var TagsController = Composer.Controller.extend({
 	events: {
 	},
 
-	project: null,
+	board: null,
 	tags: null,
 
 	init: function()
 	{
-		if(!this.project) return false;
+		if(!this.board) return false;
 
 		this.render();
 
-		this.tags	=	new TagsFilter(this.project.get('tags'));
+		this.tags	=	new TagsFilter(this.board.get('tags'));
 		this.tags.bind('change:count', function() {
 			this.tags.sort();
 		}.bind(this), 'tags:listing:monitor_sort');

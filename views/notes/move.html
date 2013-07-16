@@ -1,14 +1,14 @@
-<h1>Move this note to another project</h1>
+<h1>Move this note to another board</h1>
 <div class="content">
 	<p>
-		To move this note to another project, select one of your projects below.
+		To move this note to another board, select one of your boards below.
 	</p>
 </div>
 
-<select name="project">
-	<? projects.each(function(p) { ?>
+<select name="board">
+	<? boards.each(function(p) { ?>
 		<option value="<?=p.id?>"
-				<? if(note.project_id == p.id) { ?>selected<? } ?> >
+				<? if(note.board_id == p.id) { ?>selected<? } ?> >
 			<?=p.title?>
 		</option>
 	<? }); ?>

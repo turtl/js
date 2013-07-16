@@ -21,7 +21,7 @@ var NoteEditController = Composer.Controller.extend({
 
 	edit_in_modal: true,
 
-	project: null,
+	board: null,
 	note: null,
 	note_copy: null,
 	tag_controller: null,
@@ -45,7 +45,7 @@ var NoteEditController = Composer.Controller.extend({
 		this.tag_controller = new NoteEditTagController({
 			inject: this.tags,
 			note: this.note_copy,
-			project: this.project
+			board: this.board
 		});
 		this.select_tab(this.note_copy.get('type'));
 		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
@@ -63,7 +63,7 @@ var NoteEditController = Composer.Controller.extend({
 	{
 		var content = Template.render('notes/edit', {
 			note: toJSON(this.note_copy),
-			project: toJSON(this.project)
+			board: toJSON(this.board)
 		});
 		this.html(content);
 		if(this.tips) this.tips.detach();
@@ -142,14 +142,14 @@ var NoteEditController = Composer.Controller.extend({
 		if(color) this.note_copy.set({color: color});
 
 		var isnew	=	this.note_copy.is_new();
-		if(!this.note_copy.get('project_id'))
-			this.note_copy.set({project_id: this.project.id()});
+		if(!this.note_copy.get('board_id'))
+			this.note_copy.set({board_id: this.board.id()});
 
 		if(isnew)
 		{
 			this.note_copy.generate_key()
 			this.note_copy.generate_subkeys([
-				{p: this.project.id(), k: this.project.key}
+				{b: this.board.id(), k: this.board.key}
 			]);
 		}
 
@@ -163,9 +163,9 @@ var NoteEditController = Composer.Controller.extend({
 				tagit.loading(false);
 				this.note.key = this.note_copy.key;
 				this.note.set(note_data);
-				if(isnew) this.project.get('notes').add(this.note);
+				if(isnew) this.board.get('notes').add(this.note);
 				// make sure the current filter applies to the edited note
-				this.project.get('tags').trigger('change:selected');
+				this.board.get('tags').trigger('change:selected');
 			}.bind(this),
 			error: function(e) {
 				barfr.barf('There was a problem saving your note: '+ e);

@@ -33,7 +33,7 @@ var tagit	=	{
 	scroll_to_top: true,
 
 	// whether or not to sync data w/ server
-	sync: true,
+	sync: false,
 	sync_timer: null,
 
 	// -------------------------------------------------------------------------

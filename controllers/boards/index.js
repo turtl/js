@@ -1,12 +1,12 @@
-var ProjectsController = Composer.Controller.extend({
+var BoardsController = Composer.Controller.extend({
 	elements: {
-		'.project-list select': 'selector'
+		'.board-list select': 'selector'
 	},
 
 	events: {
-		'click a.add': 'add_project',
-		'click a.manage': 'manage_projects',
-		'change .project-list select': 'change_project'
+		'click a.add': 'add_board',
+		'click a.manage': 'manage_boards',
+		'change .board-list select': 'change_board'
 	},
 
 	profile: null,
@@ -14,58 +14,58 @@ var ProjectsController = Composer.Controller.extend({
 	init: function()
 	{
 		this.render();
-		this.profile.bind_relational('projects', ['add', 'remove', 'reset', 'change:title'], this.render.bind(this), 'projects:change');
-		this.profile.bind('change:current_project', this.render.bind(this), 'projects:track_current');
-		tagit.keyboard.bind('x', this.clear_filters.bind(this), 'projects:shortcut:clear_filters');
-		tagit.keyboard.bind('p', this.add_project.bind(this), 'projects:shortcut:add_project');
+		this.profile.bind_relational('boards', ['add', 'remove', 'reset', 'change:title'], this.render.bind(this), 'boards:change');
+		this.profile.bind('change:current_board', this.render.bind(this), 'boards:track_current');
+		tagit.keyboard.bind('x', this.clear_filters.bind(this), 'boards:shortcut:clear_filters');
+		tagit.keyboard.bind('p', this.add_board.bind(this), 'boards:shortcut:add_board');
 	},
 
 	release: function()
 	{
-		this.profile.unbind_relational('projects', ['add', 'remove', 'reset', 'change:title'], 'projects:change');
-		this.profile.unbind('change:current_project', 'projects:track_current');
-		tagit.keyboard.unbind('x', 'projects:shortcut:clear_filters');
-		tagit.keyboard.unbind('p', 'projects:shortcut:add_project');
+		this.profile.unbind_relational('boards', ['add', 'remove', 'reset', 'change:title'], 'boards:change');
+		this.profile.unbind('change:current_board', 'boards:track_current');
+		tagit.keyboard.unbind('x', 'boards:shortcut:clear_filters');
+		tagit.keyboard.unbind('p', 'boards:shortcut:add_board');
 		this.parent.apply(this, arguments);
 	},
 
 	render: function()
 	{
-		var current = this.profile.get_current_project();
+		var current = this.profile.get_current_board();
 		if(current) current = current.get('id');
-		var content = Template.render('projects/list', {
-			projects: toJSON(this.profile.get('projects')),
+		var content = Template.render('boards/list', {
+			boards: toJSON(this.profile.get('boards')),
 			current: current
 		});
 		this.html(content);
 	},
 
-	add_project: function(e)
+	add_board: function(e)
 	{
 		if(e) e.stop();
-		new ProjectEditController({
+		new BoardEditController({
 			profile: this.profile
 		});
 	},
 
-	manage_projects: function(e)
+	manage_boards: function(e)
 	{
 		if(e) e.stop();
-		new ProjectManageController({
-			collection: this.profile.get('projects')
+		new BoardManageController({
+			collection: this.profile.get('boards')
 		});
 	},
 
-	change_project: function(e)
+	change_board: function(e)
 	{
-		var project_id = this.selector.value;
-		var project = this.profile.get('projects').find_by_id(project_id);
-		if(project) this.profile.set_current_project(project);
+		var board_id = this.selector.value;
+		var board = this.profile.get('boards').find_by_id(board_id);
+		if(board) this.profile.set_current_board(board);
 	},
 
 	clear_filters: function()
 	{
-		var current = this.profile.get_current_project();
+		var current = this.profile.get_current_board();
 		current.get('tags').each(function(t) {
 			t.set({
 				selected: false,

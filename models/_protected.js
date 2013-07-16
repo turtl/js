@@ -214,15 +214,15 @@ var Protected = Composer.RelationalModel.extend({
 	 * search object. This in turn allows the object to be decrypted.
 	 * 
 	 * Keys are in the format
-	 *   {p: <id>, k: <encrypted key>}
+	 *   {b: <id>, k: <encrypted key>}
 	 *   {u: <id>, k: <encrypted key>}
-	 * "p" "u" and "a" correspond to project, user, avatar (aka persona)
+	 * "b" "u" and "p" correspond to board, user, persona
 	 * restecpfully.
 	 *
 	 * Search is in the format:
 	 * {
 	 *   u: {id: <user id>, k: <user's key>}
-	 *   p: {id: <project id>, k: <project's key>}
+	 *   b: {id: <board id>, k: <board's key>}
 	 *   ...
 	 * }
 	 *
@@ -233,7 +233,7 @@ var Protected = Composer.RelationalModel.extend({
 	 *     {id: <user1 id>, k: <user1's key>},
 	 *     {id: <user2 id>, k: <user2's key>}
 	 *   ],
-	 *   p: {id: <project id>, k: <project's key>}
+	 *   b: {id: <board id>, k: <board's key>}
 	 * }
 	 */
 	find_key: function(keys, search, options)
@@ -248,7 +248,7 @@ var Protected = Composer.RelationalModel.extend({
 		var keys = Object.clone(keys);
 
 		var uid = tagit.user.id(true);
-		// TODO: investigate removing this restriction for public projects??
+		// TODO: investigate removing this restriction for public boards??
 		if(!uid) return false;
 
 		// automatically add a user entry to the key search
@@ -314,7 +314,7 @@ var Protected = Composer.RelationalModel.extend({
 	 * what items will ahve access to this object, and is in the format:
 	 *
 	 * [
-	 *   {p: <project id>, k: <project's key>},
+	 *   {b: <board id>, k: <board's key>},
 	 *   {u: <user id>, k: <user's key>}
 	 * ]
 	 *

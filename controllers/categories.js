@@ -5,18 +5,18 @@ var CategoriesController = Composer.Controller.extend({
 	events: {
 	},
 
-	project: null,
+	board: null,
 
 	init: function()
 	{
-		if(!this.project) return false;
+		if(!this.board) return false;
 		this.render();
 	},
 
 	render: function()
 	{
 		var content = Template.render('categories/list', {
-			categories: toJSON(this.project.get('categories'))
+			categories: toJSON(this.board.get('categories'))
 		});
 		this.html(content);
 	}

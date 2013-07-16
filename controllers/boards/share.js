@@ -1,4 +1,4 @@
-var ProjectShareController = Composer.Controller.extend({
+var BoardShareController = Composer.Controller.extend({
 	elements: {
 		'div.to .select': 'selector'
 	},
@@ -7,7 +7,7 @@ var ProjectShareController = Composer.Controller.extend({
 		'submit form': 'share'
 	},
 
-	project: null,
+	board: null,
 	from_persona: null,
 	to_persona: null,
 	persona_selector: null,
@@ -44,14 +44,14 @@ var ProjectShareController = Composer.Controller.extend({
 
 	render: function()
 	{
-		// grab project data without serializing notes
-		var _notes	=	this.project.get('notes');
-		this.project.unset('notes', {silent: true});
-		var project	=	toJSON(this.project);
-		this.project.set({notes: notes}, {silent: true});
+		// grab board data without serializing notes
+		var _notes	=	this.board.get('notes');
+		this.board.unset('notes', {silent: true});
+		var board	=	toJSON(this.board);
+		this.board.set({notes: notes}, {silent: true});
 
-		var content	=	Template.render('projects/share', {
-			project: project
+		var content	=	Template.render('boards/share', {
+			board: board
 		});
 		this.html(content);
 

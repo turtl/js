@@ -1,8 +1,8 @@
 var Profile = Composer.RelationalModel.extend({
 	relations: {
-		projects: {
+		boards: {
 			type: Composer.HasMany,
-			collection: 'Projects',
+			collection: 'Boards',
 			forward_events: true
 		}
 	},
@@ -43,39 +43,39 @@ var Profile = Composer.RelationalModel.extend({
 	{
 		options || (options = {});
 		this.clear({silent: true});
-		var projects = this.get('projects');
-		var project_data = data.projects;
-		projects.load_projects(project_data, Object.merge({}, options, {
+		var boards = this.get('boards');
+		var board_data = data.boards;
+		boards.load_boards(board_data, Object.merge({}, options, {
 			complete: function() {
-				var project = null;
+				var board = null;
 				this.loaded = true;
-				if(options.project)
+				if(options.board)
 				{
-					project = this.get('projects').find(function(p) {
-						return p.id() == options.project.clean();
+					board = this.get('boards').find(function(p) {
+						return p.id() == options.board.clean();
 					});
 				}
-				if(!project) project = this.get('projects').first();
-				if(project) this.set_current_project(project);
+				if(!board) board = this.get('boards').first();
+				if(board) this.set_current_board(board);
 				if(options.complete) options.complete();
 			}.bind(this)
 		}));
 	},
 
-	get_current_project: function()
+	get_current_board: function()
 	{
-		return this.get('current_project', false);
+		return this.get('current_board', false);
 	},
 
-	set_current_project: function(obj, options)
+	set_current_board: function(obj, options)
 	{
 		options || (options = {});
 		if(typeOf(obj) == 'string')
 		{
-			obj	=	this.get('projects').find_by_id(obj);
+			obj	=	this.get('boards').find_by_id(obj);
 		}
 		if(!obj) return false;
-		return this.set({current_project: obj}, options);
+		return this.set({current_board: obj}, options);
 	},
 
 	/**
@@ -99,43 +99,43 @@ var Profile = Composer.RelationalModel.extend({
 					// don't sync ignored items
 					if(this.sync_ignore.contains(note_data.id)) return false;
 
-					// check if the note is already in an existing project. if
-					// so, save both the original project (and existing note)
+					// check if the note is already in an existing board. if
+					// so, save both the original board (and existing note)
 					// for later
-					var oldproject = false;
+					var oldboard = false;
 					var note = false;
-					this.get('projects').each(function(p) {
+					this.get('boards').each(function(p) {
 						if(note) return;
 						note = p.get('notes').find_by_id(note_data.id)
-						if(note) oldproject = p;
+						if(note) oldboard = p;
 					});
 
-					// get the note's current project
-					var newproject	=	this.get('projects').find_by_id(note_data.project_id);
+					// get the note's current board
+					var newboard	=	this.get('boards').find_by_id(note_data.board_id);
 
 					// note was deleted, remove it
 					if(note && note_data.deleted)
 					{
-						oldproject.get('notes').remove(note);
+						oldboard.get('notes').remove(note);
 						note.destroy({skip_sync: true});
 						note.unbind();
 					}
 					// this is an existing note. update it, and be mindful of the
-					// possibility of it moving projects
-					else if(note && oldproject)
+					// possibility of it moving boards
+					else if(note && oldboard)
 					{
 						note.set(note_data);
-						if(newproject && oldproject.id() != newproject.id())
+						if(newboard && oldboard.id() != newboard.id())
 						{
-							// note switched project IDs. move it.
-							oldproject.get('notes').remove(note);
-							newproject.get('notes').add(note);
+							// note switched board IDs. move it.
+							oldboard.get('notes').remove(note);
+							newboard.get('notes').add(note);
 						}
 					}
 					// note isn't existing and isn't being deleted. add it!
 					else if(!note_data.deleted)
 					{
-						newproject.get('notes').add(note_data);
+						newboard.get('notes').add(note_data);
 					}
 				}.bind(this));
 

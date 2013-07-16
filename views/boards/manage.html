@@ -1,27 +1,27 @@
-<h1>Manage projects</h1>
-<div class="project-manage">
+<h1>Manage boards</h1>
+<div class="board-manage">
 	<div class="button add">
-		<span>New project</span>
+		<span>New board</span>
 	</div>
-	<h2>My projects</h2>
+	<h2>My boards</h2>
 	<ul class="mine">
-		<? projects.each(function(p) { ?>
-			<li class="clear project_<?=p.id?>">
-				<span class="sort" title="Drag to sort projects"></span>
+		<? boards.each(function(p) { ?>
+			<li class="clear board_<?=p.id?>">
+				<span class="sort" title="Drag to sort boards"></span>
 				<h3><?=p.title?></h3>
 				<ul class="actions">
 					<li>
-						<a href="#share" class="<?=p.id?>" title="Share project">
+						<a href="#share" class="<?=p.id?>" title="Share board">
 							<img src="/images/site/icons/share_16x16_black.png" alt="share" width="16" height="16">
 						</a>
 					</li>
 					<li>
-						<a href="#edit" class="<?=p.id?>" title="Edit project">
+						<a href="#edit" class="<?=p.id?>" title="Edit board">
 							<img src="/images/site/icons/edit_16x16_black.png" alt="Edit" width="16" height="16">
 						</a>
 					</li>
 					<li>
-						<a href="#delete" class="<?=p.id?>" title="Delete project (and all contained data)">
+						<a href="#delete" class="<?=p.id?>" title="Delete board (and all contained data)">
 							<img src="/images/site/icons/delete_16x16_black.png" alt="Delete" width="16" height="16">
 						</a>
 					</li>

@@ -9,7 +9,7 @@ var NotesController = TrackController.extend({
 		'click ul.list-type a': 'change_list_type'
 	},
 
-	project: null,
+	board: null,
 	filter_list: null,
 	note_item_controllers: [],
 
@@ -21,13 +21,13 @@ var NotesController = TrackController.extend({
 
 	init: function()
 	{
-		if(!this.project) return false;
-		if(!this.project.get('display_type')) this.project.set({display_type: 'masonry'});
+		if(!this.board) return false;
+		if(!this.board.get('display_type')) this.board.set({display_type: 'masonry'});
 
 		this.render();
 
-		var project_id = this.project.id();
-		this.filter_list	=	new NotesFilter(this.project.get('notes'), {
+		var board_id = this.board.id();
+		this.filter_list	=	new NotesFilter(this.board.get('notes'), {
 			filter: function(note)
 			{
 				var selected	=	this.selected_tags;
@@ -59,32 +59,32 @@ var NotesController = TrackController.extend({
 		});
 
 		// Main search event
-		this.project.bind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], function() {
+		this.board.bind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], function() {
 			//var start = performance.now();
 			// pre-cache our selected/excluded tags
-			this.selected_tags = this.project.get_selected_tags().map(function(t) { return t.get('name'); });
-			this.excluded_tags = this.project.get_excluded_tags().map(function(t) { return t.get('name'); });;
+			this.selected_tags = this.board.get_selected_tags().map(function(t) { return t.get('name'); });
+			this.excluded_tags = this.board.get_excluded_tags().map(function(t) { return t.get('name'); });;
 			this.filter_list.refresh({diff_events: true, silent: 'reset'});
 			//console.log('filter time: ', performance.now() - start);
-			if(this.project.get('display_type') == 'masonry')
+			if(this.board.get('display_type') == 'masonry')
 			{
 				this.setup_masonry.delay(10, this);
 			}
 		}.bind(this), 'notes:listing:track_filters');
 
-		this.project.bind('change:display_type', this.update_display_type.bind(this), 'notes:listing:display_type');
+		this.board.bind('change:display_type', this.update_display_type.bind(this), 'notes:listing:display_type');
 		this.filter_list.bind('reset', function() {
 			this.update_display_type.delay(10, this);
 		}.bind(this), 'notes:listing:display_type');
 		this.filter_list.bind(['add', 'remove', 'change'], function() {
-			if(this.project.get('display_type') == 'masonry')
+			if(this.board.get('display_type') == 'masonry')
 			{
 				this.setup_masonry.delay(10, this);
 			}
 		}.bind(this), 'notes:listing:update_masonry');
 
-		this.project.get('notes').bind(['add', 'remove', 'reset', 'clear', 'misc'], function() {
-			if(this.project.get('notes').models().length == 0)
+		this.board.get('notes').bind(['add', 'remove', 'reset', 'clear', 'misc'], function() {
+			if(this.board.get('notes').models().length == 0)
 			{
 				this.display_actions.addClass('hidden');
 			}
@@ -103,7 +103,7 @@ var NotesController = TrackController.extend({
 		tagit.keyboard.bind('m', this.sub_move_note.bind(this), 'notes:shortcut:move_note');
 		tagit.keyboard.bind('delete', this.sub_delete_note.bind(this), 'notes:shortcut:delete_note');
 
-		if(this.project.get('display_type') == 'masonry')
+		if(this.board.get('display_type') == 'masonry')
 		{
 			this.setup_masonry.delay(10, this);
 		}
@@ -111,13 +111,13 @@ var NotesController = TrackController.extend({
 
 	release: function()
 	{
-		if(this.project)
+		if(this.board)
 		{
-			this.project.unbind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], 'notes:listing:track_filters');
-			this.project.unbind('change:display_type', 'notes:listing:display_type');
+			this.board.unbind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], 'notes:listing:track_filters');
+			this.board.unbind('change:display_type', 'notes:listing:display_type');
 			this.filter_list.unbind('reset', 'notes:listing:display_type');
 			this.filter_list.unbind(['add', 'remove', 'change'], 'notes:listing:update_masonry');
-			this.project.get('notes').unbind(['add', 'remove', 'reset', 'clear', 'misc'], 'notes:listing:show_display_buttons');
+			this.board.get('notes').unbind(['add', 'remove', 'reset', 'clear', 'misc'], 'notes:listing:show_display_buttons');
 			this.filter_list.detach();
 			this.release_subcontrollers();
 		}
@@ -132,19 +132,19 @@ var NotesController = TrackController.extend({
 	render: function()
 	{
 		var content = Template.render('notes/index', {
-			display_type: this.project.get('display_type')
+			display_type: this.board.get('display_type')
 		});
 		this.html(content);
 
 		// make sure display type buttons show up
-		(function() { this.project.get('notes').trigger('misc'); }).delay(10, this);
+		(function() { this.board.get('notes').trigger('misc'); }).delay(10, this);
 	},
 
 	open_add_note: function(e)
 	{
 		if(e) e.stop();
 		new NoteEditController({
-			project: this.project
+			board: this.board
 		});
 	},
 
@@ -193,9 +193,9 @@ var NotesController = TrackController.extend({
 	{
 		return new NoteItemController({
 			inject: this.note_list,
-			project: this.project,
+			board: this.board,
 			model: note,
-			display_type: this.project.get('display_type')
+			display_type: this.board.get('display_type')
 		});
 	},
 
@@ -207,18 +207,18 @@ var NotesController = TrackController.extend({
 		var a = next_tag_up('a', e.target);
 		var type = a.className.replace(/sel/g, '').clean().toLowerCase();
 		if(type == '') return;
-		this.project.set({display_type: type});
+		this.board.set({display_type: type});
 	},
 
 	update_display_type: function()
 	{
-		var type = this.project.get('display_type', 'grid');
+		var type = this.board.get('display_type', 'grid');
 		this.note_list.className = this.note_list.className.replace(/list_[\w]+/g, '');
 		this.note_list.addClass('list_'+type);
 		$ES('li a', this.display_actions).each(function(a) {
 			a.removeClass('sel');
 		});
-		$E('li a.'+this.project.get('display_type', 'grid')).addClass('sel');
+		$E('li a.'+this.board.get('display_type', 'grid')).addClass('sel');
 		if(type == 'masonry')
 		{
 			this.setup_masonry();
@@ -281,7 +281,7 @@ var NotesController = TrackController.extend({
 	remove_subcontroller: function(model)
 	{
 		//this.parent.apply(this, arguments);
-		if(this.project.get('notes').models().length == 0)
+		if(this.board.get('notes').models().length == 0)
 		{
 			this.display_actions.addClass('hidden');
 		}

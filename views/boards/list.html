@@ -1,7 +1,7 @@
-<div class="project-list">
-	<? if(projects.length > 0) { ?>
-		<select id="project_selector">
-			<? projects.each(function(p) { ?>
+<div class="board-list">
+	<? if(boards.length > 0) { ?>
+		<select id="board_selector">
+			<? boards.each(function(p) { ?>
 				<option
 					value="<?=p.id?>"
 					<? if(current == p.id) { ?>selected<? } ?>>
@@ -12,12 +12,12 @@
 		<img class="loading" src="/images/site/icons/load_42x11.gif" width="42" height="11" alt="loading">
 		<ul class="actions">
 			<li>
-				<a href="#" class="add" title="Add a new project (shortcut `p`)">
+				<a href="#" class="add" title="Add a new board (shortcut `p`)">
 					<img src="/images/site/icons/add_16x16_black.png" alt="add" width="16" height="16">
 				</a>
 			</li>
 			<li>
-				<a href="#" class="manage" title="Manage your projects">
+				<a href="#" class="manage" title="Manage your boards">
 					<img src="/images/site/icons/manage_16x16_black.png" alt="manage" width="16" height="16">
 				</a>
 			</li>
@@ -25,9 +25,9 @@
 	<? } else { ?>
 		<ul class="actions">
 			<li>
-				<a href="#" class="add first" title="Add a new project (shortcut `p`)">
+				<a href="#" class="add first" title="Add a new board (shortcut `p`)">
 					<img src="/images/site/icons/add_16x16_black.png" alt="add" width="16" height="16">
-					Add your first project
+					Add your first board
 				</a>
 			</li>
 		</ul>

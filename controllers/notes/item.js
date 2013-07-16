@@ -17,7 +17,7 @@ var NoteItemController = Composer.Controller.extend({
 		'click ul.dropdown a.delete': 'delete_note'
 	},
 
-	project: null,
+	board: null,
 	model: null,
 	display_type: 'grid',
 
@@ -84,7 +84,7 @@ var NoteItemController = Composer.Controller.extend({
 		if(e) e.stop();
 		new NoteViewController({
 			model: this.model,
-			project: this.project,
+			board: this.board,
 		});
 	},
 
@@ -103,7 +103,7 @@ var NoteItemController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		new NoteEditController({
-			project: this.project,
+			board: this.board,
 			note: this.model
 		});
 	},
@@ -112,7 +112,7 @@ var NoteItemController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		new NoteMoveController({
-			project: this.project,
+			board: this.board,
 			note: this.model
 		});
 	},

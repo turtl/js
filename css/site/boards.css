@@ -1,22 +1,22 @@
-.project-list {padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #ddd;}
-.project-list img.loading {display: none;}
-.project-list select {float: left; display: block; width: 160px; margin: 0 10px 0 0;}
-.project-list ul.actions {float: left; padding: 3px 0 0 0; list-style: none;}
-.project-list ul.actions li {display: inline; margin: 0 3px 0 0;}
-.project-list ul.actions a {display: inline-block; opacity: .8;}
-.project-list ul.actions a:hover {opacity: 1;}
-.project-list .add.first {font-weight: bold;}
+.board-list {padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #ddd;}
+.board-list img.loading {display: none;}
+.board-list select {float: left; display: block; width: 160px; margin: 0 10px 0 0;}
+.board-list ul.actions {float: left; padding: 3px 0 0 0; list-style: none;}
+.board-list ul.actions li {display: inline; margin: 0 3px 0 0;}
+.board-list ul.actions a {display: inline-block; opacity: .8;}
+.board-list ul.actions a:hover {opacity: 1;}
+.board-list .add.first {font-weight: bold;}
 
-.project-manage .button {float: right; margin-top: -7px;}
-.project-manage h2 {margin: 0 0 8px 0; font-size: 16px; font-weight: normal; text-transform: uppercase; color: #999;}
-.project-manage > ul {list-style: none; padding-top: 6px;}
-.project-manage > ul > li {display: block; padding: 6px 4px; font-size: 16px; border-bottom: 1px dashed #ccc;}
-.project-manage > ul > li > .sort {display: block; float: left; width: 12px; height: 16px; padding: 0 8px 0 0; opacity: .25; cursor: move; background: url(/images/site/icons/sort_handle_12x16.png) 0 0 no-repeat;}
-.project-manage > ul > li:hover > .sort {opacity: .6;}
-.project-manage > ul > li > h3 {float: left;}
-.project-manage > ul > li > ul.actions {float: right; opacity: .3; list-style: none;}
-.project-manage > ul > li:hover > ul.actions {opacity: 1;}
-.project-manage > ul > li > ul.actions li {display: inline-block; margin: 0 0 0 3px;}
+.board-manage .button {float: right; margin-top: -7px;}
+.board-manage h2 {margin: 0 0 8px 0; font-size: 16px; font-weight: normal; text-transform: uppercase; color: #999;}
+.board-manage > ul {list-style: none; padding-top: 6px;}
+.board-manage > ul > li {display: block; padding: 6px 4px; font-size: 16px; border-bottom: 1px dashed #ccc;}
+.board-manage > ul > li > .sort {display: block; float: left; width: 12px; height: 16px; padding: 0 8px 0 0; opacity: .25; cursor: move; background: url(/images/site/icons/sort_handle_12x16.png) 0 0 no-repeat;}
+.board-manage > ul > li:hover > .sort {opacity: .6;}
+.board-manage > ul > li > h3 {float: left;}
+.board-manage > ul > li > ul.actions {float: right; opacity: .3; list-style: none;}
+.board-manage > ul > li:hover > ul.actions {opacity: 1;}
+.board-manage > ul > li > ul.actions li {display: inline-block; margin: 0 0 0 3px;}
 
-.project-edit input[type=submit] {float: right;}
+.board-edit input[type=submit] {float: right;}
 

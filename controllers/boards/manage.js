@@ -1,13 +1,13 @@
-var ProjectManageController = Composer.Controller.extend({
+var BoardManageController = Composer.Controller.extend({
 	elements: {
-		'ul.mine': 'my_projects'
+		'ul.mine': 'my_boards'
 	},
 
 	events: {
 		'click .button.add': 'open_add',
 		'click a[href=#share]': 'open_share',
 		'click a[href=#edit]': 'open_edit',
-		'click a[href=#delete]': 'delete_project'
+		'click a[href=#delete]': 'delete_board'
 	},
 
 	collection: null,
@@ -22,7 +22,7 @@ var ProjectManageController = Composer.Controller.extend({
 		}.bind(this);
 		modal.addEvent('close', close_fn);
 
-		this.collection.bind(['add', 'remove', 'change', 'reset'], this.render.bind(this), 'projects:manage:render');
+		this.collection.bind(['add', 'remove', 'change', 'reset'], this.render.bind(this), 'boards:manage:render');
 
 		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
 	},
@@ -31,23 +31,23 @@ var ProjectManageController = Composer.Controller.extend({
 	{
 		if(modal.is_open) modal.close();
 		if(this.my_sort) this.my_sort.detach();
-		this.collection.unbind(['add', 'remove', 'change', 'reset'], 'projects:manage:render');
+		this.collection.unbind(['add', 'remove', 'change', 'reset'], 'boards:manage:render');
 		tagit.keyboard.attach(); // re-enable shortcuts
 		this.parent.apply(this, arguments);
 	},
 
 	render: function()
 	{
-		// load project data (sans notes)
-		var projects	=	this.collection.map(function(p) {
+		// load board data (sans notes)
+		var boards	=	this.collection.map(function(p) {
 			var _notes	=	p.get('notes');
 			p.unset('notes', {silent: true});
 			var ret		=	toJSON(p);
 			p.set({notes: _notes}, {silent: true});
 			return ret;
 		});
-		var content = Template.render('projects/manage', {
-			projects: projects
+		var content = Template.render('boards/manage', {
+			boards: boards
 		});
 		this.html(content);
 
@@ -57,16 +57,16 @@ var ProjectManageController = Composer.Controller.extend({
 	setup_sort: function()
 	{
 		if(this.my_sort) this.my_sort.detach();
-		this.my_sort	=	new Sortables(this.my_projects, {
+		this.my_sort	=	new Sortables(this.my_boards, {
 			handle: 'span.sort',
 			onComplete: function() {
-				var items	=	this.my_projects.getElements('> li');
+				var items	=	this.my_boards.getElements('> li');
 				var sort	=	{};
 				var ids		=	items.each(function(li, idx) {
-					var pid		=	li.className.replace(/^.*project_([0-9a-f-]+).*?$/, '$1');
-					sort[pid]	=	idx;
+					var bid		=	li.className.replace(/^.*board_([0-9a-f-]+).*?$/, '$1');
+					sort[bid]	=	idx;
 				});
-				tagit.user.get('settings').get_by_key('project_sort').value(sort);
+				tagit.user.get('settings').get_by_key('board_sort').value(sort);
 				this.collection.sort();
 			}.bind(this)
 		});
@@ -76,7 +76,7 @@ var ProjectManageController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		this.release();
-		new ProjectEditController({
+		new BoardEditController({
 			return_to_manage: true,
 			profile: tagit.profile
 		});
@@ -86,12 +86,12 @@ var ProjectManageController = Composer.Controller.extend({
 	{
 		if(!e) return;
 		e.stop();
-		var pid		=	next_tag_up('a', e.target).className;
-		var project	=	this.collection.find_by_id(pid);
-		if(!project) return;
+		var bid		=	next_tag_up('a', e.target).className;
+		var board	=	this.collection.find_by_id(bid);
+		if(!board) return;
 		this.release();
-		new ProjectShareController({
-			project: project
+		new BoardShareController({
+			board: board
 		});
 	},
 
@@ -99,33 +99,33 @@ var ProjectManageController = Composer.Controller.extend({
 	{
 		if(!e) return;
 		e.stop();
-		var pid		=	next_tag_up('a', e.target).className;
-		var project	=	this.collection.find_by_id(pid);
-		if(!project) return;
+		var bid		=	next_tag_up('a', e.target).className;
+		var board	=	this.collection.find_by_id(bid);
+		if(!board) return;
 		this.release();
-		new ProjectEditController({
+		new BoardEditController({
 			return_to_manage: true,
 			profile: tagit.profile,
-			project: project
+			board: board
 		});
 	},
 
-	delete_project: function(e)
+	delete_board: function(e)
 	{
 		if(!e) return;
 		e.stop();
-		var pid		=	next_tag_up('a', e.target).className;
-		var project	=	this.collection.find_by_id(pid);
-		if(!project) return;
-		if(!confirm('Really delete this project, and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
+		var bid		=	next_tag_up('a', e.target).className;
+		var board	=	this.collection.find_by_id(bid);
+		if(!board) return;
+		if(!confirm('Really delete this board, and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
 
 		tagit.loading(true);
-		project.destroy({
+		board.destroy({
 			success: function() {
 				tagit.loading(false);
 
 				var next = this.collection.first() || false;
-				tagit.profile.set_current_project(next);
+				tagit.profile.set_current_board(next);
 			}.bind(this),
 			error: function() {
 				tagit.loading(false);

@@ -9,7 +9,7 @@ var NoteEditTagController = Composer.Controller.extend({
 		'click ul li': 'select_tag'
 	},
 
-	project: null,
+	board: null,
 	note: null,
 
 	suggested_tags: [],
@@ -18,7 +18,7 @@ var NoteEditTagController = Composer.Controller.extend({
 	{
 		var load_suggestions = function()
 		{
-			this.suggested_tags = toJSON(this.project.get('tags'))
+			this.suggested_tags = toJSON(this.board.get('tags'))
 				.sort(function(a, b) {
 					var diff = b.count - a.count;
 					// secondary alpha sort
@@ -28,14 +28,14 @@ var NoteEditTagController = Composer.Controller.extend({
 				.map(function(t) { return t.name; });
 			this.render();
 		}.bind(this);
-		this.project.bind_relational('tags', ['add', 'remove', 'reset', 'change'], load_suggestions, 'note:edit:suggested_tags');
+		this.board.bind_relational('tags', ['add', 'remove', 'reset', 'change'], load_suggestions, 'note:edit:suggested_tags');
 		this.note.bind_relational('tags', ['add', 'remove', 'reset', 'change'], this.render.bind(this), 'note:edit:tags:change');
 		load_suggestions();
 	},
 
 	release: function()
 	{
-		this.project.unbind_relational('tags', ['add', 'remove', 'reset', 'change'], 'note:edit:suggested_tags');
+		this.board.unbind_relational('tags', ['add', 'remove', 'reset', 'change'], 'note:edit:suggested_tags');
 		this.note.unbind_relational('tags', ['add', 'remove', 'reset', 'change'], 'note:edit:tags:change');
 		this.parent.apply(this, arguments);
 	},

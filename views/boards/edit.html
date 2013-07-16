@@ -1,15 +1,15 @@
 <?
-var action	=	(project.id ? 'Edit' : 'Add');
+var action	=	(board.id ? 'Edit' : 'Add');
 ?>
 <h1>
-	<?=action?> project
+	<?=action?> board
 	<? if(return_to_manage) { ?>
-		<small><a href="#manage">&laquo; Back to project manager</a></small>
+		<small><a href="#manage">&laquo; Back to board manager</a></small>
 	<? } ?>
 </h1>
-<div class="project-edit clear">
+<div class="board-edit clear">
 	<form>
-		<input type="submit" value="<?=action?> project">
-		<input type="text" name="name" value="<?=project.title?>" placeholder="Project name">
+		<input type="submit" value="<?=action?> board">
+		<input type="text" name="name" value="<?=board.title?>" placeholder="Board name">
 	</form>
 </div>

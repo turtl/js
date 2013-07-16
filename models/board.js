@@ -1,5 +1,5 @@
-var Project = Composer.RelationalModel.extend({
-	base_url: '/projects',
+var Board = Composer.RelationalModel.extend({
+	base_url: '/boards',
 
 	relations: {
 		tags: {
@@ -42,22 +42,22 @@ var Project = Composer.RelationalModel.extend({
 			if(!this._track_tags) return false;
 			this.get('tags').add_tags_from_note(note);
 			this.get('tags').trigger('update');
-		}.bind(this), 'project:model:notes:add');
+		}.bind(this), 'board:model:notes:add');
 		this.bind_relational('notes', 'remove', function(note) {
 			if(!this._track_tags) return false;
 			this.get('tags').remove_tags_from_note(note);
 			this.get('tags').trigger('update');
-		}.bind(this), 'project:model:notes:remove');
+		}.bind(this), 'board:model:notes:remove');
 		this.bind_relational('notes', 'reset', function() {
 			if(!this._track_tags) return false;
 			this.get('tags').refresh_from_notes(this.get('notes'));
 			this.get('tags').trigger('update');
-		}.bind(this), 'project:model:notes:reset');
+		}.bind(this), 'board:model:notes:reset');
 		this.bind_relational('notes', 'change:tags', function(note) {
 			if(!this._track_tags) return false;
 			this.get('tags').diff_tags_from_note(note);
 			this.get('tags').trigger('update');
-		}.bind(this), 'project:model:notes:change:tags');
+		}.bind(this), 'board:model:notes:change:tags');
 
 		// make category tags auto-update when tags do
 		this.bind_relational('tags', 'update', function() {
@@ -79,7 +79,7 @@ var Project = Composer.RelationalModel.extend({
 	},
 
 	/**
-	 * Given a set of note data, reset this project's notes, async, with said
+	 * Given a set of note data, reset this board's notes, async, with said
 	 * data.
 	 */
 	update_notes: function(note_data, options)
@@ -104,8 +104,8 @@ var Project = Composer.RelationalModel.extend({
 	{
 		options || (options = {});
 		var url	=	this.id(true) ?
-			'/projects/'+this.id() :
-			'/projects/users/'+tagit.user.id();
+			'/boards/'+this.id() :
+			'/boards/users/'+tagit.user.id();
 		var fn	=	(this.id(true) ? tagit.api.put : tagit.api.post).bind(tagit.api);
 		fn(url, {data: this.toJSON()}, {
 			success: function(data) {
@@ -113,7 +113,7 @@ var Project = Composer.RelationalModel.extend({
 				if(options.success) options.success(data);
 			}.bind(this),
 			error: function(e) {
-				barfr.barf('Error saving project: '+ e);
+				barfr.barf('Error saving board: '+ e);
 				if(options.error) options.error(e);
 			}
 		});
@@ -184,12 +184,12 @@ var Project = Composer.RelationalModel.extend({
 	}
 }, Protected);
 
-var Projects = Composer.Collection.extend({
-	model: Project,
+var Boards = Composer.Collection.extend({
+	model: Board,
 
 	sortfn: function(a, b)
 	{
-		var psort	=	tagit.user.get('settings').get_by_key('project_sort').value() || {};
+		var psort	=	tagit.user.get('settings').get_by_key('board_sort').value() || {};
 		var a_sort	=	psort[a.id()] || psort[a.id()] === 0 ? psort[a.id()] : 99999;
 		var b_sort	=	psort[b.id()] || psort[b.id()] === 0 ? psort[b.id()] : 99999;
 		var sort	=	a_sort - b_sort;
@@ -206,40 +206,40 @@ var Projects = Composer.Collection.extend({
 	clear: function(options)
 	{
 		options || (options = {});
-		this.each(function(project) {
-			project.clear(options);
+		this.each(function(board) {
+			board.clear(options);
 		});
 		return this.parent.apply(this, arguments);
 	},
 
-	load_projects: function(projects, options)
+	load_boards: function(boards, options)
 	{
 		options || (options = {});
 		this.each(function(p) { p.destroy({skip_sync: true}); });
 		this.clear(options);
 		var tally		=	0;
-		var nprojects	=	projects.length;
+		var nboards	=	boards.length;
 
-		// tracks the completion of note updating for each project.
+		// tracks the completion of note updating for each board.
 		var complete	=	function()
 		{
 			tally++;
-			if(tally >= nprojects && options.complete)
+			if(tally >= nboards && options.complete)
 			{
 				options.complete();
 			}
 		};
 
-		if(nprojects > 0)
+		if(nboards > 0)
 		{
-			projects.each(function(pdata) {
-				var notes = pdata.notes;
-				delete pdata.notes;
-				var project = new Project(pdata);
-				pdata.notes = notes;
-				this.add(project, options);
+			boards.each(function(bdata) {
+				var notes = bdata.notes;
+				delete bdata.notes;
+				var board = new Board(bdata);
+				bdata.notes = notes;
+				this.add(board, options);
 				// this is async (notes added one by one), so track completion
-				project.update_notes(notes, Object.merge({}, options, {complete: complete}));
+				board.update_notes(notes, Object.merge({}, options, {complete: complete}));
 			}.bind(this));
 		}
 		else
@@ -248,8 +248,8 @@ var Projects = Composer.Collection.extend({
 		}
 	},
 
-	get_project: function(project_name)
+	get_board: function(board_name)
 	{
-		return this.find(function(p) { return p.get('name') == project_name; });
+		return this.find(function(p) { return p.get('name') == board_name; });
 	}
 });

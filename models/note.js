@@ -11,7 +11,7 @@ var Note = Composer.RelationalModel.extend({
 	public_fields: [
 		'id',
 		'user_id',
-		'project_id',
+		'board_id',
 		'keys',
 		'body',
 		'meta'
@@ -70,7 +70,7 @@ var Note = Composer.RelationalModel.extend({
 	save: function(options)
 	{
 		options || (options = {});
-		var url	=	this.id(true) ? '/notes/'+this.id() : '/projects/'+this.get('project_id')+'/notes';
+		var url	=	this.id(true) ? '/notes/'+this.id() : '/boards/'+this.get('board_id')+'/notes';
 		var fn	=	(this.id(true) ? tagit.api.put : tagit.api.post).bind(tagit.api);
 		fn(url, {data: this.toJSON()}, {
 			success: function(note_data) {
@@ -88,11 +88,11 @@ var Note = Composer.RelationalModel.extend({
 	{
 		options || (options = {});
 		search || (search = {});
-		var project_id = this.get('project_id');
-		var project_key = tagit.profile.get('projects').find_by_id(project_id).key;
-		if(!search.p && project_id && project_key)
+		var board_id = this.get('board_id');
+		var board_key = tagit.profile.get('boards').find_by_id(board_id).key;
+		if(!search.p && board_id && board_key)
 		{
-			search.p = [{id: project_id, k: project_key}];
+			search.p = [{id: board_id, k: board_key}];
 		}
 		var ret = this.parent(keys, search, options);
 		return ret;

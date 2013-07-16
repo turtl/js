@@ -154,9 +154,9 @@ var view	=	{
 		return tag_name.toLowerCase().clean();
 	},
 
-	projectize: function(project_name)
+	boardize: function(board_name)
 	{
-		return project_name;
+		return board_name;
 	},
 
 	// TODO: figure out why this sucks and breaks links.

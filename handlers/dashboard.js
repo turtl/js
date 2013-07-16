@@ -1,14 +1,14 @@
 var dashboard = {
-	load: function(project)
+	load: function(board)
 	{
-		project = null;
+		board = null;
 		if(!tagit.profile.profile_data)
 		{
 			tagit.controllers.pages.trigger('loaded');
 			return;
 		}
 		tagit.controllers.pages.load(DashboardController, {
-			current_project: project
+			current_board: board
 		});
 	}
 };

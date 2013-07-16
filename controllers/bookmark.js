@@ -3,14 +3,14 @@ var BookmarkController = Composer.Controller.extend({
 	className: 'bookmark modalcontent',
 
 	elements: {
-		'div.project': 'project_container',
+		'div.board': 'board_container',
 		'div.edit': 'edit_container'
 	},
 
 	linkdata: {},
 	profile: null,
 
-	project_controller: null,
+	board_controller: null,
 	edit_controller: null,
 
 	init: function()
@@ -19,10 +19,10 @@ var BookmarkController = Composer.Controller.extend({
 		this.render();
 
 		this.profile	=	tagit.profile;
-		this.profile.bind('change:current_project', function() {
-			var project = this.profile.get_current_project();
+		this.profile.bind('change:current_board', function() {
+			var board = this.profile.get_current_board();
 
-			tagit.user.set({last_project: project.id()});
+			tagit.user.set({last_board: board.id()});
 			this.soft_release();
 
 			var note = new Note({
@@ -31,29 +31,29 @@ var BookmarkController = Composer.Controller.extend({
 				title: this.linkdata.title,
 				text: this.linkdata.text
 			});
-			this.project_controller = new ProjectsController({
-				inject: this.project_container,
+			this.board_controller = new BoardsController({
+				inject: this.board_container,
 				profile: this.profile
 			});
 			this.edit_controller = new NoteEditController({
 				inject: this.edit_container,
 				note: note,
-				project: project,
+				board: board,
 				edit_in_modal: false
 			});
 
 			this.edit_controller.bind('release', function() {
 				window.close();
 			}, 'bookmark:edit_note:release');
-		}.bind(this), 'bookmark:change_project');
+		}.bind(this), 'bookmark:change_board');
 
-		this.profile.set_current_project(tagit.user.get('last_project'), {silent: true});
-		this.profile.trigger('change:current_project');
+		this.profile.set_current_board(tagit.user.get('last_board'), {silent: true});
+		this.profile.trigger('change:current_board');
 	},
 
 	soft_release: function()
 	{
-		if(this.project_controller) this.project_controller.release();
+		if(this.board_controller) this.board_controller.release();
 		if(this.edit_controller)
 		{
 			this.edit_controller.release({silent: 'release'});

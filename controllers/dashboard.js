@@ -3,7 +3,7 @@ var DashboardController = Composer.Controller.extend({
 
 	elements: {
 		'.sidebar': 'sidebar',
-		'.projects': 'projects',
+		'.boards': 'boards',
 		'.categories': 'categories',
 		'.tags': 'tags',
 		'.notes': 'notes',
@@ -13,9 +13,9 @@ var DashboardController = Composer.Controller.extend({
 	// profile
 	profile: null,
 
-	current_project: null,
+	current_board: null,
 
-	projects_controller: null,
+	boards_controller: null,
 	categories_controller: null,
 	tags_controller: null,
 
@@ -30,19 +30,19 @@ var DashboardController = Composer.Controller.extend({
 		this.profile = tagit.profile;
 
 		var do_load = function() {
-			var current = this.profile.get_current_project();
+			var current = this.profile.get_current_board();
 
 			this.categories_controller = new CategoriesController({
 				inject: this.categories,
-				project: current
+				board: current
 			});
 			this.tags_controller = new TagsController({
 				inject: this.tags,
-				project: current
+				board: current
 			});
 			this.notes_controller = new NotesController({
 				inject: this.notes,
-				project: current
+				board: current
 			});
 
 			tagit.controllers.pages.trigger('loaded');
@@ -50,22 +50,22 @@ var DashboardController = Composer.Controller.extend({
 
 		tagit.loading(true);
 		var has_load = false;
-		this.profile.bind('change:current_project', function() {
+		this.profile.bind('change:current_board', function() {
 			this.soft_release();
-			var current = this.profile.get_current_project();
+			var current = this.profile.get_current_board();
 			if(current && !has_load)
 			{
 				has_load = true;
 				current.bind('notes_updated', function() {
 					tagit.loading(false);
-					current.unbind('notes_updated', 'project:loading:notes_updated');
-				}, 'project:loading:notes_updated');
+					current.unbind('notes_updated', 'board:loading:notes_updated');
+				}, 'board:loading:notes_updated');
 			}
 			do_load();
-		}.bind(this), 'dashboard:change_project');
+		}.bind(this), 'dashboard:change_board');
 
-		this.projects_controller = new ProjectsController({
-			el: this.projects,
+		this.boards_controller = new BoardsController({
+			el: this.boards,
 			profile: this.profile
 		});
 
@@ -81,7 +81,7 @@ var DashboardController = Composer.Controller.extend({
 			this.release();
 		}.bind(this), 'dashboard:logout:clear_timer');
 
-		this.profile.trigger('change:current_project');
+		this.profile.trigger('change:current_board');
 	},
 
 	soft_release: function()
@@ -94,8 +94,8 @@ var DashboardController = Composer.Controller.extend({
 	release: function()
 	{
 		this.soft_release();
-		if(this.projects_controller) this.projects_controller.release();
-		this.profile.unbind('change:current_project', 'dashboard:change_project');
+		if(this.boards_controller) this.boards_controller.release();
+		this.profile.unbind('change:current_board', 'dashboard:change_board');
 		tagit.keyboard.unbind('S-/', 'dashboard:shortcut:open_help');
 		tagit.user.unbind('logout', 'dashboard:logout:clear_timer');
 		if(this.sidebar_timer && this.sidebar_timer.end) this.sidebar_timer.end = null;

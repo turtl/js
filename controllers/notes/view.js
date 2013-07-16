@@ -14,7 +14,7 @@ var NoteViewController = Composer.Controller.extend({
 	},
 
 	model: null,
-	project: null,
+	board: null,
 
 	init: function()
 	{
@@ -74,7 +74,7 @@ var NoteViewController = Composer.Controller.extend({
 		if(e) e.stop();
 		this.release();
 		new NoteEditController({
-			project: this.project,
+			board: this.board,
 			note: this.model
 		});
 	},
@@ -83,7 +83,7 @@ var NoteViewController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		new NoteMoveController({
-			project: this.project,
+			board: this.board,
 			note: this.model
 		});
 	},
