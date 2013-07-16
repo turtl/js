@@ -12,8 +12,10 @@
 .project-manage > ul {list-style: none; padding-top: 6px;}
 .project-manage > ul > li {display: block; padding: 6px 4px; font-size: 16px; border-bottom: 1px dashed #ccc;}
 .project-manage > ul > li > .sort {display: block; float: left; width: 12px; height: 16px; padding: 0 8px 0 0; opacity: .25; cursor: move; background: url(/images/site/icons/sort_handle_12x16.png) 0 0 no-repeat;}
+.project-manage > ul > li:hover > .sort {opacity: .6;}
 .project-manage > ul > li > h3 {float: left;}
-.project-manage > ul > li > ul.actions {float: right; list-style: none;}
+.project-manage > ul > li > ul.actions {float: right; opacity: .3; list-style: none;}
+.project-manage > ul > li:hover > ul.actions {opacity: 1;}
 .project-manage > ul > li > ul.actions li {display: inline-block; margin: 0 0 0 3px;}
 
 .project-edit input[type=submit] {float: right;}
