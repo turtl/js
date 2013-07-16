@@ -17,7 +17,7 @@ var BoardsController = Composer.Controller.extend({
 		this.profile.bind_relational('boards', ['add', 'remove', 'reset', 'change:title'], this.render.bind(this), 'boards:change');
 		this.profile.bind('change:current_board', this.render.bind(this), 'boards:track_current');
 		tagit.keyboard.bind('x', this.clear_filters.bind(this), 'boards:shortcut:clear_filters');
-		tagit.keyboard.bind('p', this.add_board.bind(this), 'boards:shortcut:add_board');
+		tagit.keyboard.bind('b', this.add_board.bind(this), 'boards:shortcut:add_board');
 	},
 
 	release: function()
@@ -25,7 +25,7 @@ var BoardsController = Composer.Controller.extend({
 		this.profile.unbind_relational('boards', ['add', 'remove', 'reset', 'change:title'], 'boards:change');
 		this.profile.unbind('change:current_board', 'boards:track_current');
 		tagit.keyboard.unbind('x', 'boards:shortcut:clear_filters');
-		tagit.keyboard.unbind('p', 'boards:shortcut:add_board');
+		tagit.keyboard.unbind('b', 'boards:shortcut:add_board');
 		this.parent.apply(this, arguments);
 	},
 
