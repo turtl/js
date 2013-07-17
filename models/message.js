@@ -40,50 +40,6 @@ var Message = ProtectedShared.extend({
 			this.set({created: date});
 		}.bind(this), 'message:track_timestamp');
 		this.trigger('change:id');
-
-		// test whether the message is read/unread
-		var unread			=	Object.clone(tagit.user.get('settings').get_by_key('msg_unread').value());
-		var highest_read_id	=	unread.highest || '';
-		var lowest_read_id	=	unread.lowest || '';
-		var specific_unread	=	unread.list || [];
-		if(	this.id(true) &&
-			!this.get('mine') &&
-			(this.id().localeCompare(highest_read_id) > 0 ||
-			 this.id().localeCompare(lowest_read_id) < 0 ||
-			 specific_unread.contains(this.id())) )
-		{
-			this.set({unread: true});
-		}
-	},
-
-	mark_read: function(options)
-	{
-		options || (options = {})
-
-		var unread			=	Object.clone(tagit.user.get('settings').get_by_key('msg_unread').value());
-		var highest_read_id	=	unread.highest || '';
-		var lowest_read_id	=	unread.lowest || '';
-		if(this.id().localeCompare(highest_read_id) > 0)
-		{
-			unread.highest	=	this.id();
-		}
-
-		if(this.id().localeCompare(lowest_read_id) < 0 || lowest_read_id == '')
-		{
-			unread.lowest	=	this.id();
-		}
-
-		// remove msg from user settings if it's in there
-		if((unread.list || []).contains(this.id()))
-		{
-			unread.list		=	(unread.list || []).filter(function(id) {
-				if(id == this.id()) return false;
-				return true;
-			}.bind(this));
-		}
-		tagit.user.get('settings').get_by_key('msg_unread').value(unread, options);
-		this.unset('unread', options);
-		this.trigger('mark_read');
 	}
 });
 
@@ -100,31 +56,6 @@ var Messages = Composer.Collection.extend({
 		this.bind('add', function(model) {
 			this.last_id = this.last().id();
 		}.bind(this), 'messages:track_last_id')
-
-		// track unread messages and save them in the user's settings.
-		//
-		// this specifically takes all 
-		this.bind('mark_read', function() {
-			var unread			=	Object.clone(tagit.user.get('settings').get_by_key('msg_unread').value());
-			var highest_read_id	=	unread.highest || '';
-			var lowest_read_id	=	unread.lowest || '';
-			unread.list			=	(unread.list || []);
-			// get all ids of unread messages
-			var all_unread		=	this.select({unread: true}).each(function(m) {
-				// no need to specifically add to user's unread list if ID is
-				// greater than highest_read_id
-				if( m.id().localeCompare(highest_read_id) > 0 &&
-				    m.id().localeCompare(lowest_read_id) < 0 ) return;
-
-				// not in the lest
-				if(!unread.list.contains(m.id())) return;
-
-				// this message's id is less than highest_read_id, and it's not
-				// in the unread list. add it.
-				unread.list.push(m.id());
-			});
-			tagit.user.get('settings').get_by_key('msg_unread').value(unread);
-		}.bind(this), 'messages:track_unread');
 	},
 
 	get_messages_for_persona: function(persona, challenge, options)
@@ -175,7 +106,7 @@ var Messages = Composer.Collection.extend({
 					var persona		=	my_personas.find_by_id(sent.from);
 					if(!persona) return false;
 					sent.persona	=	persona.toJSON();
-					sent.mine		=	true;	// keeps us from marking it unread
+					sent.mine		=	true;	// let the app know WE sent it
 					return sent;
 				}));
 				if(options.success) options.success(res);

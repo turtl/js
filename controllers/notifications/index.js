@@ -14,7 +14,7 @@ var NotificationsController = Composer.Controller.extend({
 
 		var notifications = function()
 		{
-			tagit.messages.bind(['add', 'remove', 'change:unread', 'mark_read'], this.msg_notify.bind(this), 'header_bar:monitor_messages');
+			tagit.messages.bind(['add', 'remove', 'reset'], this.msg_notify.bind(this), 'header_bar:monitor_messages');
 			this.msg_notify();
 		}.bind(this);
 
@@ -33,7 +33,7 @@ var NotificationsController = Composer.Controller.extend({
 
 	release: function()
 	{
-		tagit.messages.unbind(['add', 'remove', 'change:unread', 'mark_read'], 'header_bar:monitor_messages');
+		tagit.messages.unbind(['add', 'remove', 'reset'], 'header_bar:monitor_messages');
 		this.parent.apply(this, arguments);
 	},
 
