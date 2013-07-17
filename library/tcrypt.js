@@ -88,6 +88,21 @@ var tcrypt = {
 	},
 
 	/**
+	 * Given a binary key, convert to hex string
+	 */
+	key_to_string: function(keybytes)
+	{
+		return CryptoJS.enc.Base64.stringify(keybytes);
+	},
+
+	/**
+	 */
+	key_to_bin: function(keystring)
+	{
+		return CryptoJS.enc.Base64.parse(keystring);
+	},
+
+	/**
 	 * Generate N random bytes, returned as a WordArray
 	 */
 	random_bytes: function(nBytes)

@@ -10,7 +10,6 @@ var Note = Composer.RelationalModel.extend({
 
 	public_fields: [
 		'id',
-		'user_id',
 		'board_id',
 		'keys',
 		'body',
@@ -90,9 +89,9 @@ var Note = Composer.RelationalModel.extend({
 		search || (search = {});
 		var board_id = this.get('board_id');
 		var board_key = tagit.profile.get('boards').find_by_id(board_id).key;
-		if(!search.p && board_id && board_key)
+		if(!search.b && board_id && board_key)
 		{
-			search.p = [{id: board_id, k: board_key}];
+			search.b = [{id: board_id, k: board_key}];
 		}
 		var ret = this.parent(keys, search, options);
 		return ret;

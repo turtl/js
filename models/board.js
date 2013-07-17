@@ -21,7 +21,6 @@ var Board = Composer.RelationalModel.extend({
 
 	public_fields: [
 		'id',
-		'user_id',
 		'keys',
 		'body',
 		'sort'
@@ -71,6 +70,23 @@ var Board = Composer.RelationalModel.extend({
 				}
 			});
 		}.bind(this));
+
+		this.bind('destroy', function() {
+			tagit.user.remove_user_key(this.id());
+		}.bind(this));
+
+		// MIGRATE: move board user keys into user data. this code should exist
+		// as long as the database has ANY records with board.keys.u
+		if(!tagit.user.find_user_key(this.id(true)) && !this.is_new())
+		{
+			tagit.user.add_user_key(this.id(true), this.key);
+			var keys	=	this.get('keys').toJSON();
+			keys		=	keys.filter(function(k) {
+				return k.u != tagit.user.id();
+			});
+			this.set({keys: keys});
+			this.save_keys();
+		}
 	},
 
 	track_tags: function(yesno)
@@ -106,8 +122,41 @@ var Board = Composer.RelationalModel.extend({
 		var url	=	this.id(true) ?
 			'/boards/'+this.id() :
 			'/boards/users/'+tagit.user.id();
-		var fn	=	(this.id(true) ? tagit.api.put : tagit.api.post).bind(tagit.api);
-		fn(url, {data: this.toJSON()}, {
+		var fn		=	(this.id(true) ? tagit.api.put : tagit.api.post).bind(tagit.api);
+		var data	=	this.toJSON();
+		if(!data.keys || (data.keys.length == 0))
+		{
+			// empty string gets converted to enpty array by the API for the keys
+			// type (this is the only way to serialize an empty array via 
+			// mootools' Request AJAX class)
+			data.keys	=	'';
+		}
+		fn(url, {data: data}, {
+			success: function(data) {
+				this.set(data);
+				if(options.success) options.success(data);
+			}.bind(this),
+			error: function(e) {
+				barfr.barf('Error saving board: '+ e);
+				if(options.error) options.error(e);
+			}
+		});
+	},
+
+	save_keys: function(options)
+	{
+		options || (options = {});
+		var data	=	{};
+		data.keys	=	this.toJSON().keys;
+		if(!data.keys || data.keys.length == 0)
+		{
+			// empty string gets converted to enpty array by the API for the keys
+			// type (this is the only way to serialize an empty array via 
+			// mootools' Request AJAX class)
+			data.keys	=	'';
+		}
+
+		tagit.api.put('/boards/'+this.id(), {data: data}, {
 			success: function(data) {
 				this.set(data);
 				if(options.success) options.success(data);

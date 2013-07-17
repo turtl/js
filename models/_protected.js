@@ -245,14 +245,16 @@ var Protected = Composer.RelationalModel.extend({
 		// processing and without copying it destroys the original key object,
 		// meaning this object can never be decrypted without re-downloading.
 		// not good.
-		var keys = Object.clone(keys);
+		var keys = Array.clone(keys);
 
 		var uid = tagit.user.id(true);
 		// TODO: investigate removing this restriction for public boards??
 		if(!uid) return false;
 
 		// automatically add a user entry to the key search
-		search.u = {id: uid, k: tagit.user.get_key()};
+		if(!search.u) search.u = [];
+		if(search.u && typeOf(search.u) != 'array') search.u = [search.u];
+		search.u.push({id: tagit.user.id(), k: tagit.user.get_key()});
 
 		delete(search.k);  // sorry, "k" is reserved for keys
 		var search_keys		=	Object.keys(search);
@@ -292,8 +294,23 @@ var Protected = Composer.RelationalModel.extend({
 			if(encrypted_key) break;
 		}
 
-		if(!decrypting_key || !encrypted_key) return false;
-		var key = this.decrypt_key(decrypting_key, encrypted_key);
+		var key	=	false;
+		if(decrypting_key && encrypted_key)
+		{
+			key	=	this.decrypt_key(decrypting_key, encrypted_key);
+		}
+
+		// if we didn't find our key, check the user's data
+		if(!key)
+		{
+			key	=	tagit.user.find_user_key(this.id());
+		}
+
+		// do more complicated user key search
+		if(!key)
+		{
+		}
+
 		return key;
 	},
 
@@ -331,12 +348,6 @@ var Protected = Composer.RelationalModel.extend({
 		members || (members = []);
 
 		if(!this.key) return false;
-
-		// by default add the user's key
-		if(!options.skip_user_key)
-		{
-			members.push({u: tagit.user.id(), k: tagit.user.get_key()});
-		}
 
 		var keys = [];
 		members.each(function(m) {

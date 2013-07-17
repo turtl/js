@@ -244,6 +244,31 @@ var User	=	Composer.RelationalModel.extend({
 			error: options.error
 		});
 		tagit.api.clear_auth();
+	},
+
+	add_user_key: function(item_id, key)
+	{
+		if(!item_id || !key) return false;
+		var user_keys		=	Object.clone(this.get('settings').get_by_key('keys').value()) || {};
+		user_keys[item_id]	=	tcrypt.key_to_string(key);
+		this.get('settings').get_by_key('keys').value(user_keys);
+	},
+
+	remove_user_key: function(item_id)
+	{
+		if(!item_id) return false;
+		var user_keys	=	Object.clone(this.get('settings').get_by_key('keys').value()) || {};
+		delete user_keys[item_id];
+		this.get('settings').get_by_key('keys').value(user_keys);
+	},
+
+	find_user_key: function(item_id)
+	{
+		if(!item_id) return false;
+		var user_keys	=	Object.clone(this.get('settings').get_by_key('keys').value()) || {};
+		var key			=	user_keys[item_id];
+		if(!key) return false;
+		return tcrypt.key_to_bin(key);
 	}
 }, Protected);
 

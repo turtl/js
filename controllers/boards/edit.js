@@ -54,6 +54,9 @@ var BoardEditController = Composer.Controller.extend({
 			this.board.generate_key();
 			this.board.generate_subkeys();
 			success = function() {
+				// make sure the project key gets saved with the user's data
+				tagit.user.add_user_key(this.board.id(), this.board.key);
+
 				var boards = this.profile.get('boards');
 				if(boards) boards.add(this.board);
 				if(!this.return_to_manage)
