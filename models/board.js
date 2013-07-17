@@ -77,7 +77,7 @@ var Board = Composer.RelationalModel.extend({
 
 		// MIGRATE: move board user keys into user data. this code should exist
 		// as long as the database has ANY records with board.keys.u
-		if(!tagit.user.find_user_key(this.id(true)) && !this.is_new())
+		if(!tagit.user.find_user_key(this.id(true)) && !this.is_new() && this.key)
 		{
 			tagit.user.add_user_key(this.id(true), this.key);
 			var keys	=	this.get('keys').toJSON();
@@ -85,7 +85,7 @@ var Board = Composer.RelationalModel.extend({
 				return k.u != tagit.user.id();
 			});
 			this.set({keys: keys});
-			this.save_keys();
+			//this.save_keys();
 		}
 	},
 
