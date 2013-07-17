@@ -1,0 +1,8 @@
+.notification-list {position: absolute; z-index: 4; top: 41px; left: 127px; width: 400px; color: #eee; background: #202020;}
+.notification-list > .gutter {padding: 10px 10px 14px 10px;}
+.notification-list ul {list-style: none; margin: 0; padding: 0;}
+.notification-list ul > li > ul.actions {float: right;}
+.notification-list ul > li > ul.actions > li {float: left;}
+
+.notification-list p.none {color: #bbb; text-align: center;}
+

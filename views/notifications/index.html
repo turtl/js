@@ -1,0 +1,26 @@
+<ul>
+	<!--<li><a class="notes" href="/" title="Notes"><span>&nbsp;</span></a></li>-->
+	<li><a class="notifications" href="#notifications" title="Notifications"><span>&nbsp;</span></a></li>
+</ul>
+<div class="notification-list">
+	<div class="gutter">
+		<? if(notifications.length > 0) { ?>
+			<ul>
+				<? notifications.each(function(n) { ?>
+					<li class="clear">
+						<ul class="actions">
+							<li><div class="button accept"><span>&nbsp;</span></div></li>
+							<li><div class="button deny"><span>&nbsp;</span></div></li>
+						</ul>
+						So and so wnts to share the board
+						<em>shitpiss</em>
+						with you
+					</li>
+				<? }); ?>
+			</ul>
+		<? } else { ?>
+			<p class="none">You have no notifications.</p>
+		<? } ?>
+	</div>
+</div>
+

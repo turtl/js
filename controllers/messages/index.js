@@ -23,8 +23,6 @@ var MessagesController = Composer.Controller.extend({
 
 		this.render();
 
-		tagit.controllers.HeaderBar.select_app(null, 'messages');
-
 		this.conversations_controller = new ConversationListController({
 			inject: this.conversations,
 			collection: this.messages.conversations
