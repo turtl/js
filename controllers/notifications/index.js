@@ -1,5 +1,7 @@
 var NotificationsController = Composer.Controller.extend({
 	elements: {
+		'a.notifications': 'button',
+		'div.notification-list': 'notification_list'
 	},
 
 	events: {
@@ -69,5 +71,15 @@ var NotificationsController = Composer.Controller.extend({
 	open_notifications: function(e)
 	{
 		if(e) e.stop();
+		if(this.button.hasClass('sel'))
+		{
+			this.button.removeClass('sel');
+			this.notification_list.removeClass('sel');
+		}
+		else
+		{
+			this.button.addClass('sel');
+			this.notification_list.addClass('sel');
+		}
 	}
 });
