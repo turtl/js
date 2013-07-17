@@ -18,7 +18,7 @@ var Message = ProtectedShared.extend({
 	],
 
 	private_fields: [
-		'conversation_id',
+		'notification',
 		'subject',
 		'body'
 	],
@@ -90,28 +90,12 @@ var Message = ProtectedShared.extend({
 var Messages = Composer.Collection.extend({
 	model: 'Message',
 
-	conversations: null,
-
 	last_id: null,
 
 	sortfn: function(a, b) { return a.id().localeCompare(b.id()); },
 
 	init: function()
 	{
-		this.conversations = new Conversations();
-		this.bind('add', function(model) {
-			var conversation_id = model.get('conversation_id');
-			if(!conversation_id) return;
-
-			var conversation = this.conversations.find_by_id(conversation_id);
-			if(conversation) return;
-
-			// if a conversation doesn't exist for this message, create one and
-			// add to the conversations list
-			conversation = new Conversation({id: conversation_id})
-			this.conversations.upsert(conversation, {silent: true});
-		}.bind(this), 'messages:monitor_conversations:add');
-
 		// track the last (greatest) ID of the synced messages
 		this.bind('add', function(model) {
 			this.last_id = this.last().id();
@@ -227,19 +211,6 @@ var Messages = Composer.Collection.extend({
 				}.bind(this)
 			});
 		}.bind(this));
-	}
-});
-
-var MessagesFilterConversation = Composer.FilterCollection.extend({
-	sortfn: function(a, b)
-	{
-		return a.id().localeCompare(b.id());
-	},
-
-	filter: function(msg, collection)
-	{
-		var conversation = collection.get_parent();
-		return msg.get('conversation_id') == conversation.id();
 	}
 });
 
