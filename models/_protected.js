@@ -247,16 +247,11 @@ var Protected = Composer.RelationalModel.extend({
 		// not good.
 		var keys = Array.clone(keys);
 
-		var uid = tagit.user.id(true);
-		// TODO: investigate removing this restriction for public boards??
-		if(!uid) return false;
-
 		// automatically add a user entry to the key search
 		if(!search.u) search.u = [];
 		if(search.u && typeOf(search.u) != 'array') search.u = [search.u];
 		search.u.push({id: tagit.user.id(), k: tagit.user.get_key()});
 
-		delete(search.k);  // sorry, "k" is reserved for keys
 		var search_keys		=	Object.keys(search);
 		var encrypted_key	=	false;
 		var decrypting_key	=	false;

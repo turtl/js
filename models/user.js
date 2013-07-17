@@ -140,15 +140,18 @@ var User	=	Composer.RelationalModel.extend({
 		this.key = null;
 		this.logged_in	=	false;
 		this.clear();
-		this.get('personas').each(function(p) {
-			p.unbind();
-			p.destroy({silent: true, skip_sync: true});
-		});
-		this.get('personas').clear();
 		Cookie.dispose(config.user_cookie);
 		this.unbind_relational('personas', ['saved'], 'user:track_personas');
 		this.unbind_relational('personas', ['destroy'], 'user:track_personas:destroy');
 		this.unbind_relational('settings', ['change'], 'user:save_settings');
+
+		// clear user data
+		this.get('personas').each(function(p) {
+			p.unbind();
+			p.destroy({silent: true, skip_sync: true});
+		});
+		this.get('personas').unbind().clear();
+		this.get('settings').unbind().clear();
 		this.trigger('logout', this);
 	},
 
@@ -248,6 +251,7 @@ var User	=	Composer.RelationalModel.extend({
 
 	add_user_key: function(item_id, key)
 	{
+		console.log('user: add_key: ', item_id, key);
 		if(!item_id || !key) return false;
 		var user_keys		=	Object.clone(this.get('settings').get_by_key('keys').value()) || {};
 		user_keys[item_id]	=	tcrypt.key_to_string(key);

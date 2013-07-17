@@ -79,8 +79,24 @@ var tagit	=	{
 		// load the global keyboard handler
 		this.keyboard	=	new Composer.Keyboard({meta_bind: true});
 
+		// set up our user object
+		this.setup_user({initial_route: initial_route});
+
+		// if a user exists, log them in
+		this.user.login_from_cookie();
+
+		this.setup_header_bar();
+
+		this.loaded	=	true;
+		this.route(initial_route);
+	},
+
+	setup_user: function(options)
+	{
+		options || (options = {});
+
 		// create the user model
-		this.user || (this.user = new User());
+		this.user	=	new User();
 
 		// update the user_profiles collection on login
 		this.user.bind('login', function() {
@@ -96,6 +112,7 @@ var tagit	=	{
 					tagit.show_loading_screen(false);
 					this.controllers.pages.release_current();
 					this.last_url = '';
+					var initial_route	=	options.initial_route || '';
 					if(initial_route.match(/^\/users\//)) initial_route = '/';
 					this.route(initial_route);
 					this.setup_syncing();
@@ -114,20 +131,25 @@ var tagit	=	{
 			}, 'dashboard:shortcut:logout');
 		}.bind(this));
 		this.user.bind('logout', function() {
+			tagit.controllers.pages.release_current();
 			tagit.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
 			tagit.show_loading_screen(false);
 			this.user.unbind('change', 'user:write_changes_to_cookie');
 			tagit.api.clear_auth();
 			modal.close();
+
+			// this should give us a clean slate
+			this.user.unbind();
+			this.user	=	null;
+			this.setup_user();
+			this.setup_header_bar();
 		}.bind(this));
+	},
 
-		// if a user exists, log them in
-		this.user.login_from_cookie();
-
-		this.load_controller('HeaderBar', HeaderBarController, {}, {});
-
-		this.loaded	=	true;
-		this.route(initial_route);
+	setup_header_bar: function()
+	{
+		if(this.controllers.HeaderBar) this.controllers.HeaderBar.release();
+		this.controllers.HeaderBar = new HeaderBarController();
 	},
 
 	load_controller: function(name, controller, params, options)

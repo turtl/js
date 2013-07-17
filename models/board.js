@@ -85,7 +85,7 @@ var Board = Composer.RelationalModel.extend({
 				return k.u != tagit.user.id();
 			});
 			this.set({keys: keys});
-			//this.save_keys();
+			this.save_keys();
 		}
 	},
 

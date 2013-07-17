@@ -76,11 +76,6 @@ var DashboardController = Composer.Controller.extend({
 		this.sidebar_timer.end = this.resize_sidebar.bind(this);
 		this.sidebar_timer.start();
 
-		// kill everything on logout
-		tagit.user.bind('logout', function() {
-			this.release();
-		}.bind(this), 'dashboard:logout:clear_timer');
-
 		this.profile.trigger('change:current_board');
 	},
 
