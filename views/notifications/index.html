@@ -1,20 +1,19 @@
-<ul>
+<ul class="switch">
 	<!--<li><a class="notes" href="/" title="Notes"><span>&nbsp;</span></a></li>-->
-	<li><a class="notifications" href="#notifications" title="Notifications"><span>&nbsp;</span></a></li>
+	<li><a class="notifications <? if(is_open) { ?>sel<? } ?>" href="#notifications" title="Notifications"><span>&nbsp;</span></a></li>
 </ul>
-<div class="notification-list">
+<div class="notification-list <? if(is_open) { ?>sel<? } ?>">
 	<div class="gutter">
 		<? if(notifications.length > 0) { ?>
 			<ul>
 				<? notifications.each(function(n) { ?>
-					<li class="clear">
-						<ul class="actions">
-							<li><div class="button accept"><span>&nbsp;</span></div></li>
-							<li><div class="button deny"><span>&nbsp;</span></div></li>
+					<? if(!n.body.type) { return false }; ?>
+					<li class="clear <?=n.body.type?> notification_<?=n.id?>">
+						<ul class="actions clear">
+							<li><a class="accept" title="Accept invite" href="#accept">&nbsp;</a></li>
+							<li><a class="deny" title="Delete invite" href="#deny">&nbsp;</a></li>
 						</ul>
-						So and so wnts to share the board
-						<em>shitpiss</em>
-						with you
+						<?=n.subject?>
 					</li>
 				<? }); ?>
 			</ul>

@@ -47,9 +47,9 @@ header h1 a span {display: inline-block; padding: 0 2px;}
 header h1 a:hover span {color: #73b8d1;}
 header div.loading {visibility: hidden; float: left; margin: 13px 16px 0 16px;}
 
-header .apps a {display: block; height: 40px;}
-header .apps a span {display: block;}
-header .apps a {
+header .apps ul.switch a {display: block; height: 40px;}
+header .apps ul.switch a span {display: block;}
+header .apps ul.switch a {
 	background: #333; /* Old browsers */
 	background: -moz-linear-gradient(top, #444444 1%, #222222 100%); /* FF3.6+ */
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(1%,#444444), color-stop(100%,#222222)); /* Chrome,Safari4+ */
@@ -62,15 +62,15 @@ header .apps a {
 	border-right: 1px solid #111;
 }
 header .apps {margin-left: 15px;}
-header .apps a.sel {background: #202020;}
-header .apps ul {float: left; list-style: none; margin: 0 0 0 0; border-left: 1px solid #111;}
-header .apps ul.hidden {display: none;}
-header .apps ul li {float: left;}
-header .apps ul li a {position: relative; width: 40px; border-left: 0;}
-header .apps ul li a span {width: 40px; height: 40px; opacity: .6;}
-header .apps ul li a small {position: absolute; z-index: 4; right: 0; bottom: 0; display: block; padding: 1px 4px; font-size: 11px; font-weight: bold; color: #fff; background: #c44;}
-/*header .apps ul li a.notes span {background: url(/images/template/app_notes_24x24.png) center center no-repeat;}*/
-header .apps ul li a.notifications span {background: url(/images/template/app_messages_24x24.png) center center no-repeat;}
+header .apps ul.switch a.sel {background: #202020;}
+header .apps ul.switch {float: left; list-style: none; margin: 0 0 0 0; border-left: 1px solid #111;}
+header .apps ul.switch.hidden {display: none;}
+header .apps ul.switch li {float: left;}
+header .apps ul.switch li a {position: relative; width: 40px; border-left: 0;}
+header .apps ul.switch li a span {width: 40px; height: 40px; opacity: .6;}
+header .apps ul.switch li a small {position: absolute; z-index: 4; right: 0; bottom: 0; display: block; padding: 1px 4px; font-size: 11px; font-weight: bold; color: #fff; background: #c44;}
+/*header .apps ul.switch li a.notes span {background: url(/images/template/app_notes_24x24.png) center center no-repeat;}*/
+header .apps ul.switch li a.notifications span {background: url(/images/template/app_messages_24x24.png) center center no-repeat;}
 
 /* logged out menu */
 header div.actions {float: right; margin: 0;}

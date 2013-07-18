@@ -93,6 +93,28 @@ var Persona = Composer.Model.extend({
 			}.bind(this),
 			error: options.error
 		})
+	},
+
+	delete_message: function(message, options)
+	{
+		options || (options = {});
+		this.get_challenge({
+			success: function(challenge) {
+				message.destroy({
+					args: {
+						challenge: this.generate_response(challenge),
+						persona: this.id()
+					},
+					success: function() {
+						if(options.success) options.success();
+					},
+					error: function(_, err) {
+						if(options.error) options.error(err);
+					}
+				});
+			}.bind(this),
+			error: options.error
+		});
 	}
 }, Protected);
 

@@ -187,6 +187,27 @@ var Board = Composer.RelationalModel.extend({
 		});
 	},
 
+	leave_board: function(persona, options)
+	{
+		options || (options = {});
+
+		persona.get_challenge({
+			success: function(challenge) {
+				tagit.api._delete('/boards/'+this.id()+'/permissions/persona/'+persona.id(), {
+					challenge: persona.generate_response(challenge)
+				}, {
+					success: options.success,
+					error: function(err) {
+						if(options.error) options.error(err);
+					}
+				});
+			}.bind(this),
+			error: function(err) {
+				if(options.error) options.error(err);
+			}.bind(this)
+		});
+	},
+
 	destroy_submodels: function()
 	{
 		var notes = this.get('notes');

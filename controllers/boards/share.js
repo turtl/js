@@ -134,13 +134,18 @@ var BoardShareController = Composer.Controller.extend({
 		message.add_recipient(this.to_persona);
 
 		tagit.loading(true);
-		this.board.share_with(this.to_persona, 2, {
+		var perms	=	2;
+		this.board.share_with(this.to_persona, perms, {
 			success: function() {
 				this.from_persona.send_message(message, {
 					success: function() {
 						tagit.loading(false);
 						barfr.barf('Invite sent.');
 						this.share_container.removeClass('open');
+						var privs	=	Object.clone(this.board.get('privs', {}));
+						privs[this.to_persona.id()] = {p: perms};
+						console.log('priv: ', privs);
+						this.board.set({privs: privs});
 						this.board.get('personas').add(this.to_persona);
 					}.bind(this),
 					error: function() {

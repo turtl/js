@@ -1,9 +1,15 @@
-.notification-list {display: none; position: absolute; z-index: 4; top: 41px; left: 127px; width: 400px; color: #eee; background: #202020;}
+.notification-list {display: none; position: absolute; z-index: 4; top: 41px; left: 127px; width: 360px; color: #eee; background: #202020;}
 .notification-list.sel {display: block;}
-.notification-list > .gutter {padding: 10px 10px 14px 10px;}
+.notification-list > .gutter {padding: 6px 0 4px 0;}
 .notification-list ul {list-style: none; margin: 0; padding: 0;}
-.notification-list ul > li > ul.actions {float: right;}
-.notification-list ul > li > ul.actions > li {float: left;}
+.notification-list > .gutter > ul > li {margin-bottom: 4px; padding: 6px 12px 10px 12px; line-height: 1.2em; opacity: .85; border-bottom: 1px solid #333;}
+.notification-list > .gutter > ul > li:hover {opacity: 1;}
+.notification-list > .gutter > ul > li:last-child {margin-bottom: 0; border-bottom: 0;}
+.notification-list > .gutter > ul > li > ul.actions {float: right;}
+.notification-list > .gutter > ul > li > ul.actions > li {float: left; padding: 0 0 0 6px; opacity: .6; transition: opacity .25s;}
+.notification-list > .gutter > ul > li > ul.actions > li:hover {opacity: 1;}
+.notification-list > .gutter > ul > li > ul.actions a.accept {display: block; width: 20px; height: 16px; background: url(/images/site/icons/check_16x16.png) center center no-repeat;}
+.notification-list > .gutter > ul > li > ul.actions a.deny {display: block; width: 20px; height: 16px; background: url(/images/site/icons/x_16x16.png) center center no-repeat;}
 
-.notification-list p.none {color: #bbb; text-align: center;}
+.notification-list p.none {padding: 4px 0 10px 0; color: #bbb; text-align: center;}
 
