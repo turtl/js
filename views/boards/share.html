@@ -1,32 +1,45 @@
-<h1>Share a board</h1>
-<div class="message-compose">
-	<div class="header from clear">
-		<h2>From:</h2>
-		<div class="select select-persona">
-			<div class="persona">
-				<h3><?=from.screenname?></h3>
-				<p>
-					<?
-					var attr = [];
-					if(from.name) attr.push(from.name);
-					if(from.email) attr.push(from.email);
-					?>
-					<?=attr.join(' - ')?>
-				</p>
-			</div>
-		</div>
+<h1>
+	Sharing: <?=board.title?>
+	<small><a href="#back">&laquo; Back to board manageer</a></small>
+</h1>
+<div class="board-share">
+	<div class="button add share">
+		<span>Share this board</span>
 	</div>
-	<div class="header to clear">
-		<h2>To:</h2>
+	<span class="clearMe"></span>
+
+	<div class="share-to clear">
 		<div class="select clear"></div>
+		<form class="standard-form">
+			<div class="submit">
+				<input tabindex="4" type="submit" value="Invite">
+			</div>
+		</form>
 	</div>
-	<form class="standard-form">
-		<input tabindex="2" type="text" name="subject" value="<?=conversation.subject?>" placeholder="Subject">
-		<textarea tabindex="3" name="body" placeholder="Your message"></textarea>
 
-		<div class="submit">
-			<input tabindex="4" type="submit" value="Send">
-		</div>
-	</form>
+	<div class="personas-list">
+		<? if(personas.length > 0) { ?>
+			<ul>
+				<? personas.each(function(p) { ?>
+					<li class="persona_<?=p.id?> clear">
+						<h3><?=p.screenname?></h3>
+						<small>
+							(has <?=(p.privs == 2 ? 'write' : 'read')?> permissions)
+						</small>
+						<ul>
+							<li>
+								<a href="#remove" title="Remove this user from sharing">
+									<img src="/images/site/icons/remove_16x16_black.png" width="16" height="16" alt="remove">
+								</a>
+							</li>
+						</ul>
+					</li>
+				<? }); ?>
+			</ul>
+		<? } else { ?>
+			<p>
+				You have not shared this board with anyone.
+			</p>
+		<? } ?>
+	</div>
 </div>
-

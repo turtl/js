@@ -20,3 +20,8 @@
 
 .board-edit input[type=submit] {float: right;}
 
+.board-share .button.share {float: right; margin: -7px 0 8px 0;}
+.board-share .share-to {display: none; margin-bottom: 16px; padding: 10px; background: #f0f0f0;}
+.board-share .share-to.open {display: block;}
+.board-share .share-to .personas li {cursor: pointer;}
+.board-share .share-to input[type=submit] {margin-right: 20px;}

@@ -11,14 +11,15 @@
 .persona-edit .info {float: right; width: 36%; padding-left: 2.2%; border-left: 1px solid #ddd;}
 
 /* listing */
-.personas div.personas-list > ul {list-style: none;}
-.personas div.personas-list > ul > li {display: block; padding: 6px 4px; font-size: 16px; border-bottom: 1px dashed #ccc;}
-.personas div.personas-list > ul > li h3 {display: inline-block;}
-.personas div.personas-list > ul > li small {display: inline-block; margin: 0 0 0 12px; font-size: 12px; color: #888;}
-.personas div.personas-list > ul > li > ul {float: right; list-style: none;}
-.personas div.personas-list > ul > li > ul li {display: inline-block; margin: 0 0 0 3px;}
+div.personas-list > ul {list-style: none;}
+div.personas-list > ul > li {display: block; padding: 6px 4px; font-size: 16px; border-bottom: 1px dashed #ccc;}
+div.personas-list > ul > li h3 {display: inline-block;}
+div.personas-list > ul > li small {display: inline-block; margin: 0 0 0 12px; font-size: 12px; color: #888;}
+div.personas-list > ul > li > ul {float: right; list-style: none; opacity: .3;}
+div.personas-list > ul > li:hover > ul {opacity: 1;}
+div.personas-list > ul > li > ul li {display: inline-block; margin: 0 0 0 3px;}
 
 /* selector */
 .select-persona .persona h3 {display: inline-block; margin: 0 16px 3px 0; font-size: 16px;}
 .select-persona .persona p {color: #666;}
-.select-persona .personas-list ul li:hover {background: #eeeeff;}
+.select-persona .personas-list ul li:hover {background: #dfe;}

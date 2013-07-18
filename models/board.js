@@ -16,6 +16,10 @@ var Board = Composer.RelationalModel.extend({
 			type: Composer.HasMany,
 			collection: 'Notes',
 			forward_events: true
+		},
+		personas: {
+			type: Composer.HasMany,
+			collection: 'Personas'
 		}
 	},
 
@@ -164,6 +168,21 @@ var Board = Composer.RelationalModel.extend({
 			error: function(e) {
 				barfr.barf('Error saving board: '+ e);
 				if(options.error) options.error(e);
+			}
+		});
+	},
+
+	share_with: function(persona, permissions, options)
+	{
+		options || (options = {});
+
+		// must be 0-2
+		permissions	=	parseInt(permissions);
+
+		tagit.api.put('/boards/'+this.id()+'/permissions/persona/'+persona.id(), {permissions: permissions}, {
+			success: options.success,
+			error: function(err) {
+				if(options.error) options.error(err);
 			}
 		});
 	},

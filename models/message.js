@@ -102,7 +102,7 @@ var Messages = Composer.Collection.extend({
 				this.add(res.received);
 				// messages we sent have the "to" persona replaced with our own for
 				// display purposes
-				this.add(res.sent.map(function(sent) {
+				this.add((res.sent || []).map(function(sent) {
 					var persona		=	my_personas.find_by_id(sent.from);
 					if(!persona) return false;
 					sent.persona	=	persona.toJSON();

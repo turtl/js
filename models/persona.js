@@ -74,6 +74,25 @@ var Persona = Composer.Model.extend({
 		if(!secret) secret = tagit.user.get('settings').get_by_key('personas').value()[this.id()];
 		if(!secret) return false;
 		return tcrypt.hash(secret + challenge);
+	},
+
+	send_message: function(message, options)
+	{
+		options || (options = {});
+		this.get_challenge({
+			success: function(challenge) {
+				message.save({
+					args: { challenge: this.generate_response(challenge) },
+					success: function() {
+						if(options.success) options.success();
+					},
+					error: function(_, err) {
+						if(options.error) options.error(err);
+					}
+				});
+			}.bind(this),
+			error: options.error
+		})
 	}
 }, Protected);
 
