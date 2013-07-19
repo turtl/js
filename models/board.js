@@ -306,6 +306,16 @@ var Board = Composer.RelationalModel.extend({
 		return persona;
 	},
 
+	share_enabled: function()
+	{
+		var shared	=	false;
+		var privs	=	this.get('privs');
+		Object.each(privs, function(v, k) {
+			if(v.p > 0 && !v.d) shared	=	true;
+		});
+		return shared;
+	},
+
 	destroy_submodels: function()
 	{
 		var notes = this.get('notes');

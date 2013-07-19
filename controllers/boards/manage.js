@@ -40,11 +40,12 @@ var BoardManageController = Composer.Controller.extend({
 	render: function()
 	{
 		// load board data (sans notes)
-		var boards	=	this.collection.map(function(p) {
-			var _notes	=	p.get('notes');
-			p.unset('notes', {silent: true});
-			var ret		=	toJSON(p);
-			p.set({notes: _notes}, {silent: true});
+		var boards	=	this.collection.map(function(b) {
+			var _notes	=	b.get('notes');
+			b.unset('notes', {silent: true});
+			var ret		=	toJSON(b);
+			b.set({notes: _notes}, {silent: true});
+			ret.share_enabled	=	b.share_enabled();;
 			return ret;
 		});
 		var content = Template.render('boards/manage', {
