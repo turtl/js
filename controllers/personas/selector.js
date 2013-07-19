@@ -112,7 +112,7 @@ var PersonaSelector = Composer.Controller.extend({
 	{
 		if(this.lock) return false;
 		if(e) e.stop();
-		this.persona.clear()
+		this.persona	=	new Persona();
 		this.render();
 	},
 

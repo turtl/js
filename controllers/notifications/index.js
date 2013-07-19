@@ -170,16 +170,11 @@ var NotificationsController = Composer.Controller.extend({
 			var board_id	=	body.board_id;
 			var persona		=	tagit.user.get('personas').find_by_id(message.get('to'));
 			if(!persona) return false;
-			persona.delete_message(message);
-			if(board_id)
-			{
-				tagit.loading(true);
-				var board	=	new Board({id: board_id});
-				board.leave_board(persona, {
-					success: function() { tagit.loading(false); },
-					error: function() { tagit.loading(false); }
-				});
-			}
+			tagit.loading(true);
+			persona.delete_message(message, {
+				success: function() { tagit.loading(false); },
+				error: function() { tagit.loading(false); }
+			});
 			break;
 		default:
 			return false;

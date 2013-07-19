@@ -147,6 +147,9 @@ var BoardShareController = Composer.Controller.extend({
 						privs[this.to_persona.id()] = {p: perms, i: true};
 						this.board.set({privs: privs});
 						this.board.get('personas').add(this.to_persona);
+
+						this.persona_selector.persona	=	new Persona();
+						this.persona_selector.render();
 					}.bind(this),
 					error: function() {
 						tagit.loading(false);

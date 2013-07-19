@@ -139,7 +139,7 @@ var BoardManageController = Composer.Controller.extend({
 		if(!e) return;
 		e.stop();
 		var bid			=	next_tag_up('a', e.target).className;
-		var board		=	this.collection.find_by_id(bid);
+		var board		=	this.collection.select_one({id: bid, shared: true});
 		if(!board) return false;
 		var persona		=	board.get_shared_persona();
 		if(!persona) return;

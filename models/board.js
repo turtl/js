@@ -76,8 +76,13 @@ var Board = Composer.RelationalModel.extend({
 		}.bind(this));
 
 		this.bind('destroy', function() {
-			// remove the board from the user's keys
-			tagit.user.remove_user_key(this.id());
+			// remove the board from the user's keys (only if it's shared, and
+			// only if it's the only instance of this board)
+			if(this.get('shared'))
+			{
+				var others	=	tagit.profile.get('boards').select({id: this.id()});
+				if(others.length == 0) tagit.user.remove_user_key(this.id());
+			}
 
 			// remove the project's sort from the user data
 			var sort		=	Object.clone(tagit.user.get('settings').get_by_key('board_sort').value());
