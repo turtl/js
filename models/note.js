@@ -98,6 +98,7 @@ var Note = Composer.RelationalModel.extend({
 		{
 			var persona	=	board.get_shared_persona();
 			persona.get_challenge({
+				use_persistent: true,
 				success: function(challenge) {
 					args.persona	=	persona.id();
 					args.challenge	=	persona.generate_response(challenge);
@@ -109,6 +110,48 @@ var Note = Composer.RelationalModel.extend({
 		else
 		{
 			do_save();
+		}
+	},
+
+	destroy: function(options)
+	{
+		options || (options = {});
+		var args		=	{};
+
+		// some hacky shit that allows us to ref Model.destroy async
+		var name		=	this.$caller.$name;
+		var parent		=	this.$caller.$owner.parent;
+		var previous	=	(parent) ? parent.prototype[name] : null;
+
+		var do_destroy	=	function()
+		{
+			options.args	=	args;
+			previous.apply(this, [options]);
+		}.bind(this);
+
+		var board	=	tagit.profile.get('boards').find_by_id(this.get('board_id'));
+		if(!board)
+		{
+			options.error('Problem finding board for that note.');
+			return false;
+		}
+
+		if(board.get('shared', false))
+		{
+			var persona	=	board.get_shared_persona();
+			persona.get_challenge({
+				use_persistent: true,
+				success: function(challenge) {
+					args.persona	=	persona.id();
+					args.challenge	=	persona.generate_response(challenge);
+					do_destroy();
+				}.bind(this),
+				error: options.error
+			});
+		}
+		else
+		{
+			do_destroy();
 		}
 	},
 

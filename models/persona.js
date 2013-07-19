@@ -14,6 +14,19 @@ var Persona = Composer.Model.extend({
 		'privkey'
 	],
 
+	// persistent challenge
+	challenge: null,
+	challenge_timer: null,
+
+	init: function()
+	{
+		this.challenge_timer		=	new Timer(1);
+		this.challenge_timer.end	=	function()
+		{
+			this.challenge	=	null;
+		}.bind(this);
+	},
+
 	load_profile: function(options)
 	{
 		this.get_challenge({
@@ -106,11 +119,25 @@ var Persona = Composer.Model.extend({
 	{
 		options || (options = {});
 		var args = {};
+		if(options.use_persistent && this.challenge)
+		{
+			if(options.success) options.success(this.challenge);
+			return;
+		}
 		if(options.expire) args.expire = options.expire;
 		if(options.persist) args.persist = 1;
 		tagit.api.post('/personas/'+this.id()+'/challenge', args, {
 			success: function(challenge) {
-				if(options.persist) this.challenge = challenge;
+				if(options.persist)
+				{
+					this.challenge = challenge;
+					if(options.expire)
+					{
+						// expire the local challenge before it expires on the server
+						this.challenge_timer.ms	=	(options.expire - 5) * 1000;
+						this.challenge_timer.reset();
+					}
+				}
 				if(options.success) options.success(challenge);
 			}.bind(this),
 			error: options.error

@@ -93,7 +93,14 @@ var NoteViewController = Composer.Controller.extend({
 		if(e) e.stop();
 		if(confirm('Really delete this note FOREVER?!'))
 		{
-			this.model.destroy();
+			tagit.loading(true);
+			this.model.destroy({
+				success: function() { tagit.loading(false); },
+				error: function(_, err) {
+					tagit.loading(false);
+					barfr.barf('There was a problem deleting the note: '+ err);
+				}
+			});
 		}
 	}
 });
