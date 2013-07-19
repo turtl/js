@@ -132,11 +132,11 @@ var Note = Composer.RelationalModel.extend({
 		var board	=	tagit.profile.get('boards').find_by_id(this.get('board_id'));
 		if(!board)
 		{
-			options.error('Problem finding board for that note.');
+			if(options.error) options.error('Problem finding board for that note.');
 			return false;
 		}
 
-		if(board.get('shared', false))
+		if(board.get('shared', false) || options.skip_sync)
 		{
 			var persona	=	board.get_shared_persona();
 			persona.get_challenge({

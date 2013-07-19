@@ -175,6 +175,8 @@ var BoardShareController = Composer.Controller.extend({
 		if(!e) return;
 		e.stop();
 
+		if(!confirm('Really UNshare the board with this user?')) return false;
+
 		var pid		=	next_tag_up('li', next_tag_up('li', e.target).getParent()).className.replace(/^.*persona_([0-9a-f-]+).*?$/, '$1');
 		if(!pid) return false;
 		var persona	=	this.board.get('personas').find_by_id(pid);

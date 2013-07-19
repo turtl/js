@@ -76,7 +76,28 @@ var Board = Composer.RelationalModel.extend({
 		}.bind(this));
 
 		this.bind('destroy', function() {
+			// remove the board from the user's keys
 			tagit.user.remove_user_key(this.id());
+
+			// remove the project's sort from the user data
+			var sort		=	Object.clone(tagit.user.get('settings').get_by_key('board_sort').value());
+			sort[this.id()]	=	99999;
+			tagit.user.get('settings').get_by_key('board_sort').value(sort);
+		}.bind(this));
+
+		this.bind('change', this.track_sync.bind(this));
+
+		// if the privs change such that we are no longer a board member then
+		// DESTROY the VALUE OF THE board (by not filing de patent! it is *very
+		// important* that you file de patent and put de button on de website
+		// or de VC not put de money in de company!!!)
+		this.bind('change:privs', function() {
+			// only care about shared boards
+			if(!this.get('shared', false)) return false;
+
+			var persona	=	this.get_shared_persona();
+			barfr.barf('The board "'+ this.get('title') + '" is no longer shared with you.');
+			if(!persona) this.destroy({skip_sync: true});
 		}.bind(this));
 
 		// MIGRATE: move board user keys into user data. this code should exist
@@ -233,15 +254,7 @@ var Board = Composer.RelationalModel.extend({
 					challenge: persona.generate_response(challenge)
 				}, {
 					success: function() {
-						tagit.profile.get('boards').remove(this);
-
-						// remove the user's board key
-						tagit.user.remove_user_key(this.id());
-
-						// remove the project's sort from the user data
-						var sort		=	Object.clone(tagit.user.get('settings').get_by_key('board_sort').value());
-						sort[this.id()]	=	99999;
-						tagit.user.get('settings').get_by_key('board_sort').value(sort);
+						this.destroy({skip_sync: true});
 
 						if(options.success) options.success();
 					}.bind(this),
@@ -258,7 +271,8 @@ var Board = Composer.RelationalModel.extend({
 
 	/**
 	 * Pull out the persona, belonging to the currently logged-in user, that has
-	 * the highest privileges on this board.
+	 * the highest privileges on this board. If the only entries are ones with
+	 * p == 0 then we return false.
 	 */
 	get_shared_persona: function()
 	{
@@ -300,14 +314,7 @@ var Board = Composer.RelationalModel.extend({
 			this.destroy_submodels();
 			if(success) success.apply(this, arguments);
 		}.bind(this);
-		if(options.skip_sync)
-		{
-			options.success();
-		}
-		else
-		{
-			return this.parent.apply(this, [options]);
-		}
+		return this.parent.apply(this, [options]);
 	},
 
 	get_selected_tags: function()
@@ -339,6 +346,11 @@ var Board = Composer.RelationalModel.extend({
 	{
 		var tag = this.get_tag_by_name(tagname);
 		return tag ? tag.get('excluded') : false;
+	},
+
+	track_sync: function()
+	{
+		tagit.profile.track_sync_changes(this.id());
 	}
 }, Protected);
 

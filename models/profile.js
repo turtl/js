@@ -17,6 +17,12 @@ var Profile = Composer.RelationalModel.extend({
 
 	init: function()
 	{
+		this.bind_relational('boards', 'destroy', function(board) {
+			if(this.get_current_board() == board)
+			{
+				this.set_current_board(this.get('boards').first());
+			}
+		}.bind(this));
 	},
 
 	load_data: function(options)
@@ -132,7 +138,11 @@ var Profile = Composer.RelationalModel.extend({
 	{
 		sync.notes.each(function(note_data) {
 			// don't sync ignored items
-			if(this.sync_ignore.contains(note_data.id)) return false;
+			if(this.sync_ignore.contains(note_data.id))
+			{
+				this.sync_ignore.erase(note_data.id);
+				return false;
+			}
 
 			// check if the note is already in an existing board. if
 			// so, save both the original board (and existing note)
@@ -171,6 +181,27 @@ var Profile = Composer.RelationalModel.extend({
 			else if(!note_data.deleted)
 			{
 				newboard.get('notes').add(note_data);
+			}
+		}.bind(this));
+
+		sync.boards.each(function(board_data) {
+			// don't sync ignored items
+			if(this.sync_ignore.contains(board_data.id))
+			{
+				this.sync_ignore.erase(board_data.id);
+				return false;
+			}
+
+			var board	=	tagit.profile.get('boards').find_by_id(board_data.id);
+			if(!board) return;
+			if(board_data.deleted)
+			{
+				board.destroy({skip_sync: true});
+			}
+			else
+			{
+				console.log('set board data: ', board_data);
+				board.set(board_data);
 			}
 		}.bind(this));
 	},
