@@ -68,19 +68,48 @@ var Note = Composer.RelationalModel.extend({
 
 	save: function(options)
 	{
-		options || (options = {});
-		var url	=	this.id(true) ? '/notes/'+this.id() : '/boards/'+this.get('board_id')+'/notes';
-		var fn	=	(this.id(true) ? tagit.api.put : tagit.api.post).bind(tagit.api);
-		fn(url, {data: this.toJSON()}, {
-			success: function(note_data) {
-				this.set(note_data);
-				if(options.success) options.success(note_data);
-			}.bind(this),
-			error: function (e) {
-				barfr.barf('There was a problem saving your note: '+ e);
-				if(options.error) options.error(e);
-			}.bind(this)
-		});
+		var args	=	{};
+		var do_save	=	function()
+		{
+			options || (options = {});
+			var url		=	this.id(true) ? '/notes/'+this.id() : '/boards/'+this.get('board_id')+'/notes';
+			var fn		=	(this.id(true) ? tagit.api.put : tagit.api.post).bind(tagit.api);
+			args.data	=	this.toJSON();
+			fn(url, args, {
+				success: function(note_data) {
+					this.set(note_data);
+					if(options.success) options.success(note_data);
+				}.bind(this),
+				error: function (e) {
+					barfr.barf('There was a problem saving your note: '+ e);
+					if(options.error) options.error(e);
+				}.bind(this)
+			});
+		}.bind(this);
+
+		var board	=	tagit.profile.get('boards').find_by_id(this.get('board_id'));
+		if(!board)
+		{
+			options.error('Problem finding board for that note.');
+			return false;
+		}
+
+		if(board.get('shared', false))
+		{
+			var persona	=	board.get_shared_persona();
+			persona.get_challenge({
+				success: function(challenge) {
+					args.persona	=	persona.id();
+					args.challenge	=	persona.generate_response(challenge);
+					do_save();
+				}.bind(this),
+				error: options.error
+			});
+		}
+		else
+		{
+			do_save();
+		}
 	},
 
 	find_key: function(keys, search, options)

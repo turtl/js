@@ -25,12 +25,19 @@ var Profile = Composer.RelationalModel.extend({
 			success: function(profile) {
 				this.profile_data = true;
 				tagit.user.set(profile.user);
-				if(options.init) this.load(profile, Object.merge({}, options, {
-					complete: function() {
-						if(options.success) options.success(profile);
-					}.bind(this)
-				}));
-				else if(options.success) options.success(profile);
+				if(options.init)
+				{
+					//this.clear({silent: true});
+					this.load(profile, Object.merge({}, options, {
+						complete: function() {
+							if(options.success) options.success(profile);
+						}.bind(this)
+					}));
+				}
+				else if(options.success)
+				{
+					options.success(profile);
+				}
 			}.bind(this),
 			error: function(err) {
 				barfr.barf('Error loading user profile: '+ err);
@@ -42,7 +49,6 @@ var Profile = Composer.RelationalModel.extend({
 	load: function(data, options)
 	{
 		options || (options = {});
-		this.clear({silent: true});
 		var boards = this.get('boards');
 		var board_data = data.boards;
 		boards.load_boards(board_data, Object.merge({}, options, {
@@ -95,50 +101,7 @@ var Profile = Composer.RelationalModel.extend({
 		tagit.api.post('/sync', {time: sync_time}, {
 			success: function(sync) {
 				this.set({sync_time: sync.time});
-				sync.notes.each(function(note_data) {
-					// don't sync ignored items
-					if(this.sync_ignore.contains(note_data.id)) return false;
-
-					// check if the note is already in an existing board. if
-					// so, save both the original board (and existing note)
-					// for later
-					var oldboard = false;
-					var note = false;
-					this.get('boards').each(function(p) {
-						if(note) return;
-						note = p.get('notes').find_by_id(note_data.id)
-						if(note) oldboard = p;
-					});
-
-					// get the note's current board
-					var newboard	=	this.get('boards').find_by_id(note_data.board_id);
-
-					// note was deleted, remove it
-					if(note && note_data.deleted)
-					{
-						oldboard.get('notes').remove(note);
-						note.destroy({skip_sync: true});
-						note.unbind();
-					}
-					// this is an existing note. update it, and be mindful of the
-					// possibility of it moving boards
-					else if(note && oldboard)
-					{
-						note.set(note_data);
-						if(newboard && oldboard.id() != newboard.id())
-						{
-							// note switched board IDs. move it.
-							oldboard.get('notes').remove(note);
-							newboard.get('notes').add(note);
-						}
-					}
-					// note isn't existing and isn't being deleted. add it!
-					else if(!note_data.deleted)
-					{
-						newboard.get('notes').add(note_data);
-					}
-				}.bind(this));
-
+				this.process_sync(sync);
 				// reset ignore list
 				this.sync_ignore	=	[];
 			}.bind(this),
@@ -158,7 +121,58 @@ var Profile = Composer.RelationalModel.extend({
 			}.bind(this)
 		});
 
-		tagit.messages.sync();
+		tagit.messages.sync({
+			success: function(_, persona) {
+				persona.sync_data(sync_time);
+			}
+		});
+	},
+
+	process_sync: function(sync)
+	{
+		sync.notes.each(function(note_data) {
+			// don't sync ignored items
+			if(this.sync_ignore.contains(note_data.id)) return false;
+
+			// check if the note is already in an existing board. if
+			// so, save both the original board (and existing note)
+			// for later
+			var oldboard = false;
+			var note = false;
+			this.get('boards').each(function(p) {
+				if(note) return;
+				note = p.get('notes').find_by_id(note_data.id)
+				if(note) oldboard = p;
+			});
+
+			// get the note's current board
+			var newboard	=	this.get('boards').find_by_id(note_data.board_id);
+
+			// note was deleted, remove it
+			if(note && note_data.deleted)
+			{
+				oldboard.get('notes').remove(note);
+				note.destroy({skip_sync: true});
+				note.unbind();
+			}
+			// this is an existing note. update it, and be mindful of the
+			// possibility of it moving boards
+			else if(note && oldboard)
+			{
+				note.set(note_data);
+				if(newboard && oldboard.id() != newboard.id())
+				{
+					// note switched board IDs. move it.
+					oldboard.get('notes').remove(note);
+					newboard.get('notes').add(note);
+				}
+			}
+			// note isn't existing and isn't being deleted. add it!
+			else if(!note_data.deleted)
+			{
+				newboard.get('notes').add(note_data);
+			}
+		}.bind(this));
 	},
 
 	get_sync_time: function()

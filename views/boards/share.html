@@ -22,9 +22,14 @@
 			<ul>
 				<? personas.each(function(p) { ?>
 					<li class="persona_<?=p.id?> clear">
-						<h3><?=p.screenname?></h3>
+						<h3>
+							<?=p.screenname?>
+							<? if(p.privs.i) { ?>
+								<small>- invite pending</small>
+							<? } ?>
+						</h3>
 						<small>
-							(has <?=(p.privs == 2 ? 'write' : 'read')?> permissions)
+							(has <?=(p.privs.p == 2 ? 'write' : 'read')?> permissions)
 						</small>
 						<ul>
 							<li>

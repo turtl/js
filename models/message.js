@@ -58,82 +58,11 @@ var Messages = Composer.Collection.extend({
 		}.bind(this), 'messages:track_last_id')
 	},
 
-	get_messages_for_persona: function(persona, challenge, options)
-	{
-		options || (options = {});
-		if(!options.after)
-		{
-			var last = this.models().filter(function() { return true; }).sort(function(a, b) {
-				return a.id().localeCompare(b.id());
-			})[0];
-			if(last) options.after = last.id();
-		}
-
-		var challenge_expired = function() {
-			// We got a 403, try regenerating the persona challenge and sending
-			// the request again with the new challenge
-			persona.get_challenge({
-				expire: 1800,   // 1/2 hour
-				persist: true,
-				success: function(challenge) {
-					// mark this next request as a retry so it knows not to try
-					// again on failure
-					options.retry = true;
-					this.get_messages_for_persona(persona, challenge, options);
-				}.bind(this),
-				error: function(err, xhr) {
-					if(options.error) options.error(err, xhr);
-				}.bind(this)
-			});
-		}.bind(this);
-
-		if(!challenge)
-		{
-			challenge_expired();
-			return false;
-		}
-
-		var response = persona.generate_response(challenge);
-		tagit.api.get('/messages/personas/'+persona.id(), { after: options.after, challenge: response }, {
-			success: function(res) {
-				var my_personas	=	tagit.user.get('personas');
-
-				// add our messages into the pool
-				this.add(res.received);
-				// messages we sent have the "to" persona replaced with our own for
-				// display purposes
-				this.add((res.sent || []).map(function(sent) {
-					var persona		=	my_personas.find_by_id(sent.from);
-					if(!persona) return false;
-					sent.persona	=	persona.toJSON();
-					sent.mine		=	true;	// let the app know WE sent it
-					return sent;
-				}));
-				if(options.success) options.success(res);
-			}.bind(this),
-			error: function(err, xhr) {
-				if(xhr.status == 403 && !options.retry)
-				{
-					challenge_expired();
-				}
-				else
-				{
-					if(options.error) options.error(err, xhr);
-				}
-			}.bind(this)
-		});
-	},
-
-	send: function(from_persona, challenge, to_persona, body, options)
-	{
-		options || (options = {});
-	},
-
 	sync: function(options)
 	{
 		options || (options = {});
 		tagit.user.get('personas').each(function(persona) {
-			this.get_messages_for_persona(persona, persona.challenge, {
+			persona.get_messages(persona.challenge, {
 				after: this.last_id,
 				success: options.success,
 				error: function(err, xhr) {

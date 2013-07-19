@@ -60,7 +60,7 @@ var BoardShareController = Composer.Controller.extend({
 		var privs		=	this.board.get('privs');
 		var personas	=	this.board.get('personas').map(function(p) {
 			p		=	toJSON(p);
-			p.privs	=	privs[p.id].p;
+			p.privs	=	privs[p.id];
 			return p;
 		});
 
@@ -74,7 +74,6 @@ var BoardShareController = Composer.Controller.extend({
 		this.persona_selector = new PersonaSelector({
 			inject: this.selector,
 			persona: this.to_persona,
-			lock: this.to_persona ? true : false,
 			tabindex: 1
 		});
 		this.persona_selector.bind('selected', function(persona) {
@@ -125,7 +124,7 @@ var BoardShareController = Composer.Controller.extend({
 			body: {
 				type: 'share_board',
 				board_id: this.board.id(),
-				board_key: this.board.key
+				board_key: tcrypt.key_to_string(this.board.key)
 			}
 		});
 
@@ -143,8 +142,7 @@ var BoardShareController = Composer.Controller.extend({
 						barfr.barf('Invite sent.');
 						this.share_container.removeClass('open');
 						var privs	=	Object.clone(this.board.get('privs', {}));
-						privs[this.to_persona.id()] = {p: perms};
-						console.log('priv: ', privs);
+						privs[this.to_persona.id()] = {p: perms, i: true};
 						this.board.set({privs: privs});
 						this.board.get('personas').add(this.to_persona);
 					}.bind(this),

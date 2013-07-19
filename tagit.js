@@ -33,7 +33,7 @@ var tagit	=	{
 	scroll_to_top: true,
 
 	// whether or not to sync data w/ server
-	sync: false,
+	sync: true,
 	sync_timer: null,
 
 	// -------------------------------------------------------------------------
@@ -109,18 +109,58 @@ var tagit	=	{
 			this.profile = this.user.load_profile({
 				init: true,
 				success: function() {
-					tagit.show_loading_screen(false);
-					this.controllers.pages.release_current();
-					this.last_url = '';
-					var initial_route	=	options.initial_route || '';
-					if(initial_route.match(/^\/users\//)) initial_route = '/';
-					this.route(initial_route);
-					this.setup_syncing();
 					this.user.load_personas({
 						success: function() {
-							// when all personas are loaded, sync messages
+							// message data can be loaded independently once personas
+							// are loaded, so do it
 							tagit.messages.sync();
-						}
+
+							// this function gets called when all profile/persona data
+							// has been loaded
+							var finish	=	function()
+							{
+								tagit.show_loading_screen(false);
+								this.controllers.pages.release_current();
+								this.last_url = '';
+								var initial_route	=	options.initial_route || '';
+								if(initial_route.match(/^\/users\//)) initial_route = '/';
+								this.route(initial_route);
+								this.setup_syncing();
+							}.bind(this);
+
+							var num_personas	=	tagit.user.get('personas').models().length;
+							if(num_personas > 0)
+							{
+								// wait for all personas to load their profiles before
+								// finishing the load
+								var i		=	0;
+								var track	=	function()
+								{
+									i++;
+									if(i >= num_personas) finish();
+								};
+
+								// loop over each persona and load its profile data
+								tagit.user.get('personas').each(function(p) {
+									p.load_profile({
+										success: function() {
+											track();
+										},
+										error: function(err) {
+											barfr.barf('Error loading the profile data for your persona "'+p.get('screenname')+'":'+ err);
+											// don't want to freeze the app just because one
+											// persona doesn't load, do we?
+											track();
+										}
+									});
+								});
+							}
+							else
+							{
+								// no personas to load, just finish up the load
+								finish();
+							}
+						}.bind(this)
 					});
 				}.bind(this)
 			});
@@ -181,12 +221,7 @@ var tagit	=	{
 		this.sync_timer = new Timer(10000);
 		this.sync_timer.end = function()
 		{
-			tagit.profile.sync({
-				error: function()
-				{
-					// show barfr error
-				}
-			});
+			tagit.profile.sync();
 			this.sync_timer.start();
 		}.bind(this);
 		this.sync_timer.start();

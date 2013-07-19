@@ -83,7 +83,7 @@ var BoardEditController = Composer.Controller.extend({
 					this.open_manager();
 				}
 			}.bind(this),
-			error: function(_, err) {
+			error: function(err) {
 				tagit.loading(false);
 				barfr.barf('There was a problem saving your board: '+ err);
 			}

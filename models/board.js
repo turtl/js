@@ -141,7 +141,6 @@ var Board = Composer.RelationalModel.extend({
 				if(options.success) options.success(data);
 			}.bind(this),
 			error: function(e) {
-				barfr.barf('Error saving board: '+ e);
 				if(options.error) options.error(e);
 			}
 		});
@@ -179,11 +178,48 @@ var Board = Composer.RelationalModel.extend({
 		// must be 0-2
 		permissions	=	parseInt(permissions);
 
-		tagit.api.put('/boards/'+this.id()+'/permissions/persona/'+persona.id(), {permissions: permissions}, {
+		tagit.api.put('/boards/'+this.id()+'/invites/persona/'+persona.id(), {permissions: permissions}, {
 			success: options.success,
 			error: function(err) {
 				if(options.error) options.error(err);
 			}
+		});
+	},
+
+	accept_share: function(persona, options)
+	{
+		options || (options = {});
+
+		persona.get_challenge({
+			success: function(challenge) {
+				tagit.api.put('/boards/'+this.id()+'/persona/'+persona.id(), {
+					challenge: persona.generate_response(challenge)
+				}, {
+					success: function(board) {
+						// save the board key into the user's data
+						tagit.user.add_user_key(this.id(), this.key);
+						var _notes = board.notes;
+						delete board.notes;
+						board.shared	=	true;
+						this.set(board);
+
+						// add this project to the end of the user's list
+						var sort		=	Object.clone(tagit.user.get('settings').get_by_key('board_sort').value());
+						sort[this.id()]	=	99999;
+						tagit.user.get('settings').get_by_key('board_sort').value(sort);
+
+						tagit.profile.get('boards').add(this);
+						this.update_notes(_notes);
+						if(options.success) options.success();
+					}.bind(this),
+					error: function(err) {
+						if(options.error) options.error(err);
+					}
+				});
+			}.bind(this),
+			error: function() {
+				if(options.error) options.error(err);
+			}.bind(this)
 		});
 	},
 
@@ -193,10 +229,22 @@ var Board = Composer.RelationalModel.extend({
 
 		persona.get_challenge({
 			success: function(challenge) {
-				tagit.api._delete('/boards/'+this.id()+'/permissions/persona/'+persona.id(), {
+				tagit.api._delete('/boards/'+this.id()+'/persona/'+persona.id(), {
 					challenge: persona.generate_response(challenge)
 				}, {
-					success: options.success,
+					success: function() {
+						tagit.profile.get('boards').remove(this);
+
+						// remove the user's board key
+						tagit.user.remove_user_key(this.id());
+
+						// remove the project's sort from the user data
+						var sort		=	Object.clone(tagit.user.get('settings').get_by_key('board_sort').value());
+						sort[this.id()]	=	99999;
+						tagit.user.get('settings').get_by_key('board_sort').value(sort);
+
+						if(options.success) options.success();
+					}.bind(this),
 					error: function(err) {
 						if(options.error) options.error(err);
 					}
@@ -206,6 +254,27 @@ var Board = Composer.RelationalModel.extend({
 				if(options.error) options.error(err);
 			}.bind(this)
 		});
+	},
+
+	/**
+	 * Pull out the persona, belonging to the currently logged-in user, that has
+	 * the highest privileges on this board.
+	 */
+	get_shared_persona: function()
+	{
+		var persona		=	false;
+		var privs		=	this.get('privs');
+		var high_priv	=	0;
+		tagit.user.get('personas').each(function(p) {
+			if(!privs[p.id()]) return;
+			var this_privs	=	privs[p.id()].p;
+			if(this_privs > high_priv)
+			{
+				persona		=	p;
+				high_priv	=	this_privs;
+			}
+		});
+		return persona;
 	},
 
 	destroy_submodels: function()
@@ -304,9 +373,7 @@ var Boards = Composer.Collection.extend({
 	load_boards: function(boards, options)
 	{
 		options || (options = {});
-		this.each(function(p) { p.destroy({skip_sync: true}); });
-		this.clear(options);
-		var tally		=	0;
+		var tally	=	0;
 		var nboards	=	boards.length;
 
 		// tracks the completion of note updating for each board.
@@ -335,10 +402,5 @@ var Boards = Composer.Collection.extend({
 		{
 			complete();
 		}
-	},
-
-	get_board: function(board_name)
-	{
-		return this.find(function(p) { return p.get('name') == board_name; });
 	}
 });

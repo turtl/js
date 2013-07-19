@@ -14,6 +14,55 @@ var Persona = Composer.Model.extend({
 		'privkey'
 	],
 
+	load_profile: function(options)
+	{
+		this.get_challenge({
+			success: function(challenge) {
+				tagit.api.get('/profiles/personas/'+this.id(), {challenge: this.generate_response(challenge)}, {
+					success: function(profile) {
+						// mark shared boards as such
+						profile.boards.each(function(board) {
+							board.shared	=	true;
+						});
+
+						// add the boards to the profile
+						tagit.profile.load(profile, {
+							complete: function() {
+								if(options.success) options.success();
+							}
+						});
+					}.bind(this),
+					error: options.error
+				})
+			}.bind(this),
+			error: options.error
+		});
+	},
+
+	sync_data: function(sync_time, options)
+	{
+		options || (options = {});
+
+		tagit.api.post('/sync/personas/'+this.id(), {
+			time: sync_time,
+			challenge: this.generate_response(this.challenge)
+		}, {
+			success: function(sync) {
+				tagit.profile.process_sync(sync);
+			},
+			error: function(err, xhr) {
+				if(xhr.status == 403 && !options.retry)
+				{
+					// mah, message sync will generate a new persistent
+				}
+				else
+				{
+					barfr.barf('Error syncing persona profile with server: '+ err);
+				}
+			}
+		});
+	},
+
 	destroy_persona: function(options)
 	{
 		options || (options = {});
@@ -76,6 +125,72 @@ var Persona = Composer.Model.extend({
 		return tcrypt.hash(secret + challenge);
 	},
 
+	get_messages: function(challenge, options)
+	{
+		options || (options = {});
+		if(!options.after)
+		{
+			var last = tagit.messages.models().filter(function() { return true; }).sort(function(a, b) {
+				return a.id().localeCompare(b.id());
+			})[0];
+			if(last) options.after = last.id();
+		}
+
+		var challenge_expired = function() {
+			// We got a 403, try regenerating the persona challenge and sending
+			// the request again with the new challenge
+			this.get_challenge({
+				expire: 1800,   // 1/2 hour
+				persist: true,
+				success: function(challenge) {
+					// mark this next request as a retry so it knows not to try
+					// again on failure
+					options.retry = true;
+					this.get_messages(challenge, options);
+				}.bind(this),
+				error: function(err, xhr) {
+					if(options.error) options.error(err, xhr);
+				}.bind(this)
+			});
+		}.bind(this);
+
+		if(!challenge)
+		{
+			challenge_expired();
+			return false;
+		}
+
+		var response = this.generate_response(challenge);
+		tagit.api.get('/messages/personas/'+this.id(), { after: options.after, challenge: response }, {
+			success: function(res) {
+				var my_personas	=	tagit.user.get('personas');
+
+				// add our messages into the pool
+				tagit.messages.add(res.received);
+				// messages we sent have the "to" persona replaced with our own for
+				// display purposes
+				tagit.messages.add((res.sent || []).map(function(sent) {
+					var persona		=	my_personas.find_by_id(sent.from);
+					if(!persona) return false;
+					sent.persona	=	persona.toJSON();
+					sent.mine		=	true;	// let the app know WE sent it
+					return sent;
+				}));
+				if(options.success) options.success(res, this);
+			}.bind(this),
+			error: function(err, xhr) {
+				if(xhr.status == 403 && !options.retry)
+				{
+					challenge_expired();
+				}
+				else
+				{
+					if(options.error) options.error(err, xhr);
+				}
+			}.bind(this)
+		});
+	},
+
 	send_message: function(message, options)
 	{
 		options || (options = {});
@@ -86,7 +201,7 @@ var Persona = Composer.Model.extend({
 					success: function() {
 						if(options.success) options.success();
 					},
-					error: function(_, err) {
+					error: function(err) {
 						if(options.error) options.error(err);
 					}
 				});

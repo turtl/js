@@ -7,7 +7,8 @@ var BoardManageController = Composer.Controller.extend({
 		'click .button.add': 'open_add',
 		'click a[href=#share]': 'open_share',
 		'click a[href=#edit]': 'open_edit',
-		'click a[href=#delete]': 'delete_board'
+		'click a[href=#delete]': 'delete_board',
+		'click a[href=#leave]': 'leave_board'
 	},
 
 	collection: null,
@@ -129,6 +130,30 @@ var BoardManageController = Composer.Controller.extend({
 			}.bind(this),
 			error: function() {
 				tagit.loading(false);
+			}
+		});
+	},
+
+	leave_board: function(e)
+	{
+		if(!e) return;
+		e.stop();
+		var bid			=	next_tag_up('a', e.target).className;
+		var board		=	this.collection.find_by_id(bid);
+		if(!board) return false;
+		var persona		=	board.get_shared_persona();
+		if(!persona) return;
+		if(!confirm('Really leave this board? You won\'t be able to access it again until the owner invites you again!')) return false;
+
+		tagit.loading(true);
+		board.leave_board(persona, {
+			success: function() {
+				tagit.loading(false);
+				barfr.barf('You have successfully UNshared yourself from the board.');
+			}.bind(this),
+			error: function(err) {
+				tagit.loading(false);
+				barfr.barf('There was a problem leaving the board: '+ err);
 			}
 		});
 	}

@@ -219,7 +219,11 @@ var User	=	Composer.RelationalModel.extend({
 	load_personas: function(options)
 	{
 		var persona_keys = this.get('settings').get_by_key('personas').value();
-		if(!persona_keys) return false;
+		if(!persona_keys)
+		{
+			if(options.success) options.success();
+			return false;
+		}
 		var num_reqs = 0;
 		var target_reqs = Object.getLength(persona_keys);
 		var finish = function(persona)
@@ -251,7 +255,6 @@ var User	=	Composer.RelationalModel.extend({
 
 	add_user_key: function(item_id, key)
 	{
-		console.log('user: add_key: ', item_id, key);
 		if(!item_id || !key) return false;
 		var user_keys		=	Object.clone(this.get('settings').get_by_key('keys').value()) || {};
 		user_keys[item_id]	=	tcrypt.key_to_string(key);
