@@ -608,7 +608,7 @@ var modal_interface	=	new Class({
 				this.close();
 			} 
 		}.bind(this);
-		window.addEvent('click', this.test_click);
+		window.addEvent('mousedown', this.test_click);
 	},
 	
 	/**
