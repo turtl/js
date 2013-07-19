@@ -20,6 +20,7 @@ var BoardShareController = Composer.Controller.extend({
 	{
 		if(!this.board) return false;
 		this.board.bind_relational('personas', ['add', 'remove', 'reset', 'change'], this.render.bind(this), 'board:share:monitor_personas');
+		this.board.bind('change:privs', this.render.bind(this), 'board:share:monitor_privs');
 		this.render();
 
 		this.from_persona = tagit.user.get('personas').first();
@@ -43,6 +44,7 @@ var BoardShareController = Composer.Controller.extend({
 	release: function()
 	{
 		this.board.unbind_relational('personas', ['add', 'remove', 'reset', 'change'], 'board:share:monitor_personas');
+		this.board.unbind('change:privs', 'board:share:monitor_privs');
 		if(modal.is_open) modal.close();
 		if(this.persona_selector) this.persona_selector.release();
 		tagit.keyboard.attach(); // re-enable shortcuts

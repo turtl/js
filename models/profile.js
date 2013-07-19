@@ -200,7 +200,6 @@ var Profile = Composer.RelationalModel.extend({
 			}
 			else
 			{
-				console.log('set board data: ', board_data);
 				board.set(board_data);
 			}
 		}.bind(this));

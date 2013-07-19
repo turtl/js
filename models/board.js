@@ -92,12 +92,22 @@ var Board = Composer.RelationalModel.extend({
 		// important* that you file de patent and put de button on de website
 		// or de VC not put de money in de company!!!)
 		this.bind('change:privs', function() {
-			// only care about shared boards
-			if(!this.get('shared', false)) return false;
-
-			var persona	=	this.get_shared_persona();
-			barfr.barf('The board "'+ this.get('title') + '" is no longer shared with you.');
-			if(!persona) this.destroy({skip_sync: true});
+			if(this.get('shared', false))
+			{
+				// board was UNshared from us
+				var persona	=	this.get_shared_persona();
+				barfr.barf('The board "'+ this.get('title') + '" is no longer shared with you.');
+				if(!persona) this.destroy({skip_sync: true});
+			}
+			else
+			{
+				// this is our board, but let's make the personas match the privs
+				var privs		=	this.get('privs');
+				var personas	=	this.get('personas').filter(function(p) {
+					return privs[p.id()] && !privs[p.id()].d && privs[p.id()].p > 0;
+				});
+				this.get('personas').reset(personas);
+			}
 		}.bind(this));
 
 		// MIGRATE: move board user keys into user data. this code should exist
