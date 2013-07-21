@@ -31,6 +31,7 @@ var NotesController = TrackController.extend({
 		var board_id = this.board.id();
 		this.filter_list	=	new NotesFilter(this.board.get('notes'), {
 			sort_event: true,
+			refresh_on_change: false,
 			filter: function(note)
 			{
 				var selected	=	this.selected_tags;
@@ -70,6 +71,13 @@ var NotesController = TrackController.extend({
 				}
 			}
 		});
+
+		// we don't want to use forward_events:true on our filter collection
+		// (its too resource intensive) BUTBUTBUT we can simulate it for the one
+		// case we need it: sorting on sync
+		this.board.bind_relational('notes', 'change:sort', function(note) {
+			this.filter_list.trigger('change', note);
+		}.bind(this), 'notes:sync:sort');
 
 		// prevent unneccesary batch saving by pre-setting sort values
 		this.filter_list.each(function(note, idx) {
@@ -134,6 +142,7 @@ var NotesController = TrackController.extend({
 	{
 		if(this.board)
 		{
+			this.board.unbind_relational('notes', 'change:sort', 'notes:sync:sort');
 			this.board.unbind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], 'notes:listing:track_filters');
 			this.board.unbind('change:display_type', 'notes:listing:display_type');
 			this.filter_list.unbind('reset', 'notes:listing:display_type');
