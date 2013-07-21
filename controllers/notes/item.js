@@ -9,6 +9,7 @@ var NoteItemController = Composer.Controller.extend({
 	events: {
 		'mouseenter': 'select_note',
 		'mouseleave': 'unselect_note',
+		'click .actions a.sort': 'cancel',
 		'click .actions a.open': 'view_note',
 		'click .actions a.menu': 'open_menu',
 		'mouseleave ul.dropdown': 'close_menu',
@@ -43,30 +44,11 @@ var NoteItemController = Composer.Controller.extend({
 		});
 
 		var title = '';
-		//if(this.display_type == 'list')
-		//{
-		//	// do some custom mods here (for shame)
-		//	title = content.replace(/[\s\S]*?(<h1>[\s\S]*<\/h1>)[\s\S]*/i, '$1');
-		//	content = content.replace(/([\s\S]*?)<h1>[\s\S]*<\/h1>([\s\S]*)/i, '$1$2');
-
-		//	if(content == title)
-		//	{
-		//		if(title.match(/<h1[^>]+>/i))
-		//		{
-		//			content = '';
-		//		}
-		//		else
-		//		{
-		//			title = '';
-		//		}
-		//	}
-
-		//	content = content.replace(/<(?!\/?(img|a))(.*?)>/g, ' ');
-		//}
 
 		content = view.make_links(content);
 		this.html(content);
 		this.el.className = 'note ' + this.model.get('type');
+		this.el.className += ' id_'+ this.model.id();
 	},
 
 	select_note: function(e)
@@ -78,6 +60,8 @@ var NoteItemController = Composer.Controller.extend({
 	{
 		this.model.unset('selected', {silent: true});
 	},
+
+	cancel: function(e) { if(e) e.stop(); },
 
 	view_note: function(e)
 	{

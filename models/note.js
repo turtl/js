@@ -177,7 +177,37 @@ var Note = Composer.RelationalModel.extend({
 
 var Notes = Composer.Collection.extend({
 	model: Note,
-	sortfn: function(a, b) { return a.id().localeCompare(b.id()); }
+	sortfn: function(a, b) { return a.id().localeCompare(b.id()); },
+
+	// used for tracking batch note saves
+	batch_track: null,
+
+	start_batch_save: function()
+	{
+		this.batch_track	=	[];
+		this.bind('change', function(note) {
+			this.batch_track.push(note);
+		}.bind(this), 'notes:collection:batch_track:change');
+	},
+
+	finish_batch_save: function(options)
+	{
+		options || (options = {});
+		this.unbind('change', 'notes:collection:batch_track:change');
+		if(this.batch_track.length == 0) return;
+
+		var save	=	this.batch_track.map(function(note) {
+			// we really only care about the id/body
+			return {id: note.id(), body: note.toJSON().body};
+		});
+		// corpses
+		tagit.api.put('/notes/batch', {data: save}, {
+			success: options.success,
+			error: options.error
+		});
+
+		this.batch_track	=	[];
+	}
 });
 
 var NotesFilter = Composer.FilterCollection.extend({

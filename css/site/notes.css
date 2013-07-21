@@ -30,6 +30,8 @@
 .notes div.actions {display: none; z-index: 2; position: absolute; top: 0; right: 0; height: 24px; padding: 0 0 0 4px; opacity: .95; background: #222; border: 1px solid #333;}
 .notes div.actions a {opacity: .6;}
 .notes div.actions a:hover {opacity: 1;}
+.notes div.actions > a.sort {display: inline-block; width: 16px; height: 24px; background: url(/images/site/icons/sort_handle_white_12x16.png) center center no-repeat;}
+.notes div.actions > a.sort > span {display: block; width: 19px; height: 24px; cursor: move;}
 .notes div.actions > a.open {display: inline-block; width: 16px; height: 24px; padding-left: 3px; background: url(/images/site/icons/view_16x16.png) center right no-repeat;}
 .notes div.actions > a.menu {display: inline-block; width: 21px; height: 24px; margin: 0 0 0 3px; padding: 0 4px 0 6px; background: url(/images/site/icons/menu_19x16.png) 6px center no-repeat; border-left: 1px solid #2b2b2b;}
 .notes div.actions > a span {display: none;}
@@ -169,6 +171,8 @@ ul.note_list.list_masonry > li > div.gutter {width: 100%; max-height: 500px; ove
 ul.note_list.list_masonry > li.image > div.gutter {width: 100%; overflow: hidden;}
 ul.note_list.list_masonry > li.image h2 {display: none; position: absolute; bottom: 0; width: 96%; height: 26px; padding: 6px 2% 0 2%; line-height: 1em; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background: url(/images/site/trans_000_50.png) 0 0;}
 ul.note_list.list_masonry > li.image:hover h2 {display: block;}
+/* pretty impossible to sort masonry notes */
+ul.note_list.list_masonry > li div.actions a.sort {display: none;}
 ul.note_list.list_masonry .note h1 {margin-bottom: 6px;}
 ul.note_list.list_masonry .note ul {list-style: disc;}
 ul.note_list.list_masonry .note ul,

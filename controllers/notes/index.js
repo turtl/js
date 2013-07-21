@@ -14,6 +14,8 @@ var NotesController = TrackController.extend({
 	note_item_controllers: [],
 
 	masonry: null,
+	sort_notes: null,
+	sorting: false,		// used to track whether sorting or not for edge scrolling
 
 	// these two are for caching
 	selected_tags: [],
@@ -55,8 +57,23 @@ var NotesController = TrackController.extend({
 
 			sortfn: function(a, b)
 			{
-				return a.id().localeCompare(b.id());
+				var sort_a	=	a.get('sort', 99999);
+				var sort_b	=	b.get('sort', 99999);
+				var sort	=	sort_a - sort_b;
+				if(sort != 0)
+				{
+					return sort;
+				}
+				else
+				{
+					return a.id().localeCompare(b.id());
+				}
 			}
+		});
+
+		// prevent unneccesary batch saving by pre-setting sort values
+		this.filter_list.each(function(note, idx) {
+			note.set({sort: idx}, {silent: true});
 		});
 
 		// Main search event
@@ -71,6 +88,7 @@ var NotesController = TrackController.extend({
 			{
 				this.setup_masonry.delay(10, this);
 			}
+			this.setup_sort();
 		}.bind(this), 'notes:listing:track_filters');
 
 		this.board.bind('change:display_type', this.update_display_type.bind(this), 'notes:listing:display_type');
@@ -82,6 +100,7 @@ var NotesController = TrackController.extend({
 			{
 				this.setup_masonry.delay(10, this);
 			}
+			this.setup_sort();
 		}.bind(this), 'notes:listing:update_masonry');
 
 		this.board.get('notes').bind(['add', 'remove', 'reset', 'clear', 'misc'], function() {
@@ -108,6 +127,7 @@ var NotesController = TrackController.extend({
 		{
 			this.setup_masonry.delay(10, this);
 		}
+		this.setup_sort();
 	},
 
 	release: function()
@@ -227,6 +247,7 @@ var NotesController = TrackController.extend({
 		else
 		{
 			if(this.masonry) this.masonry.detach()
+			this.note_list.setStyles({position: '', height: ''});
 			this.masonry = null;
 			this.note_list.getElements('> li').each(function(li) {
 				li.setStyles({
@@ -236,6 +257,7 @@ var NotesController = TrackController.extend({
 				});
 			});
 		}
+		this.setup_sort();
 	},
 
 	setup_masonry: function()
@@ -252,6 +274,37 @@ var NotesController = TrackController.extend({
 				this.setup_masonry();
 			}.bind(this);
 		}.bind(this));
+	},
+
+	setup_sort: function()
+	{
+		var type = this.board.get('display_type', 'grid');
+		if(this.sort_notes) this.sort_notes.detach();
+		if(type == 'masonry') return false;
+
+		this.sort_notes	=	new Sortables(this.note_list, {
+			clone: true,
+			opacity: .4,
+			handle: '.actions a.sort span',
+			onStart: function() {
+				this.sorting	=	true;
+			}.bind(this),
+			onComplete: function() {
+				this.sorting	=	false;
+				var ids	=	this.note_list.getElements('> li.note').map(function(el) {
+					return el.className.replace(/^.*id_([0-9a-f-]+).*?$/, '$1').clean();
+				});
+
+				// save all note sorts as a batch
+				var notes_collection	=	this.board.get('notes');
+				notes_collection.start_batch_save();
+				notes_collection.each(function(note) {
+					if(!ids.contains(note.id())) return;
+					note.set({sort: ids.indexOf(note.id())});
+				});
+				notes_collection.finish_batch_save();
+			}.bind(this)
+		});
 	},
 
 	// -------------------------------------------------------------------------
