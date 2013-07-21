@@ -276,10 +276,33 @@ var NotesController = TrackController.extend({
 		}.bind(this));
 	},
 
+	edge_check: null,
 	setup_sort: function()
 	{
+		if(!this.edge_check)
+		{
+			var mousey	=	null;
+			this.edge_check	=	function(e)
+			{
+				if(!this.sorting) return false;
+				if(e) mousey = e.page.y;
+				if(!mousey) return false;
+
+				var coords	=	$(window).getCoordinates();
+				var scroll	=	$(window).getScrollTop();
+				if(mousey > (scroll + coords.bottom) - 200)
+				{
+					window.scrollTo(null, scroll + 10);
+				}
+				else if(mousey < (scroll + 200))
+				{
+					window.scrollTo(null, scroll - 10);
+				}
+			}.bind(this);
+		}
 		var type = this.board.get('display_type', 'grid');
 		if(this.sort_notes) this.sort_notes.detach();
+		$(window).removeEvent('mousemove', this.edge_check);
 		if(type == 'masonry') return false;
 
 		this.sort_notes	=	new Sortables(this.note_list, {
@@ -305,6 +328,8 @@ var NotesController = TrackController.extend({
 				notes_collection.finish_batch_save();
 			}.bind(this)
 		});
+
+		$(window).addEvent('mousemove', this.edge_check);
 	},
 
 	// -------------------------------------------------------------------------
