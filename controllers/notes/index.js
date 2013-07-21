@@ -315,7 +315,7 @@ var NotesController = TrackController.extend({
 		if(type == 'masonry') return false;
 
 		this.sort_notes	=	new Sortables(this.note_list, {
-			clone: true,
+			//clone: true,		// clone is slow in FF and broken in chrome
 			opacity: .4,
 			handle: '.actions a.sort span',
 			onStart: function() {
