@@ -133,6 +133,7 @@ ul.note_list .note h5 {font-weight: bold;}
 ul.note_list .note.image .color {margin: 4px 0 0 4px;}
 
 /* grid */
+ul.note_list.list_grid {position: relative;}
 ul.note_list.list_grid > li {
 	float: left;
 	display: block;
