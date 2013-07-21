@@ -39,6 +39,7 @@ var NoteItemController = Composer.Controller.extend({
 	{
 		this.model.unbind('change', 'note:item:change:render');
 		this.model.unbind('destroy', 'note:item:destroy:release');
+		this.menu_close_timer.end	=	null;
 		this.parent.apply(this, arguments);
 	},
 

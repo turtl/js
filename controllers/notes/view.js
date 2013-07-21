@@ -8,6 +8,7 @@ var NoteViewController = Composer.Controller.extend({
 	events: {
 		'click .actions a.menu': 'open_menu',
 		'mouseleave ul.dropdown': 'close_menu',
+		'mouseenter ul.dropdown': 'cancel_close_menu',
 		'click ul.dropdown a.edit': 'open_edit',
 		'click ul.dropdown a.move': 'open_move',
 		'click ul.dropdown a.delete': 'delete_note'
@@ -15,6 +16,7 @@ var NoteViewController = Composer.Controller.extend({
 
 	model: null,
 	board: null,
+	menu_close_timer: null,
 
 	init: function()
 	{
@@ -35,6 +37,9 @@ var NoteViewController = Composer.Controller.extend({
 		tagit.keyboard.bind('e', this.open_edit.bind(this), 'notes:view:shortcut:edit_note');
 		tagit.keyboard.bind('m', this.open_move.bind(this), 'notes:view:shortcut:move_note');
 		tagit.keyboard.bind('delete', this.delete_note.bind(this), 'notes:view:shortcut:delete_note');
+
+		this.menu_close_timer		=	new Timer(200);
+		this.menu_close_timer.end	=	this.do_close_menu.bind(this);
 	},
 
 	release: function()
@@ -45,6 +50,7 @@ var NoteViewController = Composer.Controller.extend({
 		tagit.keyboard.unbind('e', 'notes:view:shortcut:edit_note');
 		tagit.keyboard.unbind('m', 'notes:view:shortcut:move_note');
 		tagit.keyboard.unbind('delete', 'notes:view:shortcut:delete_note');
+		this.menu_close_timer.end	=	null;
 		this.parent.apply(this, arguments);
 	},
 
@@ -64,9 +70,19 @@ var NoteViewController = Composer.Controller.extend({
 		this.dropdown_menu.addClass('open');
 	},
 
-	close_menu: function(e)
+	do_close_menu: function()
 	{
 		this.dropdown_menu.removeClass('open');
+	},
+
+	close_menu: function(e)
+	{
+		this.menu_close_timer.start();
+	},
+
+	cancel_close_menu: function(e)
+	{
+		this.menu_close_timer.stop();
 	},
 
 	open_edit: function(e)
