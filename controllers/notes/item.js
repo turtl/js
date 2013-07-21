@@ -13,6 +13,7 @@ var NoteItemController = Composer.Controller.extend({
 		'click .actions a.open': 'view_note',
 		'click .actions a.menu': 'open_menu',
 		'mouseleave ul.dropdown': 'close_menu',
+		'mouseenter ul.dropdown': 'cancel_close_menu',
 		'click ul.dropdown a.edit': 'open_edit',
 		'click ul.dropdown a.move': 'open_move',
 		'click ul.dropdown a.delete': 'delete_note'
@@ -21,6 +22,7 @@ var NoteItemController = Composer.Controller.extend({
 	board: null,
 	model: null,
 	display_type: 'grid',
+	menu_close_timer: null,
 
 	init: function()
 	{
@@ -28,6 +30,9 @@ var NoteItemController = Composer.Controller.extend({
 		this.model.bind('change', this.render.bind(this), 'note:item:change:render');
 		this.model.bind('destroy', this.release.bind(this), 'note:item:destroy:release');
 		this.render();
+
+		this.menu_close_timer		=	new Timer(200);
+		this.menu_close_timer.end	=	this.do_close_menu.bind(this);
 	},
 
 	release: function()
@@ -78,9 +83,19 @@ var NoteItemController = Composer.Controller.extend({
 		this.dropdown_menu.addClass('open');
 	},
 
-	close_menu: function(e)
+	do_close_menu: function()
 	{
 		this.dropdown_menu.removeClass('open');
+	},
+
+	close_menu: function(e)
+	{
+		this.menu_close_timer.start();
+	},
+
+	cancel_close_menu: function(e)
+	{
+		this.menu_close_timer.stop();
 	},
 
 	open_edit: function(e)
