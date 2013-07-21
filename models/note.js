@@ -201,7 +201,13 @@ var Notes = Composer.Collection.extend({
 			return {id: note.id(), body: note.toJSON().body};
 		});
 		// corpses
-		tagit.api.put('/notes/batch', {data: save}, {
+		var args	=	{data: save};
+		if(options.shared && options.persona)
+		{
+			args.persona	=	options.persona.id();
+			args.challenge	=	options.persona.generate_response(options.persona.challenge);
+		}
+		tagit.api.put('/notes/batch', args, {
 			success: options.success,
 			error: options.error
 		});

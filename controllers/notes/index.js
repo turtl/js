@@ -334,7 +334,10 @@ var NotesController = TrackController.extend({
 					if(!ids.contains(note.id())) return;
 					note.set({sort: ids.indexOf(note.id())});
 				});
-				notes_collection.finish_batch_save();
+				notes_collection.finish_batch_save({
+					shared: this.board.get('shared'),
+					persona: this.board.get_shared_persona()
+				});
 			}.bind(this)
 		});
 
