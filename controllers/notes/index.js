@@ -316,7 +316,7 @@ var NotesController = TrackController.extend({
 
 		this.sort_notes	=	new Sortables(this.note_list, {
 			clone: true,
-			//opacity: 1,
+			opacity: .5,
 			handle: '.actions a.sort span',
 			onStart: function() {
 				this.sorting	=	true;
