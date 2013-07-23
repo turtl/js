@@ -18,6 +18,7 @@ var NotesController = TrackController.extend({
 	sort_notes: null,
 	sorting: false,			// used to track whether sorting or not for edge scrolling
 	last_search: false,		// used to store results of tag searches
+	search_text: null,
 
 	init: function()
 	{
@@ -77,6 +78,7 @@ var NotesController = TrackController.extend({
 			else
 			{
 				this.last_search	=	tagit.search.search({
+					text: this.search_text,
 					boards: this.board.id(),
 					tags: selected.append(excluded)
 				});

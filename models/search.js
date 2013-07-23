@@ -13,17 +13,37 @@ var Search	=	Composer.Model.extend({
 	// board_id -> note_id index
 	index_boards: {},
 
+	// full-text search
+	ft: null,
+
 	init: function()
 	{
 		tagit.profile.get('boards').bind('add', function(board) {
 			this.watch_board(board);
 		}.bind(this), 'search:board:add');
+
+		this.ft	=	lunr(function() {
+			this.ref('id');
+			this.field('title', {boost: 5});
+			this.field('url', {boost: 10});
+			this.field('body');
+			this.field('tags', {boost: 10});
+		});
 	},
 
 	search: function(search)
 	{
 		var res			=	false;
 		var searches	=	Object.keys(search);
+
+		// process full-text search first
+		if(search.text && typeOf(search.text) == 'string' && search.text.length > 0 && this.ft)
+		{
+			var res	=	this.ft.search(search.text).map(function(r) { return r.ref; });
+			res.sort(function(a, b) { return a.localeCompare(b); });
+		}
+		delete search.text;
+
 		for(var i = 0, n = searches.length; i < n; i++)
 		{
 			var index	=	searches[i];
@@ -113,6 +133,14 @@ var Search	=	Composer.Model.extend({
 			this.index_type('tags', tag.get('name'), note.id());
 		}.bind(this));
 		this.index_type('boards', note.get('board_id'), note.id());
+
+		this.ft.add({
+			id: json.id,
+			url: json.url,
+			title: json.title,
+			body: json.text,
+			tags: json.tags.map(function(t) { return t.name; }).join(',')
+		});
 	},
 
 	unindex_note: function(note)
@@ -125,6 +153,13 @@ var Search	=	Composer.Model.extend({
 		}.bind(this));
 		this.unindex_type('boards', json.board_id, id);
 
+		this.ft.remove({
+			id: json.id,
+			url: json.url,
+			title: json.title,
+			body: json.text,
+			tags: json.tags.map(function(t) { return t.name; }).join(',')
+		});
 		delete this.index_json.notes[id];
 	},
 
