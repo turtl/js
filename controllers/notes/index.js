@@ -86,12 +86,12 @@ var NotesController = TrackController.extend({
 
 		// Main search event
 		this.board.bind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], function() {
-			//var start = performance.now();
+			var start = performance.now();
 			// pre-cache our selected/excluded tags
 			this.selected_tags = this.board.get_selected_tags().map(function(t) { return t.get('name'); });
 			this.excluded_tags = this.board.get_excluded_tags().map(function(t) { return t.get('name'); });;
 			this.filter_list.refresh({diff_events: true, silent: 'reset'});
-			//console.log('filter time: ', performance.now() - start);
+			console.log('filter time: ', performance.now() - start);
 			if(this.board.get('display_type') == 'masonry')
 			{
 				this.setup_masonry.delay(10, this);
