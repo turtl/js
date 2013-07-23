@@ -19,21 +19,22 @@ var TagsController = Composer.Controller.extend({
 			sort_event: true,
 			refresh_on_change: false
 		});
+		this.board.bind_relational('tags', ['change:selected', 'change:excluded'], function() {
+			this.gray_tags.delay(1, this);
+		}.bind(this), 'tags:listing:gray_disabled');
 		this.tags.bind('change:count', function() {
 			this.tags.sort();
 		}.bind(this), 'tags:listing:monitor_sort');
 
 		// track all changes to our sub-controllers
 		this.setup_tracking(this.tags);
-
-		this.tags.bind(['change:selected', 'change:excluded'], this.gray_tags.bind(this), 'tags:listing:gray_disabled');
 	},
 
 	release: function()
 	{
 		if(this.tags)
 		{
-			this.tags.unbind(['change:selected', 'change:excluded'], 'tags:listing:gray_disabled');
+			this.board.unbind_relational('tags', ['change:selected', 'change:excluded'], 'tags:listing:gray_disabled');
 			this.tags.unbind('change:count', 'tags:listing:monitor_sort');
 			this.tags.detach();
 		}
@@ -56,41 +57,29 @@ var TagsController = Composer.Controller.extend({
 
 	gray_tags: function()
 	{
-		return;
-		//var start		=	performance.now();
-		// heh. maybe pass in controller?
+		var start	=	performance.now();
 		var notes	=	tagit.controllers.pages.cur_controller.notes_controller.filter_list;
 		if(!notes) return;
 
-		notes		=	notes.models();
+		notes		=	notes
+			.map(function(n) { return n.id(); })
+			.sort(function(a, b) { return a.localeCompare(b); });
 		var tags	=	this.tags.models();
 		var change	=	[];
-		for(var x in tags)
-		{
-			var tag = tags[x];
-			if(!tag.get) continue;
-			var enabled = !tag.get('disabled', false);
-			var set_enable = -1;
-			for(var y in notes)
-			{
-				var note = notes[y];
-				if(note.has_tag && note.has_tag(tag.get('name')))
-				{
-					set_enable = true;
-					break;
-				}
-				set_enable = false;
-			}
 
-			if(set_enable != enabled)
+		// for each tag, intersect the search index with the currently enabled
+		// notes. an empty list means the tag has no notes.
+		tags.each(function(tag) {
+			var enabled		=	!tag.get('disabled', false);
+			var note_list	=	tagit.search.index_tags[tag.get('name')];
+			var tag_enable	=	tagit.search.intersect(notes, note_list).length > 0;
+
+			if(tag_enable != enabled)
 			{
-				tag.set({disabled: !set_enable}, {silent: true});
-				change.push(tag);
+				tag.set({disabled: !tag_enable}, {silent: true});
+				tag.trigger('gray');
 			}
-		}
-		change.each(function(tag) {
-			tag.trigger('gray');
 		});
-		//console.log('filter time: ', performance.now() - start);
+		//console.log('gray time: ', performance.now() - start);
 	}
 }, TrackController);

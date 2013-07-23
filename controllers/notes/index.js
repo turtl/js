@@ -14,6 +14,7 @@ var NotesController = TrackController.extend({
 	note_item_controllers: [],
 
 	masonry: null,
+	masonry_timer: null,
 	sort_notes: null,
 	sorting: false,			// used to track whether sorting or not for edge scrolling
 	last_search: false,		// used to store results of tag searches
@@ -66,7 +67,7 @@ var NotesController = TrackController.extend({
 
 		// Main search event
 		this.board.bind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], function() {
-			//var start		=	performance.now();
+			var start		=	performance.now();
 			var selected	=	this.board.get_selected_tags().map(function(t) { return t.get('name'); });
 			var excluded	=	this.board.get_excluded_tags().map(function(t) { return '!'+t.get('name'); });;
 			if(selected.length == 0 && excluded.length == 0)
@@ -80,12 +81,11 @@ var NotesController = TrackController.extend({
 					tags: selected.append(excluded)
 				});
 			}
+			//console.log('note search time: ', performance.now() - start);
+			var start		=	performance.now();
 			this.filter_list.refresh({diff_events: true, silent: 'reset'});
 			//console.log('note filter time: ', performance.now() - start);
-			if(this.board.get('display_type') == 'masonry')
-			{
-				this.setup_masonry.delay(0, this);
-			}
+			this.setup_masonry();
 			this.setup_sort();
 		}.bind(this), 'notes:listing:track_filters');
 
@@ -94,10 +94,7 @@ var NotesController = TrackController.extend({
 			this.update_display_type.delay(10, this);
 		}.bind(this), 'notes:listing:display_type');
 		this.filter_list.bind(['add', 'remove', 'change'], function() {
-			if(this.board.get('display_type') == 'masonry')
-			{
-				this.setup_masonry.delay(0, this);
-			}
+			this.setup_masonry();
 			this.setup_sort();
 		}.bind(this), 'notes:listing:update_masonry');
 
@@ -121,10 +118,7 @@ var NotesController = TrackController.extend({
 		tagit.keyboard.bind('m', this.sub_move_note.bind(this), 'notes:shortcut:move_note');
 		tagit.keyboard.bind('delete', this.sub_delete_note.bind(this), 'notes:shortcut:delete_note');
 
-		if(this.board.get('display_type') == 'masonry')
-		{
-			this.setup_masonry.delay(10, this);
-		}
+		this.setup_masonry();
 		this.setup_sort();
 	},
 
@@ -146,6 +140,8 @@ var NotesController = TrackController.extend({
 		tagit.keyboard.unbind('e', 'notes:shortcut:edit_note');
 		tagit.keyboard.unbind('m', 'notes:shortcut:move_note');
 		tagit.keyboard.unbind('delete', 'notes:shortcut:delete_note');
+		if(this.masonry) this.masonry.detach();
+		if(this.masonry_timer) this.masonry_timer.end = null;
 		this.parent.apply(this, arguments);
 	},
 
@@ -261,19 +257,33 @@ var NotesController = TrackController.extend({
 
 	setup_masonry: function()
 	{
-		return;
-		if(this.masonry) this.masonry.detach();
-		this.masonry = this.note_list.masonry({
-			singleMode: true,
-			itemSelector: '> li.note:not(.hide)'
-		});
-		$ES('li.note img', this.note_list).each(function(img) {
-			if(img.complete || (img.naturalWidth && img.naturalWidth > 0)) return;
-			img.onload = function() {
-				img.onload = null;
-				this.setup_masonry();
-			}.bind(this);
-		}.bind(this));
+		var do_masonry	=	function()
+		{
+			if(this.board.get('display_type') != 'masonry') return;
+
+			var start	=	performance.now();
+			if(this.masonry) this.masonry.detach();
+			this.masonry = this.note_list.masonry({
+				singleMode: true,
+				itemSelector: '> li.note:not(.hide)'
+			});
+			var images	=	this.note_list.getElements('> li.note:not(.hide) > .gutter img');
+			images.each(function(img) {
+				if(img.complete || (img.naturalWidth && img.naturalWidth > 0)) return;
+				img.onload = function() {
+					img.onload = null;
+					this.setup_masonry();
+				}.bind(this);
+			}.bind(this));
+			//console.log('masonry time: ', performance.now() - start);
+		}.bind(this);
+
+		if(!this.masonry_timer)
+		{
+			this.masonry_timer		=	new Timer(5, 5);
+			this.masonry_timer.end	=	do_masonry;
+		}
+		this.masonry_timer.start();
 	},
 
 	edge_check: null,

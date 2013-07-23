@@ -130,6 +130,6 @@ var TagsFilter = Composer.FilterCollection.extend({
 		if(diff == 0) diff = a.get('name').localeCompare(b.get('name'));
 		return diff;
 	},
-	forward_all_events: true,
+	forward_all_events: false,
 	refresh_on_change: false
 });
