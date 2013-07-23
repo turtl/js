@@ -238,6 +238,7 @@ var Profile = Composer.RelationalModel.extend({
 	persist: function(options)
 	{
 		options || (options = {});
+		return false;
 
 		var store	=	{
 			user: tagit.user.toJSON(),

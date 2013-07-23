@@ -56,6 +56,7 @@ var TagsController = Composer.Controller.extend({
 
 	gray_tags: function()
 	{
+		return;
 		//var start		=	performance.now();
 		// heh. maybe pass in controller?
 		var notes	=	tagit.controllers.pages.cur_controller.notes_controller.filter_list;

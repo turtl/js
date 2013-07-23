@@ -261,6 +261,7 @@ var NotesController = TrackController.extend({
 
 	setup_masonry: function()
 	{
+		return;
 		if(this.masonry) this.masonry.detach();
 		this.masonry = this.note_list.masonry({
 			singleMode: true,
