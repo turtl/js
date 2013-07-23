@@ -44,6 +44,9 @@ var tagit	=	{
 
 	// holds project/note data for the user
 	profile: null,
+
+	// holds the search model
+	search: null,
 	// -------------------------------------------------------------------------
 
 	init: function()
@@ -125,6 +128,7 @@ var tagit	=	{
 								var initial_route	=	options.initial_route || '';
 								if(initial_route.match(/^\/users\//)) initial_route = '/';
 								tagit.profile.persist();
+								this.search.reindex();
 								this.route(initial_route);
 								this.setup_syncing();
 							}.bind(this);
@@ -169,6 +173,9 @@ var tagit	=	{
 					});
 				}.bind(this)
 			});
+
+			// load search model
+			this.search	=	new Search();
 
 			// logout shortcut
 			tagit.keyboard.bind('S-l', function() {

@@ -17,10 +17,6 @@ var NotesController = TrackController.extend({
 	sort_notes: null,
 	sorting: false,		// used to track whether sorting or not for edge scrolling
 
-	// these two are for caching
-	selected_tags: [],
-	excluded_tags: [],
-
 	init: function()
 	{
 		if(!this.board) return false;
@@ -28,32 +24,16 @@ var NotesController = TrackController.extend({
 
 		this.render();
 
-		var board_id = this.board.id();
+		var board_id	=	this.board.id();
+		var last_search	=	null;
 		this.filter_list	=	new NotesFilter(this.board.get('notes'), {
 			sort_event: true,
 			refresh_on_change: false,
 			filter: function(note)
 			{
-				var selected	=	this.selected_tags;
-				var excluded	=	this.excluded_tags;
-				var note_tags	=	note.get('tags').map(function(t) { return t.get('name'); });
-
-				if(selected.length == 0 && excluded.length == 0) return true;
-				if(selected.length > note_tags.length) return false;
-				for(var x in selected)
-				{
-					var sel	=	selected[x];
-					if(typeof(sel) != 'string') continue;
-					if(!note_tags.contains(sel)) return false;
-				}
-
-				for(var x in excluded)
-				{
-					var exc	=	excluded[x];
-					if(typeof(exc) != 'string') continue;
-					if(note_tags.contains(exc)) return false;
-				}
-				return true;
+				if(!last_search) return true;
+				if(last_search.contains(note.id())) return true;
+				return false;
 			}.bind(this),
 
 			sortfn: function(a, b)
@@ -86,12 +66,23 @@ var NotesController = TrackController.extend({
 
 		// Main search event
 		this.board.bind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], function() {
-			//var start = performance.now();
+			var start = performance.now();
 			// pre-cache our selected/excluded tags
-			this.selected_tags = this.board.get_selected_tags().map(function(t) { return t.get('name'); });
-			this.excluded_tags = this.board.get_excluded_tags().map(function(t) { return t.get('name'); });;
+			var selected = this.board.get_selected_tags().map(function(t) { return t.get('name'); });
+			var excluded = this.board.get_excluded_tags().map(function(t) { return '!'+t.get('name'); });;
+			if(selected.length == 0 && excluded.length == 0)
+			{
+				last_search = false;
+			}
+			else
+			{
+				last_search	=	tagit.search.search({
+					boards: this.board.id(),
+					tags: selected.append(excluded)
+				});
+			}
 			this.filter_list.refresh({diff_events: true, silent: 'reset'});
-			//console.log('filter time: ', performance.now() - start);
+			console.log('filter time: ', performance.now() - start);
 			if(this.board.get('display_type') == 'masonry')
 			{
 				this.setup_masonry.delay(10, this);
