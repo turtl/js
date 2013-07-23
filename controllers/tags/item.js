@@ -11,18 +11,19 @@ var TagItemController = Composer.Controller.extend({
 	{
 		if(!this.model) return false;
 		this.model.bind('change', this.render.bind(this), 'tag:item:change:render');
+		this.model.bind('gray', this.render.bind(this), 'tag:item:gray:render');
 		this.render();
 	},
 
 	release: function()
 	{
 		this.model.unbind('change', 'tag:item:change:render');
+		this.model.unbind('gray', 'tag:item:gray:render');
 		this.parent.apply(this, arguments);
 	},
 
 	render: function()
 	{
-		//<? if(tag.category) return false; ?>
 		var content = Template.render('tags/item', {
 			tag: toJSON(this.model)
 		});

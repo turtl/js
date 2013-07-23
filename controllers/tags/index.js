@@ -56,11 +56,14 @@ var TagsController = Composer.Controller.extend({
 
 	gray_tags: function()
 	{
+		//var start		=	performance.now();
 		// heh. maybe pass in controller?
-		var notes = tagit.controllers.pages.cur_controller.notes_controller.filter_list;
+		var notes	=	tagit.controllers.pages.cur_controller.notes_controller.filter_list;
 		if(!notes) return;
-		notes = notes.models();
-		var tags = this.tags.models();
+
+		notes		=	notes.models();
+		var tags	=	this.tags.models();
+		var change	=	[];
 		for(var x in tags)
 		{
 			var tag = tags[x];
@@ -78,7 +81,15 @@ var TagsController = Composer.Controller.extend({
 				set_enable = false;
 			}
 
-			if(set_enable != enabled) tag.set({disabled: !set_enable});
+			if(set_enable != enabled)
+			{
+				tag.set({disabled: !set_enable}, {silent: true});
+				change.push(tag);
+			}
 		}
+		change.each(function(tag) {
+			tag.trigger('gray');
+		});
+		//console.log('filter time: ', performance.now() - start);
 	}
 }, TrackController);

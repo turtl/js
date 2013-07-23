@@ -33,7 +33,7 @@ var Search	=	Composer.Model.extend({
 			{
 				var val		=	vals[ii];
 				var exclude	=	false;
-				if(val.match(/^!/))
+				if(val.substr(0, 1) == '!')
 				{
 					val		=	val.substr(1);
 					exclude	=	true;
