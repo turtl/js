@@ -108,9 +108,9 @@ var tagit	=	{
 			tagit.show_loading_screen(true);
 			this.profile = this.user.load_profile({
 				init: true,
-				success: function() {
+				success: function(_, from_storage) {
 					this.user.load_personas({
-						success: function() {
+						success: function(prof) {
 							// message data can be loaded independently once personas
 							// are loaded, so do it
 							tagit.messages.sync();
@@ -124,12 +124,16 @@ var tagit	=	{
 								this.last_url = '';
 								var initial_route	=	options.initial_route || '';
 								if(initial_route.match(/^\/users\//)) initial_route = '/';
+								tagit.profile.persist();
 								this.route(initial_route);
 								this.setup_syncing();
 							}.bind(this);
 
 							var num_personas	=	tagit.user.get('personas').models().length;
-							if(num_personas > 0)
+
+							// if we loaded from storage, we already have all the
+							// persona profile junk, so don't bother loading it
+							if(num_personas > 0 && !from_storage)
 							{
 								// wait for all personas to load their profiles before
 								// finishing the load
@@ -157,7 +161,8 @@ var tagit	=	{
 							}
 							else
 							{
-								// no personas to load, just finish up the load
+								// no personas to load (or we loaded all the profile
+								// data from locstor newayz), just finish up the load
 								finish();
 							}
 						}.bind(this)

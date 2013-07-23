@@ -27,29 +27,44 @@ var Profile = Composer.RelationalModel.extend({
 
 	load_data: function(options)
 	{
-		tagit.api.get('/profiles/users/'+tagit.user.id(), {}, {
-			success: function(profile) {
-				this.profile_data = true;
-				tagit.user.set(profile.user);
-				if(options.init)
-				{
-					//this.clear({silent: true});
-					this.load(profile, Object.merge({}, options, {
-						complete: function() {
-							if(options.success) options.success(profile);
-						}.bind(this)
-					}));
-				}
-				else if(options.success)
-				{
-					options.success(profile);
-				}
-			}.bind(this),
-			error: function(err) {
-				barfr.barf('Error loading user profile: '+ err);
-				if(options.error) options.error(e);
+		var success = function(profile, from_storage)
+		{
+			from_storage || (from_storage = false);
+
+			this.profile_data = true;
+			tagit.user.set(profile.user);
+			if(options.init)
+			{
+				//this.clear({silent: true});
+				this.load(profile, Object.merge({}, options, {
+					complete: function() {
+						if(options.success) options.success(profile, from_storage);
+					}.bind(this)
+				}));
 			}
-		});
+			else if(options.success)
+			{
+				options.success(profile, from_storage);
+			}
+		}.bind(this);
+
+		if(profile = this.from_persist())
+		{
+			this.set({sync_time: profile.time});
+			(function () { success(JSON.decode(profile), true); }).delay(0);
+		}
+		else
+		{
+			tagit.api.get('/profiles/users/'+tagit.user.id(), {}, {
+				success: function(profile) {
+					success(profile, false);
+				},
+				error: function(err) {
+					barfr.barf('Error loading user profile: '+ err);
+					if(options.error) options.error(e);
+				}
+			});
+		}
 	},
 
 	load: function(data, options)
@@ -108,6 +123,7 @@ var Profile = Composer.RelationalModel.extend({
 			success: function(sync) {
 				this.set({sync_time: sync.time});
 				this.process_sync(sync);
+				this.persist();
 				// reset ignore list
 				this.sync_ignore	=	[];
 			}.bind(this),
@@ -207,6 +223,8 @@ var Profile = Composer.RelationalModel.extend({
 
 	get_sync_time: function()
 	{
+		if(this.get('sync_time', false)) return;
+
 		tagit.api.get('/sync', {}, {
 			success: function(time) {
 				this.set({sync_time: time});
@@ -215,6 +233,29 @@ var Profile = Composer.RelationalModel.extend({
 				barfr.barf('Error syncing user profile with server: '+ e);
 			}.bind(this)
 		});
+	},
+
+	persist: function(options)
+	{
+		options || (options = {});
+
+		var store	=	{
+			user: tagit.user.toJSON(),
+			boards: []
+		};
+		tagit.profile.get('boards').each(function(board) {
+			var boardobj	=	board.toJSON();
+			boardobj.notes	=	board.get('notes').toJSON();
+			store.boards.push(boardobj);
+		});
+		store.time	=	this.get('sync_time', Math.floor(new Date().getTime()/1000));
+		localStorage['profile:user:'+tagit.user.id()]	=	JSON.encode(store);
+		return store;
+	},
+
+	from_persist: function()
+	{
+		return localStorage['profile:user:'+tagit.user.id()] || false;
 	}
 });
 
