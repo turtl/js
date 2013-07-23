@@ -345,14 +345,14 @@ var Board = Composer.RelationalModel.extend({
 	get_selected_tags: function()
 	{
 		return this.get('tags').select(function(tag) {
-			return this.is_tag_selected(tag.get('name'));
+			return this.is_tag_selected(tag);
 		}.bind(this));
 	},
 
 	get_excluded_tags: function()
 	{
 		return this.get('tags').select(function(tag) {
-			return this.is_tag_excluded(tag.get('name'));
+			return this.is_tag_excluded(tag);
 		}.bind(this));
 	},
 
@@ -361,15 +361,13 @@ var Board = Composer.RelationalModel.extend({
 		return this.get('tags').find(function(tag) { return tag.get('name') == tagname; });
 	},
 
-	is_tag_selected: function(tagname)
+	is_tag_selected: function(tag)
 	{
-		var tag = this.get_tag_by_name(tagname);
 		return tag ? tag.get('selected') : false;
 	},
 
-	is_tag_excluded: function(tagname)
+	is_tag_excluded: function(tag)
 	{
-		var tag = this.get_tag_by_name(tagname);
 		return tag ? tag.get('excluded') : false;
 	},
 
