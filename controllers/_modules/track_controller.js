@@ -18,6 +18,9 @@ var TrackController = Composer.Controller.extend({
 	collection: null,
 	model_key: 'model',
 
+	// for rendering to fragments (LOL)
+	fragment: null,
+
 	setup_tracking: function(collection, model_key)
 	{
 		if(!collection) return false;
@@ -141,5 +144,20 @@ var TrackController = Composer.Controller.extend({
 		this.collection.each(function(model) {
 			this.add_subcontroller(model);
 		}.bind(this));
+	},
+
+	render_to_fragment: function()
+	{
+		this.fragment	=	document.createDocumentFragment();
+		this.sub_controllers.each(function(c) {
+			this.fragment.appendChild(c.el.dispose());
+		}.bind(this));
+	},
+
+	finish_fragment: function(element)
+	{
+		if(!this.fragment) return false;
+		element.appendChild(this.fragment);
+		this.fragment	=	null;
 	}
 });
