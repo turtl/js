@@ -83,7 +83,12 @@ var NotesController = TrackController.extend({
 			}
 			//console.log('note search time: ', performance.now() - start);
 			var start		=	performance.now();
+
+			// do the actual filtering
+			this.render_to_fragment();
 			this.filter_list.refresh({diff_events: true, silent: 'reset'});
+			this.finish_fragment(this.note_list);
+
 			//console.log('note filter time: ', performance.now() - start);
 			this.setup_masonry();
 			this.setup_sort();
@@ -242,8 +247,8 @@ var NotesController = TrackController.extend({
 		else
 		{
 			if(this.masonry) this.masonry.detach()
-			this.note_list.setStyles({position: '', height: ''});
 			this.masonry = null;
+			this.note_list.setStyles({position: '', height: ''});
 			this.note_list.getElements('> li').each(function(li) {
 				li.setStyles({
 					position: '',
@@ -262,7 +267,11 @@ var NotesController = TrackController.extend({
 			if(this.board.get('display_type') != 'masonry') return;
 
 			var start	=	performance.now();
-			if(this.masonry) this.masonry.detach();
+			if(this.masonry)
+			{
+				this.masonry.detach();
+				this.masonry	=	null;
+			}
 			this.masonry = this.note_list.masonry({
 				singleMode: true,
 				itemSelector: '> li.note:not(.hide)'
@@ -310,10 +319,10 @@ var NotesController = TrackController.extend({
 				}
 			}.bind(this);
 		}
-		var type = this.board.get('display_type', 'grid');
 		if(this.sort_notes) this.sort_notes.detach();
 		$(window).removeEvent('mousemove', this.edge_check);
-		if(type == 'masonry') return false;
+
+		if(this.board.get('display_type') == 'masonry') return false;
 
 		this.sort_notes	=	new Sortables(this.note_list, {
 			clone: true,
