@@ -33,22 +33,40 @@ var Search	=	Composer.Model.extend({
 
 	search: function(search)
 	{
+		// this will hold all search results, as an array of note IDs
 		var res			=	false;
 
 		// process full-text search first
 		if(search.text && typeOf(search.text) == 'string' && search.text.length > 0 && this.ft)
 		{
+			// run the search and grab the IDs (throw out relevance for now)
 			var res	=	this.ft.search(search.text).map(function(r) { return r.ref; });
+
+			// sort the resulting IDs so the intersection functions later on
+			// don't choke (they operate on sorted sets).
 			res.sort(function(a, b) { return a.localeCompare(b); });
 		}
+
+		// don't want the index searches trying to use this.
 		delete search.text;
 
+		// pull out the indexes we're searching and narrow down the resulting
+		// note id list as we go along. this continues until a) no notes are
+		// left (empty result set) or b) we get a list of notes that match all
+		// the search criteria.
 		var searches	=	Object.keys(search);
 		for(var i = 0, n = searches.length; i < n; i++)
 		{
 			var index	=	searches[i];
 			var vals	=	search[index];
 			if(typeOf(vals) != 'array') vals = [vals];
+
+			// loop over all values passed for this index type and interset the
+			// corresponding values.
+			//
+			// for now, there is ONLY an intersection (ie AND) search type, no
+			// union (OR). we do, however, allow exclusions by prefixing a value
+			// with "!"
 			for(var ii = 0, nn = vals.length; ii < nn; ii++)
 			{
 				var val		=	vals[ii];
@@ -59,13 +77,19 @@ var Search	=	Composer.Model.extend({
 					exclude	=	true;
 				}
 
+				// check if there is no result set yet. if not, create it using
+				// the first set of index data.
 				if(!res)
 				{
 					res	=	this['index_'+index][val];
 					continue;
 				}
+
+				// if the result set is empty, just return
 				if(res.length == 0) return res;
 
+				// intersect/exclude based on what kind of value search we're
+				// doing.
 				if(exclude)
 				{
 					res	=	this.exclude(res, this['index_'+index][val]);
@@ -79,6 +103,9 @@ var Search	=	Composer.Model.extend({
 		return res;
 	},
 
+	/**
+	 * Find the intersection between two sorted sets of string values.
+	 */
 	intersect: function(array1, array2)
 	{
 		var result = [];
@@ -110,6 +137,9 @@ var Search	=	Composer.Model.extend({
 		return result.reverse();
 	},
 
+	/**
+	 * Find all string items in array1 that DO NOT EXIST in array2.
+	 */
 	exclude: function(array1, array2)
 	{
 		// create an index
@@ -124,6 +154,9 @@ var Search	=	Composer.Model.extend({
 		return result;
 	},
 
+	/**
+	 * Given a Note model, index it.
+	 */
 	index_note: function(note)
 	{
 		var json	=	toJSON(note);
@@ -134,6 +167,7 @@ var Search	=	Composer.Model.extend({
 		}.bind(this));
 		this.index_type('boards', note.get('board_id'), note.id());
 
+		// run full-text indexer
 		var tags	=	json.tags.map(function(t) { return t.name; }).join(' ');
 		this.ft.add({
 			id: json.id,
@@ -144,6 +178,9 @@ var Search	=	Composer.Model.extend({
 		});
 	},
 
+	/**
+	 * Given a Note model, unindex it.
+	 */
 	unindex_note: function(note)
 	{
 		var id		=	note.id();
@@ -154,6 +191,7 @@ var Search	=	Composer.Model.extend({
 		}.bind(this));
 		this.unindex_type('boards', json.board_id, id);
 
+		// undo full-text indexing
 		var tags	=	json.tags.map(function(t) { return t.name; }).join(' ');
 		this.ft.remove({
 			id: json.id,
@@ -167,6 +205,7 @@ var Search	=	Composer.Model.extend({
 
 	reindex_note: function(note)
 	{
+		// not super graceful, but effective
 		this.unindex_note(note);
 		this.index_note(note);
 	},
@@ -190,6 +229,9 @@ var Search	=	Composer.Model.extend({
 		this['index_'+type][index_id].erase(item_id);
 	},
 
+	/**
+	 * Monitor a board for note changes.
+	 */
 	watch_board: function(board)
 	{
 		board.bind_relational('notes', 'add', function(note) {
@@ -210,6 +252,9 @@ var Search	=	Composer.Model.extend({
 		}.bind(this), 'search:board:cleanup');
 	},
 
+	/**
+	 * Reindex all notes in the system.
+	 */
 	reindex: function()
 	{
 		tagit.profile.get('boards').each(function(board) {
