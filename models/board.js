@@ -26,6 +26,7 @@ var Board = Composer.RelationalModel.extend({
 	public_fields: [
 		'id',
 		'keys',
+		'privs',
 		'body',
 		'sort'
 	],
