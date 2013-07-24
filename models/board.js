@@ -27,6 +27,7 @@ var Board = Composer.RelationalModel.extend({
 		'id',
 		'keys',
 		'privs',
+		'personas',
 		'body',
 		'sort'
 	],

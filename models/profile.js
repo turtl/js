@@ -237,8 +237,6 @@ var Profile = Composer.RelationalModel.extend({
 
 	persist: function(options)
 	{
-		// TODO: disabled until further notice
-		return;
 		options || (options = {});
 
 		var store	=	{
@@ -252,13 +250,17 @@ var Profile = Composer.RelationalModel.extend({
 		});
 		store.time	=	this.get('sync_time', Math.floor(new Date().getTime()/1000));
 		localStorage['profile:user:'+tagit.user.id()]	=	JSON.encode(store);
+		localStorage['scheme_version']					=	config.mirror_scheme_version;
 		return store;
 	},
 
 	from_persist: function()
 	{
-		// TODO: disabled until further notice
-		return false;
+		if((localStorage['scheme_version'] || 0) < config.mirror_scheme_version)
+		{
+			localStorage.clear();
+			return false;
+		}
 		return localStorage['profile:user:'+tagit.user.id()] || false;
 	}
 });
