@@ -403,7 +403,7 @@ var NotesController = TrackController.extend({
 	clear_filters: function()
 	{
 		this.search_text	=	'';
-		this.search_timer.stop();
+		if(this.search_timer) this.search_timer.stop();
 		this.inp_search.set('value', '');
 		this.board.get('tags').each(function(t) {
 			t.set({
