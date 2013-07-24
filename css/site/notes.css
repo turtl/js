@@ -25,6 +25,7 @@
 .notes div.note-actions ul li a.grid span {background: url(/images/site/notes/icons/grid.png) center center no-repeat;}
 .notes div.note-actions ul li a.masonry span {background: url(/images/site/notes/icons/masonry.png) center center no-repeat;}
 .notes div.note-actions ul li a.list span {background: url(/images/site/notes/icons/list.png) center center no-repeat;}
+.notes div.note-actions input[name=search] {width: 200px; margin: 9px 0 0 32px;}
 
 /* individual note actions */
 .notes div.actions {display: none; z-index: 2; position: absolute; top: 0; right: 0; height: 24px; padding: 0 0 0 4px; opacity: .95; background: #222; border: 1px solid #333;}

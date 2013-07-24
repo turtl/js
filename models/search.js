@@ -34,7 +34,6 @@ var Search	=	Composer.Model.extend({
 	search: function(search)
 	{
 		var res			=	false;
-		var searches	=	Object.keys(search);
 
 		// process full-text search first
 		if(search.text && typeOf(search.text) == 'string' && search.text.length > 0 && this.ft)
@@ -44,6 +43,7 @@ var Search	=	Composer.Model.extend({
 		}
 		delete search.text;
 
+		var searches	=	Object.keys(search);
 		for(var i = 0, n = searches.length; i < n; i++)
 		{
 			var index	=	searches[i];
@@ -134,12 +134,13 @@ var Search	=	Composer.Model.extend({
 		}.bind(this));
 		this.index_type('boards', note.get('board_id'), note.id());
 
+		var tags	=	json.tags.map(function(t) { return t.name; }).join(' ');
 		this.ft.add({
 			id: json.id,
 			url: json.url,
 			title: json.title,
 			body: json.text,
-			tags: json.tags.map(function(t) { return t.name; }).join(',')
+			tags: tags
 		});
 	},
 
@@ -153,12 +154,13 @@ var Search	=	Composer.Model.extend({
 		}.bind(this));
 		this.unindex_type('boards', json.board_id, id);
 
+		var tags	=	json.tags.map(function(t) { return t.name; }).join(' ');
 		this.ft.remove({
 			id: json.id,
 			url: json.url,
 			title: json.title,
 			body: json.text,
-			tags: json.tags.map(function(t) { return t.name; }).join(',')
+			tags: tags
 		});
 		delete this.index_json.notes[id];
 	},

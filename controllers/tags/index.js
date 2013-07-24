@@ -19,7 +19,7 @@ var TagsController = Composer.Controller.extend({
 			sort_event: true,
 			refresh_on_change: false
 		});
-		this.board.bind_relational('tags', ['change:selected', 'change:excluded'], function() {
+		this.board.bind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], function() {
 			this.gray_tags.delay(1, this);
 		}.bind(this), 'tags:listing:gray_disabled');
 		this.tags.bind('change:count', function() {
@@ -34,7 +34,7 @@ var TagsController = Composer.Controller.extend({
 	{
 		if(this.tags)
 		{
-			this.board.unbind_relational('tags', ['change:selected', 'change:excluded'], 'tags:listing:gray_disabled');
+			this.board.unbind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], 'tags:listing:gray_disabled');
 			this.tags.unbind('change:count', 'tags:listing:monitor_sort');
 			this.tags.detach();
 		}
