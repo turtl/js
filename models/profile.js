@@ -237,6 +237,8 @@ var Profile = Composer.RelationalModel.extend({
 
 	persist: function(options)
 	{
+		// TODO: disabled until further notice
+		return;
 		options || (options = {});
 
 		var store	=	{
@@ -255,6 +257,8 @@ var Profile = Composer.RelationalModel.extend({
 
 	from_persist: function()
 	{
+		// TODO: disabled until further notice
+		return false;
 		return localStorage['profile:user:'+tagit.user.id()] || false;
 	}
 });
