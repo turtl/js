@@ -155,6 +155,7 @@ var NotesController = TrackController.extend({
 		tagit.keyboard.unbind('e', 'notes:shortcut:edit_note');
 		tagit.keyboard.unbind('m', 'notes:shortcut:move_note');
 		tagit.keyboard.unbind('delete', 'notes:shortcut:delete_note');
+		tagit.keyboard.unbind('x', 'notes:shortcut:clear_filters');
 		if(this.masonry) this.masonry.detach();
 		if(this.masonry_timer) this.masonry_timer.end = null;
 		if(this.search_timer) this.search_timer.end = null;
