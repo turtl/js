@@ -294,6 +294,7 @@ var Board = Composer.RelationalModel.extend({
 		var persona		=	false;
 		var privs		=	this.get('privs');
 		var high_priv	=	0;
+		if(!privs) return false;
 		tagit.user.get('personas').each(function(p) {
 			if(!privs[p.id()]) return;
 			var this_privs	=	privs[p.id()].p;
