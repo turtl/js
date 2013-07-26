@@ -8,8 +8,8 @@
 .notification-list > .gutter > ul > li > ul.actions {float: right;}
 .notification-list > .gutter > ul > li > ul.actions > li {float: left; padding: 0 0 0 6px; opacity: .6; transition: opacity .25s;}
 .notification-list > .gutter > ul > li > ul.actions > li:hover {opacity: 1;}
-.notification-list > .gutter > ul > li > ul.actions a.accept {display: block; width: 20px; height: 16px; background: url(/images/site/icons/check_16x16.png) center center no-repeat;}
-.notification-list > .gutter > ul > li > ul.actions a.deny {display: block; width: 20px; height: 16px; background: url(/images/site/icons/x_16x16.png) center center no-repeat;}
+.notification-list > .gutter > ul > li > ul.actions a.accept {display: block; width: 20px; height: 16px; background: url(../../images/site/icons/check_16x16.png) center center no-repeat;}
+.notification-list > .gutter > ul > li > ul.actions a.deny {display: block; width: 20px; height: 16px; background: url(../../images/site/icons/x_16x16.png) center center no-repeat;}
 
 .notification-list p.none {padding: 4px 0 10px 0; color: #bbb; text-align: center;}
 

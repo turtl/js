@@ -11,7 +11,7 @@
 .board-manage h2 {margin: 0 0 8px 0; font-size: 16px; font-weight: normal; text-transform: uppercase; color: #999;}
 .board-manage > ul {list-style: none; padding-top: 6px;}
 .board-manage > ul > li {display: block; padding: 6px 4px; font-size: 16px; border-bottom: 1px dashed #ccc;}
-.board-manage > ul > li > .sort {display: block; float: left; width: 12px; height: 16px; padding: 0 8px 0 0; opacity: .25; cursor: move; background: url(/images/site/icons/sort_handle_12x16.png) 0 0 no-repeat;}
+.board-manage > ul > li > .sort {display: block; float: left; width: 12px; height: 16px; padding: 0 8px 0 0; opacity: .25; cursor: move; background: url(../../images/site/icons/sort_handle_12x16.png) 0 0 no-repeat;}
 .board-manage > ul > li:hover > .sort {opacity: .6;}
 .board-manage > ul > li > h3 {float: left;}
 .board-manage > ul > li > h3 small {font-size: 13px; color: #aaa; margin-left: 10px;}

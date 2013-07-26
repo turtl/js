@@ -69,8 +69,8 @@ header .apps ul.switch li {float: left;}
 header .apps ul.switch li a {position: relative; width: 40px; border-left: 0;}
 header .apps ul.switch li a span {width: 40px; height: 40px; opacity: .6;}
 header .apps ul.switch li a small {position: absolute; z-index: 4; right: 0; bottom: 0; display: block; padding: 1px 4px; font-size: 11px; font-weight: bold; color: #fff; background: #c44;}
-/*header .apps ul.switch li a.notes span {background: url(/images/template/app_notes_24x24.png) center center no-repeat;}*/
-header .apps ul.switch li a.notifications span {background: url(/images/template/app_messages_24x24.png) center center no-repeat;}
+/*header .apps ul.switch li a.notes span {background: url(../images/template/app_notes_24x24.png) center center no-repeat;}*/
+header .apps ul.switch li a.notifications span {background: url(../images/template/app_messages_24x24.png) center center no-repeat;}
 
 /* logged out menu */
 header div.actions {float: right; margin: 0;}
