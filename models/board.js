@@ -33,7 +33,8 @@ var Board = Composer.RelationalModel.extend({
 	],
 
 	private_fields: [
-		'title'
+		'title',
+		'shared'
 	],
 
 	defaults: {
@@ -47,22 +48,29 @@ var Board = Composer.RelationalModel.extend({
 			if(!this._track_tags) return false;
 			this.get('tags').add_tags_from_note(note);
 			this.get('tags').trigger('update');
+			this.trigger('note_change');
 		}.bind(this), 'board:model:notes:add');
 		this.bind_relational('notes', 'remove', function(note) {
 			if(!this._track_tags) return false;
 			this.get('tags').remove_tags_from_note(note);
 			this.get('tags').trigger('update');
+			this.trigger('note_change');
 		}.bind(this), 'board:model:notes:remove');
 		this.bind_relational('notes', 'reset', function() {
 			if(!this._track_tags) return false;
 			this.get('tags').refresh_from_notes(this.get('notes'));
 			this.get('tags').trigger('update');
+			this.trigger('note_change');
 		}.bind(this), 'board:model:notes:reset');
 		this.bind_relational('notes', 'change:tags', function(note) {
 			if(!this._track_tags) return false;
 			this.get('tags').diff_tags_from_note(note);
 			this.get('tags').trigger('update');
+			this.trigger('note_change');
 		}.bind(this), 'board:model:notes:change:tags');
+		this.bind_relational('notes', 'change', function(note) {
+			this.trigger('note_change');
+		}.bind(this), 'board:model:notes:change');
 
 		// make category tags auto-update when tags do
 		this.bind_relational('tags', 'update', function() {
