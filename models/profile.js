@@ -26,6 +26,9 @@ var Profile = Composer.RelationalModel.extend({
 				this.set_current_board(this.get('boards').first());
 			}
 		}.bind(this));
+		this.bind_relational('boards', ['add', 'remove', 'reset', 'change', 'note_change'], function() {
+			this.persist();
+		}.bind(this));
 		this.persist_timer		=	new Timer(200);
 		this.persist_timer.end	=	false;
 	},
@@ -262,7 +265,14 @@ var Profile = Composer.RelationalModel.extend({
 				localStorage['scheme_version']					=	config.mirror_scheme_version;
 			}.bind(this);
 		}
-		this.persist_timer.start();
+		if(options.now)
+		{
+			this.persist_timer.end();
+		}
+		else
+		{
+			this.persist_timer.start();
+		}
 	},
 
 	from_persist: function()

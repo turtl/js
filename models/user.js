@@ -174,6 +174,7 @@ var User	=	Composer.RelationalModel.extend({
 				barfr.barf('There was an error saving your user settings:'+ err);
 			}.bind(this)
 		});
+		tagit.profile.persist({now: true});
 	},
 
 	get_key: function()
