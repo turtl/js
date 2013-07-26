@@ -33,7 +33,8 @@ var Board = Composer.RelationalModel.extend({
 	],
 
 	private_fields: [
-		'title'
+		'title',
+		'shared'
 	],
 
 	defaults: {
