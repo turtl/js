@@ -5,6 +5,7 @@ var ApiTracker	=	new Class({
 	id: 0,
 
 	requests: {},
+	attached: false,
 
 	initialize: function()
 	{
@@ -15,9 +16,11 @@ var ApiTracker	=	new Class({
 	{
 		// TODO: chrome
 		if(!window.addon || !window.addon.port) return false;
+		if(this.attached) return false;
 		window.addon.port.on('xhr-response', function(id, result) {
 			this.finish(id, result);
 		}.bind(this));
+		this.attached	=	true;
 	},
 
 	send: function(request)
