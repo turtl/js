@@ -218,14 +218,6 @@ var User	=	Composer.RelationalModel.extend({
 		return auth;
 	},
 
-	load_profile: function(options)
-	{
-		options || (options = {});
-		var profile = new Profile();
-		profile.load_data(options);
-		return profile;
-	},
-
 	load_personas: function(options)
 	{
 		var persona_keys = this.get('settings').get_by_key('personas').value();

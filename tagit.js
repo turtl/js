@@ -61,6 +61,9 @@ var tagit	=	{
 			return false;
 		}
 
+		// setup the API tracker (for addon API requests)
+		tagit.api.tracker.attach();
+
 		// just clear everything out to get rid of scraped content (we don't
 		// really care about it once the JS loads).
 		var _main = $E(this.main_container_selector);
@@ -114,9 +117,12 @@ var tagit	=	{
 			this.user.bind('change', this.user.write_cookie.bind(this.user), 'user:write_changes_to_cookie');
 			this.api.set_auth(this.user.get_auth());
 			this.controllers.pages.release_current();
-			this.messages = new Messages();
+			this.messages	=	new Messages();
+			this.profile	=	new Profile();
+			this.search		=	new Search();
+
 			tagit.show_loading_screen(true);
-			this.profile = this.user.load_profile({
+			this.profile.load_data({
 				init: true,
 				success: function(_, from_storage) {
 					this.user.load_personas({
@@ -180,9 +186,6 @@ var tagit	=	{
 					});
 				}.bind(this)
 			});
-
-			// load search model
-			this.search	=	new Search();
 
 			// logout shortcut
 			tagit.keyboard.bind('S-l', function() {
@@ -383,11 +386,11 @@ var markdown	=	null;
 window.addEvent('domready', function() {
 	window._header_tags		=	[];
 	tagit.main_container	=	$E(tagit.main_container_selector);
-	tagit.site_url			=	__site_url;
+	tagit.site_url			=	window.__site_url || '';
 	tagit.base_window_title	=	document.title.replace(/.*\|\s*/, '');
 	tagit.api				=	new Api(
-		__api_url,
-		__api_key,
+		window.__api_url || '',
+		window.__api_key || '',
 		function(cb_success, cb_fail) {
 			return function(data)
 			{
