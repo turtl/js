@@ -55,6 +55,12 @@ var ApiTracker	=	new Class({
 		request.xhr.status			=	status;
 		request.xhr.responseText	=	text;
 
+		if(window._net_log)
+		{
+			console.log('--- '+request.options.method+' '+request.options.url +'?'+ request.options.data);
+			console.log(text);
+		}
+
 		if(200 <= status && status < 300)
 		{
 			// success
