@@ -89,6 +89,7 @@ var User	=	Composer.RelationalModel.extend({
 	login_from_auth: function(auth)
 	{
 		if(!auth) return false;
+		this.set({id: auth.uid});
 		this.auth		=	auth.auth;
 		this.key		=	tcrypt.key_to_bin(auth.key);
 		this.logged_in	=	true;

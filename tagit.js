@@ -86,7 +86,14 @@ var tagit	=	{
 		this.setup_user({initial_route: initial_route});
 
 		// if a user exists, log them in
-		this.user.login_from_cookie();
+		if(window._in_ext)
+		{
+			this.user.login_from_auth(window._auth);
+		}
+		else
+		{
+			this.user.login_from_cookie();
+		}
 
 		this.setup_header_bar();
 
