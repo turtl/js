@@ -21,7 +21,7 @@ function img(url)
 {
 	if(window._base_url)
 	{
-		return window._base.replace(/\/$/, '') + url;
+		return window._base_url.replace(/\/$/, '') + url;
 	}
 	else
 	{
