@@ -86,6 +86,15 @@ var User	=	Composer.RelationalModel.extend({
 		if (!silent) this.trigger('login', this);
 	},
 
+	login_from_auth: function(auth)
+	{
+		if(!auth) return false;
+		this.auth		=	auth.auth;
+		this.key		=	tcrypt.key_to_bin(auth.key);
+		this.logged_in	=	true;
+		this.trigger('login', this);
+	},
+
 	login_from_cookie: function()
 	{
 		var cookie	=	Cookie.read(config.user_cookie);
