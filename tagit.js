@@ -25,9 +25,6 @@ var tagit	=	{
 	loaded: false,
 	router: false,
 
-	// holds the last url we routed to
-	last_url: null,
-
 	// tells the pages controller whether or not to scroll to the top of the
 	// window after a page load
 	scroll_to_top: true,
@@ -114,7 +111,10 @@ var tagit	=	{
 		// update the user_profiles collection on login
 		this.user.bind('login', function() {
 			// if the user is logged in, we'll put their auth info into the api object
-			this.user.bind('change', this.user.write_cookie.bind(this.user), 'user:write_changes_to_cookie');
+			if(!window._in_ext)
+			{
+				this.user.bind('change', this.user.write_cookie.bind(this.user), 'user:write_changes_to_cookie');
+			}
 			this.api.set_auth(this.user.get_auth());
 			this.controllers.pages.release_current();
 			this.messages	=	new Messages();
@@ -138,10 +138,11 @@ var tagit	=	{
 								tagit.show_loading_screen(false);
 								this.controllers.pages.release_current();
 								this.last_url = '';
-								var initial_route	=	options.initial_route || '';
-								if(initial_route.match(/^\/users\//)) initial_route = '/';
 								tagit.profile.persist();
 								this.search.reindex();
+								var initial_route	=	options.initial_route || '';
+								if(initial_route.match(/^\/users\//)) initial_route = '/';
+								if(initial_route.match(/index.html/)) initial_route = '/';
 								this.route(initial_route);
 								this.setup_syncing();
 							}.bind(this);
@@ -307,10 +308,7 @@ var tagit	=	{
 
 				enable_cb: function(url)
 				{
-					// make sure if we are going from PAGE + MODAL -> PAGE, we dont reload PAGE's controller
-					var url	=	url + window.location.search;
-					var last_base_url	=	tagit.last_url ? tagit.last_url.replace(/\-\-.*/) : null;
-					return this.loaded && last_base_url != url;
+					return this.loaded;
 				}.bind(this),
 				on_failure: function(obj)
 				{
@@ -385,12 +383,15 @@ var markdown	=	null;
 
 window.addEvent('domready', function() {
 	window._header_tags		=	[];
+	window.__site_url		=	window.__site_url || '';
+	window.__api_url		=	window.__api_url || '';
+	window.__api_key		=	window.__api_key || '';
 	tagit.main_container	=	$E(tagit.main_container_selector);
-	tagit.site_url			=	window.__site_url || '';
+	tagit.site_url			=	__site_url || '';
 	tagit.base_window_title	=	document.title.replace(/.*\|\s*/, '');
 	tagit.api				=	new Api(
-		window.__api_url || '',
-		window.__api_key || '',
+		__api_url || '',
+		__api_key || '',
 		function(cb_success, cb_fail) {
 			return function(data)
 			{
@@ -435,7 +436,7 @@ window.addEvent('domready', function() {
 	
 	tagit.load_controller('pages', PagesController);
 
-	// fucking load, tagit
+	// init it LOL
 	tagit.init.delay(50, tagit);
 });
 

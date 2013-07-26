@@ -19,7 +19,14 @@ function arrdiff(arr1, arr2) { return arr1.filter(function(el) { return !arr2.co
 // storage facility we require (probably S3/cloudfront)
 function img(url)
 {
-	return url;
+	if(window._base_url)
+	{
+		return window._base.replace(/\/$/, '') + url;
+	}
+	else
+	{
+		return url;
+	}
 }
 
 function get_url()
