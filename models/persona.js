@@ -25,6 +25,12 @@ var Persona = Composer.Model.extend({
 		{
 			this.challenge	=	null;
 		}.bind(this);
+
+		this.bind('destroy', function() {
+			var settings	=	Object.clone(tagit.user.get('settings').get_by_key('personas').value());
+			delete settings[this.id()];
+			tagit.user.get('settings').get_by_key('personas').value(settings);
+		}.bind(this), 'persona:user:cleanup');
 	},
 
 	load_profile: function(options)
