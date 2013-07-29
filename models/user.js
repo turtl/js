@@ -103,11 +103,11 @@ var User	=	Composer.RelationalModel.extend({
 			return false;
 		}
 		var userdata	=	JSON.decode(cookie);
-		var key			=	userdata.k;
+		var key			=	tcrypt.key_to_bin(userdata.k);
 		var auth		=	userdata.a;
 		delete userdata.k;
 		delete userdata.a;
-		this.key	=	CryptoJS.enc.Hex.parse(key);
+		this.key	=	key;
 		this.auth	=	auth;
 		this.set(userdata);
 		this.logged_in	=	true;
@@ -136,7 +136,7 @@ var User	=	Composer.RelationalModel.extend({
 
 		var save		=	{
 			id: this.id(),
-			k: key.toString(),
+			k: tcrypt.key_to_string(key),
 			a: auth,
 			last_board: this.get('last_board')
 		};

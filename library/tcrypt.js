@@ -13,11 +13,11 @@ var tcrypt = {
 		stringify: function (cipherParams)
 		{
 			// create json object with ciphertext
-			var crypto = cipherParams.ciphertext.toString(CryptoJS.enc.Base64);
+			var crypto = convert.base64.encode(cipherParams.ciphertext);
 
 			// optionally add iv and salt
-			if(cipherParams.iv) crypto += ':i' + cipherParams.iv.toString();
-			if(cipherParams.salt) crypto += ':s' + cipherParams.salt.toString();
+			if(cipherParams.iv) crypto += ':i' + convert.binstring_to_hex(cipherParams.iv);
+			if(cipherParams.salt) crypto += ':s' + convert.binstring_to_hex(cipherParams.salt);
 
 			// stringify json object
 			return crypto;
@@ -27,55 +27,62 @@ var tcrypt = {
 		{
 			// parse json string
 			var parts = crypto.split(/:/g);
-
-			// extract ciphertext from json object, and create cipher params object
-			var cipherParams = CryptoJS.lib.CipherParams.create({
-				ciphertext: CryptoJS.enc.Base64.parse(parts[0])
-			});
-
-			// optionally extract iv and salt
+			var params = {
+				ciphertext: convert.base64.decode(parts[0])
+			}
 			parts.shift();
 			parts.each(function(p) {
-				var val = CryptoJS.enc.Hex.parse(p.slice(1));
-				if(p.match(/^i/)) cipherParams.iv = val;
-				if(p.match(/^s/)) cipherParams.salt = val;
+				if(p.match(/^i/)) params.iv = convert.hex_to_binstring(p.slice(1));
+				if(p.match(/^s/)) params.salt = convert.hex_to_binstring(p.slice(1));
 			});
-
-			return cipherParams;
+			return params;
 		}
 	},
 
 	encrypt: function(key, data, options)
 	{
 		options || (options = {});
+
 		var opts = Object.merge({
-			mode: CryptoJS.mode.CBC,
-			padding: CryptoJS.pad.AnsiX923,
-			format: tcrypt.TagitFormatter
+			key: key,
+			block_mode: CBC,
+			pad_mode: AnsiX923,
 		}, options);
 
 		// auto-generate an initial vector if needed
-		if(!opts.iv && typeOf(key) != 'string')
-		{
-			opts.iv = tcrypt.iv();
-		}
+		if(!opts.iv)
+			opts.iv = this.iv();
 
-		return CryptoJS.AES.encrypt(data, key, opts);
+		var ciphertext = new AES(opts).encrypt(data);
+
+		var formatted = this.TagitFormatter.stringify({
+			ciphertext: ciphertext,
+			iv: opts.iv
+		});
+
+		return formatted;
 	},
 
 	decrypt: function(key, encrypted, options)
 	{
 		options || (options = {});
+
 		var opts = Object.merge({
-			mode: CryptoJS.mode.CBC,
-			padding: CryptoJS.pad.AnsiX923,
-			format: tcrypt.TagitFormatter
+			key: key,
+			block_mode: CBC,
+			pad_mode: AnsiX923,
 		}, options);
+
 		var params = tcrypt.TagitFormatter.parse(encrypted);
+		
 		if(params.iv) opts.iv = params.iv;
-		var de = CryptoJS.AES.decrypt(encrypted, key, opts);
-		if(options.raw) return de;
-		return CryptoJS.enc.Utf8.stringify(de);
+
+		var de = new AES(opts).decrypt(params.ciphertext);
+
+		if (options.raw)
+			return de;
+
+		return convert.utf8.decode(de);
 	},
 
 	/**
@@ -84,7 +91,15 @@ var tcrypt = {
 	key: function(passphrase, salt, options)
 	{
 		options || (options = {});
-		return CryptoJS.PBKDF2(passphrase, salt, options);
+		
+		var _kdf = new PBKDF2({
+			key_size: 32,			// note the key size is in bytes
+			hasher: SHA1,			// PBKDF2 uses HMAC internally
+			iterations: 400			// moar = bettar (slowar)
+		});
+		var key = _kdf.compute(passphrase, salt);
+
+		return key;
 	},
 
 	/**
@@ -92,14 +107,14 @@ var tcrypt = {
 	 */
 	key_to_string: function(keybytes)
 	{
-		return CryptoJS.enc.Base64.stringify(keybytes);
+		return convert.base64.encode(keybytes);
 	},
 
 	/**
 	 */
 	key_to_bin: function(keystring)
 	{
-		return CryptoJS.enc.Base64.parse(keystring);
+		return convert.base64.decode(keystring);
 	},
 
 	/**
@@ -113,8 +128,7 @@ var tcrypt = {
 		for (var i = 0; i < nBytes; i += 4) {
 			words.push((tcrypt.random_number() * 0x100000000) | 0);
 		}
-
-		return new CryptoJS.lib.WordArray.init(words, nBytes);
+		return words;
 	},
 
 	/**
@@ -124,19 +138,19 @@ var tcrypt = {
 	iv: function(value)
 	{
 		// if no seed given, return 16 random bytes
-		if(!value) return tcrypt.random_bytes(16);
+		if(!value) return convert.words_to_binstring(tcrypt.random_bytes(16));
 
 		if(value.length < 16)
 		{
 			// if the IV seed is less than 16 bytes, append random data
-			value += CryptoJS.enc.Hex.stringify(tcrypt.random_bytes(16));
+			value += convert.words_to_hex(tcrypt.random_bytes(16));
 		}
 		if(value.length > 16)
 		{
 			// only grab 16 bytes of seed
 			value = value.slice(0, 16)
 		}
-		return CryptoJS.enc.Utf8.parse(value);
+		return value;
 	},
 
 	/**
@@ -144,7 +158,7 @@ var tcrypt = {
 	 */
 	random_key: function(options)
 	{
-		return tcrypt.random_bytes(32);
+		return convert.words_to_binstring(tcrypt.random_bytes(32));
 	},
 
 	/**
@@ -153,9 +167,11 @@ var tcrypt = {
 	hash: function(data, options)
 	{
 		options || (options = {});
-		var hash = CryptoJS.SHA256(data);
-		if(options.raw) return hash;
-		return CryptoJS.enc.Hex.stringify(hash);
+
+		if(options.raw)
+			return new SHA256().hash(data, {return_format: 'binary'});
+
+		return new SHA256().hash(data);
 	},
 
 	/**

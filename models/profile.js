@@ -245,7 +245,7 @@ var Profile = Composer.RelationalModel.extend({
 	persist: function(options)
 	{
 		options || (options = {});
-
+		return false;
 		if(!this.persist_timer.end)
 		{
 			this.persist_timer.end	=	function()
@@ -277,6 +277,7 @@ var Profile = Composer.RelationalModel.extend({
 
 	from_persist: function()
 	{
+		return false;
 		if((localStorage['scheme_version'] || 0) < config.mirror_scheme_version)
 		{
 			localStorage.clear();
