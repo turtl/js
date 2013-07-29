@@ -4,6 +4,7 @@ var BoardManageController = Composer.Controller.extend({
 	},
 
 	events: {
+		'click a[href=#add-persona]': 'open_personas',
 		'click .button.add': 'open_add',
 		'click a[href=#share]': 'open_share',
 		'click a[href=#edit]': 'open_edit',
@@ -49,7 +50,8 @@ var BoardManageController = Composer.Controller.extend({
 			return ret;
 		});
 		var content = Template.render('boards/manage', {
-			boards: boards
+			boards: boards,
+			enable_sharing: tagit.user.get('personas').models().length > 0
 		});
 		this.html(content);
 
@@ -71,6 +73,16 @@ var BoardManageController = Composer.Controller.extend({
 				tagit.user.get('settings').get_by_key('board_sort').value(sort);
 				this.collection.sort();
 			}.bind(this)
+		});
+	},
+
+	open_personas: function(e)
+	{
+		if(e) e.stop();
+		this.release();
+		new PersonaEditController({
+			collection: tagit.user.get('personas'),
+			return_to_manage: true
 		});
 	},
 

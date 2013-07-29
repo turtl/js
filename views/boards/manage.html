@@ -1,5 +1,8 @@
 <h1>Manage boards</h1>
 <div class="board-manage">
+	<? if(!enable_sharing) { ?>
+		<a href="#add-persona">Add a persona</a> to enable sharing.
+	<? } ?>
 	<div class="button add">
 		<span>New board</span>
 	</div>
@@ -20,11 +23,13 @@
 							</a>
 						</li>
 					<? } else { ?>
-						<li class="<? if(b.share_enabled) { ?>highlight<? } ?>">
-							<a href="#share" class="<?=b.id?>" title="Share board">
-								<img src="/images/site/icons/share_16x16_black.png" alt="share" width="16" height="16">
-							</a>
-						</li>
+						<? if(enable_sharing) { ?>
+							<li class="<? if(b.share_enabled) { ?>highlight<? } ?>">
+								<a href="#share" class="<?=b.id?>" title="Share board">
+									<img src="<?=img('/images/site/icons/share_16x16_black.png')?>" alt="share" width="16" height="16">
+								</a>
+							</li>
+						<? } ?>
 						<li>
 							<a href="#edit" class="<?=b.id?>" title="Edit board">
 								<img src="/images/site/icons/edit_16x16_black.png" alt="Edit" width="16" height="16">

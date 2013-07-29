@@ -1,7 +1,10 @@
 <?
 var action = persona.id ? 'Edit' : 'Add';
 ?>
-<h1><?=action?> persona <small><a href="#personas">&laquo; Back to your personas</a></small></h1>
+<h1>
+	<?=action?> persona
+	<small><a href="#personas">&laquo; Back to <? if(return_to_manage) { ?>board management<? } else { ?>your personas<? } ?></a></small>
+</h1>
 <div class="persona-edit">
 	<form class="standard-form">
 		<input tabindex="1" type="text" name="screenname" value="<?=persona.screenname?>" placeholder="Screen name (valid characters: &quot;A-Z0-9.&quot;)">
