@@ -222,7 +222,7 @@ var User	=	Composer.RelationalModel.extend({
 	load_personas: function(options)
 	{
 		var persona_keys = this.get('settings').get_by_key('personas').value();
-		if(!persona_keys)
+		if(!persona_keys || Object.getLength(persona_keys) == 0)
 		{
 			if(options.success) options.success();
 			return false;

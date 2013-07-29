@@ -17,6 +17,9 @@ var PersonaEditController = Composer.Controller.extend({
 	model: null,
 	sn_timer: null,
 
+	// if true, will return to board management instead of persona mgmt on close
+	return_to_manage: false,
+
 	init: function()
 	{
 		if(!this.model) this.model = new Persona();
@@ -52,7 +55,8 @@ var PersonaEditController = Composer.Controller.extend({
 	render: function()
 	{
 		var content = Template.render('personas/edit', {
-			persona: toJSON(this.model)
+			persona: toJSON(this.model),
+			return_to_manage: this.return_to_manage
 		});
 		this.html(content);
 		(function() { this.inp_screenname.focus(); }).delay(1, this);
@@ -216,6 +220,15 @@ var PersonaEditController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		this.release();
-		new PersonasController();
+		if(this.return_to_manage)
+		{
+			new BoardManageController({
+				collection: tagit.profile.get('boards')
+			});
+		}
+		else
+		{
+			new PersonasController();
+		}
 	}
 });

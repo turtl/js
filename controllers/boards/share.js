@@ -27,7 +27,7 @@ var BoardShareController = Composer.Controller.extend({
 		if(!this.from_persona)
 		{
 			barfr.barf('You must have a persona before being able to share your boards.');
-			this.release();
+			this.open_manage();
 			return;
 		}
 
