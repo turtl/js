@@ -22,7 +22,7 @@ var BookmarkController = Composer.Controller.extend({
 		this.profile.bind('change:current_board', function() {
 			var board = this.profile.get_current_board();
 
-			tagit.user.set({last_board: board.id()});
+			tagit.user.get('settings').get_by_key('last_board').value(board.id());
 			this.soft_release();
 
 			var note = new Note({
@@ -47,7 +47,8 @@ var BookmarkController = Composer.Controller.extend({
 			}, 'bookmark:edit_note:release');
 		}.bind(this), 'bookmark:change_board');
 
-		this.profile.set_current_board(tagit.user.get('last_board'), {silent: true});
+		var last	=	tagit.user.get('settings').get_by_key('last_board').value() || false;
+		this.profile.set_current_board(last, {silent: true});
 		this.profile.trigger('change:current_board');
 	},
 

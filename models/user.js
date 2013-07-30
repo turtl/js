@@ -138,8 +138,7 @@ var User	=	Composer.RelationalModel.extend({
 		var save		=	{
 			id: this.id(),
 			k: key.toString(),
-			a: auth,
-			last_board: this.get('last_board')
+			a: auth
 		};
 		Cookie.write(config.user_cookie, JSON.encode(save), { duration: duration });
 	},
