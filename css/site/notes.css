@@ -48,6 +48,13 @@
 /* note color circles */
 .note-view .color,
 ul.note_list .note .color {display: block; position: absolute; width: 8px; height: 8px; margin: -12px 0 0 -12px; border-radius: 4px;}
+/*.note-view .color,
+ul.note_list .note .color {width: 4px; height: 32px; margin: -16px -16px; border-radius: 0;}*/
+.note-view.image .color,
+ul.note_list .note.image .color {margin: 4px 0 0 4px;}
+/*.note-view.image .color,
+ul.note_list .note.image .color {margin: 0;}*/
+
 .note-edit .colors input[type=radio] {margin: 0;}
 .note-edit .color {display: inline-block; width: 8px; height: 8px; border-radius: 4px;}
 .color.none {color: #aaa; background: none;}
@@ -129,9 +136,6 @@ ul.note_list .note h4 {font-size: 12px;}
 ul.note_list .note h5 {font-size: 11px;}
 ul.note_list .note em {font-style: italic;}
 ul.note_list .note h5 {font-weight: bold;}
-
-.note-view.image .color,
-ul.note_list .note.image .color {margin: 4px 0 0 4px;}
 
 /* grid */
 ul.note_list.list_grid {position: relative;}
