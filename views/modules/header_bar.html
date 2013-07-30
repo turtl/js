@@ -28,12 +28,14 @@
 					<span>Bookmarklet</span>
 				</a>
 			</li>
-			<li class="logout">
-				<a href="/users/logout" title="Sign out (shortcut `shift+L`)">
-					<img src="<?=img('/images/site/icons/logout_16x16.png')?>" width="16" height="16" alt="Logout">
-					<span>Logout</span>
-				</a>
-			</li>
+			<? if(!window._in_ext) { ?>
+				<li class="logout">
+					<a href="/users/logout" title="Sign out (shortcut `shift+L`)">
+						<img src="<?=img('/images/site/icons/logout_16x16.png')?>" width="16" height="16" alt="Logout">
+						<span>Logout</span>
+					</a>
+				</li>
+			<? } ?>
 		</ul>
 	<? } else { ?>
 		<ul>
