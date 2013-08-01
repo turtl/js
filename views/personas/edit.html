@@ -8,7 +8,7 @@ var action = persona.id ? 'Edit' : 'Add';
 <div class="persona-edit">
 	<form class="standard-form">
 		<input tabindex="1" type="text" name="screenname" value="<?=persona.screenname?>" placeholder="Screen name (valid characters: &quot;A-Z0-9.&quot;)">
-		<img class="load" src="/images/site/icons/load_16x16.gif" width="16" height="16" alt="WORKING!!!1">
+		<img class="load" src="<?=img('/images/site/icons/load_16x16.gif')?>" width="16" height="16" alt="WORKING!!!1">
 		<p class="taken">(type your screenname above to see if it's available)</p>
 
 		<input tabindex="2" type="text" name="name" value="<?=persona.name?>" placeholder="Full name (optional)">

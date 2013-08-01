@@ -18,7 +18,7 @@ var Search	=	Composer.Model.extend({
 
 	init: function()
 	{
-		tagit.profile.get('boards').bind('add', function(board) {
+		tagit.profile.bind_relational('boards', 'add', function(board) {
 			this.watch_board(board);
 		}.bind(this), 'search:board:add');
 
