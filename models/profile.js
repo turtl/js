@@ -96,6 +96,71 @@ var Profile = Composer.RelationalModel.extend({
 		}));
 	},
 
+	/**
+	 * Grab all profile/persona profile data and init it into this profile
+	 * object.
+	 */
+	initial_load: function(options)
+	{
+		options || (options = {});
+		this.load_data({
+			init: true,
+			success: function(_, from_storage) {
+				tagit.user.load_personas({
+					success: function(prof) {
+						// message data can be loaded independently once personas
+						// are loaded, so do it
+						tagit.messages.sync();
+
+						// this function gets called when all profile/persona data
+						// has been loaded
+						var finish	=	function()
+						{
+							if(options.complete) options.complete();
+						};
+
+						var num_personas	=	tagit.user.get('personas').models().length;
+
+						// if we loaded from storage, we already have all the
+						// persona profile junk, so don't bother loading it
+						if(num_personas > 0 && !from_storage)
+						{
+							// wait for all personas to load their profiles before
+							// finishing the load
+							var i		=	0;
+							var track	=	function()
+							{
+								i++;
+								if(i >= num_personas) finish();
+							};
+
+							// loop over each persona and load its profile data
+							tagit.user.get('personas').each(function(p) {
+								p.load_profile({
+									success: function() {
+										track();
+									},
+									error: function(err) {
+										barfr.barf('Error loading the profile data for your persona "'+p.get('screenname')+'":'+ err);
+										// don't want to freeze the app just because one
+										// persona doesn't load, do we?
+										track();
+									}
+								});
+							});
+						}
+						else
+						{
+							// no personas to load (or we loaded all the profile
+							// data from locstor newayz), just finish up the load
+							finish();
+						}
+					}
+				});
+			}
+		});
+	},
+
 	get_current_board: function()
 	{
 		return this.get('current_board', false);

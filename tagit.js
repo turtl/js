@@ -122,69 +122,18 @@ var tagit	=	{
 			this.search		=	new Search();
 
 			tagit.show_loading_screen(true);
-			this.profile.load_data({
-				init: true,
-				success: function(_, from_storage) {
-					this.user.load_personas({
-						success: function(prof) {
-							// message data can be loaded independently once personas
-							// are loaded, so do it
-							tagit.messages.sync();
-
-							// this function gets called when all profile/persona data
-							// has been loaded
-							var finish	=	function()
-							{
-								tagit.show_loading_screen(false);
-								this.controllers.pages.release_current();
-								this.last_url = '';
-								tagit.profile.persist();
-								this.search.reindex();
-								var initial_route	=	options.initial_route || '';
-								if(initial_route.match(/^\/users\//)) initial_route = '/';
-								if(initial_route.match(/index.html/)) initial_route = '/';
-								this.route(initial_route);
-								this.setup_syncing();
-							}.bind(this);
-
-							var num_personas	=	tagit.user.get('personas').models().length;
-
-							// if we loaded from storage, we already have all the
-							// persona profile junk, so don't bother loading it
-							if(num_personas > 0 && !from_storage)
-							{
-								// wait for all personas to load their profiles before
-								// finishing the load
-								var i		=	0;
-								var track	=	function()
-								{
-									i++;
-									if(i >= num_personas) finish();
-								};
-
-								// loop over each persona and load its profile data
-								tagit.user.get('personas').each(function(p) {
-									p.load_profile({
-										success: function() {
-											track();
-										},
-										error: function(err) {
-											barfr.barf('Error loading the profile data for your persona "'+p.get('screenname')+'":'+ err);
-											// don't want to freeze the app just because one
-											// persona doesn't load, do we?
-											track();
-										}
-									});
-								});
-							}
-							else
-							{
-								// no personas to load (or we loaded all the profile
-								// data from locstor newayz), just finish up the load
-								finish();
-							}
-						}.bind(this)
-					});
+			this.profile.initial_load({
+				complete: function() {
+					tagit.show_loading_screen(false);
+					this.controllers.pages.release_current();
+					this.last_url = '';
+					tagit.profile.persist();
+					this.search.reindex();
+					var initial_route	=	options.initial_route || '';
+					if(initial_route.match(/^\/users\//)) initial_route = '/';
+					if(initial_route.match(/index.html/)) initial_route = '/';
+					this.route(initial_route);
+					this.setup_syncing();
 				}.bind(this)
 			});
 
@@ -382,7 +331,6 @@ var barfr		=	null;
 var markdown	=	null;
 
 window.addEvent('domready', function() {
-	window._header_tags		=	[];
 	window.__site_url		=	window.__site_url || '';
 	window.__api_url		=	window.__api_url || '';
 	window.__api_key		=	window.__api_key || '';
