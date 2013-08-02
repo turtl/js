@@ -73,7 +73,7 @@ var PagesController	=	Composer.Controller.extend({
 		// fires after the "loaded" event
 		(function() { this.page_loading(false); }).delay(200, this);
 
-		// scroll_to_top is set in the musio::route_callback function in tagit.js
+		// scroll_to_top is set in the tagit::route_callback function in tagit.js
 		//console.log('scroll');
 		if(tagit.scroll_to_top)
 		{
