@@ -14,10 +14,9 @@ var ApiTracker	=	new Class({
 
 	attach: function()
 	{
-		// TODO: chrome
-		if(!window.addon || !window.addon.port) return false;
+		if(!addon_comm.enabled) return false;
 		if(this.attached) return false;
-		window.addon.port.on('xhr-response', function(id, result) {
+		addon_comm.bind('xhr-response', function(id, result) {
 			this.finish(id, result);
 		}.bind(this));
 		this.attached	=	true;
@@ -26,7 +25,7 @@ var ApiTracker	=	new Class({
 	send: function(request)
 	{
 		var id			=	this.id++;
-		var emitargs	=	{
+		var msgargs	=	{
 			id:	id,
 			url: request.url,
 			method: request.method,
@@ -37,8 +36,7 @@ var ApiTracker	=	new Class({
 		// track the request
 		this.requests[id]	=	new Request(request);
 
-		// TODO: chrome
-		window.addon.port.emit('xhr', emitargs);
+		addon_comm.send('xhr', msgargs);
 	},
 
 	finish: function(id, result)
@@ -47,7 +45,6 @@ var ApiTracker	=	new Class({
 		delete this.requests[id];
 		if(!request) return false;
 
-		// TODO: chrome
 		var status	=	result.status;
 		var text	=	result.text;
 

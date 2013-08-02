@@ -309,6 +309,8 @@ var Profile = Composer.RelationalModel.extend({
 
 	persist: function(options)
 	{
+		if(!tagit.mirror) return false;
+
 		options || (options = {});
 
 		if(!this.persist_timer.end)
@@ -328,6 +330,7 @@ var Profile = Composer.RelationalModel.extend({
 				store.time	=	this.get('sync_time', tsnow);
 				localStorage['profile:user:'+tagit.user.id()]	=	JSON.encode(store);
 				localStorage['scheme_version']					=	config.mirror_scheme_version;
+				addon_comm.send('provile-save', store);
 			}.bind(this);
 		}
 		if(options.now)
@@ -342,6 +345,8 @@ var Profile = Composer.RelationalModel.extend({
 
 	from_persist: function()
 	{
+		if(!tagit.mirror) return false;
+
 		if((localStorage['scheme_version'] || 0) < config.mirror_scheme_version)
 		{
 			localStorage.clear();

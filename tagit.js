@@ -4,6 +4,9 @@
 var $E = function(selector, filter){ return ($(filter) || document).getElement(selector); };
 var $ES = function(selector, filter){ return ($(filter) || document).getElements(selector); };
 
+// stores the object that communicates with the addon
+var addon_comm	=	null;
+
 var tagit	=	{
 	site_url: null,
 
@@ -32,6 +35,9 @@ var tagit	=	{
 	// whether or not to sync data w/ server
 	sync: true,
 	sync_timer: null,
+
+	// if true, tells the app to mirror data to local storage
+	mirror: false,
 
 	// -------------------------------------------------------------------------
 	// Data section
@@ -89,6 +95,7 @@ var tagit	=	{
 		if(window._in_ext)
 		{
 			this.user.login_from_auth(window._auth);
+			window._auth	=	null;	// clear, because i'm paranoid
 		}
 		else
 		{
@@ -331,6 +338,9 @@ var barfr		=	null;
 var markdown	=	null;
 
 window.addEvent('domready', function() {
+	// load the addon comm object
+	addon_comm	=	new AddonComm();
+
 	window.__site_url		=	window.__site_url || '';
 	window.__api_url		=	window.__api_url || '';
 	window.__api_key		=	window.__api_key || '';
