@@ -1,6 +1,3 @@
-/**
- * TODO: support chrome in this object (right now it's just FF)
- */
 var ApiTracker	=	new Class({
 	id: 0,
 
@@ -14,9 +11,9 @@ var ApiTracker	=	new Class({
 
 	attach: function()
 	{
-		if(!addon_comm.enabled) return false;
+		if(!port) return false;
 		if(this.attached) return false;
-		addon_comm.bind('xhr-response', function(id, result) {
+		port.bind('xhr-response', function(id, result) {
 			this.finish(id, result);
 		}.bind(this));
 		this.attached	=	true;
@@ -36,7 +33,7 @@ var ApiTracker	=	new Class({
 		// track the request
 		this.requests[id]	=	new Request(request);
 
-		addon_comm.send('xhr', msgargs);
+		port.send('xhr', msgargs);
 	},
 
 	finish: function(id, result)
@@ -47,10 +44,6 @@ var ApiTracker	=	new Class({
 
 		var status	=	result.status;
 		var text	=	result.text;
-
-		// NOTE: setting these may be an exercize in futility
-		request.xhr.status			=	status;
-		request.xhr.responseText	=	text;
 
 		if(window._net_log)
 		{

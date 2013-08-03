@@ -7,7 +7,12 @@ var BookmarkController = Composer.Controller.extend({
 		'div.edit': 'edit_container'
 	},
 
-	linkdata: {},
+	linkdata: {
+		type: 'link',
+		url: '',
+		title: '',
+		text: ''
+	},
 	profile: null,
 
 	board_controller: null,
@@ -15,8 +20,17 @@ var BookmarkController = Composer.Controller.extend({
 
 	init: function()
 	{
-		this.linkdata = parse_querystring();
+		if(!window._in_ext)
+		{
+			this.linkdata = parse_querystring();
+		}
 		this.render();
+
+		if(window.port) window.port.bind('get-height', function() {
+			(function() {
+				window.port.send('set-height', this.get_height());
+			}).delay(100, this);
+		}.bind(this));
 
 		this.profile	=	tagit.profile;
 		this.profile.bind('change:current_board', function() {
@@ -43,8 +57,12 @@ var BookmarkController = Composer.Controller.extend({
 			});
 
 			this.edit_controller.bind('release', function() {
-				window.close();
+				if(!window._in_ext) window.close();
 			}, 'bookmark:edit_note:release');
+
+			(function() {
+				if(window.port) window.port.send('set-height', this.get_height());
+			}).delay(100, this);
 		}.bind(this), 'bookmark:change_board');
 
 		var last	=	tagit.user.get('settings').get_by_key('last_board').value() || false;
@@ -74,5 +92,10 @@ var BookmarkController = Composer.Controller.extend({
 		var content = Template.render('bookmark/index');
 		this.html(content);
 		document.body.addClass('bare');
+	},
+
+	get_height: function()
+	{
+		return ($('main').getCoordinates().height + 10);
 	}
 });

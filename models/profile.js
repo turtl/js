@@ -56,10 +56,19 @@ var Profile = Composer.RelationalModel.extend({
 			}
 		}.bind(this);
 
-		if(profile = this.from_persist())
+		// load from addon
+		if((profile = (window._profile || false)) !== false)
+		{
+			// this next line recursively wraps the profile as mootools objects/arrays
+			profile	=	data_from_addon(profile);
+			(function () { success(profile, true); }).delay(0);
+		}
+		// load from local storage mirror
+		else if((profile = this.from_persist()) !== false)
 		{
 			(function () { success(profile, true); }).delay(0);
 		}
+		// load from API
 		else
 		{
 			tagit.api.get('/profiles/users/'+tagit.user.id(), {}, {
@@ -223,6 +232,12 @@ var Profile = Composer.RelationalModel.extend({
 
 	process_sync: function(sync)
 	{
+		// send synced data to addon
+		if(window.port && tagit.sync && sync)
+		{
+			window.port.send('profile-sync', sync);
+		}
+
 		sync.notes.each(function(note_data) {
 			// don't sync ignored items
 			if(this.sync_ignore.contains(note_data.id))
@@ -309,8 +324,6 @@ var Profile = Composer.RelationalModel.extend({
 
 	persist: function(options)
 	{
-		if(!tagit.mirror) return false;
-
 		options || (options = {});
 
 		if(!this.persist_timer.end)
@@ -328,9 +341,12 @@ var Profile = Composer.RelationalModel.extend({
 				});
 				var tsnow	=	Math.floor(new Date().getTime()/1000);
 				store.time	=	this.get('sync_time', tsnow);
+				if(window.port) window.port.send('profile-save', store);
+
+				if(!tagit.mirror) return false;
+
 				localStorage['profile:user:'+tagit.user.id()]	=	JSON.encode(store);
 				localStorage['scheme_version']					=	config.mirror_scheme_version;
-				addon_comm.send('provile-save', store);
 			}.bind(this);
 		}
 		if(options.now)

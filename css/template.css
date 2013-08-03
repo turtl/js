@@ -25,7 +25,7 @@ body {
 }
 body.bare {background: #fff;}
 body.bare header {display: none;}
-body.bare #main {padding: 0;}
+body.bare #main {padding: 0; min-height: 0;}
 body.bare footer {display: none;}
 
 a { text-decoration: none; }

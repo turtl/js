@@ -6,6 +6,15 @@ function toJSON(object)
 	return ret;
 }
 
+/**
+ * takes raw (non-mootools) object from whatever addon is running and ensures
+ * that it is recursively turned into a mootools object
+ */
+function data_from_addon(data)
+{
+	return JSON.decode(JSON.encode(data));
+}
+
 // get the next tag of type "type" in the chain up the dom
 function next_tag_up(tag, element)
 {

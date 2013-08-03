@@ -204,6 +204,12 @@ var tagit	=	{
 			this.sync_timer.start();
 		}.bind(this);
 		this.sync_timer.start();
+
+		// listen for syncing from addon
+		if(window.port && !tagit.sync) window.port.bind('profile-sync', function(sync) {
+			if(!sync) return false;
+			tagit.profile.process_sync(data_from_addon(sync));
+		});
 	},
 
 	stop_spinner: false,
@@ -338,9 +344,7 @@ var barfr		=	null;
 var markdown	=	null;
 
 window.addEvent('domready', function() {
-	// load the addon comm object
-	addon_comm	=	new AddonComm();
-
+	window.port				=	window.port || false;
 	window.__site_url		=	window.__site_url || '';
 	window.__api_url		=	window.__api_url || '';
 	window.__api_key		=	window.__api_key || '';
