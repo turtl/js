@@ -26,11 +26,11 @@ var BookmarkController = Composer.Controller.extend({
 		}
 		this.render();
 
-		if(window.port) window.port.bind('open', function() {
+		if(window.port) window.port.bind('open', function(data) {
 			(function() {
-				var sel	=	this.edit_controller.el.getElement('ul.type li.sel');
-				if(!sel) return false;
-				this.edit_controller.switch_type({stop: function() {}, target: sel});
+				var note	=	this.edit_controller.note_copy;
+				if(note) note.set(data);
+				this.edit_controller.render();
 			}).delay(100, this);
 		}.bind(this));
 
