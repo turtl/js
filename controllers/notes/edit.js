@@ -53,6 +53,11 @@ var NoteEditController = Composer.Controller.extend({
 
 	release: function()
 	{
+		if(window._in_ext)
+		{
+			if(port) port.send('close');
+			return;
+		}
 		if(this.tag_controller) this.tag_controller.release();
 		tagit.keyboard.attach(); // re-enable shortcuts
 		if(this.tips) this.tips.detach();
@@ -158,9 +163,9 @@ var NoteEditController = Composer.Controller.extend({
 		tagit.loading(true);
 		this.note_copy.save({
 			success: function(note_data) {
+				tagit.loading(false);
 				if(this.edit_in_modal) modal.close();
 				else this.release();
-				tagit.loading(false);
 				this.note.key = this.note_copy.key;
 				this.note.set(note_data);
 				if(isnew) this.board.get('notes').add(this.note);
@@ -193,6 +198,7 @@ var NoteEditController = Composer.Controller.extend({
 		var input_sel = typename;
 		if(['link','image'].contains(typename)) input_sel = 'url';
 		if(this['inp_'+input_sel]) this['inp_'+input_sel].focus();
+		this.trigger('change-type', typename);
 	},
 
 	switch_type: function(e)

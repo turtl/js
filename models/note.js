@@ -68,10 +68,10 @@ var Note = Composer.RelationalModel.extend({
 
 	save: function(options)
 	{
+		options || (options = {});
 		var args	=	{};
 		var do_save	=	function()
 		{
-			options || (options = {});
 			var url		=	this.id(true) ? '/notes/'+this.id() : '/boards/'+this.get('board_id')+'/notes';
 			var fn		=	(this.id(true) ? tagit.api.put : tagit.api.post).bind(tagit.api);
 			args.data	=	this.toJSON();

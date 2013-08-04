@@ -26,9 +26,11 @@ var BookmarkController = Composer.Controller.extend({
 		}
 		this.render();
 
-		if(window.port) window.port.bind('get-height', function() {
+		if(window.port) window.port.bind('open', function() {
 			(function() {
-				window.port.send('set-height', this.get_height());
+				var sel	=	this.edit_controller.el.getElement('ul.type li.sel');
+				if(!sel) return false;
+				this.edit_controller.switch_type({stop: function() {}, target: sel});
 			}).delay(100, this);
 		}.bind(this));
 
@@ -59,10 +61,9 @@ var BookmarkController = Composer.Controller.extend({
 			this.edit_controller.bind('release', function() {
 				if(!window._in_ext) window.close();
 			}, 'bookmark:edit_note:release');
-
-			(function() {
-				if(window.port) window.port.send('set-height', this.get_height());
-			}).delay(100, this);
+			this.edit_controller.bind('change-type', function() {
+				this.resize();
+			}.bind(this), 'bookmark:edit_note:type');
 		}.bind(this), 'bookmark:change_board');
 
 		var last	=	tagit.user.get('settings').get_by_key('last_board').value() || false;
@@ -77,6 +78,7 @@ var BookmarkController = Composer.Controller.extend({
 		{
 			this.edit_controller.release({silent: 'release'});
 			this.edit_controller.unbind('release', 'bookmark:edit_note:release');
+			this.edit_controller.unbind('change-type', 'bookmark:edit_note:type');
 		}
 	},
 
@@ -97,5 +99,23 @@ var BookmarkController = Composer.Controller.extend({
 	get_height: function()
 	{
 		return ($('main').getCoordinates().height + 10);
+	},
+
+	resize: function(delay)
+	{
+		delay || (delay = 0);
+		var height	=	this.get_height();
+		var do_set	=	function()
+		{
+			if(window.port) window.port.send('set-height', height);
+		};
+		if(delay > 0)
+		{
+			do_set.delay(delay, this);
+		}
+		else
+		{
+			do_set();
+		}
 	}
 });

@@ -196,14 +196,17 @@ var tagit	=	{
 	setup_syncing: function()
 	{
 		// monitor for sync changes
-		tagit.profile.get_sync_time();
-		this.sync_timer = new Timer(10000);
-		this.sync_timer.end = function()
+		if(tagit.sync)
 		{
-			tagit.profile.sync();
+			tagit.profile.get_sync_time();
+			this.sync_timer = new Timer(10000);
+			this.sync_timer.end = function()
+			{
+				tagit.profile.sync();
+				this.sync_timer.start();
+			}.bind(this);
 			this.sync_timer.start();
-		}.bind(this);
-		this.sync_timer.start();
+		}
 
 		// listen for syncing from addon
 		if(window.port && !tagit.sync) window.port.bind('profile-sync', function(sync) {
