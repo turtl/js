@@ -42,12 +42,6 @@ var NoteEditController = Composer.Controller.extend({
 			}.bind(this);
 			modal.addEvent('close', close_fn);
 		}
-		this.tag_controller = new NoteEditTagController({
-			inject: this.tags,
-			note: this.note_copy,
-			board: this.board
-		});
-		this.select_tab(this.note_copy.get('type'));
 		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
 	},
 
@@ -75,6 +69,12 @@ var NoteEditController = Composer.Controller.extend({
 		this.tips = new TagitTips(this.el.getElements('.tooltip'), {
 			className: 'tip-container'
 		});
+		this.tag_controller = new NoteEditTagController({
+			inject: this.tags,
+			note: this.note_copy,
+			board: this.board
+		});
+		this.select_tab(this.note_copy.get('type'));
 	},
 
 	edit_note: function(e)
