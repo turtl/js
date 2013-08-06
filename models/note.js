@@ -136,7 +136,7 @@ var Note = Composer.RelationalModel.extend({
 			return false;
 		}
 
-		if(board.get('shared', false) || options.skip_sync)
+		if(board.get('shared', false) && !options.skip_sync)
 		{
 			var persona	=	board.get_shared_persona();
 			persona.get_challenge({
