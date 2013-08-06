@@ -47,11 +47,7 @@ var NoteEditController = Composer.Controller.extend({
 
 	release: function()
 	{
-		if(window._in_ext)
-		{
-			if(port) port.send('close');
-			return;
-		}
+		console.log('note edit release');
 		if(this.tag_controller) this.tag_controller.release();
 		tagit.keyboard.attach(); // re-enable shortcuts
 		if(this.tips) this.tips.detach();
@@ -60,6 +56,7 @@ var NoteEditController = Composer.Controller.extend({
 
 	render: function()
 	{
+		console.log('render note edit');
 		var content = Template.render('notes/edit', {
 			note: toJSON(this.note_copy),
 			board: toJSON(this.board)
@@ -164,13 +161,13 @@ var NoteEditController = Composer.Controller.extend({
 		this.note_copy.save({
 			success: function(note_data) {
 				tagit.loading(false);
-				if(this.edit_in_modal) modal.close();
-				else this.release();
 				this.note.key = this.note_copy.key;
 				this.note.set(note_data);
 				if(isnew) this.board.get('notes').add(this.note);
 				// make sure the current filter applies to the edited note
 				this.board.get('tags').trigger('change:selected');
+				if(this.edit_in_modal) modal.close();
+				else this.trigger('saved');
 			}.bind(this),
 			error: function(e) {
 				barfr.barf('There was a problem saving your note: '+ e);

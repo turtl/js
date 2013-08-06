@@ -17,6 +17,7 @@ var BookmarkController = Composer.Controller.extend({
 
 	board_controller: null,
 	edit_controller: null,
+	last_url: null,
 
 	init: function()
 	{
@@ -27,11 +28,12 @@ var BookmarkController = Composer.Controller.extend({
 		this.render();
 
 		if(window.port) window.port.bind('open', function(data) {
-			(function() {
-				var note	=	this.edit_controller.note_copy;
-				if(note) note.set(data);
-				this.edit_controller.render();
-			}).delay(100, this);
+			// prevent overwriting what's in the bookmark interface
+			if(data.url && data.url == this.last_url) return;
+			this.last_url	=	data.url;
+			this.linkdata	=	data;
+			this.profile.trigger('change:current_board');
+			this.resize.delay(100, this);
 		}.bind(this));
 
 		this.profile	=	tagit.profile;
@@ -61,9 +63,14 @@ var BookmarkController = Composer.Controller.extend({
 			this.edit_controller.bind('release', function() {
 				if(!window._in_ext) window.close();
 			}, 'bookmark:edit_note:release');
+			this.edit_controller.bind('saved', function() {
+				if(window._in_ext && window.port) window.port.send('close');
+				this.profile.trigger('change:current_board');
+			}.bind(this), 'bookmark:edit_note:saved');
 			this.edit_controller.bind('change-type', function() {
 				this.resize();
 			}.bind(this), 'bookmark:edit_note:type');
+			this.resize();
 		}.bind(this), 'bookmark:change_board');
 
 		var last	=	tagit.user.get('settings').get_by_key('last_board').value() || false;
@@ -79,6 +86,7 @@ var BookmarkController = Composer.Controller.extend({
 			this.edit_controller.release({silent: 'release'});
 			this.edit_controller.unbind('release', 'bookmark:edit_note:release');
 			this.edit_controller.unbind('change-type', 'bookmark:edit_note:type');
+			this.edit_controller.unbind('saved', 'bookmark:edit_note:saved');
 		}
 	},
 
