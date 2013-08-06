@@ -33,7 +33,13 @@ var BookmarkController = Composer.Controller.extend({
 			this.last_url	=	data.url;
 			this.linkdata	=	data;
 			this.profile.trigger('change:current_board');
-			this.resize.delay(100, this);
+			// resize (in case height changed) and select the tag box
+			(function() {
+				this.resize();
+				var inp_tag	=	this.edit_controller.tag_controller.inp_tag;
+				if(inp_tag) inp_tag.focus();
+			}).delay(100, this);
+
 		}.bind(this));
 
 		this.profile	=	tagit.profile;
