@@ -47,7 +47,6 @@ var NoteEditController = Composer.Controller.extend({
 
 	release: function()
 	{
-		console.log('note edit release');
 		if(this.tag_controller) this.tag_controller.release();
 		tagit.keyboard.attach(); // re-enable shortcuts
 		if(this.tips) this.tips.detach();
@@ -56,7 +55,6 @@ var NoteEditController = Composer.Controller.extend({
 
 	render: function()
 	{
-		console.log('render note edit');
 		var content = Template.render('notes/edit', {
 			note: toJSON(this.note_copy),
 			board: toJSON(this.board)
@@ -194,7 +192,11 @@ var NoteEditController = Composer.Controller.extend({
 		this.note_copy.set({type: typename});
 		var input_sel = typename;
 		if(['link','image'].contains(typename)) input_sel = 'url';
-		if(this['inp_'+input_sel]) this['inp_'+input_sel].focus();
+		var inp_el	=	this['inp_'+input_sel];
+		if(inp_el)
+		{
+			inp_el.focus.delay(10, inp_el);
+		}
 		this.trigger('change-type', typename);
 	},
 
