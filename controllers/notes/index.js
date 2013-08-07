@@ -6,7 +6,7 @@ var NotesController = TrackController.extend({
 	},
 
 	events: {
-		'click a.add-note': 'open_add_note',
+		'click div.button.add.note': 'open_add_note',
 		'click ul.list-type a': 'change_list_type',
 		'keyup input[name=search]': 'do_text_search',
 		'focus input[name=search]': 'search_focus',

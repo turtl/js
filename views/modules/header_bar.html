@@ -1,8 +1,8 @@
-<? if(user.id) { ?>
-	<div class="apps"></div>
-<? } ?>
-
 <div class="actions">
+	<? if(user.id) { ?>
+		<div class="apps clear"></div>
+	<? } ?>
+
 	<? if(user.id) { ?>
 		<a class="menu" href="#menu"><img src="<?=img('/images/site/icons/menu_37x29.png')?>" width="37" height="29" alt="Menu"></a>
 		<ul class="menu">
