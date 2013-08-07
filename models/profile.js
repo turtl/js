@@ -26,8 +26,14 @@ var Profile = Composer.RelationalModel.extend({
 				this.set_current_board(this.get('boards').first());
 			}
 		}.bind(this));
+		var profile_mod_timer	=	new Timer(100);
+		profile_mod_timer.end	=	function()
+		{
+			if(window.port) window.port.send('profile-mod');
+		};
 		this.bind_relational('boards', ['add', 'remove', 'reset', 'change', 'note_change'], function() {
 			this.persist();
+			profile_mod_timer.start();
 		}.bind(this));
 		this.persist_timer		=	new Timer(200);
 		this.persist_timer.end	=	false;
@@ -203,7 +209,7 @@ var Profile = Composer.RelationalModel.extend({
 		tagit.api.post('/sync', {time: sync_time}, {
 			success: function(sync) {
 				this.set({sync_time: sync.time});
-				this.process_sync(sync);
+				this.process_sync(sync, options);
 				// reset ignore list
 				this.sync_ignore	=	[];
 			}.bind(this),
@@ -230,12 +236,20 @@ var Profile = Composer.RelationalModel.extend({
 		});
 	},
 
-	process_sync: function(sync)
+	process_sync: function(sync, options)
 	{
+		options || (options = {});
+
 		// send synced data to addon
 		if(window.port && tagit.sync && sync)
 		{
 			window.port.send('profile-sync', sync);
+		}
+
+		// if we're syncing user data, update it
+		if(sync.user && !tagit.sync)
+		{
+			tagit.user.set(sync.user);
 		}
 
 		sync.notes.each(function(note_data) {
@@ -295,17 +309,20 @@ var Profile = Composer.RelationalModel.extend({
 			}
 
 			var board	=	tagit.profile.get('boards').find_by_id(board_data.id);
-			if(!board) return;
 			if(board_data.deleted)
 			{
-				board.destroy({skip_sync: true});
+				if(board) board.destroy({skip_sync: true});
 			}
-			else
+			else if(board)
 			{
 				board.set(board_data);
 			}
+			else
+			{
+				tagit.profile.get('boards').upsert(new Board(board_data));
+			}
 		}.bind(this));
-		this.persist();
+		this.persist(options);
 	},
 
 	get_sync_time: function()
@@ -326,35 +343,35 @@ var Profile = Composer.RelationalModel.extend({
 	{
 		options || (options = {});
 
-		if(!this.persist_timer.end)
+		var do_persist	=	function(options)
 		{
-			this.persist_timer.end	=	function()
-			{
-				var store	=	{
-					user: tagit.user.toJSON(),
-					boards: []
-				};
-				tagit.profile.get('boards').each(function(board) {
-					var boardobj	=	board.toJSON();
-					boardobj.notes	=	board.get('notes').toJSON();
-					store.boards.push(boardobj);
-				});
-				var tsnow	=	Math.floor(new Date().getTime()/1000);
-				store.time	=	this.get('sync_time', tsnow);
-				if(window.port) window.port.send('profile-save', store);
+			options || (options = {});
+			var store	=	{
+				user: tagit.user.toJSON(),
+				boards: []
+			};
+			tagit.profile.get('boards').each(function(board) {
+				var boardobj	=	board.toJSON();
+				boardobj.notes	=	board.get('notes').toJSON();
+				store.boards.push(boardobj);
+			});
+			var tsnow	=	Math.floor(new Date().getTime()/1000);
+			store.time	=	this.get('sync_time', tsnow);
+			if(window.port) window.port.send('profile-save', store);
 
-				if(!tagit.mirror) return false;
+			if(!tagit.mirror) return false;
 
-				localStorage['profile:user:'+tagit.user.id()]	=	JSON.encode(store);
-				localStorage['scheme_version']					=	config.mirror_scheme_version;
-			}.bind(this);
-		}
+			localStorage['profile:user:'+tagit.user.id()]	=	JSON.encode(store);
+			localStorage['scheme_version']					=	config.mirror_scheme_version;
+		}.bind(this);
+
 		if(options.now)
 		{
-			this.persist_timer.end();
+			do_persist(options);
 		}
 		else
 		{
+			this.persist_timer.end	=	function() { do_persist(options); };
 			this.persist_timer.start();
 		}
 	},
