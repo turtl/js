@@ -2,7 +2,7 @@
 .notes div.note-actions a {display: block;}
 .notes div.note-actions a span {display: block;}
 .notes div.note-actions {margin-left: 15px;}
-.notes div.note-actions div.button.add.note {float: left; padding: 0 10px 0 10px; border-radius: 3px;}
+.notes div.note-actions div.button.add.note {float: left; border-radius: 3px;}
 .notes div.note-actions ul {float: left; list-style: none; margin: -1px 0 0 32px;}
 .notes div.note-actions ul.hidden {display: none;}
 .notes div.note-actions ul li {float: left; margin: 0 0 0 0;}
