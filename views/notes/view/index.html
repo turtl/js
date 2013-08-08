@@ -12,9 +12,11 @@ if(color) color = ['none','blue','red','green','purple','pink','brown','black'][
 		<li><a href="#delete" class="delete" title="Delete note (shortcut `delete`)"><span>Delete note</span></a></li>
 	</ul>
 </div>
-<? var tags = Template.render('notes/view/tags', { tags: note.tags }); ?>
-<?=Template.render('notes/view/'+note.type, {
-	note: note,
-	tags: tags.clean()
-})?>
+<div class="content">
+	<? var tags = Template.render('notes/view/tags', { tags: note.tags }); ?>
+	<?=Template.render('notes/view/'+note.type, {
+		note: note,
+		tags: tags.clean()
+	})?>
+</div>
 

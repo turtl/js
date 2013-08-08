@@ -20,6 +20,11 @@ form textarea {width: 60%; margin: 0 0 16px 0; padding: 3px 5px; border-radius: 
 img.loading {visibility: hidden;}
 
 .content {line-height: 1.4em; text-align: left;}
+.content h2 {font-size: 17px;}
+.content h3 {font-size: 14px;}
+.content h4 {font-size: 12px;}
+.content h5 {font-size: 11px;}
+.content h5 {font-weight: bold;}
 .content ul {list-style: disc;}
 .content ul,
 .content ol {margin: 0 0 16px 32px;}
@@ -27,6 +32,10 @@ img.loading {visibility: hidden;}
 .content em {font-style: italic;}
 .content strong {font-weight: bold;}
 .content img {max-width: 100%;}
+.content blockquote {display: block; margin: 0 0 16px 0; padding: 6px 6px 6px 10px; background: #eee;}
+.content blockquote p:last-child {padding-bottom: 0;}
+.content hr {display: block; height: 0; margin-bottom: 16px; background: 0; border: 0; border-bottom: 1px solid #999;}
+.content pre { overflow-x: auto; margin: 0 0 16px 0; padding: 6px; font-family: monospace; color: #e0e0e0; background-color: #262626;}
 .content .warn {color: #922;}
 
 form.standard-form input[type=text] {width: 95%;}

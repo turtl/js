@@ -129,12 +129,6 @@ ul.note_list .note h1 a {
 	text-overflow: ellipsis;
 }
 ul.note_list .note span.break {font-size: 1px;}
-ul.note_list .note h2 {font-size: 17px;}
-ul.note_list .note h3 {font-size: 14px;}
-ul.note_list .note h4 {font-size: 12px;}
-ul.note_list .note h5 {font-size: 11px;}
-ul.note_list .note em {font-style: italic;}
-ul.note_list .note h5 {font-weight: bold;}
 
 /* grid */
 ul.note_list.list_grid {position: relative;}
