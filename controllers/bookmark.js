@@ -59,7 +59,8 @@ var BookmarkController = Composer.Controller.extend({
 			});
 			this.board_controller = new BoardsController({
 				inject: this.board_container,
-				profile: this.profile
+				profile: this.profile,
+				add_bare: true
 			});
 			this.edit_controller = new NoteEditController({
 				inject: this.edit_container,

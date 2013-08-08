@@ -10,6 +10,7 @@ var BoardsController = Composer.Controller.extend({
 	},
 
 	profile: null,
+	add_bare: false,
 
 	init: function()
 	{
@@ -44,19 +45,22 @@ var BoardsController = Composer.Controller.extend({
 		if(modal.is_open) return false;
 		if(e) e.stop();
 
-		this.el.setStyle('display', 'none');
 		var parent	=	this.el.getParent();
 		var edit	=	new BoardEditController({
-			inject: parent,
+			inject: this.add_bare ? parent : null,
 			profile: this.profile,
-			bare: true
+			bare: this.add_bare
 		});
-		edit.el.dispose().inject(this.el, 'after');
-		edit.bind('release', function() {
-			edit.unbind('boards:index:edit:release');
-			this.inject	=	parent;
-			this.el.setStyle('display', '');
-		}.bind(this), 'boards:index:edit:release');
+		if(this.add_bare)
+		{
+			this.el.setStyle('display', 'none');
+			edit.el.dispose().inject(this.el, 'after');
+			edit.bind('release', function() {
+				edit.unbind('boards:index:edit:release');
+				this.inject	=	parent;
+				this.el.setStyle('display', '');
+			}.bind(this), 'boards:index:edit:release');
+		}
 	},
 
 	manage_boards: function(e)
