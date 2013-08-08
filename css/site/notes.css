@@ -24,7 +24,7 @@
 .notes div.note-actions ul li a.grid span {background: url(../../images/site/notes/icons/grid.png) center center no-repeat;}
 .notes div.note-actions ul li a.masonry span {background: url(../../images/site/notes/icons/masonry.png) center center no-repeat;}
 .notes div.note-actions ul li a.list span {background: url(../../images/site/notes/icons/list.png) center center no-repeat;}
-.notes div.note-actions input[name=search] {float: left; width: 200px; margin: 1px 0 0 32px; padding: 4px 4px 5px 4px; border: 1px solid #000; border-radius: 3px;}
+.notes div.note-actions input[name=search] {float: left; width: 200px; margin: 1px 0 0 32px; padding: 4px 4px 5px 4px; border: 1px solid #aaa; border-radius: 3px;}
 
 /* individual note actions */
 .notes div.actions {display: none; z-index: 2; position: absolute; top: 0; right: 0; height: 24px; padding: 0 0 0 4px; opacity: .95; background: #222; border: 1px solid #333;}
@@ -141,14 +141,14 @@ ul.note_list.list_grid {position: relative;}
 ul.note_list.list_grid > li {
 	float: left;
 	display: block;
-	width: 200px;
-	height: 200px;
+	width: 150px;
+	height: 150px;
 	margin: 0 24px 24px 0;
 	padding: 16px;
 	background: #fff;
 }
 
-ul.note_list.list_grid > li.image {width: 232px; height: 232px; padding: 0;}
+ul.note_list.list_grid > li.image {width: 182px; height: 182px; padding: 0;}
 ul.note_list.list_grid > li > div.gutter {width: 100%; height: 100%; overflow: hidden;}
 ul.note_list.list_grid > li.image > div.gutter {width: 100%; height: 100%; overflow: hidden;}
 ul.note_list.list_grid > li.image h2 {display: none; position: absolute; bottom: 0; width: 96%; height: 26px; padding: 6px 2% 0 2%; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background: url(../../images/site/trans_000_50.png) 0 0;}
@@ -160,7 +160,7 @@ ul.note_list.list_grid .note ol {margin: 0 0 16px 32px;}
 ul.note_list.list_grid .note p {padding: 0 0 16px 0;}
 ul.note_list.list_grid .note p:first-child {padding: 0 0 0 0; margin: 0;}
 ul.note_list.list_grid .note img {max-width: 100%; max-height: 100%;}
-ul.note_list.list_grid .note a.img {display: table-cell; width: 232px; max-width: 232px; height: 232px; vertical-align: middle; text-align: center; background: #000;}
+ul.note_list.list_grid .note a.img {display: table-cell; width: 182px; max-width: 182px; height: 182px; vertical-align: middle; text-align: center; background: #000;}
 
 /* masonry */
 ul.note_list.list_masonry > li {
