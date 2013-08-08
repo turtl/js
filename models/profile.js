@@ -246,7 +246,6 @@ var Profile = Composer.RelationalModel.extend({
 		// if we're syncing user data, update it
 		if(sync.user && (!tagit.sync || !window._in_ext))
 		{
-			console.log('sync user: ', sync.user);
 			tagit.user.set(sync.user);
 		}
 
