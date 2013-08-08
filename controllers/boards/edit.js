@@ -5,11 +5,17 @@ var BoardEditController = Composer.Controller.extend({
 
 	events: {
 		'click a[href=#manage]': 'open_manager',
-		'submit form': 'edit_board'
+		'submit form': 'edit_board',
+		'keyup input[type=text]': 'test_key',
+		'click a[href=#submit]': 'edit_board',
+		'click a[href=#cancel]': 'cancel'
 	},
 
 	board: null,
 	profile: null,
+
+	// if true, brings up an inline-editing interface
+	bare: false,
 
 	// if true, opens management modal after successful update
 	return_to_manage: false,
@@ -18,12 +24,19 @@ var BoardEditController = Composer.Controller.extend({
 	{
 		if(!this.board) this.board = new Board();
 		this.render();
-		modal.open(this.el);
-		var close_fn = function() {
-			this.release();
-			modal.removeEvent('close', close_fn);
-		}.bind(this);
-		modal.addEvent('close', close_fn);
+		if(this.bare)
+		{
+			this.el.addClass('board-bare');
+		}
+		else
+		{
+			modal.open(this.el);
+			var close_fn = function() {
+				this.release();
+				modal.removeEvent('close', close_fn);
+			}.bind(this);
+			modal.addEvent('close', close_fn);
+		}
 		this.inp_title.focus();
 		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
 	},
@@ -38,9 +51,11 @@ var BoardEditController = Composer.Controller.extend({
 	{
 		var content = Template.render('boards/edit', {
 			return_to_manage: this.return_to_manage,
-			board: toJSON(this.board)
+			board: toJSON(this.board),
+			bare: this.bare
 		});
 		this.html(content);
+		(function() { this.inp_title.focus(); }).delay(10, this);
 	},
 
 	edit_board: function(e)
@@ -76,11 +91,15 @@ var BoardEditController = Composer.Controller.extend({
 			success: function() {
 				tagit.loading(false);
 				if(success) success();
-				modal.close();
+				if(modal.is_open) modal.close();
 
 				if(this.return_to_manage)
 				{
 					this.open_manager();
+				}
+				else
+				{
+					this.release();
 				}
 			}.bind(this),
 			error: function(err) {
@@ -99,6 +118,17 @@ var BoardEditController = Composer.Controller.extend({
 		new BoardManageController({
 			collection: this.profile.get('boards')
 		});
+	},
+
+	cancel: function(e)
+	{
+		if(e) e.stop();
+		this.release();
+	},
+
+	test_key: function(e)
+	{
+		if(this.bare && e.key == 'esc') this.release();
 	}
 });
 

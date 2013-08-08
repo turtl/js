@@ -62,6 +62,11 @@ var DashboardController = Composer.Controller.extend({
 			do_load();
 		}.bind(this), 'dashboard:change_board');
 
+		this.profile.bind_relational('boards', 'remove', function() {
+			if(this.profile.get('boards').models().length > 0) return;
+			this.profile.trigger('change:current_board');
+		}.bind(this), 'dashboard:boards:remove');
+
 		this.boards_controller = new BoardsController({
 			el: this.boards,
 			profile: this.profile
@@ -89,6 +94,7 @@ var DashboardController = Composer.Controller.extend({
 		this.soft_release();
 		if(this.boards_controller) this.boards_controller.release();
 		this.profile.unbind('change:current_board', 'dashboard:change_board');
+		this.profile.unbind_relational('boards', 'remove', 'dashboard:boards:remove');
 		tagit.keyboard.unbind('S-/', 'dashboard:shortcut:open_help');
 		tagit.user.unbind('logout', 'dashboard:logout:clear_timer');
 		if(this.sidebar_timer && this.sidebar_timer.end) this.sidebar_timer.end = null;

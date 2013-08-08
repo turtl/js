@@ -2,5 +2,5 @@
 /* fixes a chrome (and webkit?) performance issue with fixed divs */
 .dashboard > .sidebar {-webkit-transform: translateZ(0);}
 .dashboard > .menu {}
-.dashboard > .notes {float: right; width: 79%;}
+.dashboard > .notes {float: right; width: 79%; min-height: 75px;}
 

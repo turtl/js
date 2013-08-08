@@ -31,6 +31,7 @@ body.bare footer {display: none;}
 a { text-decoration: none; }
 
 #wrap > .sidebar-bg {position: absolute; z-index: -1; width: 20%; padding-right: 9px; height: 100%; background: #e3e3e3; border-right: 1px solid #ddd;}
+body.bare #wrap > .sidebar-bg {display: none;}
 
 header {float: left; width: 20%; height: 40px; margin: 0 0 22px 0; padding: 0 10px 0 0; border-bottom: 1px solid #222;}
 header {

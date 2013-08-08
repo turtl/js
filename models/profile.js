@@ -184,11 +184,6 @@ var Profile = Composer.RelationalModel.extend({
 	set_current_board: function(obj, options)
 	{
 		options || (options = {});
-		if(typeOf(obj) == 'string')
-		{
-			obj	=	this.get('boards').find_by_id(obj);
-		}
-		if(!obj) return false;
 		return this.set({current_board: obj}, options);
 	},
 

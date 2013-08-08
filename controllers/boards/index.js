@@ -41,9 +41,19 @@ var BoardsController = Composer.Controller.extend({
 	add_board: function(e)
 	{
 		if(e) e.stop();
-		new BoardEditController({
-			profile: this.profile
+		this.el.setStyle('display', 'none');
+		var parent	=	this.el.getParent();
+		var edit	=	new BoardEditController({
+			inject: parent,
+			profile: this.profile,
+			bare: true
 		});
+		edit.el.dispose().inject(this.el, 'after');
+		edit.bind('release', function() {
+			edit.unbind('boards:index:edit:release');
+			this.inject	=	parent;
+			this.el.setStyle('display', '');
+		}.bind(this), 'boards:index:edit:release');
 	},
 
 	manage_boards: function(e)
