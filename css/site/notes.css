@@ -67,7 +67,7 @@ ul.note_list .note.image .color {margin: 0;}*/
 .color.black {color: #111; background: #111;}
 
 /* view note */
-.note-view {position: relative; padding: 20px;}
+.note-view {position: relative; padding: 20px; min-height: 100px;}
 .note-view div.actions {padding-left: 0;}
 .note-view:hover div.actions {display: block;}
 .modalcontent .note-view h1 {
@@ -143,7 +143,7 @@ ul.note_list.list_grid > li {
 	display: block;
 	width: 150px;
 	height: 150px;
-	margin: 0 24px 24px 0;
+	margin: 0 16px 16px 0;
 	padding: 16px;
 	background: #fff;
 }
