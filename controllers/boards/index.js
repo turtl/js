@@ -41,7 +41,9 @@ var BoardsController = Composer.Controller.extend({
 
 	add_board: function(e)
 	{
+		if(modal.is_open) return false;
 		if(e) e.stop();
+
 		this.el.setStyle('display', 'none');
 		var parent	=	this.el.getParent();
 		var edit	=	new BoardEditController({
