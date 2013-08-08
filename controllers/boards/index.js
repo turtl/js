@@ -21,6 +21,7 @@ var BoardsController = Composer.Controller.extend({
 
 	release: function()
 	{
+		this.unbind('change-board');
 		this.profile.unbind_relational('boards', ['add', 'remove', 'reset', 'change:title'], 'boards:change');
 		this.profile.unbind('change:current_board', 'boards:track_current');
 		tagit.keyboard.unbind('b', 'boards:shortcut:add_board');
@@ -66,6 +67,7 @@ var BoardsController = Composer.Controller.extend({
 
 	change_board: function(e)
 	{
+		this.trigger('change-board');
 		var board_id = this.selector.value;
 		var board = this.profile.get('boards').find_by_id(board_id);
 		if(board) this.profile.set_current_board(board);

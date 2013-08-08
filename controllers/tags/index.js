@@ -15,6 +15,11 @@ var TagsController = Composer.Controller.extend({
 
 		this.render();
 
+		// make sure our tags are enabled
+		this.board.get('tags').each(function(tag) {
+			tag.unset('disabled', {silent: true});
+		});
+
 		this.tags	=	new TagsFilter(this.board.get('tags'), {
 			sort_event: true,
 			refresh_on_change: false
