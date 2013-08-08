@@ -83,7 +83,6 @@ var BookmarkController = Composer.Controller.extend({
 
 		var last	=	tagit.user.get('settings').get_by_key('last_board').value() || false;
 		var board	=	tagit.profile.get('boards').find_by_id(last);
-		console.log('board: ', board);
 		this.profile.set_current_board(board, {silent: true});
 		this.profile.trigger('change:current_board');
 	},
