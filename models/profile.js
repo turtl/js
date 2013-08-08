@@ -178,7 +178,9 @@ var Profile = Composer.RelationalModel.extend({
 
 	get_current_board: function()
 	{
-		return this.get('current_board', false);
+		var cur	=	this.get('current_board', false);
+		if(!cur) cur = this.get('boards').first();
+		return cur;
 	},
 
 	set_current_board: function(obj, options)
@@ -242,8 +244,9 @@ var Profile = Composer.RelationalModel.extend({
 		}
 
 		// if we're syncing user data, update it
-		if(sync.user && !tagit.sync)
+		if(sync.user && (!tagit.sync || !window._in_ext))
 		{
+			console.log('sync user: ', sync.user);
 			tagit.user.set(sync.user);
 		}
 
