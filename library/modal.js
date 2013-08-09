@@ -586,10 +586,34 @@ var modal_interface	=	new Class({
 			}
 		}.bind(this);
 		window.addEvent('keydown', this.test_escape);
+
+		var inside	=	false;
+		this.test_click_start	=	function(e)
+		{
+			// get our container's coordinates
+			var coords	=	this.objects.container.getCoordinates();
+			
+			if((e.page.x < coords.left || e.page.x > coords.right || e.page.y < coords.top || e.page.y > coords.bottom))
+			{
+				// what do you know, someone clicked outside it. close
+				inside	=	false;
+			}
+			else
+			{
+				inside	=	true;
+			}
+			return true;
+		}.bind(this);
 		
 		// function to test for a click outside the modal box. separate function so it can be specifically removed by modal_interface::close()
 		this.test_click		=	function(e)
 		{
+			// if the mousedown event detects that the mousedown happened *in*
+			// the modal, then don't close the modal on mouseup (ie click) event
+			// if it's outside (since the user is probably click+dragging to
+			// select)
+			if(inside) return true;
+			
 			// this.params.mouse_in_box is set to true if the mouse is over any of the children of the box. see comments above
 			if(	e.page.x == 0 && (e.page.y == 0 || e.page.y == window.getScroll().y) ||
 				(this.options.no_close_on_child_click && this.params.mouse_in_box) )
@@ -598,7 +622,7 @@ var modal_interface	=	new Class({
 				// also, in FF, the click registers at (0, window.getScroll().y)
 				return true;
 			}
-			
+
 			// get our container's coordinates
 			var coords	=	this.objects.container.getCoordinates();
 			
@@ -608,7 +632,8 @@ var modal_interface	=	new Class({
 				this.close();
 			} 
 		}.bind(this);
-		window.addEvent('mousedown', this.test_click);
+		window.addEvent('mousedown', this.test_click_start);
+		window.addEvent('click', this.test_click);
 	},
 	
 	/**
@@ -654,6 +679,7 @@ var modal_interface	=	new Class({
 		this.removeEvent('mouseleave', this.not_in_modal);
 		window.removeEvent('keydown', this.test_escape);
 		window.removeEvent('click', this.test_click);
+		window.removeEvent('mousedown', this.test_click_start);
 		
 		if(!disable_close_events)
 		{
