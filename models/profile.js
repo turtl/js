@@ -249,6 +249,30 @@ var Profile = Composer.RelationalModel.extend({
 			tagit.user.set(sync.user);
 		}
 
+		sync.boards.each(function(board_data) {
+			// don't sync ignored items
+			if(this.sync_ignore.contains(board_data.id))
+			{
+				this.sync_ignore.erase(board_data.id);
+				return false;
+			}
+
+			var board	=	tagit.profile.get('boards').find_by_id(board_data.id);
+			if(board_data.deleted)
+			{
+				if(board) board.destroy({skip_sync: true});
+			}
+			else if(board)
+			{
+				board.set(board_data);
+			}
+			else
+			{
+				tagit.profile.get('boards').upsert(new Board(board_data));
+			}
+		}.bind(this));
+		this.persist(options);
+
 		sync.notes.each(function(note_data) {
 			// don't sync ignored items
 			if(this.sync_ignore.contains(note_data.id))
@@ -291,35 +315,11 @@ var Profile = Composer.RelationalModel.extend({
 				}
 			}
 			// note isn't existing and isn't being deleted. add it!
-			else if(!note_data.deleted)
+			else if(!note_data.deleted && newboard)
 			{
 				newboard.get('notes').add(note_data);
 			}
 		}.bind(this));
-
-		sync.boards.each(function(board_data) {
-			// don't sync ignored items
-			if(this.sync_ignore.contains(board_data.id))
-			{
-				this.sync_ignore.erase(board_data.id);
-				return false;
-			}
-
-			var board	=	tagit.profile.get('boards').find_by_id(board_data.id);
-			if(board_data.deleted)
-			{
-				if(board) board.destroy({skip_sync: true});
-			}
-			else if(board)
-			{
-				board.set(board_data);
-			}
-			else
-			{
-				tagit.profile.get('boards').upsert(new Board(board_data));
-			}
-		}.bind(this));
-		this.persist(options);
 	},
 
 	get_sync_time: function()
