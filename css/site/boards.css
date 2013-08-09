@@ -1,6 +1,6 @@
 .board-list {padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #ddd;}
 .board-list img.loading {display: none;}
-.board-list select {float: left; display: block; width: 160px; height: 24px; line-height: 24px; margin: 0 10px 0 0; padding: 2px auto;}
+.board-list select {float: left; display: block; width: 160px; margin: 0 10px 0 0; padding: 2px auto;}
 .board-list ul.actions {float: left; padding: 3px 0 0 0; list-style: none;}
 .board-list ul.actions li {display: inline; margin: 0 3px 0 0;}
 .board-list ul.actions a {display: inline-block; opacity: .8;}
@@ -23,8 +23,8 @@
 
 .board-edit input[type=submit] {float: right;}
 .board-edit.bare {width: 200px;}
-.board-edit.bare input[type=text] {float: left; width: 70%; height: 24px; margin-right: 6px; padding: 1px 3px 0 3px;}
-.board-edit.bare a img {display: inline-block; margin-top: 6px;}
+.board-edit.bare input[type=text] {float: left; width: 70%; height: 20px; margin-right: 6px; padding: 1px 3px 0 3px;}
+.board-edit.bare a img {display: inline-block; margin-top: 4px;}
 
 .board-share .button.share {float: right; margin: -7px 0 8px 0;}
 .board-share .share-to {display: none; margin-bottom: 16px; padding: 10px; background: #f0f0f0;}
