@@ -4,9 +4,8 @@ var Persona = Composer.Model.extend({
 	public_fields: [
 		'id',
 		'pubkey',
-		'screenname',
-		'name',
-		'email'
+		'email',
+		'name'
 	],
 
 	private_fields: [
@@ -95,25 +94,25 @@ var Persona = Composer.Model.extend({
 		});
 	},
 
-	get_by_screenname: function(screenname, options)
+	get_by_email: function(email, options)
 	{
 		options || (options = {});
 		var args = {};
 
 		// this prevents a persona from returning from the call if it is already
-		// the owner of the screenname
+		// the owner of the email
 		if(options.ignore_this_persona && this.id(true))
 		{
 			args.ignore_persona_id = this.id(true);
 		}
-		tagit.api.get('/personas/screenname/'+screenname, args, options);
+		tagit.api.get('/personas/email/'+email, args, options);
 	},
 
-	search_by_screenname: function(screenname, options)
+	search_by_email: function(email, options)
 	{
 		options || (options = {});
 
-		tagit.api.get('/personas/screenname/'+screenname+'*', {}, options);
+		tagit.api.get('/personas/email/'+email+'*', {}, options);
 	},
 
 	generate_secret: function(key)

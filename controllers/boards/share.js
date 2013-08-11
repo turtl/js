@@ -1,7 +1,8 @@
 var BoardShareController = Composer.Controller.extend({
 	elements: {
 		'div.share-to': 'share_container',
-		'div.share-to .select': 'selector'
+		'div.share-to .select': 'selector',
+		'div.share-to input[type=submit]': 'inp_submit'
 	},
 
 	events: {
@@ -37,6 +38,11 @@ var BoardShareController = Composer.Controller.extend({
 			modal.removeEvent('close', close_fn);
 		}.bind(this);
 		modal.addEvent('close', close_fn);
+
+		if(this.board.get('personas').models().length == 0)
+		{
+			this.open_share();
+		}
 
 		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
 	},
@@ -79,7 +85,25 @@ var BoardShareController = Composer.Controller.extend({
 			tabindex: 1
 		});
 		this.persona_selector.bind('selected', function(persona) {
-			this.to_persona = persona;
+			this.to_persona	=	persona;
+			this.inp_submit.disabled	=	false;
+		}.bind(this));
+		this.persona_selector.bind('change-persona', function() {
+			this.to_persona	=	false;
+			this.inp_submit.disabled	=	true;
+		}.bind(this));
+		this.persona_selector.bind('show-personas', function() {
+			if(this.to_persona)
+			{
+				this.inp_submit.disabled	=	false;
+			}
+			else
+			{
+				this.inp_submit.disabled	=	true;
+			}
+		}.bind(this));
+		this.persona_selector.bind('show-invite', function() {
+			this.inp_submit.disabled	=	false;
 		}.bind(this));
 	},
 
@@ -105,9 +129,9 @@ var BoardShareController = Composer.Controller.extend({
 		if(!this.to_persona || this.to_persona.is_new())
 		{
 			barfr.barf('Please pick a recipient for this message.')
-			if(this.persona_selector && this.persona_selector.inp_screenname)
+			if(this.persona_selector && this.persona_selector.inp_email)
 			{
-				this.persona_selector.inp_screenname.focus();
+				this.persona_selector.inp_email.focus();
 			}
 			return false;
 		}
@@ -122,7 +146,7 @@ var BoardShareController = Composer.Controller.extend({
 			from: this.from_persona.id(),
 			to: this.to_persona.id(),
 			notification: true,
-			subject: this.from_persona.get('screenname') + ' wants to share the board "'+ this.board.get('title') + '" with you.',
+			subject: this.from_persona.get('email') + ' wants to share the board "'+ this.board.get('title') + '" with you.',
 			body: {
 				type: 'share_board',
 				board_id: this.board.id(),

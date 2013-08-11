@@ -1,12 +1,12 @@
 var PersonaSelector = Composer.Controller.extend({
 	elements: {
-		'img.load': 'screenname_loading',
-		'input[name=screenname]': 'inp_screenname',
+		'img.load': 'email_loading',
+		'input[name=email]': 'inp_email',
 		'div.personas-list': 'persona_list_el'
 	},
 
 	events: {
-		'keyup input[name=screenname]': 'screenname_search',
+		'keyup input[name=email]': 'email_search',
 		'click a[href=#change]': 'change_persona',
 		'click .personas-list > ul > li': 'pick_persona'
 	},
@@ -28,7 +28,7 @@ var PersonaSelector = Composer.Controller.extend({
 		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
 
 		this.sn_timer = new Timer(500);
-		this.sn_timer.end = this.do_search_screenname.bind(this);
+		this.sn_timer.end = this.do_search_email.bind(this);
 	},
 
 	release: function()
@@ -49,36 +49,41 @@ var PersonaSelector = Composer.Controller.extend({
 		if(this.persona.is_new())
 		{
 			(function() {
-				this.inp_screenname.focus();
+				this.inp_email.focus();
 			}).delay(10, this);
 		}
 	},
 
-	get_screenname: function()
+	get_email: function()
 	{
-		return this.inp_screenname.get('value').replace(/[^a-z0-9\/\.]/gi, '').clean();
+		return this.inp_email.get('value').replace(/[^a-z0-9\-@\/\.]/gi, '').clean();
 	},
 
-	screenname_search: function(e)
+	is_valid_email: function(email)
 	{
-		var screenname = this.get_screenname();
+		return email.match(/[^@]+@[^@]+$/);
+	},
+
+	email_search: function(e)
+	{
+		var email = this.get_email();
 		this.sn_timer.start();
-		if(this.get_screenname() != '') this.screenname_loading.setStyle('display', 'inline');
+		if(this.get_email() != '') this.email_loading.setStyle('display', 'inline');
 	},
 
-	do_search_screenname: function()
+	do_search_email: function()
 	{
-		var screenname = this.get_screenname();
-		this.screenname_loading.setStyle('display', '');
-		if(screenname == '') return false;
-		this.screenname_loading.setStyle('display', 'inline');
-		this.persona.search_by_screenname(screenname, {
+		var email = this.get_email();
+		this.email_loading.setStyle('display', '');
+		if(email == '') return false;
+		this.email_loading.setStyle('display', 'inline');
+		this.persona.search_by_email(email, {
 			success: function(res) {
-				this.screenname_loading.setStyle('display', '');
+				this.email_loading.setStyle('display', '');
 				this.refresh_personas(res);
 			}.bind(this),
 			error: function(err, xhr) {
-				this.screenname_loading.setStyle('display', '');
+				this.email_loading.setStyle('display', '');
 				barfr.barf('There was an error while searching personas. Try again.');
 			}.bind(this)
 		});
@@ -114,6 +119,7 @@ var PersonaSelector = Composer.Controller.extend({
 		if(e) e.stop();
 		this.persona	=	new Persona();
 		this.render();
+		this.trigger('change-persona');
 	},
 
 	refresh_personas: function(personas)
@@ -121,10 +127,22 @@ var PersonaSelector = Composer.Controller.extend({
 		this.last_res = personas;
 
 		if(this.persona_list) this.persona_list.release();
-		this.persona_list = new PersonaListController({
-			inject: this.persona_list_el,
-			personas: personas,
-			hide_edit: true
-		});
+		if(personas.length > 0)
+		{
+			this.persona_list	=	new PersonaListController({
+				inject: this.persona_list_el,
+				personas: personas,
+				hide_edit: true
+			});
+			this.trigger('show-personas');
+		}
+		else if(this.is_valid_email(this.get_email()))
+		{
+			this.persona_list	=	new InviteEmailController({
+				email: this.get_email(),
+				inject: this.persona_list_el
+			});
+			this.trigger('show-invite');
+		}
 	}
 });

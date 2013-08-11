@@ -1,14 +1,13 @@
 var PersonaEditController = Composer.Controller.extend({
 	elements: {
-		'input[name=screenname]': 'inp_screenname',
 		'input[name=email]': 'inp_email',
 		'input[name=name]': 'inp_name',
-		'img.load': 'screenname_loading',
-		'p.taken': 'screenname_note'
+		'img.load': 'email_loading',
+		'p.taken': 'email_note'
 	},
 
 	events: {
-		'keyup input[name=screenname]': 'check_screenname',
+		'keyup input[name=email]': 'check_email',
 		'submit form': 'edit_persona',
 		'click h1 a': 'open_personas'
 	},
@@ -42,7 +41,7 @@ var PersonaEditController = Composer.Controller.extend({
 		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
 
 		this.sn_timer = new Timer(500);
-		this.sn_timer.end = this.do_check_screenname.bind(this);
+		this.sn_timer.end = this.do_check_email.bind(this);
 	},
 
 	release: function()
@@ -59,30 +58,29 @@ var PersonaEditController = Composer.Controller.extend({
 			return_to_manage: this.return_to_manage
 		});
 		this.html(content);
-		(function() { this.inp_screenname.focus(); }).delay(1, this);
+		(function() { this.inp_email.focus(); }).delay(1, this);
 	},
 
 	edit_persona: function(e)
 	{
 		if(e) e.stop();
 		// TODO: if you add to these, remove them from the model below
-		var screenname = this.inp_screenname.get('value');
-		var name = this.inp_name.get('value').clean();
 		var email = this.inp_email.get('value').clean();
+		var name = this.inp_name.get('value').clean();
 
-		this.model.unset('screenname');
+		this.model.unset('email');
 		this.model.unset('name');
 		this.model.unset('email');
 
-		if(!this.screenname_valid(screenname))
+		if(!this.email_valid(email))
 		{
 			// TODO: fix duplication
-			this.screenname_msg('A screenname can only include A-Z 0-9 and . (periods)');
-			this.inp_screenname.addClass('error');
+			this.email_msg('That email appears to be invalid.');
+			this.inp_email.addClass('error');
 			return false;
 		}
 
-		var set		=	{screenname: screenname};
+		var set		=	{email: email};
 		var args	=	{};
 		if(name != '') set.name = name;
 		if(email != '') set.email = email;
@@ -134,83 +132,83 @@ var PersonaEditController = Composer.Controller.extend({
 		}
 	},
 
-	get_screenname: function()
+	get_email: function()
 	{
-		return this.inp_screenname.get('value').replace(/[^a-z0-9\/\.]/gi, '').clean();
+		return this.inp_email.get('value').replace(/[^a-z0-9\/\.]/gi, '').clean();
 	},
 
-	screenname_valid: function(screenname)
+	email_valid: function(email)
 	{
-		if(screenname.match(/[^a-z0-9\.]/i))
+		if(email.match(/[^a-z0-9@\-\.]/i))
 		{
 			return false;
 		}
 		return true;
 	},
 
-	screenname_msg: function(msg, success)
+	email_msg: function(msg, success)
 	{
 		success || (success = false);
 		msg = msg.clean();
 
-		this.screenname_note.className = this.screenname_note.className.replace(/(error|success)/g, '');
-		this.screenname_note.addClass(success ? 'success' : 'error');
-		this.screenname_note.setStyle('visibility', msg == '' ? 'hidden' : 'visible');
+		this.email_note.className = this.email_note.className.replace(/(error|success)/g, '');
+		this.email_note.addClass(success ? 'success' : 'error');
+		this.email_note.setStyle('visibility', msg == '' ? 'hidden' : 'visible');
 		if(msg != '')
 		{
-			this.screenname_note.set('html', msg);
+			this.email_note.set('html', msg);
 		}
 	},
 
-	check_screenname: function(e)
+	check_email: function(e)
 	{
-		var screenname = this.inp_screenname.get('value')
-		if(!this.screenname_valid(screenname))
+		var email = this.inp_email.get('value')
+		if(!this.email_valid(email))
 		{
 			// TODO: fix duplication
-			this.screenname_msg('A screenname can only include A-Z 0-9 and . (periods)');
-			this.inp_screenname.addClass('error');
+			this.email_msg('That email appears to be invalid.');
+			this.inp_email.addClass('error');
 			return false;
 		}
-		this.screenname_note.setStyle('visibility', 'hidden');
-		this.inp_screenname.removeClass('error');
+		this.email_note.setStyle('visibility', 'hidden');
+		this.inp_email.removeClass('error');
 		this.sn_timer.start();
-		if(this.get_screenname() != '') this.screenname_loading.setStyle('display', 'inline');
+		if(this.get_email() != '') this.email_loading.setStyle('display', 'inline');
 	},
 
-	do_check_screenname: function()
+	do_check_email: function()
 	{
-		var screenname = this.get_screenname();
-		this.screenname_loading.setStyle('display', '');
-		if(screenname == '') return false;
-		this.screenname_loading.setStyle('display', 'inline');
-		this.model.get_by_screenname(screenname, {
-			// don't want this persona to trigger a "screenname taken" error if
-			// if already owns the screenname
+		var email = this.get_email();
+		this.email_loading.setStyle('display', '');
+		if(email == '') return false;
+		this.email_loading.setStyle('display', 'inline');
+		this.model.get_by_email(email, {
+			// don't want this persona to trigger a "email taken" error if
+			// if already owns the email
 			ignore_this_persona: true,
 
 			success: function(res) {
-				this.screenname_loading.setStyle('display', '');
-				if(!this.screenname_valid(this.inp_screenname.get('value')))
+				this.email_loading.setStyle('display', '');
+				if(!this.email_valid(this.inp_email.get('value')))
 				{
 					return false;
 				}
-				this.screenname_msg('That screenname is taken =\'[.');
-				this.inp_screenname.addClass('error');
+				this.email_msg('That email is taken =\'[.');
+				this.inp_email.addClass('error');
 			}.bind(this),
 			error: function(err, xhr) {
-				this.screenname_loading.setStyle('display', '');
+				this.email_loading.setStyle('display', '');
 				if(xhr.status == 404)
 				{
-					if(!this.screenname_valid(this.inp_screenname.get('value')))
+					if(!this.email_valid(this.inp_email.get('value')))
 					{
 						return false;
 					}
-					this.screenname_msg('That screenname is available.', true);
+					this.email_msg('That email is available.', true);
 				}
 				else
 				{
-					barfr.barf('There was an error checking the availability of that screenname. Try again.');
+					barfr.barf('There was an error checking the availability of that email. Try again.');
 				}
 			}.bind(this)
 		});

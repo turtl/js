@@ -12,7 +12,7 @@
 		<div class="select clear"></div>
 		<form class="standard-form">
 			<div class="submit">
-				<input tabindex="4" type="submit" value="Invite">
+				<input tabindex="4" type="submit" value="Invite" disabled>
 			</div>
 		</form>
 	</div>
@@ -23,7 +23,7 @@
 				<? personas.each(function(p) { ?>
 					<li class="persona_<?=p.id?> clear">
 						<h3>
-							<?=p.screenname?>
+							<?=p.email?>
 							<? if(p.privs.i) { ?>
 								<small>- invite pending</small>
 							<? } ?>

@@ -156,7 +156,7 @@ var Profile = Composer.RelationalModel.extend({
 										track();
 									},
 									error: function(err) {
-										barfr.barf('Error loading the profile data for your persona "'+p.get('screenname')+'":'+ err);
+										barfr.barf('Error loading the profile data for your persona "'+p.get('email')+'":'+ err);
 										// don't want to freeze the app just because one
 										// persona doesn't load, do we?
 										track();

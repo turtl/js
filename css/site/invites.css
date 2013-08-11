@@ -1,0 +1,6 @@
+.invite {margin: 0 0 16px 0; padding: 10px; line-height: 1.4em;}
+.invite h2 {margin-bottom: 16px; font-size: 18px; color: #999;}
+.invite p {margin: 0 0 16px 0; color: #444;}
+.invite form .split {padding: 10px 10px 0 10px; background: #ddf;}
+.invite form .split input {float: left; width: 44%; margin-top: 7px;}
+.invite form .split p {float: right; width: 52%; margin: 0 0 16px 0;}

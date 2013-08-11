@@ -1,12 +1,7 @@
 <? personas.each(function(p) { ?>
-	<?
-		var attr = [];
-		if(p.name) attr.push(p.name);
-		if(p.email) attr.push(p.email);
-	?>
 	<li class="persona_<?=p.id?> clear">
-		<h3><?=p.screenname?></h3>
-		<small><?=attr.join('&nbsp;&nbsp;-&nbsp;&nbsp;')?></small>
+		<h3><?=p.email?></h3>
+		<small><?=p.name?></small>
 		<? if(show_edit) { ?>
 			<ul>
 				<li>

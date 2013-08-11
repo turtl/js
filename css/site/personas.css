@@ -4,7 +4,7 @@
 
 /* persona edit form */
 .persona-edit form {float: left; width: 60%;}
-.persona-edit input[name=screenname] {margin-bottom: 4px;}
+.persona-edit input[name=email] {margin-bottom: 4px;}
 .persona-edit p.taken {display: block; margin-bottom: 12px; color: #777; padding-left: 10px;}
 .persona-edit p.taken.error {color: #a44;}
 .persona-edit p.taken.success {color: #4a4;}

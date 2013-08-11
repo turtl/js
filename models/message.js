@@ -66,7 +66,7 @@ var Messages = Composer.Collection.extend({
 				after: this.last_id,
 				success: options.success,
 				error: function(err, xhr) {
-					barfr.barf('There was a problem grabbing messages from your persona '+persona.get('screenname')+': '+ err);
+					barfr.barf('There was a problem grabbing messages from your persona '+persona.get('email')+': '+ err);
 					if(options.error) options.error();
 				}.bind(this)
 			});
