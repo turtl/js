@@ -77,14 +77,20 @@ var PersonaSelector = Composer.Controller.extend({
 		this.email_loading.setStyle('display', '');
 		if(email == '') return false;
 		this.email_loading.setStyle('display', 'inline');
-		this.persona.search_by_email(email, {
-			success: function(res) {
+		this.persona.get_by_email(email, {
+			success: function(persona) {
 				this.email_loading.setStyle('display', '');
-				this.refresh_personas(res);
+				this.refresh_personas([persona]);
 			}.bind(this),
 			error: function(err, xhr) {
 				this.email_loading.setStyle('display', '');
-				barfr.barf('There was an error while searching personas. Try again.');
+				// simple not found error, setup invite screen
+				if(xhr.status == 404)
+				{
+					this.refresh_personas([]);
+					return;
+				}
+				barfr.barf('There was a problem pulling out that persona. Soooo sorry.');
 			}.bind(this)
 		});
 	},

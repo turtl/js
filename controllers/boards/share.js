@@ -16,6 +16,7 @@ var BoardShareController = Composer.Controller.extend({
 	from_persona: null,
 	to_persona: null,
 	persona_selector: null,
+	invite: null,
 
 	init: function()
 	{
