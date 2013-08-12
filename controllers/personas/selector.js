@@ -33,6 +33,11 @@ var PersonaSelector = Composer.Controller.extend({
 
 	release: function()
 	{
+		if(this.persona_list)
+		{
+			this.persona_list.unbind('release', 'personas:selector:invites:release');
+			this.persona_list.release();
+		}
 		tagit.keyboard.attach(); // re-enable shortcuts
 		this.unbind('selected');
 		this.parent.apply(this, arguments);
@@ -132,7 +137,11 @@ var PersonaSelector = Composer.Controller.extend({
 	{
 		this.last_res = personas;
 
-		if(this.persona_list) this.persona_list.release();
+		if(this.persona_list)
+		{
+			this.persona_list.unbind('release', 'personas:selector:invites:release');
+			this.persona_list.release();
+		}
 		if(personas.length > 0)
 		{
 			this.persona_list	=	new PersonaListController({
@@ -144,10 +153,12 @@ var PersonaSelector = Composer.Controller.extend({
 		}
 		else if(this.is_valid_email(this.get_email()))
 		{
-			this.persona_list	=	new InviteEmailController({
+			this.persona_list	=	new InviteBoardController({
 				email: this.get_email(),
-				inject: this.persona_list_el
+				inject: this.persona_list_el,
+				board: this.model
 			});
+			this.persona_list.bind('release', this.release.bind(this), 'personas:selector:invites:release');
 			this.trigger('show-invite');
 		}
 	}

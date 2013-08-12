@@ -16,7 +16,7 @@ var BoardShareController = Composer.Controller.extend({
 	from_persona: null,
 	to_persona: null,
 	persona_selector: null,
-	invite: null,
+	invite: false,
 
 	init: function()
 	{
@@ -83,6 +83,7 @@ var BoardShareController = Composer.Controller.extend({
 		this.persona_selector = new PersonaSelector({
 			inject: this.selector,
 			persona: this.to_persona,
+			model: this.board,
 			tabindex: 1
 		});
 		this.persona_selector.bind('selected', function(persona) {
@@ -92,8 +93,10 @@ var BoardShareController = Composer.Controller.extend({
 		this.persona_selector.bind('change-persona', function() {
 			this.to_persona	=	false;
 			this.inp_submit.disabled	=	true;
+			this.invite	=	false;
 		}.bind(this));
 		this.persona_selector.bind('show-personas', function() {
+			this.invite	=	false;
 			if(this.to_persona)
 			{
 				this.inp_submit.disabled	=	false;
@@ -105,6 +108,7 @@ var BoardShareController = Composer.Controller.extend({
 		}.bind(this));
 		this.persona_selector.bind('show-invite', function() {
 			this.inp_submit.disabled	=	false;
+			this.invite	=	true;
 		}.bind(this));
 	},
 
@@ -126,6 +130,12 @@ var BoardShareController = Composer.Controller.extend({
 	share: function(e)
 	{
 		if(e) e.stop();
+
+		if(this.invite)
+		{
+			this.persona_selector.persona_list.trigger('submit');
+			return;
+		}
 
 		if(!this.to_persona || this.to_persona.is_new())
 		{
@@ -175,6 +185,8 @@ var BoardShareController = Composer.Controller.extend({
 
 						this.persona_selector.persona	=	new Persona();
 						this.persona_selector.render();
+
+						this.to_persona	=	null;
 					}.bind(this),
 					error: function() {
 						tagit.loading(false);
