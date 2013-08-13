@@ -38,8 +38,9 @@ var InviteBoardController	=	Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		var secret	=	this.inp_secret.get('value');
+		var persona	=	tagit.user.get('personas').first();
 		tagit.loading(true);
-		this.invite.send(this.board.key, secret, {
+		this.invite.send(persona, this.board, secret, {
 			success: function() {
 				tagit.loading(false);
 				barfr.barf('Invite send to '+ this.invite.get('email'));
