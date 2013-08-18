@@ -1,6 +1,10 @@
 var Invite = Composer.Model.extend({
 });
 
+var InviteKey = Protected.extend({
+	private_fields: ['key']
+});
+
 var BoardInvite = Invite.extend({
 	send: function(from_persona, board, secret, options)
 	{
@@ -22,7 +26,10 @@ var BoardInvite = Invite.extend({
 		var encrypting_pass	=	tcrypt.uuid();
 		var encrypting_key	=	tcrypt.key(encrypting_pass, salt, {keySize: 256/32, iterations: 400});
 
-		var encrypted_key	=	tcrypt.encrypt(encrypting_key, tcrypt.key_to_string(board.key));
+		var keymodel		=	new InviteKey({key: tcrypt.key_to_string(board.key)});
+		keymodel.key		=	encrypting_key;
+
+		var encrypted_key	=	keymodel.toJSON().body;
 
 		from_persona.get_challenge({
 			success: function(challenge) {
@@ -34,9 +41,32 @@ var BoardInvite = Invite.extend({
 					board_key: encrypted_key,
 					used_secret: !!secret
 				}, {
-					success: options.success,
+					success: function(invite) {
+						if(invite.priv)
+						{
+							var privs			=	Object.clone(board.get('privs', {}));
+							privs[invite.id]	=	invite.priv;
+							board.set({privs: privs});
+						}
+						if(options.success) options.success(invite);
+					}.bind(this),
 					error: options.error
 				});
+			}.bind(this),
+			error: options.error
+		});
+	},
+
+	cancel: function(board, options)
+	{
+		options || (options = {});
+
+		tagit.api._delete('/invites/'+this.id(), {}, {
+			success: function() {
+				var privs	=	Object.clone(board.get('privs', {}));
+				delete privs[this.id()];
+				board.set({privs: privs});
+				if(options.success) options.success();
 			}.bind(this),
 			error: options.error
 		});

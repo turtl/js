@@ -9,7 +9,8 @@ var BoardShareController = Composer.Controller.extend({
 		'click .button.share': 'open_share',
 		'submit form': 'share',
 		'click a[href=#back]': 'open_manage',
-		'click a[href=#remove]': 'remove_user'
+		'click a[href=#remove]': 'remove_user',
+		'click a[href=#cancel]': 'cancel_invite'
 	},
 
 	board: null,
@@ -40,7 +41,7 @@ var BoardShareController = Composer.Controller.extend({
 		}.bind(this);
 		modal.addEvent('close', close_fn);
 
-		if(this.board.get('personas').models().length == 0)
+		if(this.board.get('personas').models().length == 0 && Object.getLength(this.board.get('privs')) == 0)
 		{
 			this.open_share();
 		}
@@ -73,9 +74,21 @@ var BoardShareController = Composer.Controller.extend({
 			return p;
 		});
 
+		var invites	=	[];
+		Object.each(privs, function(entry, id) {
+			if(!entry || !entry.e) return;
+			var invite	=	{
+				id: id,
+				email: entry.e,
+				p: entry.p
+			};
+			invites.push(invite);
+		});
+
 		var content	=	Template.render('boards/share', {
 			board: board,
-			personas: personas
+			personas: personas,
+			invites: invites
 		});
 		this.html(content);
 
@@ -109,6 +122,10 @@ var BoardShareController = Composer.Controller.extend({
 		this.persona_selector.bind('show-invite', function() {
 			this.inp_submit.disabled	=	false;
 			this.invite	=	true;
+			this.persona_selector.persona_list.bind('sent', function() {
+				this.share_container.addClass('open');
+				this.open_share();
+			}.bind(this));
 		}.bind(this));
 	},
 
@@ -234,6 +251,23 @@ var BoardShareController = Composer.Controller.extend({
 				tagit.loading(false);
 				barfr.barf('There was a problem removing that user from the board: '+ err);
 			}.bind(this)
+		});
+	},
+
+	cancel_invite: function(e)
+	{
+		if(!e) return;
+		e.stop();
+
+		if(!confirm('Really cancel this invite?')) return false;
+
+		var iid		=	next_tag_up('li', next_tag_up('li', e.target).getParent()).className.replace(/^.*invite_([0-9a-f-]+).*?$/, '$1');
+		var invite	=	new BoardInvite({id: iid});
+		invite.cancel(this.board, {
+			success: function() {
+			},
+			error: function() {
+			}
 		});
 	}
 });

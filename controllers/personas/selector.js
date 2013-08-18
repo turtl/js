@@ -139,7 +139,7 @@ var PersonaSelector = Composer.Controller.extend({
 
 		if(this.persona_list)
 		{
-			this.persona_list.unbind('release', 'personas:selector:invites:release');
+			this.persona_list.unbind('release', 'personas:selector:list:release');
 			this.persona_list.release();
 		}
 		if(personas.length > 0)
@@ -158,8 +158,13 @@ var PersonaSelector = Composer.Controller.extend({
 				inject: this.persona_list_el,
 				board: this.model
 			});
-			this.persona_list.bind('release', this.release.bind(this), 'personas:selector:invites:release');
+			this.persona_list.bind('sent', function() {
+				this.persona	=	null;
+			}.bind(this));
 			this.trigger('show-invite');
 		}
+		this.persona_list.bind('release', function() {
+			this.inp_email.set('value', '');
+		}.bind(this), 'personas:selector:list:release');
 	}
 });

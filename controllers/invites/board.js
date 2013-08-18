@@ -22,7 +22,8 @@ var InviteBoardController	=	Composer.Controller.extend({
 
 	release: function()
 	{
-		this.unbind('submit', 'invites:submit');
+		this.unbind('submit');
+		this.unbind('sent');
 		this.parent.apply(this, arguments);
 	},
 
@@ -44,6 +45,7 @@ var InviteBoardController	=	Composer.Controller.extend({
 			success: function() {
 				tagit.loading(false);
 				barfr.barf('Invite send to '+ this.invite.get('email'));
+				this.trigger('sent');
 				this.release();
 			}.bind(this),
 			error: function(err, xhr) {
