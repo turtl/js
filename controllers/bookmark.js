@@ -73,8 +73,9 @@ var BookmarkController = Composer.Controller.extend({
 				if(!window._in_ext) window.close();
 			}, 'bookmark:edit_note:release');
 			this.edit_controller.bind('saved', function() {
-				if(window._in_ext && window.port) window.port.send('close');
 				this.profile.trigger('change:current_board');
+				if(window._in_ext && window.port) window.port.send('close');
+				else this.edit_controller.release();
 			}.bind(this), 'bookmark:edit_note:saved');
 			this.edit_controller.bind('change-type', function() {
 				this.resize();
