@@ -1,5 +1,5 @@
 var BookmarkController = Composer.Controller.extend({
-	inject: tagit.main_container_selector,
+	inject: turtl.main_container_selector,
 	className: 'bookmark modalcontent',
 
 	elements: {
@@ -42,13 +42,13 @@ var BookmarkController = Composer.Controller.extend({
 
 		}.bind(this));
 
-		this.profile	=	tagit.profile;
+		this.profile	=	turtl.profile;
 		this.profile.bind('change:current_board', function() {
 			var board = this.profile.get_current_board();
 
 			if(!board) return;
 
-			tagit.user.get('settings').get_by_key('last_board').value(board.id());
+			turtl.user.get('settings').get_by_key('last_board').value(board.id());
 			this.soft_release();
 
 			var note = new Note({
@@ -82,8 +82,8 @@ var BookmarkController = Composer.Controller.extend({
 			this.resize();
 		}.bind(this), 'bookmark:change_board');
 
-		var last	=	tagit.user.get('settings').get_by_key('last_board').value() || false;
-		var board	=	tagit.profile.get('boards').find_by_id(last);
+		var last	=	turtl.user.get('settings').get_by_key('last_board').value() || false;
+		var board	=	turtl.profile.get('boards').find_by_id(last);
 		this.profile.set_current_board(board, {silent: true});
 		this.profile.trigger('change:current_board');
 	},

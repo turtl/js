@@ -33,7 +33,7 @@ var BoardInvite = Invite.extend({
 
 		from_persona.get_challenge({
 			success: function(challenge) {
-				tagit.api.post('/invites/boards/'+board.id(), {
+				turtl.api.post('/invites/boards/'+board.id(), {
 					persona: from_persona.id(),
 					challenge: from_persona.generate_response(challenge),
 					to: this.get('email'),
@@ -61,7 +61,7 @@ var BoardInvite = Invite.extend({
 	{
 		options || (options = {});
 
-		tagit.api._delete('/invites/'+this.id(), {}, {
+		turtl.api._delete('/invites/'+this.id(), {}, {
 			success: function() {
 				var privs	=	Object.clone(board.get('privs', {}));
 				delete privs[this.id()];

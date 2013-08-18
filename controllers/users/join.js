@@ -1,5 +1,5 @@
 var UserJoinController = Composer.Controller.extend({
-	inject: tagit.main_container_selector,
+	inject: turtl.main_container_selector,
 
 	elements: {
 		'input[name=username]': 'inp_username',
@@ -56,21 +56,21 @@ var UserJoinController = Composer.Controller.extend({
 			username: username,
 			password: password
 		});
-		tagit.loading(true);
+		turtl.loading(true);
 		user.join({
 			success: function(userdata) {
 				var data = user.toJSON();
 				data.id = userdata.id;
-				tagit.user.set({
+				turtl.user.set({
 					username: user.get('username'),
 					password: user.get('password')
 				});
-				tagit.user.login(data);
-				tagit.loading(false);
-				tagit.route('/');
+				turtl.user.login(data);
+				turtl.loading(false);
+				turtl.route('/');
 			}.bind(this),
 			error: function() {
-				tagit.loading(false);
+				turtl.loading(false);
 				this.submit.disabled = false;
 			}.bind(this)
 		});

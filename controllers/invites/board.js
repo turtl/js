@@ -39,17 +39,17 @@ var InviteBoardController	=	Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		var secret	=	this.inp_secret.get('value');
-		var persona	=	tagit.user.get('personas').first();
-		tagit.loading(true);
+		var persona	=	turtl.user.get('personas').first();
+		turtl.loading(true);
 		this.invite.send(persona, this.board, secret, {
 			success: function() {
-				tagit.loading(false);
+				turtl.loading(false);
 				barfr.barf('Invite send to '+ this.invite.get('email'));
 				this.trigger('sent');
 				this.release();
 			}.bind(this),
 			error: function(err, xhr) {
-				tagit.loading(false);
+				turtl.loading(false);
 				barfr.barf('There was a problem sending your invite: '+ err);
 			}.bind(this)
 		});

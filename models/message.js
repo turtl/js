@@ -61,7 +61,7 @@ var Messages = Composer.Collection.extend({
 	sync: function(options)
 	{
 		options || (options = {});
-		tagit.user.get('personas').each(function(persona) {
+		turtl.user.get('personas').each(function(persona) {
 			persona.get_messages(persona.challenge, {
 				after: this.last_id,
 				success: options.success,

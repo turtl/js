@@ -19,7 +19,7 @@ var HeaderBarController = Composer.Controller.extend({
 
 	init: function()
 	{
-		tagit.user.bind(['login', 'logout'], this.render.bind(this), 'header_bar:user:render');
+		turtl.user.bind(['login', 'logout'], this.render.bind(this), 'header_bar:user:render');
 		this.render();
 		this.close_timer = new Timer(250);
 		this.close_timer.end = function() {
@@ -29,7 +29,7 @@ var HeaderBarController = Composer.Controller.extend({
 
 	release: function()
 	{
-		tagit.user.unbind(['login', 'logout'], 'header_bar:user:render');
+		turtl.user.unbind(['login', 'logout'], 'header_bar:user:render');
 		if(this.notifications) this.notifications.release();
 		this.close_timer.end = null;
 		this.parent.apply(this, arguments);
@@ -38,7 +38,7 @@ var HeaderBarController = Composer.Controller.extend({
 	render: function()
 	{
 		var content = Template.render('modules/header_bar', {
-			user: toJSON(tagit.user)
+			user: toJSON(turtl.user)
 		});
 		this.html(content);
 

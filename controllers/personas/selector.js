@@ -25,7 +25,7 @@ var PersonaSelector = Composer.Controller.extend({
 		if(!this.persona) this.persona = new Persona();
 		this.render();
 
-		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
+		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
 
 		this.sn_timer = new Timer(500);
 		this.sn_timer.end = this.do_search_email.bind(this);
@@ -38,7 +38,7 @@ var PersonaSelector = Composer.Controller.extend({
 			this.persona_list.unbind('release', 'personas:selector:invites:release');
 			this.persona_list.release();
 		}
-		tagit.keyboard.attach(); // re-enable shortcuts
+		turtl.keyboard.attach(); // re-enable shortcuts
 		this.unbind('selected');
 		this.parent.apply(this, arguments);
 	},

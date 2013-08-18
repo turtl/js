@@ -82,7 +82,7 @@ var NotesController = TrackController.extend({
 			}
 			else
 			{
-				this.last_search	=	tagit.search.search({
+				this.last_search	=	turtl.search.search({
 					text: this.search_text,
 					boards: this.board.id(),
 					tags: selected.append(excluded)
@@ -124,13 +124,13 @@ var NotesController = TrackController.extend({
 		// track all changes to our sub-controllers
 		this.setup_tracking(this.filter_list);
 
-		tagit.keyboard.bind('f', function() { this.inp_search.focus(); }.bind(this), 'notes:shortcut:search_focus');
-		tagit.keyboard.bind('a', this.open_add_note.bind(this), 'notes:shortcut:add_note');
-		tagit.keyboard.bind('enter', this.sub_view_note.bind(this), 'notes:shortcut:view_note');
-		tagit.keyboard.bind('e', this.sub_edit_note.bind(this), 'notes:shortcut:edit_note');
-		tagit.keyboard.bind('m', this.sub_move_note.bind(this), 'notes:shortcut:move_note');
-		tagit.keyboard.bind('delete', this.sub_delete_note.bind(this), 'notes:shortcut:delete_note');
-		tagit.keyboard.bind('x', this.clear_filters.bind(this), 'notes:shortcut:clear_filters');
+		turtl.keyboard.bind('f', function() { this.inp_search.focus(); }.bind(this), 'notes:shortcut:search_focus');
+		turtl.keyboard.bind('a', this.open_add_note.bind(this), 'notes:shortcut:add_note');
+		turtl.keyboard.bind('enter', this.sub_view_note.bind(this), 'notes:shortcut:view_note');
+		turtl.keyboard.bind('e', this.sub_edit_note.bind(this), 'notes:shortcut:edit_note');
+		turtl.keyboard.bind('m', this.sub_move_note.bind(this), 'notes:shortcut:move_note');
+		turtl.keyboard.bind('delete', this.sub_delete_note.bind(this), 'notes:shortcut:delete_note');
+		turtl.keyboard.bind('x', this.clear_filters.bind(this), 'notes:shortcut:clear_filters');
 
 		this.setup_masonry();
 		this.setup_sort();
@@ -149,13 +149,13 @@ var NotesController = TrackController.extend({
 			this.filter_list.detach();
 			this.release_subcontrollers();
 		}
-		tagit.keyboard.unbind('f', 'notes:shortcut:search_focus');
-		tagit.keyboard.unbind('a', 'notes:shortcut:add_note')
-		tagit.keyboard.unbind('enter', 'notes:shortcut:view_note');
-		tagit.keyboard.unbind('e', 'notes:shortcut:edit_note');
-		tagit.keyboard.unbind('m', 'notes:shortcut:move_note');
-		tagit.keyboard.unbind('delete', 'notes:shortcut:delete_note');
-		tagit.keyboard.unbind('x', 'notes:shortcut:clear_filters');
+		turtl.keyboard.unbind('f', 'notes:shortcut:search_focus');
+		turtl.keyboard.unbind('a', 'notes:shortcut:add_note')
+		turtl.keyboard.unbind('enter', 'notes:shortcut:view_note');
+		turtl.keyboard.unbind('e', 'notes:shortcut:edit_note');
+		turtl.keyboard.unbind('m', 'notes:shortcut:move_note');
+		turtl.keyboard.unbind('delete', 'notes:shortcut:delete_note');
+		turtl.keyboard.unbind('x', 'notes:shortcut:clear_filters');
 		if(this.masonry) this.masonry.detach();
 		if(this.masonry_timer) this.masonry_timer.end = null;
 		if(this.search_timer) this.search_timer.end = null;
@@ -392,12 +392,12 @@ var NotesController = TrackController.extend({
 
 	search_focus: function(e)
 	{
-		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
+		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
 	},
 
 	search_blur: function(e)
 	{
-		tagit.keyboard.attach(); // re-enable shortcuts
+		turtl.keyboard.attach(); // re-enable shortcuts
 	},
 
 	clear_filters: function()

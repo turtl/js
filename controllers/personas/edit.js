@@ -22,7 +22,7 @@ var PersonaEditController = Composer.Controller.extend({
 	init: function()
 	{
 		if(!this.model) this.model = new Persona();
-		this.model.key = tagit.user.get_key();	// persona uses same key as user
+		this.model.key = turtl.user.get_key();	// persona uses same key as user
 
 		if(this.model.is_new() && this.collection.models().length > 0)
 		{
@@ -38,7 +38,7 @@ var PersonaEditController = Composer.Controller.extend({
 		}.bind(this);
 		modal.addEvent('close', modalclose);
 
-		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
+		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
 
 		this.sn_timer = new Timer(500);
 		this.sn_timer.end = this.do_check_email.bind(this);
@@ -47,7 +47,7 @@ var PersonaEditController = Composer.Controller.extend({
 	release: function()
 	{
 		if(modal.is_open) modal.close();
-		tagit.keyboard.attach(); // re-enable shortcuts
+		turtl.keyboard.attach(); // re-enable shortcuts
 		this.parent.apply(this, arguments);
 	},
 
@@ -87,26 +87,26 @@ var PersonaEditController = Composer.Controller.extend({
 		var is_new = this.model.is_new();
 		if(is_new)
 		{
-			var symkey	=	tcrypt.gen_symmetric_keys(tagit.user);
+			var symkey	=	tcrypt.gen_symmetric_keys(turtl.user);
 			set.pubkey	=	symkey.public;
 			set.privkey	=	symkey.private;
-			set.secret	=	this.model.generate_secret(tagit.user.get_key());
+			set.secret	=	this.model.generate_secret(turtl.user.get_key());
 			args.secret	=	set.secret;
 		}
 		this.model.set(set);
-		tagit.loading(true);
+		turtl.loading(true);
 		var do_save = function()
 		{
 			this.model.save({
 				args: args,
 				success: function(res) {
-					tagit.loading(false);
+					turtl.loading(false);
 					if(is_new) this.collection.add(this.model);
 					this.model.trigger('saved');
 					this.open_personas();
 				}.bind(this),
 				error: function(model, err) {
-					tagit.loading(false);
+					turtl.loading(false);
 					barfr.barf('There was a problem '+ (is_new ? 'adding' : 'updating') +' your persona: '+ err);
 				}.bind(this)
 			});
@@ -221,7 +221,7 @@ var PersonaEditController = Composer.Controller.extend({
 		if(this.return_to_manage)
 		{
 			new BoardManageController({
-				collection: tagit.profile.get('boards')
+				collection: turtl.profile.get('boards')
 			});
 		}
 		else

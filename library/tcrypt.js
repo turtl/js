@@ -9,7 +9,7 @@ var tcrypt = {
 	 *
 	 * This scheme assumes Base64 encoding (otherwise : would be a bad separator)
 	 */
-	TagitFormatter: {
+	TurtlFormatter: {
 		stringify: function (cipherParams)
 		{
 			// create json object with ciphertext
@@ -51,7 +51,7 @@ var tcrypt = {
 		var opts = Object.merge({
 			mode: CryptoJS.mode.CBC,
 			padding: CryptoJS.pad.AnsiX923,
-			format: tcrypt.TagitFormatter
+			format: tcrypt.TurtlFormatter
 		}, options);
 
 		// auto-generate an initial vector if needed
@@ -69,9 +69,9 @@ var tcrypt = {
 		var opts = Object.merge({
 			mode: CryptoJS.mode.CBC,
 			padding: CryptoJS.pad.AnsiX923,
-			format: tcrypt.TagitFormatter
+			format: tcrypt.TurtlFormatter
 		}, options);
-		var params = tcrypt.TagitFormatter.parse(encrypted);
+		var params = tcrypt.TurtlFormatter.parse(encrypted);
 		if(params.iv) opts.iv = params.iv;
 		var de = CryptoJS.AES.decrypt(encrypted, key, opts);
 		if(options.raw) return de;

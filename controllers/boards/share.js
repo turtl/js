@@ -26,7 +26,7 @@ var BoardShareController = Composer.Controller.extend({
 		this.board.bind('change:privs', this.render.bind(this), 'board:share:monitor_privs');
 		this.render();
 
-		this.from_persona = tagit.user.get('personas').first();
+		this.from_persona = turtl.user.get('personas').first();
 		if(!this.from_persona)
 		{
 			barfr.barf('You must have a persona before being able to share your boards.');
@@ -46,7 +46,7 @@ var BoardShareController = Composer.Controller.extend({
 			this.open_share();
 		}
 
-		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
+		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
 	},
 
 	release: function()
@@ -55,7 +55,7 @@ var BoardShareController = Composer.Controller.extend({
 		this.board.unbind('change:privs', 'board:share:monitor_privs');
 		if(modal.is_open) modal.close();
 		if(this.persona_selector) this.persona_selector.release();
-		tagit.keyboard.attach(); // re-enable shortcuts
+		turtl.keyboard.attach(); // re-enable shortcuts
 		this.parent.apply(this, arguments);
 	},
 
@@ -186,13 +186,13 @@ var BoardShareController = Composer.Controller.extend({
 		message.add_recipient(this.from_persona);
 		message.add_recipient(this.to_persona);
 
-		tagit.loading(true);
+		turtl.loading(true);
 		var perms	=	2;
 		this.board.share_with(this.to_persona, perms, {
 			success: function() {
 				this.from_persona.send_message(message, {
 					success: function() {
-						tagit.loading(false);
+						turtl.loading(false);
 						barfr.barf('Invite sent.');
 						this.share_container.removeClass('open');
 						var privs	=	Object.clone(this.board.get('privs', {}));
@@ -206,13 +206,13 @@ var BoardShareController = Composer.Controller.extend({
 						this.to_persona	=	null;
 					}.bind(this),
 					error: function() {
-						tagit.loading(false);
+						turtl.loading(false);
 						barfr.barf('There was a problem sending your invite: '+ err);
 					}.bind(this)
 				});
 			}.bind(this),
 			error: function(err) {
-				tagit.loading(false);
+				turtl.loading(false);
 				barfr.barf('There was a problem sharing this board: '+ err);
 			}.bind(this)
 		});
@@ -225,7 +225,7 @@ var BoardShareController = Composer.Controller.extend({
 
 		// open management back up
 		new BoardManageController({
-			collection: tagit.profile.get('boards')
+			collection: turtl.profile.get('boards')
 		});
 	},
 
@@ -240,15 +240,15 @@ var BoardShareController = Composer.Controller.extend({
 		if(!pid) return false;
 		var persona	=	this.board.get('personas').find_by_id(pid);
 		if(!persona) return false;
-		tagit.loading(true);
+		turtl.loading(true);
 		this.board.share_with(persona, 0, {
 			success: function() {
-				tagit.loading(false);
+				turtl.loading(false);
 				barfr.barf('User successfully removed from board.');
 				this.board.get('personas').remove(persona);
 			}.bind(this),
 			error: function(err) {
-				tagit.loading(false);
+				turtl.loading(false);
 				barfr.barf('There was a problem removing that user from the board: '+ err);
 			}.bind(this)
 		});

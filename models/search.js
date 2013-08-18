@@ -18,7 +18,7 @@ var Search	=	Composer.Model.extend({
 
 	init: function()
 	{
-		tagit.profile.bind_relational('boards', 'add', function(board) {
+		turtl.profile.bind_relational('boards', 'add', function(board) {
 			this.watch_board(board);
 		}.bind(this), 'search:board:add');
 
@@ -257,7 +257,7 @@ var Search	=	Composer.Model.extend({
 	 */
 	reindex: function()
 	{
-		tagit.profile.get('boards').each(function(board) {
+		turtl.profile.get('boards').each(function(board) {
 			board.get('notes').each(function(note) {
 				this.reindex_note(note);
 			}.bind(this));

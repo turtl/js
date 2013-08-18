@@ -18,7 +18,7 @@ var NotificationsController = Composer.Controller.extend({
 		var notifications = function()
 		{
 			this.render();
-			tagit.messages.bind(['add', 'remove', 'reset'], function() {
+			turtl.messages.bind(['add', 'remove', 'reset'], function() {
 				this.render()
 				this.msg_notify();
 			}.bind(this), 'header_bar:monitor_messages');
@@ -36,14 +36,14 @@ var NotificationsController = Composer.Controller.extend({
 			document.addEvent('click', this.check_close);
 		}.bind(this);
 
-		if(tagit.user.logged_in)
+		if(turtl.user.logged_in)
 		{
 			notifications()
 		}
 		else
 		{
-			tagit.user.bind('login', function() {
-				tagit.user.unbind('login', 'notifications:init:login');
+			turtl.user.bind('login', function() {
+				turtl.user.unbind('login', 'notifications:init:login');
 				notifications();
 			}, 'notifications:init:login');
 		}
@@ -51,14 +51,14 @@ var NotificationsController = Composer.Controller.extend({
 
 	release: function()
 	{
-		tagit.messages.unbind(['add', 'remove', 'reset'], 'header_bar:monitor_messages');
+		turtl.messages.unbind(['add', 'remove', 'reset'], 'header_bar:monitor_messages');
 		if(this.check_close) $(document).removeEvent('click', this.check_close);
 		this.parent.apply(this, arguments);
 	},
 
 	render: function()
 	{
-		var notifications	=	tagit.messages.select({notification: true}).map(function(n) {
+		var notifications	=	turtl.messages.select({notification: true}).map(function(n) {
 			return toJSON(n);
 		});
 
@@ -71,7 +71,7 @@ var NotificationsController = Composer.Controller.extend({
 
 	msg_notify: function()
 	{
-		var num_unread	=	tagit.messages.select({notification: true}).length;
+		var num_unread	=	turtl.messages.select({notification: true}).length;
 		if(num_unread > 0)
 		{
 			var notif	=	this.el.getElement('li a.notifications small');
@@ -115,7 +115,7 @@ var NotificationsController = Composer.Controller.extend({
 		if(!e) return false;
 		e.stop();
 		var nid		=	this.get_notification_id_from_el(e.target);
-		var message	=	tagit.messages.find_by_id(nid);
+		var message	=	turtl.messages.find_by_id(nid);
 		if(!message) return;
 
 		var body	=	message.get('body');
@@ -124,7 +124,7 @@ var NotificationsController = Composer.Controller.extend({
 		case 'share_board':
 			var board_id	=	body.board_id;
 			var board_key	=	tcrypt.key_to_bin(body.board_key);
-			var persona		=	tagit.user.get('personas').find_by_id(message.get('to'));
+			var persona		=	turtl.user.get('personas').find_by_id(message.get('to'));
 			if(!persona) return false;
 			// this should never happen, but you never know
 			if(!board_id || !board_key) persona.delete_message(message);
@@ -132,19 +132,19 @@ var NotificationsController = Composer.Controller.extend({
 				id: board_id
 			});
 			board.key	=	board_key;
-			tagit.loading(true);
+			turtl.loading(true);
 			board.accept_share(persona, {
 				success: function() {
-					tagit.loading(false);
-					// removeing the message from tagit.messages isn't necessary,
+					turtl.loading(false);
+					// removeing the message from turtl.messages isn't necessary,
 					// but is less visually jarring.
-					tagit.messages.remove(message);
+					turtl.messages.remove(message);
 
 					persona.delete_message(message);
 					barfr.barf('Invite accepted!');
 				}.bind(this),
 				error: function(err) {
-					tagit.loading(false);
+					turtl.loading(false);
 					barfr.barf('There was a problem accepting the invite: '+ err);
 				}.bind(this)
 			});
@@ -160,7 +160,7 @@ var NotificationsController = Composer.Controller.extend({
 		if(!e) return false;
 		e.stop();
 		var nid		=	this.get_notification_id_from_el(e.target);
-		var message	=	tagit.messages.find_by_id(nid);
+		var message	=	turtl.messages.find_by_id(nid);
 		if(!message) return;
 
 		var body	=	message.get('body');
@@ -168,12 +168,12 @@ var NotificationsController = Composer.Controller.extend({
 		{
 		case 'share_board':
 			var board_id	=	body.board_id;
-			var persona		=	tagit.user.get('personas').find_by_id(message.get('to'));
+			var persona		=	turtl.user.get('personas').find_by_id(message.get('to'));
 			if(!persona) return false;
-			tagit.loading(true);
+			turtl.loading(true);
 			persona.delete_message(message, {
-				success: function() { tagit.loading(false); },
-				error: function() { tagit.loading(false); }
+				success: function() { turtl.loading(false); },
+				error: function() { turtl.loading(false); }
 			});
 			break;
 		default:

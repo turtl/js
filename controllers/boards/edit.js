@@ -38,12 +38,12 @@ var BoardEditController = Composer.Controller.extend({
 			modal.addEvent('close', close_fn);
 		}
 		this.inp_title.focus();
-		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
+		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
 	},
 
 	release: function()
 	{
-		tagit.keyboard.attach(); // re-enable shortcuts
+		turtl.keyboard.attach(); // re-enable shortcuts
 		this.parent.apply(this, arguments);
 	},
 
@@ -70,7 +70,7 @@ var BoardEditController = Composer.Controller.extend({
 			this.board.generate_subkeys();
 			success = function() {
 				// make sure the project key gets saved with the user's data
-				tagit.user.add_user_key(this.board.id(), this.board.key);
+				turtl.user.add_user_key(this.board.id(), this.board.key);
 
 				var boards = this.profile.get('boards');
 				if(boards) boards.add(this.board);
@@ -86,10 +86,10 @@ var BoardEditController = Composer.Controller.extend({
 		{
 			this.board.set({title: title});
 		}
-		tagit.loading(true);
+		turtl.loading(true);
 		this.board.save({
 			success: function() {
-				tagit.loading(false);
+				turtl.loading(false);
 				if(success) success();
 				if(modal.is_open) modal.close();
 
@@ -103,7 +103,7 @@ var BoardEditController = Composer.Controller.extend({
 				}
 			}.bind(this),
 			error: function(err) {
-				tagit.loading(false);
+				turtl.loading(false);
 				barfr.barf('There was a problem saving your board: '+ err);
 			}
 		});

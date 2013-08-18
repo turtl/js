@@ -118,7 +118,7 @@ var User	=	Composer.RelationalModel.extend({
 	join: function(options)
 	{
 		options || (options = {});
-		tagit.api.post('/users', {data: {a: this.get_auth()}}, {
+		turtl.api.post('/users', {data: {a: this.get_auth()}}, {
 			success: options.success,
 			error: function(e) {
 				barfr.barf('Error adding user: '+ e);
@@ -174,7 +174,7 @@ var User	=	Composer.RelationalModel.extend({
 				barfr.barf('There was an error saving your user settings:'+ err);
 			}.bind(this)
 		});
-		tagit.profile.persist({now: true});
+		turtl.profile.persist({now: true});
 	},
 
 	get_key: function()
@@ -247,12 +247,12 @@ var User	=	Composer.RelationalModel.extend({
 	test_auth: function(options)
 	{
 		options || (options = {});
-		tagit.api.set_auth(this.get_auth());
-		tagit.api.post('/auth', {}, {
+		turtl.api.set_auth(this.get_auth());
+		turtl.api.post('/auth', {}, {
 			success: options.success,
 			error: options.error
 		});
-		tagit.api.clear_auth();
+		turtl.api.clear_auth();
 	},
 
 	add_user_key: function(item_id, key)

@@ -7,7 +7,7 @@ var $ES = function(selector, filter){ return ($(filter) || document).getElements
 // stores the object that communicates with the addon
 var addon_comm	=	null;
 
-var tagit	=	{
+var turtl	=	{
 	site_url: null,
 
 	// base window title
@@ -16,7 +16,7 @@ var tagit	=	{
 	// holds the user model
 	user: null,
 
-	// holds the DOM object that tagit does all of its operations within
+	// holds the DOM object that turtl does all of its operations within
 	main_container_selector: '#main',
 
 	// a place to reference composer controllers by name
@@ -65,7 +65,7 @@ var tagit	=	{
 		}
 
 		// setup the API tracker (for addon API requests)
-		tagit.api.tracker.attach();
+		turtl.api.tracker.attach();
 
 		// just clear everything out to get rid of scraped content (we don't
 		// really care about it once the JS loads).
@@ -128,13 +128,13 @@ var tagit	=	{
 			this.profile	=	new Profile();
 			this.search		=	new Search();
 
-			tagit.show_loading_screen(true);
+			turtl.show_loading_screen(true);
 			this.profile.initial_load({
 				complete: function() {
-					tagit.show_loading_screen(false);
+					turtl.show_loading_screen(false);
 					this.controllers.pages.release_current();
 					this.last_url = '';
-					tagit.profile.persist();
+					turtl.profile.persist();
 					this.search.reindex();
 					var initial_route	=	options.initial_route || '';
 					if(initial_route.match(/^\/users\//)) initial_route = '/';
@@ -145,16 +145,16 @@ var tagit	=	{
 			});
 
 			// logout shortcut
-			tagit.keyboard.bind('S-l', function() {
-				tagit.route('/users/logout');
+			turtl.keyboard.bind('S-l', function() {
+				turtl.route('/users/logout');
 			}, 'dashboard:shortcut:logout');
 		}.bind(this));
 		this.user.bind('logout', function() {
-			tagit.controllers.pages.release_current();
-			tagit.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
-			tagit.show_loading_screen(false);
+			turtl.controllers.pages.release_current();
+			turtl.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
+			turtl.show_loading_screen(false);
 			this.user.unbind('change', 'user:write_changes_to_cookie');
-			tagit.api.clear_auth();
+			turtl.api.clear_auth();
 			modal.close();
 
 			// this should give us a clean slate
@@ -196,22 +196,22 @@ var tagit	=	{
 	setup_syncing: function()
 	{
 		// monitor for sync changes
-		if(tagit.sync)
+		if(turtl.sync)
 		{
-			tagit.profile.get_sync_time();
+			turtl.profile.get_sync_time();
 			this.sync_timer = new Timer(10000);
 			this.sync_timer.end = function()
 			{
-				tagit.profile.sync();
+				turtl.profile.sync();
 				this.sync_timer.start();
 			}.bind(this);
 			this.sync_timer.start();
 		}
 
 		// listen for syncing from addon
-		if(window.port && !tagit.sync) window.port.bind('profile-sync', function(sync) {
+		if(window.port && !turtl.sync) window.port.bind('profile-sync', function(sync) {
 			if(!sync) return false;
-			tagit.profile.process_sync(data_from_addon(sync));
+			turtl.profile.process_sync(data_from_addon(sync));
 		});
 	},
 
@@ -290,8 +290,8 @@ var tagit	=	{
 						this._string_value	=	str;
 					}.bind(path);
 					path.rewrite(null);
-					tagit.controllers.pages.trigger('onroute', path);
-					//tagit.controllers.pages.on_route(path);
+					turtl.controllers.pages.trigger('onroute', path);
+					//turtl.controllers.pages.on_route(path);
 					//if(path._string_value) a_tag.set('href', path._string_value);
 					return true;
 				}
@@ -327,7 +327,7 @@ var tagit	=	{
 
 	set_title: function(title)
 	{
-		title	=	title.clean().replace(eval('/(\\s*\\|\\s*'+(tagit.base_window_title).escapeRegExp()+')*(\\s*\\|)?$/g'), '');
+		title	=	title.clean().replace(eval('/(\\s*\\|\\s*'+(turtl.base_window_title).escapeRegExp()+')*(\\s*\\|)?$/g'), '');
 		if(title == '') title = this.base_window_title;
 		else title = title + ' | ' + this.base_window_title;
 		document.title	=	title;
@@ -351,10 +351,10 @@ window.addEvent('domready', function() {
 	window.__site_url		=	window.__site_url || '';
 	window.__api_url		=	window.__api_url || '';
 	window.__api_key		=	window.__api_key || '';
-	tagit.main_container	=	$E(tagit.main_container_selector);
-	tagit.site_url			=	__site_url || '';
-	tagit.base_window_title	=	document.title.replace(/.*\|\s*/, '');
-	tagit.api				=	new Api(
+	turtl.main_container	=	$E(turtl.main_container_selector);
+	turtl.site_url			=	__site_url || '';
+	turtl.base_window_title	=	document.title.replace(/.*\|\s*/, '');
+	turtl.api				=	new Api(
 		__api_url || '',
 		__api_key || '',
 		function(cb_success, cb_fail) {
@@ -399,9 +399,9 @@ window.addEvent('domready', function() {
 	markdown = new Markdown.Converter();
 	markdown.toHTML = markdown.makeHtml;
 	
-	tagit.load_controller('pages', PagesController);
+	turtl.load_controller('pages', PagesController);
 
 	// init it LOL
-	tagit.init.delay(50, tagit);
+	turtl.init.delay(50, turtl);
 });
 

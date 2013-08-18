@@ -1,5 +1,5 @@
 var UserLoginController = Composer.Controller.extend({
-	inject: tagit.main_container_selector,
+	inject: turtl.main_container_selector,
 
 	elements: {
 		'input[name=username]': 'inp_username',
@@ -37,22 +37,22 @@ var UserLoginController = Composer.Controller.extend({
 			password: password
 		});
 
-		tagit.loading(true);
+		turtl.loading(true);
 		user.test_auth({
 			success: function(id) {
 				var data = user.toJSON();
 				data.id = id;
-				tagit.user.set({
+				turtl.user.set({
 					username: user.get('username'),
 					password: user.get('password')
 				});
-				tagit.user.login(data);
-				tagit.loading(false);
-				tagit.route(this.redirect);
+				turtl.user.login(data);
+				turtl.loading(false);
+				turtl.route(this.redirect);
 			}.bind(this),
 			error: function(e) {
 				barfr.barf('Login failed.');
-				tagit.loading(false);
+				turtl.loading(false);
 			}.bind(this)
 		});
 	}

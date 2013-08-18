@@ -24,18 +24,18 @@ var NoteMoveController = Composer.Controller.extend({
 		}.bind(this);
 		modal.addEvent('close', close_fn);
 
-		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
+		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
 	},
 
 	release: function()
 	{
-		tagit.keyboard.attach(); // re-enable shortcuts
+		turtl.keyboard.attach(); // re-enable shortcuts
 		this.parent.apply(this, arguments);
 	},
 
 	render: function()
 	{
-		var boards = tagit.profile.get('boards').map(function(p) {
+		var boards = turtl.profile.get('boards').map(function(p) {
 			return {id: p.id(), title: p.get('title')};
 		});
 		//boards.sort(function(a, b) { return a.title.localeCompare(b.title); });
@@ -54,8 +54,8 @@ var NoteMoveController = Composer.Controller.extend({
 		var curbid = this.note.get('board_id');
 		if(curbid == bid) return false;
 
-		var boardfrom = tagit.profile.get('boards').find_by_id(curbid);
-		var boardto = tagit.profile.get('boards').find_by_id(bid);
+		var boardfrom = turtl.profile.get('boards').find_by_id(curbid);
+		var boardto = turtl.profile.get('boards').find_by_id(bid);
 		if(!boardfrom || !boardto) return false;
 
 		this.note.set({board_id: bid});
@@ -63,11 +63,11 @@ var NoteMoveController = Composer.Controller.extend({
 			{b: bid, k: boardto.key}
 		]);
 
-		tagit.loading(true);
+		turtl.loading(true);
 		this.note.save({
 			success: function(note_data) {
 				modal.close();
-				tagit.loading(false);
+				turtl.loading(false);
 				this.note.set(note_data);
 				boardfrom.get('notes').remove(this.note);
 				//boardfrom.get('tags').trigger('change:selected');
@@ -75,7 +75,7 @@ var NoteMoveController = Composer.Controller.extend({
 			}.bind(this),
 			error: function(e) {
 				barfr.barf('There was a problem moving your note: '+ e);
-				tagit.loading(false);
+				turtl.loading(false);
 			}
 		});
 	}

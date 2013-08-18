@@ -46,7 +46,7 @@ var Profile = Composer.RelationalModel.extend({
 			from_storage || (from_storage = false);
 
 			this.profile_data = true;
-			tagit.user.set(profile.user);
+			turtl.user.set(profile.user);
 			if(options.init)
 			{
 				//this.clear({silent: true});
@@ -77,7 +77,7 @@ var Profile = Composer.RelationalModel.extend({
 		// load from API
 		else
 		{
-			tagit.api.get('/profiles/users/'+tagit.user.id(), {}, {
+			turtl.api.get('/profiles/users/'+turtl.user.id(), {}, {
 				success: function(profile) {
 					success(profile, false);
 				},
@@ -121,11 +121,11 @@ var Profile = Composer.RelationalModel.extend({
 		this.load_data({
 			init: true,
 			success: function(_, from_storage) {
-				tagit.user.load_personas({
+				turtl.user.load_personas({
 					success: function(prof) {
 						// message data can be loaded independently once personas
 						// are loaded, so do it
-						tagit.messages.sync();
+						turtl.messages.sync();
 
 						// this function gets called when all profile/persona data
 						// has been loaded
@@ -134,7 +134,7 @@ var Profile = Composer.RelationalModel.extend({
 							if(options.complete) options.complete();
 						};
 
-						var num_personas	=	tagit.user.get('personas').models().length;
+						var num_personas	=	turtl.user.get('personas').models().length;
 
 						// if we loaded from storage, we already have all the
 						// persona profile junk, so don't bother loading it
@@ -150,7 +150,7 @@ var Profile = Composer.RelationalModel.extend({
 							};
 
 							// loop over each persona and load its profile data
-							tagit.user.get('personas').each(function(p) {
+							turtl.user.get('personas').each(function(p) {
 								p.load_profile({
 									success: function() {
 										track();
@@ -200,10 +200,10 @@ var Profile = Composer.RelationalModel.extend({
 	sync: function(options)
 	{
 		options || (options = {});
-		if(!tagit.sync || !tagit.user.logged_in) return false;
+		if(!turtl.sync || !turtl.user.logged_in) return false;
 
 		var sync_time = this.get('sync_time', 9999999);
-		tagit.api.post('/sync', {time: sync_time}, {
+		turtl.api.post('/sync', {time: sync_time}, {
 			success: function(sync) {
 				this.set({sync_time: sync.time});
 				this.process_sync(sync, options);
@@ -226,7 +226,7 @@ var Profile = Composer.RelationalModel.extend({
 			}.bind(this)
 		});
 
-		tagit.messages.sync({
+		turtl.messages.sync({
 			success: function(_, persona) {
 				persona.sync_data(sync_time);
 			}
@@ -238,15 +238,15 @@ var Profile = Composer.RelationalModel.extend({
 		options || (options = {});
 
 		// send synced data to addon
-		if(window.port && tagit.sync && sync)
+		if(window.port && turtl.sync && sync)
 		{
 			window.port.send('profile-sync', sync);
 		}
 
 		// if we're syncing user data, update it
-		if(sync.user && (!tagit.sync || !window._in_ext))
+		if(sync.user && (!turtl.sync || !window._in_ext))
 		{
-			tagit.user.set(sync.user);
+			turtl.user.set(sync.user);
 		}
 
 		sync.boards.each(function(board_data) {
@@ -257,7 +257,7 @@ var Profile = Composer.RelationalModel.extend({
 				return false;
 			}
 
-			var board	=	tagit.profile.get('boards').find_by_id(board_data.id);
+			var board	=	turtl.profile.get('boards').find_by_id(board_data.id);
 			if(board_data.deleted)
 			{
 				if(board) board.destroy({skip_sync: true});
@@ -268,7 +268,7 @@ var Profile = Composer.RelationalModel.extend({
 			}
 			else
 			{
-				tagit.profile.get('boards').upsert(new Board(board_data));
+				turtl.profile.get('boards').upsert(new Board(board_data));
 			}
 		}.bind(this));
 		this.persist(options);
@@ -326,7 +326,7 @@ var Profile = Composer.RelationalModel.extend({
 	{
 		if(this.get('sync_time', false)) return;
 
-		tagit.api.get('/sync', {}, {
+		turtl.api.get('/sync', {}, {
 			success: function(time) {
 				this.set({sync_time: time});
 			}.bind(this),
@@ -344,10 +344,10 @@ var Profile = Composer.RelationalModel.extend({
 		{
 			options || (options = {});
 			var store	=	{
-				user: tagit.user.toJSON(),
+				user: turtl.user.toJSON(),
 				boards: []
 			};
-			tagit.profile.get('boards').each(function(board) {
+			turtl.profile.get('boards').each(function(board) {
 				var boardobj	=	board.toJSON();
 				boardobj.notes	=	board.get('notes').toJSON();
 				store.boards.push(boardobj);
@@ -356,9 +356,9 @@ var Profile = Composer.RelationalModel.extend({
 			store.time	=	this.get('sync_time', tsnow);
 			if(window.port) window.port.send('profile-save', store);
 
-			if(!tagit.mirror) return false;
+			if(!turtl.mirror) return false;
 
-			localStorage['profile:user:'+tagit.user.id()]	=	JSON.encode(store);
+			localStorage['profile:user:'+turtl.user.id()]	=	JSON.encode(store);
 			localStorage['scheme_version']					=	config.mirror_scheme_version;
 		}.bind(this);
 
@@ -375,14 +375,14 @@ var Profile = Composer.RelationalModel.extend({
 
 	from_persist: function()
 	{
-		if(!tagit.mirror) return false;
+		if(!turtl.mirror) return false;
 
 		if((localStorage['scheme_version'] || 0) < config.mirror_scheme_version)
 		{
 			localStorage.clear();
 			return false;
 		}
-		var data	=	localStorage['profile:user:'+tagit.user.id()] || false
+		var data	=	localStorage['profile:user:'+turtl.user.id()] || false
 		if(data) data = JSON.decode(data);
 		if(data && data.time) this.set({sync_time: data.time});
 		return data;

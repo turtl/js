@@ -250,7 +250,7 @@ var Protected = Composer.RelationalModel.extend({
 		// automatically add a user entry to the key search
 		if(!search.u) search.u = [];
 		if(search.u && typeOf(search.u) != 'array') search.u = [search.u];
-		search.u.push({id: tagit.user.id(), k: tagit.user.get_key()});
+		search.u.push({id: turtl.user.id(), k: turtl.user.get_key()});
 
 		var search_keys		=	Object.keys(search);
 		var encrypted_key	=	false;
@@ -298,7 +298,7 @@ var Protected = Composer.RelationalModel.extend({
 		// if we didn't find our key, check the user's data
 		if(!key)
 		{
-			key	=	tagit.user.find_user_key(this.id());
+			key	=	turtl.user.find_user_key(this.id());
 		}
 
 		// do more complicated user key search
@@ -385,7 +385,7 @@ var ProtectedShared = Protected.extend({
 	deserialize: function(data, parentobj)
 	{
 		var search	=	{
-			a: tagit.user.get('personas').map(function(p) {
+			a: turtl.user.get('personas').map(function(p) {
 				return {id: p.id(), k: p.get('privkey')};
 			})
 		};

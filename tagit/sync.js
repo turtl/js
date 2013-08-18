@@ -41,7 +41,7 @@ Composer.sync	=	function(method, model, options)
 		}
 		args.data = data;
 	}
-	tagit.api[method](model.get_url(), args, {
+	turtl.api[method](model.get_url(), args, {
 		success: options.success,
 		error: options.error
 	});
