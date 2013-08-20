@@ -11,7 +11,7 @@ var turtl	=	{
 	site_url: null,
 
 	// base window title
-	base_window_title: 'tag.it',
+	base_window_title: 'Turtl',
 
 	// holds the user model
 	user: null,
