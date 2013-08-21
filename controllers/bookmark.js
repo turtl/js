@@ -1,6 +1,6 @@
 var BookmarkController = Composer.Controller.extend({
 	inject: turtl.main_container_selector,
-	className: 'bookmark modalcontent',
+	className: 'bookmark',
 
 	elements: {
 		'div.board': 'board_container',
@@ -27,7 +27,7 @@ var BookmarkController = Composer.Controller.extend({
 		}
 		this.render();
 
-		if(window.port) window.port.bind('open', function(data) {
+		if(window.port) window.port.bind('bookmark-open', function(data) {
 			// prevent overwriting what's in the bookmark interface
 			if(data.url && data.url == this.last_url) return;
 			this.last_url	=	data.url;
@@ -39,7 +39,6 @@ var BookmarkController = Composer.Controller.extend({
 				var inp_tag	=	this.edit_controller.tag_controller.inp_tag;
 				if(inp_tag) inp_tag.focus();
 			}).delay(100, this);
-
 		}.bind(this));
 
 		this.profile	=	turtl.profile;
@@ -74,7 +73,11 @@ var BookmarkController = Composer.Controller.extend({
 			}, 'bookmark:edit_note:release');
 			this.edit_controller.bind('saved', function() {
 				this.profile.trigger('change:current_board');
-				if(window._in_ext && window.port) window.port.send('close');
+				if(window._in_ext && window.port)
+				{
+					window.port.send('close');
+					window.port.send('addon-controller.release');
+				}
 				else this.edit_controller.release();
 			}.bind(this), 'bookmark:edit_note:saved');
 			this.edit_controller.bind('change-type', function() {
@@ -104,7 +107,6 @@ var BookmarkController = Composer.Controller.extend({
 	release: function()
 	{
 		this.soft_release();
-		document.body.removeClass('bare');
 		return this.parent.apply(this, arguments);
 	},
 
@@ -112,7 +114,6 @@ var BookmarkController = Composer.Controller.extend({
 	{
 		var content = Template.render('bookmark/index');
 		this.html(content);
-		document.body.addClass('bare');
 	},
 
 	get_height: function()
@@ -123,10 +124,9 @@ var BookmarkController = Composer.Controller.extend({
 	resize: function(delay)
 	{
 		delay || (delay = 0);
-		var height	=	this.get_height();
 		var do_set	=	function()
 		{
-			if(window.port) window.port.send('set-height', height);
+			if(window.port) window.port.send('resize');
 		};
 		if(delay > 0)
 		{

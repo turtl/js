@@ -131,8 +131,9 @@ var Profile = Composer.RelationalModel.extend({
 						// has been loaded
 						var finish	=	function()
 						{
+							this.trigger('loaded');
 							if(options.complete) options.complete();
-						};
+						}.bind(this);
 
 						var num_personas	=	turtl.user.get('personas').models().length;
 
@@ -170,9 +171,9 @@ var Profile = Composer.RelationalModel.extend({
 							// data from locstor newayz), just finish up the load
 							finish();
 						}
-					}
+					}.bind(this)
 				});
-			}
+			}.bind(this)
 		});
 	},
 

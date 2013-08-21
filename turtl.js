@@ -33,7 +33,7 @@ var turtl	=	{
 	scroll_to_top: true,
 
 	// whether or not to sync data w/ server
-	sync: false,
+	sync: true,
 	sync_timer: null,
 
 	// if true, tells the app to mirror data to local storage
@@ -66,11 +66,6 @@ var turtl	=	{
 
 		// setup the API tracker (for addon API requests)
 		turtl.api.tracker.attach();
-
-		// just clear everything out to get rid of scraped content (we don't
-		// really care about it once the JS loads).
-		var _main = $E(this.main_container_selector);
-		if(_main) _main.set('html', '');
 
 		if(History.enabled)
 		{
@@ -105,6 +100,7 @@ var turtl	=	{
 		this.setup_header_bar();
 
 		this.loaded	=	true;
+		if(window.port) window.port.send('loaded');
 		this.route(initial_route);
 	},
 
@@ -141,6 +137,8 @@ var turtl	=	{
 					if(initial_route.match(/index.html/)) initial_route = '/';
 					this.route(initial_route);
 					this.setup_syncing();
+					this.setup_background_panel();
+					if(window.port) window.port.send('profile-load-complete');
 				}.bind(this)
 			});
 
@@ -195,10 +193,11 @@ var turtl	=	{
 
 	setup_syncing: function()
 	{
+		turtl.profile.get_sync_time();
+
 		// monitor for sync changes
-		if(turtl.sync)
+		if(turtl.sync && !window._in_ext)
 		{
-			turtl.profile.get_sync_time();
 			this.sync_timer = new Timer(10000);
 			this.sync_timer.end = function()
 			{
@@ -209,9 +208,33 @@ var turtl	=	{
 		}
 
 		// listen for syncing from addon
-		if(window.port && !turtl.sync) window.port.bind('profile-sync', function(sync) {
+		if(window.port) window.port.bind('profile-sync', function(sync) {
 			if(!sync) return false;
 			turtl.profile.process_sync(data_from_addon(sync));
+		});
+
+		// set up manual syncing
+		if(window.port) window.port.bind('do-sync', function() {
+			turtl.profile.sync();
+		});
+	},
+
+	setup_background_panel: function()
+	{
+		if(!window.port) return false;
+		window.port.bind('addon-controller-open', function(controller_name, params) {
+			var controller	=	turtl.controllers.pages.load(eval(controller_name), params);
+			/**
+			 * for now, controllers send their own "addon release" event
+			controller.bind('release', function() {
+				controller.unbind('addon-release', 'addon:router:controller:release');
+				window.port.send('addon-controller-release', controller_name);
+			}, 'addon:router:controller:release');
+			*/
+		});
+		window.port.bind('get-height', function() {
+			var height	=	$('background_content').getCoordinates().height + 10;
+			window.port.send('set-height', height);
 		});
 	},
 

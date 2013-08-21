@@ -12,6 +12,8 @@ var PersonaEditController = Composer.Controller.extend({
 		'click h1 a': 'open_personas'
 	},
 
+	edit_in_modal: true,
+
 	collection: null,
 	model: null,
 	sn_timer: null,
@@ -31,12 +33,15 @@ var PersonaEditController = Composer.Controller.extend({
 		}
 
 		this.render();
-		modal.open(this.el);
-		var modalclose = function() {
-			modal.removeEvent('close', modalclose);
-			this.release();
-		}.bind(this);
-		modal.addEvent('close', modalclose);
+		if(this.edit_in_modal)
+		{
+			modal.open(this.el);
+			var close_fn = function() {
+				this.release();
+				modal.removeEvent('close', close_fn);
+			}.bind(this);
+			modal.addEvent('close', close_fn);
+		}
 
 		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
 
@@ -59,6 +64,7 @@ var PersonaEditController = Composer.Controller.extend({
 		});
 		this.html(content);
 		(function() { this.inp_email.focus(); }).delay(1, this);
+		if(window.port) window.port.send('resize');
 	},
 
 	edit_persona: function(e)
@@ -226,7 +232,10 @@ var PersonaEditController = Composer.Controller.extend({
 		}
 		else
 		{
-			new PersonasController();
+			new PersonasController({
+				inject: this.inject,
+				edit_in_modal: this.edit_in_modal
+			});
 		}
 	}
 });

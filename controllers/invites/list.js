@@ -17,7 +17,6 @@ var InvitesListController	=	Composer.Controller.extend({
 	{
 		if(!this.collection) return false;
 		this.collection.bind(['add', 'remove', 'reset', 'change'], this.render.bind(this), 'invites:list:collection:all');
-		console.log('hai init');
 	},
 
 	release: function()

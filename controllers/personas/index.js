@@ -10,6 +10,8 @@ var PersonasController = Composer.Controller.extend({
 		'click a[href=#delete]': 'delete_persona'
 	},
 
+	edit_in_modal: true,
+
 	collection: null,
 	list_controller: null,
 
@@ -17,12 +19,15 @@ var PersonasController = Composer.Controller.extend({
 	{
 		if(!this.collection) this.collection = turtl.user.get('personas');
 		this.render();
-		modal.open(this.el);
-		var modalclose = function() {
-			modal.removeEvent('close', modalclose);
-			this.release();
-		}.bind(this);
-		modal.addEvent('close', modalclose);
+		if(this.edit_in_modal)
+		{
+			modal.open(this.el);
+			var close_fn = function() {
+				this.release();
+				modal.removeEvent('close', close_fn);
+			}.bind(this);
+			modal.addEvent('close', close_fn);
+		}
 		this.collection.bind(['change', 'add', 'remove', 'destroy', 'reset'], this.render.bind(this), 'personas:monitor:render');
 
 		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
@@ -54,6 +59,7 @@ var PersonasController = Composer.Controller.extend({
 				personas: personas
 			});
 		}
+		if(window.port) window.port.send('resize');
 	},
 
 	add_persona: function(e)
@@ -61,6 +67,8 @@ var PersonasController = Composer.Controller.extend({
 		if(e) e.stop();
 		this.release();
 		new PersonaEditController({
+			inject: this.inject,
+			edit_in_modal: this.edit_in_modal,
 			collection: this.collection
 		});
 	},
@@ -79,6 +87,8 @@ var PersonasController = Composer.Controller.extend({
 		if(!persona) return false;
 		this.release();
 		new PersonaEditController({
+			inject: this.inject,
+			edit_in_modal: this.edit_in_modal,
 			collection: this.collection,
 			model: persona
 		});

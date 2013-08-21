@@ -5,11 +5,11 @@ var action = persona.id ? 'Edit' : 'Add';
 	<?=action?> persona
 	<small><a href="#personas">&laquo; Back to <? if(return_to_manage) { ?>board management<? } else { ?>your personas<? } ?></a></small>
 </h1>
-<div class="persona-edit">
+<div class="persona-edit clear">
 	<form class="standard-form">
 		<input tabindex="1" type="text" name="email" value="<?=persona.email?>" maxlength="24" placeholder="Your email address">
 		<img class="load" src="<?=img('/images/site/icons/load_16x16.gif')?>" width="16" height="16" alt="WORKING!!!1">
-		<p class="taken">(type your email above to see if it's available)</p>
+		<!--<p class="taken">(type your email above to see if it's available)</p>-->
 
 		<input tabindex="2" type="text" name="name" value="<?=persona.name?>" placeholder="Full name (optional)">
 
