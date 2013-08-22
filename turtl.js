@@ -223,12 +223,17 @@ var turtl	=	{
 	setup_background_panel: function()
 	{
 		if(!window.port) return false;
+
 		window.port.bind('addon-controller-open', function(controller_name, params) {
 			var controller	=	turtl.controllers.pages.load(eval(controller_name), params);
 		});
+
 		window.port.bind('get-height', function() {
 			var height	=	$('background_content').getCoordinates().height + 10;
 			window.port.send('set-height', height);
+		});
+
+		window.port.bind('gen-rsa-key', function() {
 		});
 	},
 
@@ -368,6 +373,7 @@ window.addEvent('domready', function() {
 	window.__site_url		=	window.__site_url || '';
 	window.__api_url		=	window.__api_url || '';
 	window.__api_key		=	window.__api_key || '';
+	window._base_url		=	window._base_url || '';
 	turtl.main_container	=	$E(turtl.main_container_selector);
 	turtl.site_url			=	__site_url || '';
 	turtl.base_window_title	=	document.title.replace(/.*\|\s*/, '');
