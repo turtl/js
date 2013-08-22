@@ -255,14 +255,10 @@ var Board = Composer.RelationalModel.extend({
 						this.update_notes(_notes);
 						if(options.success) options.success();
 					}.bind(this),
-					error: function(err) {
-						if(options.error) options.error(err);
-					}
+					error: options.error
 				});
 			}.bind(this),
-			error: function() {
-				if(options.error) options.error(err);
-			}.bind(this)
+			error: options.error
 		});
 	},
 
