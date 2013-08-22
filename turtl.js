@@ -223,9 +223,22 @@ var turtl	=	{
 	setup_background_panel: function()
 	{
 		if(!window.port) return false;
+		/*
+		var bg	=	$('background_content');
+		bg.addEvent('click:relay(> a.closelink)', function(e) {
+			if(e) e.stop();
+			if(window.port) window.port.send('close');
+		});
+		*/
 		window.port.bind('addon-controller-open', function(controller_name, params) {
-			var closelink	=	new Element('a').set('href', '#close-box').set('title', 'Close').addClass('closelink');
 			var controller	=	turtl.controllers.pages.load(eval(controller_name), params);
+			/*
+			if(bg)
+			{
+				var closelink	=	new Element('a').set('href', '#close-box').set('title', 'Close').addClass('closelink');
+				closelink.inject(bg, 'top');
+			}
+			*/
 		});
 		window.port.bind('get-height', function() {
 			var height	=	$('background_content').getCoordinates().height + 10;
