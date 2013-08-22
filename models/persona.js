@@ -19,6 +19,9 @@ var Persona = Composer.Model.extend({
 
 	init: function()
 	{
+		// make sure we always have a key (just copy the user's key)
+		if(!this.key) this.key = turtl.user.get_key();
+
 		this.challenge_timer		=	new Timer(1);
 		this.challenge_timer.end	=	function()
 		{

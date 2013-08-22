@@ -240,7 +240,6 @@ var User	=	Composer.RelationalModel.extend({
 				id: id,
 				secret: secret
 			});
-			persona.key = this.get_key();	// assign user key to persona
 			persona.fetch({ success: finish });
 		}.bind(this));
 	},
