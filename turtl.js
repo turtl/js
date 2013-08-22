@@ -135,6 +135,7 @@ var turtl	=	{
 					var initial_route	=	options.initial_route || '';
 					if(initial_route.match(/^\/users\//)) initial_route = '/';
 					if(initial_route.match(/index.html/)) initial_route = '/';
+					if(initial_route.match(/background.html/)) initial_route = '/';
 					this.route(initial_route);
 					this.setup_syncing();
 					this.setup_background_panel();
@@ -223,14 +224,8 @@ var turtl	=	{
 	{
 		if(!window.port) return false;
 		window.port.bind('addon-controller-open', function(controller_name, params) {
+			var closelink	=	new Element('a').set('href', '#close-box').set('title', 'Close').addClass('closelink');
 			var controller	=	turtl.controllers.pages.load(eval(controller_name), params);
-			/**
-			 * for now, controllers send their own "addon release" event
-			controller.bind('release', function() {
-				controller.unbind('addon-release', 'addon:router:controller:release');
-				window.port.send('addon-controller-release', controller_name);
-			}, 'addon:router:controller:release');
-			*/
 		});
 		window.port.bind('get-height', function() {
 			var height	=	$('background_content').getCoordinates().height + 10;
@@ -300,7 +295,7 @@ var turtl	=	{
 				}.bind(this),
 				on_failure: function(obj)
 				{
-					console.log('route failed:', obj);
+					console.log('route failed:', obj.url, obj);
 				}.bind(this)
 			}, options);
 			this.router	=	new Composer.Router(config.routes, options);
