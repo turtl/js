@@ -51,11 +51,11 @@ var tcrypt = {
 
 		// auto-generate an initial vector if needed
 		if(!opts.iv)
-			opts.iv = this.iv();
+			opts.iv = tcrypt.iv();
 
 		var ciphertext = new AES(opts).encrypt(data);
 
-		var formatted = this.TurtlFormatter.stringify({
+		var formatted = tcrypt.TurtlFormatter.stringify({
 			ciphertext: ciphertext,
 			iv: opts.iv
 		});
