@@ -4,6 +4,7 @@ var BoardManageController = Composer.Controller.extend({
 	},
 
 	events: {
+		'click a[href=#add-persona]': 'open_personas',
 		'click .button.add': 'open_add',
 		'click a[href=#share]': 'open_share',
 		'click a[href=#edit]': 'open_edit',
@@ -25,7 +26,7 @@ var BoardManageController = Composer.Controller.extend({
 
 		this.collection.bind(['add', 'remove', 'change', 'reset'], this.render.bind(this), 'boards:manage:render');
 
-		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
+		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
 	},
 
 	release: function()
@@ -33,7 +34,7 @@ var BoardManageController = Composer.Controller.extend({
 		if(modal.is_open) modal.close();
 		if(this.my_sort) this.my_sort.detach();
 		this.collection.unbind(['add', 'remove', 'change', 'reset'], 'boards:manage:render');
-		tagit.keyboard.attach(); // re-enable shortcuts
+		turtl.keyboard.attach(); // re-enable shortcuts
 		this.parent.apply(this, arguments);
 	},
 
@@ -49,7 +50,8 @@ var BoardManageController = Composer.Controller.extend({
 			return ret;
 		});
 		var content = Template.render('boards/manage', {
-			boards: boards
+			boards: boards,
+			enable_sharing: turtl.user.get('personas').models().length > 0
 		});
 		this.html(content);
 
@@ -68,9 +70,19 @@ var BoardManageController = Composer.Controller.extend({
 					var bid		=	li.className.replace(/^.*board_([0-9a-f-]+).*?$/, '$1');
 					sort[bid]	=	idx;
 				});
-				tagit.user.get('settings').get_by_key('board_sort').value(sort);
+				turtl.user.get('settings').get_by_key('board_sort').value(sort);
 				this.collection.sort();
 			}.bind(this)
+		});
+	},
+
+	open_personas: function(e)
+	{
+		if(e) e.stop();
+		this.release();
+		new PersonaEditController({
+			collection: turtl.user.get('personas'),
+			return_to_manage: true
 		});
 	},
 
@@ -80,7 +92,7 @@ var BoardManageController = Composer.Controller.extend({
 		this.release();
 		new BoardEditController({
 			return_to_manage: true,
-			profile: tagit.profile
+			profile: turtl.profile
 		});
 	},
 
@@ -107,7 +119,7 @@ var BoardManageController = Composer.Controller.extend({
 		this.release();
 		new BoardEditController({
 			return_to_manage: true,
-			profile: tagit.profile,
+			profile: turtl.profile,
 			board: board
 		});
 	},
@@ -121,16 +133,16 @@ var BoardManageController = Composer.Controller.extend({
 		if(!board) return;
 		if(!confirm('Really delete this board, and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
 
-		tagit.loading(true);
+		turtl.loading(true);
 		board.destroy({
 			success: function() {
-				tagit.loading(false);
+				turtl.loading(false);
 
 				var next = this.collection.first() || false;
-				tagit.profile.set_current_board(next);
+				turtl.profile.set_current_board(next);
 			}.bind(this),
 			error: function() {
-				tagit.loading(false);
+				turtl.loading(false);
 			}
 		});
 	},
@@ -146,14 +158,14 @@ var BoardManageController = Composer.Controller.extend({
 		if(!persona) return;
 		if(!confirm('Really leave this board? You won\'t be able to access it again until the owner invites you again!')) return false;
 
-		tagit.loading(true);
+		turtl.loading(true);
 		board.leave_board(persona, {
 			success: function() {
-				tagit.loading(false);
+				turtl.loading(false);
 				barfr.barf('You have successfully UNshared yourself from the board.');
 			}.bind(this),
 			error: function(err) {
-				tagit.loading(false);
+				turtl.loading(false);
 				barfr.barf('There was a problem leaving the board: '+ err);
 			}
 		});

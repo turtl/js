@@ -68,12 +68,12 @@ var Note = Composer.RelationalModel.extend({
 
 	save: function(options)
 	{
+		options || (options = {});
 		var args	=	{};
 		var do_save	=	function()
 		{
-			options || (options = {});
 			var url		=	this.id(true) ? '/notes/'+this.id() : '/boards/'+this.get('board_id')+'/notes';
-			var fn		=	(this.id(true) ? tagit.api.put : tagit.api.post).bind(tagit.api);
+			var fn		=	(this.id(true) ? turtl.api.put : turtl.api.post).bind(turtl.api);
 			args.data	=	this.toJSON();
 			fn(url, args, {
 				success: function(note_data) {
@@ -87,7 +87,7 @@ var Note = Composer.RelationalModel.extend({
 			});
 		}.bind(this);
 
-		var board	=	tagit.profile.get('boards').find_by_id(this.get('board_id'));
+		var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
 		if(!board)
 		{
 			options.error('Problem finding board for that note.');
@@ -129,14 +129,14 @@ var Note = Composer.RelationalModel.extend({
 			previous.apply(this, [options]);
 		}.bind(this);
 
-		var board	=	tagit.profile.get('boards').find_by_id(this.get('board_id'));
+		var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
 		if(!board)
 		{
 			if(options.error) options.error('Problem finding board for that note.');
 			return false;
 		}
 
-		if(board.get('shared', false) || options.skip_sync)
+		if(board.get('shared', false) && !options.skip_sync)
 		{
 			var persona	=	board.get_shared_persona();
 			persona.get_challenge({
@@ -160,7 +160,7 @@ var Note = Composer.RelationalModel.extend({
 		options || (options = {});
 		search || (search = {});
 		var board_id = this.get('board_id');
-		var board_key = tagit.profile.get('boards').find_by_id(board_id).key;
+		var board_key = turtl.profile.get('boards').find_by_id(board_id).key;
 		if(!search.b && board_id && board_key)
 		{
 			search.b = [{id: board_id, k: board_key}];
@@ -171,7 +171,7 @@ var Note = Composer.RelationalModel.extend({
 
 	track_sync: function()
 	{
-		tagit.profile.track_sync_changes(this.id());
+		turtl.profile.track_sync_changes(this.id());
 	}
 }, Protected);
 
@@ -207,7 +207,7 @@ var Notes = Composer.Collection.extend({
 			args.persona	=	options.persona.id();
 			args.challenge	=	options.persona.generate_response(options.persona.challenge);
 		}
-		tagit.api.put('/notes/batch', args, {
+		turtl.api.put('/notes/batch', args, {
 			success: options.success,
 			error: options.error
 		});

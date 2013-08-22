@@ -4,7 +4,7 @@
 .messages > .message {float: right; width: 79%;}
 
 /* general */
-div.button.compose span {padding-left: 25px; background: url(/images/site/icons/compose_16x16.png) 4px center no-repeat;}
+div.button.compose span {padding-left: 25px; background: url(../images/site/icons/compose_16x16.png) 4px center no-repeat;}
 
 /* sidebar */
 .messages > .sidebar > h1 {display: inline-block; font-size: 24px; font-weight: normal;}

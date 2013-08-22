@@ -122,11 +122,11 @@ var NoteItemController = Composer.Controller.extend({
 		if(e) e.stop();
 		if(confirm('Really delete this note FOREVER?!'))
 		{
-			tagit.loading(true);
+			turtl.loading(true);
 			this.model.destroy({
-				success: function() { tagit.loading(false); },
+				success: function() { turtl.loading(false); },
 				error: function(_, err) {
-					tagit.loading(false);
+					turtl.loading(false);
 					barfr.barf('There was a problem deleting the note: '+ err);
 				}
 			});

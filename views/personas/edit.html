@@ -1,19 +1,21 @@
 <?
 var action = persona.id ? 'Edit' : 'Add';
 ?>
-<h1><?=action?> persona <small><a href="#personas">&laquo; Back to your personas</a></small></h1>
-<div class="persona-edit">
+<h1>
+	<?=action?> persona
+	<small><a href="#personas">&laquo; Back to <? if(return_to_manage) { ?>board management<? } else { ?>your personas<? } ?></a></small>
+</h1>
+<div class="persona-edit clear">
 	<form class="standard-form">
-		<input tabindex="1" type="text" name="screenname" value="<?=persona.screenname?>" placeholder="Screen name (valid characters: &quot;A-Z0-9.&quot;)">
-		<img class="load" src="/images/site/icons/load_16x16.gif" width="16" height="16" alt="WORKING!!!1">
-		<p class="taken">(type your screenname above to see if it's available)</p>
+		<input tabindex="1" type="text" name="email" value="<?=persona.email?>" maxlength="24" placeholder="Your email address">
+		<img class="load" src="<?=img('/images/site/icons/load_16x16.gif')?>" width="16" height="16" alt="WORKING!!!1">
+		<!--<p class="taken">(type your email above to see if it's available)</p>-->
 
 		<input tabindex="2" type="text" name="name" value="<?=persona.name?>" placeholder="Full name (optional)">
-		<input tabindex="3" type="text" name="email" value="<?=persona.email?>" placeholder="Email (optional)">
 
 		<span class="clearMe"></span>
 		<div class="submit">
-			<input tabindex="5" type="submit" value="<?=action?> persona">
+			<input tabindex="4" type="submit" value="<?=action?> persona">
 		</div>
 	</form>
 	<div class="info content">
@@ -22,7 +24,7 @@ var action = persona.id ? 'Edit' : 'Add';
 			personas are public and stored in plaintext in the database</strong>,
 			allowing other users to find you and share with you (and also
 			allowing you to share with others). The only required information
-			for a persona is the screen name, which must be unique.
+			for a persona is the email, which must be unique.
 		</p>
 		<p>
 			While personas themselves are public, <strong>the link between a

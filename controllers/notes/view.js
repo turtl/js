@@ -34,9 +34,9 @@ var NoteViewController = Composer.Controller.extend({
 
 		this.model.bind('change', this.render.bind(this), 'note:view:render');
 		this.model.bind('destroy', this.release.bind(this), 'note:view:destroy');
-		tagit.keyboard.bind('e', this.open_edit.bind(this), 'notes:view:shortcut:edit_note');
-		tagit.keyboard.bind('m', this.open_move.bind(this), 'notes:view:shortcut:move_note');
-		tagit.keyboard.bind('delete', this.delete_note.bind(this), 'notes:view:shortcut:delete_note');
+		turtl.keyboard.bind('e', this.open_edit.bind(this), 'notes:view:shortcut:edit_note');
+		turtl.keyboard.bind('m', this.open_move.bind(this), 'notes:view:shortcut:move_note');
+		turtl.keyboard.bind('delete', this.delete_note.bind(this), 'notes:view:shortcut:delete_note');
 
 		this.menu_close_timer		=	new Timer(200);
 		this.menu_close_timer.end	=	this.do_close_menu.bind(this);
@@ -47,9 +47,9 @@ var NoteViewController = Composer.Controller.extend({
 		if(modal.is_open) modal.close();
 		this.model.unbind('change', 'note:view:render');
 		this.model.unbind('destroy', 'note:view:destroy');
-		tagit.keyboard.unbind('e', 'notes:view:shortcut:edit_note');
-		tagit.keyboard.unbind('m', 'notes:view:shortcut:move_note');
-		tagit.keyboard.unbind('delete', 'notes:view:shortcut:delete_note');
+		turtl.keyboard.unbind('e', 'notes:view:shortcut:edit_note');
+		turtl.keyboard.unbind('m', 'notes:view:shortcut:move_note');
+		turtl.keyboard.unbind('delete', 'notes:view:shortcut:delete_note');
 		this.menu_close_timer.end	=	null;
 		this.parent.apply(this, arguments);
 	},
@@ -109,11 +109,11 @@ var NoteViewController = Composer.Controller.extend({
 		if(e) e.stop();
 		if(confirm('Really delete this note FOREVER?!'))
 		{
-			tagit.loading(true);
+			turtl.loading(true);
 			this.model.destroy({
-				success: function() { tagit.loading(false); },
+				success: function() { turtl.loading(false); },
 				error: function(_, err) {
-					tagit.loading(false);
+					turtl.loading(false);
 					barfr.barf('There was a problem deleting the note: '+ err);
 				}
 			});

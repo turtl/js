@@ -86,18 +86,15 @@ var Board = Composer.RelationalModel.extend({
 		}.bind(this));
 
 		this.bind('destroy', function() {
-			// remove the board from the user's keys (only if it's shared, and
-			// only if it's the only instance of this board)
-			if(this.get('shared'))
-			{
-				var others	=	tagit.profile.get('boards').select({id: this.id()});
-				if(others.length == 0) tagit.user.remove_user_key(this.id());
-			}
+			// remove the board from the user's keys (only if it's the only
+			// instance of this board)
+			var others	=	turtl.profile.get('boards').select({id: this.id()});
+			if(others.length == 0) turtl.user.remove_user_key(this.id());
 
 			// remove the project's sort from the user data
-			var sort		=	Object.clone(tagit.user.get('settings').get_by_key('board_sort').value());
+			var sort		=	Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
 			sort[this.id()]	=	99999;
-			tagit.user.get('settings').get_by_key('board_sort').value(sort);
+			turtl.user.get('settings').get_by_key('board_sort').value(sort);
 		}.bind(this));
 
 		this.bind('change', this.track_sync.bind(this));
@@ -127,12 +124,12 @@ var Board = Composer.RelationalModel.extend({
 
 		// MIGRATE: move board user keys into user data. this code should exist
 		// as long as the database has ANY records with board.keys.u
-		if(!tagit.user.find_user_key(this.id(true)) && !this.is_new() && this.key)
+		if(!turtl.user.find_user_key(this.id(true)) && !this.is_new() && this.key)
 		{
-			tagit.user.add_user_key(this.id(true), this.key);
+			turtl.user.add_user_key(this.id(true), this.key);
 			var keys	=	this.get('keys').toJSON();
 			keys		=	keys.filter(function(k) {
-				return k.u != tagit.user.id();
+				return k.u != turtl.user.id();
 			});
 			this.set({keys: keys});
 			this.save_keys();
@@ -171,8 +168,8 @@ var Board = Composer.RelationalModel.extend({
 		options || (options = {});
 		var url	=	this.id(true) ?
 			'/boards/'+this.id() :
-			'/boards/users/'+tagit.user.id();
-		var fn		=	(this.id(true) ? tagit.api.put : tagit.api.post).bind(tagit.api);
+			'/boards/users/'+turtl.user.id();
+		var fn		=	(this.id(true) ? turtl.api.put : turtl.api.post).bind(turtl.api);
 		var data	=	this.toJSON();
 		if(!data.keys || (data.keys.length == 0))
 		{
@@ -205,7 +202,7 @@ var Board = Composer.RelationalModel.extend({
 			data.keys	=	'';
 		}
 
-		tagit.api.put('/boards/'+this.id(), {data: data}, {
+		turtl.api.put('/boards/'+this.id(), {data: data}, {
 			success: function(data) {
 				this.set(data);
 				if(options.success) options.success(data);
@@ -224,7 +221,7 @@ var Board = Composer.RelationalModel.extend({
 		// must be 0-2
 		permissions	=	parseInt(permissions);
 
-		tagit.api.put('/boards/'+this.id()+'/invites/persona/'+persona.id(), {permissions: permissions}, {
+		turtl.api.put('/boards/'+this.id()+'/invites/persona/'+persona.id(), {permissions: permissions}, {
 			success: options.success,
 			error: function(err) {
 				if(options.error) options.error(err);
@@ -238,34 +235,30 @@ var Board = Composer.RelationalModel.extend({
 
 		persona.get_challenge({
 			success: function(challenge) {
-				tagit.api.put('/boards/'+this.id()+'/persona/'+persona.id(), {
+				turtl.api.put('/boards/'+this.id()+'/persona/'+persona.id(), {
 					challenge: persona.generate_response(challenge)
 				}, {
 					success: function(board) {
 						// save the board key into the user's data
-						tagit.user.add_user_key(this.id(), this.key);
+						turtl.user.add_user_key(this.id(), this.key);
 						var _notes = board.notes;
 						delete board.notes;
 						board.shared	=	true;
 						this.set(board);
 
 						// add this project to the end of the user's list
-						var sort		=	Object.clone(tagit.user.get('settings').get_by_key('board_sort').value());
+						var sort		=	Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
 						sort[this.id()]	=	99999;
-						tagit.user.get('settings').get_by_key('board_sort').value(sort);
+						turtl.user.get('settings').get_by_key('board_sort').value(sort);
 
-						tagit.profile.get('boards').add(this);
+						turtl.profile.get('boards').add(this);
 						this.update_notes(_notes);
 						if(options.success) options.success();
 					}.bind(this),
-					error: function(err) {
-						if(options.error) options.error(err);
-					}
+					error: options.error
 				});
 			}.bind(this),
-			error: function() {
-				if(options.error) options.error(err);
-			}.bind(this)
+			error: options.error
 		});
 	},
 
@@ -275,7 +268,7 @@ var Board = Composer.RelationalModel.extend({
 
 		persona.get_challenge({
 			success: function(challenge) {
-				tagit.api._delete('/boards/'+this.id()+'/persona/'+persona.id(), {
+				turtl.api._delete('/boards/'+this.id()+'/persona/'+persona.id(), {
 					challenge: persona.generate_response(challenge)
 				}, {
 					success: function() {
@@ -305,7 +298,7 @@ var Board = Composer.RelationalModel.extend({
 		var privs		=	this.get('privs');
 		var high_priv	=	0;
 		if(!privs) return false;
-		tagit.user.get('personas').each(function(p) {
+		turtl.user.get('personas').each(function(p) {
 			if(!privs[p.id()]) return;
 			var this_privs	=	privs[p.id()].p;
 			if(this_privs > high_priv)
@@ -384,7 +377,7 @@ var Board = Composer.RelationalModel.extend({
 
 	track_sync: function()
 	{
-		tagit.profile.track_sync_changes(this.id());
+		turtl.profile.track_sync_changes(this.id());
 	}
 }, Protected);
 
@@ -393,7 +386,7 @@ var Boards = Composer.Collection.extend({
 
 	sortfn: function(a, b)
 	{
-		var psort	=	tagit.user.get('settings').get_by_key('board_sort').value() || {};
+		var psort	=	turtl.user.get('settings').get_by_key('board_sort').value() || {};
 		var a_sort	=	psort[a.id()] || psort[a.id()] === 0 ? psort[a.id()] : 99999;
 		var b_sort	=	psort[b.id()] || psort[b.id()] === 0 ? psort[b.id()] : 99999;
 		var sort	=	a_sort - b_sort;

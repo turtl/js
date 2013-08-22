@@ -4,16 +4,19 @@
 var $E = function(selector, filter){ return ($(filter) || document).getElement(selector); };
 var $ES = function(selector, filter){ return ($(filter) || document).getElements(selector); };
 
-var tagit	=	{
+// stores the object that communicates with the addon
+var addon_comm	=	null;
+
+var turtl	=	{
 	site_url: null,
 
 	// base window title
-	base_window_title: 'tag.it',
+	base_window_title: 'Turtl',
 
 	// holds the user model
 	user: null,
 
-	// holds the DOM object that tagit does all of its operations within
+	// holds the DOM object that turtl does all of its operations within
 	main_container_selector: '#main',
 
 	// a place to reference composer controllers by name
@@ -25,9 +28,6 @@ var tagit	=	{
 	loaded: false,
 	router: false,
 
-	// holds the last url we routed to
-	last_url: null,
-
 	// tells the pages controller whether or not to scroll to the top of the
 	// window after a page load
 	scroll_to_top: true,
@@ -35,6 +35,9 @@ var tagit	=	{
 	// whether or not to sync data w/ server
 	sync: false,
 	sync_timer: null,
+
+	// if true, tells the app to mirror data to local storage
+	mirror: false,
 
 	// -------------------------------------------------------------------------
 	// Data section
@@ -61,10 +64,8 @@ var tagit	=	{
 			return false;
 		}
 
-		// just clear everything out to get rid of scraped content (we don't
-		// really care about it once the JS loads).
-		var _main = $E(this.main_container_selector);
-		if(_main) _main.set('html', '');
+		// setup the API tracker (for addon API requests)
+		turtl.api.tracker.attach();
 
 		if(History.enabled)
 		{
@@ -86,11 +87,20 @@ var tagit	=	{
 		this.setup_user({initial_route: initial_route});
 
 		// if a user exists, log them in
-		this.user.login_from_cookie();
+		if(window._in_ext)
+		{
+			this.user.login_from_auth(window._auth);
+			window._auth	=	null;	// clear, because i'm paranoid
+		}
+		else
+		{
+			this.user.login_from_cookie();
+		}
 
 		this.setup_header_bar();
 
 		this.loaded	=	true;
+		if(window.port) window.port.send('loaded');
 		this.route(initial_route);
 	},
 
@@ -104,90 +114,46 @@ var tagit	=	{
 		// update the user_profiles collection on login
 		this.user.bind('login', function() {
 			// if the user is logged in, we'll put their auth info into the api object
-			this.user.bind('change', this.user.write_cookie.bind(this.user), 'user:write_changes_to_cookie');
+			if(!window._in_ext)
+			{
+				this.user.bind('change', this.user.write_cookie.bind(this.user), 'user:write_changes_to_cookie');
+			}
 			this.api.set_auth(this.user.get_auth());
 			this.controllers.pages.release_current();
-			this.messages = new Messages();
-			tagit.show_loading_screen(true);
-			this.profile = this.user.load_profile({
-				init: true,
-				success: function(_, from_storage) {
-					this.user.load_personas({
-						success: function(prof) {
-							// message data can be loaded independently once personas
-							// are loaded, so do it
-							tagit.messages.sync();
+			this.messages	=	new Messages();
+			this.profile	=	new Profile();
+			this.search		=	new Search();
 
-							// this function gets called when all profile/persona data
-							// has been loaded
-							var finish	=	function()
-							{
-								tagit.show_loading_screen(false);
-								this.controllers.pages.release_current();
-								this.last_url = '';
-								var initial_route	=	options.initial_route || '';
-								if(initial_route.match(/^\/users\//)) initial_route = '/';
-								tagit.profile.persist();
-								this.search.reindex();
-								this.route(initial_route);
-								this.setup_syncing();
-							}.bind(this);
-
-							var num_personas	=	tagit.user.get('personas').models().length;
-
-							// if we loaded from storage, we already have all the
-							// persona profile junk, so don't bother loading it
-							if(num_personas > 0 && !from_storage)
-							{
-								// wait for all personas to load their profiles before
-								// finishing the load
-								var i		=	0;
-								var track	=	function()
-								{
-									i++;
-									if(i >= num_personas) finish();
-								};
-
-								// loop over each persona and load its profile data
-								tagit.user.get('personas').each(function(p) {
-									p.load_profile({
-										success: function() {
-											track();
-										},
-										error: function(err) {
-											barfr.barf('Error loading the profile data for your persona "'+p.get('screenname')+'":'+ err);
-											// don't want to freeze the app just because one
-											// persona doesn't load, do we?
-											track();
-										}
-									});
-								});
-							}
-							else
-							{
-								// no personas to load (or we loaded all the profile
-								// data from locstor newayz), just finish up the load
-								finish();
-							}
-						}.bind(this)
-					});
+			turtl.show_loading_screen(true);
+			this.profile.initial_load({
+				complete: function() {
+					turtl.show_loading_screen(false);
+					this.controllers.pages.release_current();
+					this.last_url = '';
+					turtl.profile.persist();
+					this.search.reindex();
+					var initial_route	=	options.initial_route || '';
+					if(initial_route.match(/^\/users\//)) initial_route = '/';
+					if(initial_route.match(/index.html/)) initial_route = '/';
+					if(initial_route.match(/background.html/)) initial_route = '/';
+					this.route(initial_route);
+					this.setup_syncing();
+					this.setup_background_panel();
+					if(window.port) window.port.send('profile-load-complete');
 				}.bind(this)
 			});
 
-			// load search model
-			this.search	=	new Search();
-
 			// logout shortcut
-			tagit.keyboard.bind('S-l', function() {
-				tagit.route('/users/logout');
+			turtl.keyboard.bind('S-l', function() {
+				turtl.route('/users/logout');
 			}, 'dashboard:shortcut:logout');
 		}.bind(this));
 		this.user.bind('logout', function() {
-			tagit.controllers.pages.release_current();
-			tagit.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
-			tagit.show_loading_screen(false);
+			turtl.controllers.pages.release_current();
+			turtl.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
+			turtl.show_loading_screen(false);
 			this.user.unbind('change', 'user:write_changes_to_cookie');
-			tagit.api.clear_auth();
+			turtl.api.clear_auth();
 			modal.close();
 
 			// this should give us a clean slate
@@ -228,15 +194,42 @@ var tagit	=	{
 
 	setup_syncing: function()
 	{
+		turtl.profile.get_sync_time();
+
 		// monitor for sync changes
-		tagit.profile.get_sync_time();
-		this.sync_timer = new Timer(10000);
-		this.sync_timer.end = function()
+		if(turtl.sync && !window._in_ext)
 		{
-			tagit.profile.sync();
+			this.sync_timer = new Timer(10000);
+			this.sync_timer.end = function()
+			{
+				turtl.profile.sync();
+				this.sync_timer.start();
+			}.bind(this);
 			this.sync_timer.start();
-		}.bind(this);
-		this.sync_timer.start();
+		}
+
+		// listen for syncing from addon
+		if(window.port) window.port.bind('profile-sync', function(sync) {
+			if(!sync) return false;
+			turtl.profile.process_sync(data_from_addon(sync));
+		});
+
+		// set up manual syncing
+		if(window.port) window.port.bind('do-sync', function() {
+			turtl.profile.sync();
+		});
+	},
+
+	setup_background_panel: function()
+	{
+		if(!window.port) return false;
+		window.port.bind('addon-controller-open', function(controller_name, params) {
+			var controller	=	turtl.controllers.pages.load(eval(controller_name), params);
+		});
+		window.port.bind('get-height', function() {
+			var height	=	$('background_content').getCoordinates().height + 10;
+			window.port.send('set-height', height);
+		});
 	},
 
 	stop_spinner: false,
@@ -297,14 +290,11 @@ var tagit	=	{
 
 				enable_cb: function(url)
 				{
-					// make sure if we are going from PAGE + MODAL -> PAGE, we dont reload PAGE's controller
-					var url	=	url + window.location.search;
-					var last_base_url	=	tagit.last_url ? tagit.last_url.replace(/\-\-.*/) : null;
-					return this.loaded && last_base_url != url;
+					return this.loaded;
 				}.bind(this),
 				on_failure: function(obj)
 				{
-					console.log('route failed:', obj);
+					console.log('route failed:', obj.url, obj);
 				}.bind(this)
 			}, options);
 			this.router	=	new Composer.Router(config.routes, options);
@@ -317,8 +307,8 @@ var tagit	=	{
 						this._string_value	=	str;
 					}.bind(path);
 					path.rewrite(null);
-					tagit.controllers.pages.trigger('onroute', path);
-					//tagit.controllers.pages.on_route(path);
+					turtl.controllers.pages.trigger('onroute', path);
+					//turtl.controllers.pages.on_route(path);
 					//if(path._string_value) a_tag.set('href', path._string_value);
 					return true;
 				}
@@ -354,7 +344,7 @@ var tagit	=	{
 
 	set_title: function(title)
 	{
-		title	=	title.clean().replace(eval('/(\\s*\\|\\s*'+(tagit.base_window_title).escapeRegExp()+')*(\\s*\\|)?$/g'), '');
+		title	=	title.clean().replace(eval('/(\\s*\\|\\s*'+(turtl.base_window_title).escapeRegExp()+')*(\\s*\\|)?$/g'), '');
 		if(title == '') title = this.base_window_title;
 		else title = title + ' | ' + this.base_window_title;
 		document.title	=	title;
@@ -374,13 +364,16 @@ var barfr		=	null;
 var markdown	=	null;
 
 window.addEvent('domready', function() {
-	window._header_tags		=	[];
-	tagit.main_container	=	$E(tagit.main_container_selector);
-	tagit.site_url			=	__site_url;
-	tagit.base_window_title	=	document.title.replace(/.*\|\s*/, '');
-	tagit.api				=	new Api(
-		__api_url,
-		__api_key,
+	window.port				=	window.port || false;
+	window.__site_url		=	window.__site_url || '';
+	window.__api_url		=	window.__api_url || '';
+	window.__api_key		=	window.__api_key || '';
+	turtl.main_container	=	$E(turtl.main_container_selector);
+	turtl.site_url			=	__site_url || '';
+	turtl.base_window_title	=	document.title.replace(/.*\|\s*/, '');
+	turtl.api				=	new Api(
+		__api_url || '',
+		__api_key || '',
 		function(cb_success, cb_fail) {
 			return function(data)
 			{
@@ -423,59 +416,9 @@ window.addEvent('domready', function() {
 	markdown = new Markdown.Converter();
 	markdown.toHTML = markdown.makeHtml;
 	
-	tagit.load_controller('pages', PagesController);
+	turtl.load_controller('pages', PagesController);
 
-	// fucking load, tagit
-	tagit.init.delay(50, tagit);
+	// init it LOL
+	turtl.init.delay(50, turtl);
 });
-
-// couldn't be simpler
-Composer.sync	=	function(method, model, options)
-{
-	options || (options = {});
-	if(options.skip_sync && method == 'delete')
-	{
-		options.success();
-		return;
-	}
-	else if(options.skip_sync) return;
-	switch(method)
-	{
-	case 'create':
-		var method	=	'post'; break;
-	case 'read':
-		var method	=	'get'; break;
-	case 'update':
-		var method	=	'put'; break;
-	case 'delete':
-		var method	=	'_delete'; break;
-	default:
-		console.log('Bad method passed to Composer.sync: '+ method);
-		return false;
-	}
-
-	// don't want to send all data over a GET or DELETE
-	var args	=	options.args;
-	args || (args = {});
-	if(method != 'get' && method != '_delete')
-	{
-		var data	=	model.toJSON();
-		if(options.subset)
-		{
-			var newdata	=	{};
-			for(x in data)
-			{
-				if(!options.subset.contains(x)) continue;
-				newdata[x]	=	data[x];
-			}
-			data	=	newdata;
-		}
-		args.data = data;
-	}
-	tagit.api[method](model.get_url(), args, {
-		success: options.success,
-		error: options.error
-	});
-};
-
 

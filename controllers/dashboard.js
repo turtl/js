@@ -1,5 +1,5 @@
 var DashboardController = Composer.Controller.extend({
-	inject: tagit.main_container_selector,
+	inject: turtl.main_container_selector,
 
 	elements: {
 		'.sidebar': 'sidebar',
@@ -25,7 +25,7 @@ var DashboardController = Composer.Controller.extend({
 	{
 		this.render();
 
-		this.profile = tagit.profile;
+		this.profile = turtl.profile;
 
 		var do_load = function() {
 			var current = this.profile.get_current_board();
@@ -43,10 +43,10 @@ var DashboardController = Composer.Controller.extend({
 				board: current
 			});
 
-			tagit.controllers.pages.trigger('loaded');
+			turtl.controllers.pages.trigger('loaded');
 		}.bind(this);
 
-		tagit.loading(true);
+		turtl.loading(true);
 		var has_load = false;
 		this.profile.bind('change:current_board', function() {
 			this.soft_release();
@@ -55,19 +55,27 @@ var DashboardController = Composer.Controller.extend({
 			{
 				has_load = true;
 				current.bind('notes_updated', function() {
-					tagit.loading(false);
+					turtl.loading(false);
 					current.unbind('notes_updated', 'board:loading:notes_updated');
 				}, 'board:loading:notes_updated');
 			}
 			do_load();
 		}.bind(this), 'dashboard:change_board');
 
+		this.profile.bind_relational('boards', 'remove', function() {
+			if(this.profile.get('boards').models().length > 0) return;
+			this.profile.trigger('change:current_board');
+		}.bind(this), 'dashboard:boards:remove');
+
 		this.boards_controller = new BoardsController({
 			el: this.boards,
 			profile: this.profile
 		});
+		this.boards_controller.bind('change-board', function() {
+			this.notes_controller.clear_filters();
+		}.bind(this), 'dashboard:boards:change-board');
 
-		tagit.keyboard.bind('S-/', this.open_help.bind(this), 'dashboard:shortcut:open_help');
+		turtl.keyboard.bind('S-/', this.open_help.bind(this), 'dashboard:shortcut:open_help');
 
 		// monitor sidebar size changes
 		this.sidebar_timer = new Timer(50);
@@ -89,8 +97,9 @@ var DashboardController = Composer.Controller.extend({
 		this.soft_release();
 		if(this.boards_controller) this.boards_controller.release();
 		this.profile.unbind('change:current_board', 'dashboard:change_board');
-		tagit.keyboard.unbind('S-/', 'dashboard:shortcut:open_help');
-		tagit.user.unbind('logout', 'dashboard:logout:clear_timer');
+		this.profile.unbind_relational('boards', 'remove', 'dashboard:boards:remove');
+		turtl.keyboard.unbind('S-/', 'dashboard:shortcut:open_help');
+		turtl.user.unbind('logout', 'dashboard:logout:clear_timer');
 		if(this.sidebar_timer && this.sidebar_timer.end) this.sidebar_timer.end = null;
 		this.parent.apply(this, arguments);
 	},

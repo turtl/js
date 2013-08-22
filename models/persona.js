@@ -4,9 +4,8 @@ var Persona = Composer.Model.extend({
 	public_fields: [
 		'id',
 		'pubkey',
-		'screenname',
-		'name',
-		'email'
+		'email',
+		'name'
 	],
 
 	private_fields: [
@@ -25,13 +24,19 @@ var Persona = Composer.Model.extend({
 		{
 			this.challenge	=	null;
 		}.bind(this);
+
+		this.bind('destroy', function() {
+			var settings	=	Object.clone(turtl.user.get('settings').get_by_key('personas').value());
+			delete settings[this.id()];
+			turtl.user.get('settings').get_by_key('personas').value(settings);
+		}.bind(this), 'persona:user:cleanup');
 	},
 
 	load_profile: function(options)
 	{
 		this.get_challenge({
 			success: function(challenge) {
-				tagit.api.get('/profiles/personas/'+this.id(), {challenge: this.generate_response(challenge)}, {
+				turtl.api.get('/profiles/personas/'+this.id(), {challenge: this.generate_response(challenge)}, {
 					success: function(profile) {
 						// mark shared boards as such
 						profile.boards.each(function(board) {
@@ -39,7 +44,7 @@ var Persona = Composer.Model.extend({
 						});
 
 						// add the boards to the profile
-						tagit.profile.load(profile, {
+						turtl.profile.load(profile, {
 							complete: function() {
 								if(options.success) options.success();
 							}
@@ -56,12 +61,12 @@ var Persona = Composer.Model.extend({
 	{
 		options || (options = {});
 
-		tagit.api.post('/sync/personas/'+this.id(), {
+		turtl.api.post('/sync/personas/'+this.id(), {
 			time: sync_time,
 			challenge: this.generate_response(this.challenge)
 		}, {
 			success: function(sync) {
-				tagit.profile.process_sync(sync);
+				turtl.profile.process_sync(sync);
 			},
 			error: function(err, xhr) {
 				if(xhr.status == 403 && !options.retry)
@@ -89,25 +94,25 @@ var Persona = Composer.Model.extend({
 		});
 	},
 
-	get_by_screenname: function(screenname, options)
+	get_by_email: function(email, options)
 	{
 		options || (options = {});
 		var args = {};
 
 		// this prevents a persona from returning from the call if it is already
-		// the owner of the screenname
+		// the owner of the email
 		if(options.ignore_this_persona && this.id(true))
 		{
 			args.ignore_persona_id = this.id(true);
 		}
-		tagit.api.get('/personas/screenname/'+screenname, args, options);
+		turtl.api.get('/personas/email/'+email, args, options);
 	},
 
-	search_by_screenname: function(screenname, options)
+	search_by_email: function(email, options)
 	{
 		options || (options = {});
 
-		tagit.api.get('/personas/screenname/'+screenname+'*', {}, options);
+		turtl.api.get('/personas/email/'+email+'*', {}, options);
 	},
 
 	generate_secret: function(key)
@@ -126,7 +131,7 @@ var Persona = Composer.Model.extend({
 		}
 		if(options.expire) args.expire = options.expire;
 		if(options.persist) args.persist = 1;
-		tagit.api.post('/personas/'+this.id()+'/challenge', args, {
+		turtl.api.post('/personas/'+this.id()+'/challenge', args, {
 			success: function(challenge) {
 				if(options.persist)
 				{
@@ -147,7 +152,7 @@ var Persona = Composer.Model.extend({
 	generate_response: function(challenge)
 	{
 		var secret	=	this.get('secret');
-		if(!secret) secret = tagit.user.get('settings').get_by_key('personas').value()[this.id()];
+		if(!secret) secret = turtl.user.get('settings').get_by_key('personas').value()[this.id()];
 		if(!secret) return false;
 		return tcrypt.hash(secret + challenge);
 	},
@@ -157,7 +162,7 @@ var Persona = Composer.Model.extend({
 		options || (options = {});
 		if(!options.after)
 		{
-			var last = tagit.messages.models().filter(function() { return true; }).sort(function(a, b) {
+			var last = turtl.messages.models().filter(function() { return true; }).sort(function(a, b) {
 				return a.id().localeCompare(b.id());
 			})[0];
 			if(last) options.after = last.id();
@@ -188,15 +193,15 @@ var Persona = Composer.Model.extend({
 		}
 
 		var response = this.generate_response(challenge);
-		tagit.api.get('/messages/personas/'+this.id(), { after: options.after, challenge: response }, {
+		turtl.api.get('/messages/personas/'+this.id(), { after: options.after, challenge: response }, {
 			success: function(res) {
-				var my_personas	=	tagit.user.get('personas');
+				var my_personas	=	turtl.user.get('personas');
 
 				// add our messages into the pool
-				tagit.messages.add(res.received);
+				turtl.messages.add(res.received);
 				// messages we sent have the "to" persona replaced with our own for
 				// display purposes
-				tagit.messages.add((res.sent || []).map(function(sent) {
+				turtl.messages.add((res.sent || []).map(function(sent) {
 					var persona		=	my_personas.find_by_id(sent.from);
 					if(!persona) return false;
 					sent.persona	=	persona.toJSON();

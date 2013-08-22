@@ -6,6 +6,15 @@ function toJSON(object)
 	return ret;
 }
 
+/**
+ * takes raw (non-mootools) object from whatever addon is running and ensures
+ * that it is recursively turned into a mootools object
+ */
+function data_from_addon(data)
+{
+	return JSON.decode(JSON.encode(data));
+}
+
 // get the next tag of type "type" in the chain up the dom
 function next_tag_up(tag, element)
 {
@@ -19,7 +28,14 @@ function arrdiff(arr1, arr2) { return arr1.filter(function(el) { return !arr2.co
 // storage facility we require (probably S3/cloudfront)
 function img(url)
 {
-	return url;
+	if(window._base_url)
+	{
+		return window._base_url.replace(/\/$/, '') + url;
+	}
+	else
+	{
+		return url;
+	}
 }
 
 function get_url()

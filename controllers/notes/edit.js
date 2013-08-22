@@ -42,19 +42,13 @@ var NoteEditController = Composer.Controller.extend({
 			}.bind(this);
 			modal.addEvent('close', close_fn);
 		}
-		this.tag_controller = new NoteEditTagController({
-			inject: this.tags,
-			note: this.note_copy,
-			board: this.board
-		});
-		this.select_tab(this.note_copy.get('type'));
-		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
+		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
 	},
 
 	release: function()
 	{
 		if(this.tag_controller) this.tag_controller.release();
-		tagit.keyboard.attach(); // re-enable shortcuts
+		turtl.keyboard.attach(); // re-enable shortcuts
 		if(this.tips) this.tips.detach();
 		this.parent.apply(this, arguments);
 	},
@@ -67,9 +61,15 @@ var NoteEditController = Composer.Controller.extend({
 		});
 		this.html(content);
 		if(this.tips) this.tips.detach();
-		this.tips = new TagitTips(this.el.getElements('.tooltip'), {
+		this.tips = new TurtlTips(this.el.getElements('.tooltip'), {
 			className: 'tip-container'
 		});
+		this.tag_controller = new NoteEditTagController({
+			inject: this.tags,
+			note: this.note_copy,
+			board: this.board
+		});
+		this.select_tab(this.note_copy.get('type'));
 	},
 
 	edit_note: function(e)
@@ -155,21 +155,21 @@ var NoteEditController = Composer.Controller.extend({
 
 		// save the note copy, and on success, set the resulting data back into
 		// the original note (not the copy)
-		tagit.loading(true);
+		turtl.loading(true);
 		this.note_copy.save({
 			success: function(note_data) {
-				if(this.edit_in_modal) modal.close();
-				else this.release();
-				tagit.loading(false);
+				turtl.loading(false);
 				this.note.key = this.note_copy.key;
 				this.note.set(note_data);
 				if(isnew) this.board.get('notes').add(this.note);
 				// make sure the current filter applies to the edited note
 				this.board.get('tags').trigger('change:selected');
+				if(this.edit_in_modal) modal.close();
+				else this.trigger('saved');
 			}.bind(this),
 			error: function(e) {
 				barfr.barf('There was a problem saving your note: '+ e);
-				tagit.loading(false);
+				turtl.loading(false);
 			}
 		});
 	},
@@ -192,7 +192,12 @@ var NoteEditController = Composer.Controller.extend({
 		this.note_copy.set({type: typename});
 		var input_sel = typename;
 		if(['link','image'].contains(typename)) input_sel = 'url';
-		if(this['inp_'+input_sel]) this['inp_'+input_sel].focus();
+		var inp_el	=	this['inp_'+input_sel];
+		if(inp_el)
+		{
+			inp_el.focus.delay(10, inp_el);
+		}
+		this.trigger('change-type', typename);
 	},
 
 	switch_type: function(e)

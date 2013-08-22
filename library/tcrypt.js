@@ -9,7 +9,7 @@ var tcrypt = {
 	 *
 	 * This scheme assumes Base64 encoding (otherwise : would be a bad separator)
 	 */
-	TagitFormatter: {
+	TurtlFormatter: {
 		stringify: function (cipherParams)
 		{
 			// create json object with ciphertext
@@ -55,7 +55,7 @@ var tcrypt = {
 
 		var ciphertext = new AES(opts).encrypt(data);
 
-		var formatted = this.TagitFormatter.stringify({
+		var formatted = this.TurtlFormatter.stringify({
 			ciphertext: ciphertext,
 			iv: opts.iv
 		});
@@ -73,8 +73,7 @@ var tcrypt = {
 			pad_mode: AnsiX923,
 		}, options);
 
-		var params = tcrypt.TagitFormatter.parse(encrypted);
-		
+		var params = tcrypt.TurtlFormatter.parse(encrypted);
 		if(params.iv) opts.iv = params.iv;
 
 		var de = new AES(opts).decrypt(params.ciphertext);
@@ -93,9 +92,9 @@ var tcrypt = {
 		options || (options = {});
 		
 		var _kdf = new PBKDF2({
-			key_size: 32,			// note the key size is in bytes
-			hasher: SHA1,			// PBKDF2 uses HMAC internally
-			iterations: 400			// moar = bettar (slowar)
+			key_size: (options.key_size || 32),			// note the key size is in bytes
+			hasher: SHA1,								// PBKDF2 uses HMAC internally
+			iterations: (options.iterations || 400)		// moar = bettar (slowar)
 		});
 		var key = _kdf.compute(passphrase, salt);
 

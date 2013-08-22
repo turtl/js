@@ -65,7 +65,7 @@
 	top: 6px;
 	width: 24px;
 	height: 24px;
-	background-image: url(/images/barfr/close.png);
+	background-image: url(../../images/barfr/close.png);
 	border-bottom: 0px none transparent;
 	opacity: .7;
 }

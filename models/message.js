@@ -61,12 +61,12 @@ var Messages = Composer.Collection.extend({
 	sync: function(options)
 	{
 		options || (options = {});
-		tagit.user.get('personas').each(function(persona) {
+		turtl.user.get('personas').each(function(persona) {
 			persona.get_messages(persona.challenge, {
 				after: this.last_id,
 				success: options.success,
 				error: function(err, xhr) {
-					barfr.barf('There was a problem grabbing messages from your persona '+persona.get('screenname')+': '+ err);
+					barfr.barf('There was a problem grabbing messages from your persona '+persona.get('email')+': '+ err);
 					if(options.error) options.error();
 				}.bind(this)
 			});

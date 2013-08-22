@@ -1,10 +1,14 @@
-.bookmark {position: relative; padding: 16px; border-radius: 4px;}
-.bookmark .boards {display: inline-block; position: absolute; right: 50%;}
+.bookmark {position: relative; padding: 0; border-radius: 4px;}
+.bookmark .boards {display: inline-block; width: 200px; position: absolute; right: 54%;}
 .bookmark .boards label {float: left; margin: 3px 6px 0 0; cursor: pointer; color: #888;}
-.bookmark .boards .board {}
-.bookmark .boards .board-list {margin: 0; padding: 0;}
+.bookmark .boards .board {margin-top: -4px;}
+.bookmark .boards .board-list {margin: 0; padding: 0; border: 0;}
+.bookmark .boards .board-edit {margin-top: -6px;}
 /*.bookmark .boards .board-list {position: absolute; margin: -8px 0 0 0; padding: 0;}*/
 .bookmark .boards .board-list img.loading {display: inline-block;}
-.bookmark .boards ul.actions {display: none;}
+.bookmark .boards ul.actions li a {display: none;}
+.bookmark .boards ul.actions li a.add {display: inline-block;}
 .bookmark .edit h1 {display: inline-block; margin-right: 16px;}
-.bookmark .note-edit ul.type {top: 20px; left: 360px;}
+/* copied from gen.css (modal h1) */
+.bookmark .edit h1 {margin: -4px 0 24px 0; font-size: 20px; font-weight: normal; color: #999; text-transform: uppercase;}
+.bookmark .note-edit ul.type {top: 6px; left: 360px;}

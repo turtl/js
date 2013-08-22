@@ -1,3 +1,68 @@
+var ApiTracker	=	new Class({
+	id: 0,
+
+	requests: {},
+	attached: false,
+
+	initialize: function()
+	{
+		this.attach();
+	},
+
+	attach: function()
+	{
+		if(!port) return false;
+		if(this.attached) return false;
+		port.bind('xhr-response', function(id, result) {
+			this.finish(id, result);
+		}.bind(this));
+		this.attached	=	true;
+	},
+
+	send: function(request)
+	{
+		var id			=	this.id++;
+		var msgargs	=	{
+			id:	id,
+			url: request.url,
+			method: request.method,
+			headers: request.headers,
+			data: Object.toQueryString(request.data)
+		};
+
+		// track the request
+		this.requests[id]	=	new Request(request);
+
+		port.send('xhr', msgargs);
+	},
+
+	finish: function(id, result)
+	{
+		var request	=	this.requests[id];
+		delete this.requests[id];
+		if(!request) return false;
+
+		var status	=	result.status;
+		var text	=	result.text;
+
+		if(window._net_log)
+		{
+			console.log('--- '+request.options.method+' '+request.options.url +'?'+ request.options.data);
+			console.log(text);
+		}
+
+		if(200 <= status && status < 300)
+		{
+			// success
+			request.success(text, '');
+		}
+		else
+		{
+			request.failure();
+		}
+	}
+});
+
 var Api	=	new Class({
 	// the base url all resources are pulled from (NEVER a trailing slash!)
 	// NOTE: this must be set by the app
@@ -5,6 +70,9 @@ var Api	=	new Class({
 	api_key:		null,
 
 	user:			false,
+
+	// a tracker that will track all API requests (ONLY IF in an addon)
+	tracker:		null,
 
 	// override this function to determine which callback gets called on a JSONP
 	// return. normall this is done by analyzing the response. the default is to
@@ -23,6 +91,7 @@ var Api	=	new Class({
 		this.api_url		=	url;
 		this.api_key		=	key;
 		this.cb_wrap		=	cb_wrap;
+		this.tracker		=	new ApiTracker();
 		// JS hax LAWL omgawrsh gawrsh shhwarshhrwsh
 		this['delete']		=	function()
 		{
@@ -123,10 +192,22 @@ var Api	=	new Class({
 
 		//var user_cookie	=	Cookie.read(config.user_cookie);
 		//Cookie.dispose(config.user_cookie);
-		new Request(request).send();
+		this.send_request(request);
 		//if(user_cookie) Cookie.write(config.user_cookie, user_cookie);
 
 		return url;
+	},
+
+	send_request: function(request)
+	{
+		if(window._in_ext)
+		{
+			this.tracker.send(request);
+		}
+		else
+		{
+			new Request(request).send();
+		}
 	},
 
 	// given a method and resource (and also config.auth in /config/auth.js),

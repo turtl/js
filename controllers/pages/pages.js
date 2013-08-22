@@ -1,5 +1,5 @@
 var PagesController	=	Composer.Controller.extend({
-	inject: tagit.main_container_selector,
+	inject: turtl.main_container_selector,
 	className: 'home',
 
 	template: 'pages/home',
@@ -33,7 +33,7 @@ var PagesController	=	Composer.Controller.extend({
 		// process url rewrites, but only on non-initial route
 		if(this.base_url)
 		{
-			var match	=	tagit.router.find_matching_route(url, config.rewrite);
+			var match	=	turtl.router.find_matching_route(url, config.rewrite);
 			if(match)
 			{
 				var cur_url	=	profiles.cur_url({skip_content_modal: true});
@@ -47,7 +47,7 @@ var PagesController	=	Composer.Controller.extend({
 		}
 
 		// scroll to the top of the window (but ONLY if we're not in a modal).
-		var last	=	(tagit.last_url || window.location.pathname).replace(/\-\-.*/, '');
+		var last	=	(turtl.last_url || window.location.pathname).replace(/\-\-.*/, '');
 		var cur		=	url.replace(/\-\-.*/, '');
 		if(last != cur)
 		{
@@ -55,7 +55,7 @@ var PagesController	=	Composer.Controller.extend({
 			// if we should scroll to the top after a trigger('loaded') event.
 			// if we did the scroll here, it would happen before the page content
 			// changes and would be confusing.
-			tagit.scroll_to_top	=	true;
+			turtl.scroll_to_top	=	true;
 		}
 	},
 
@@ -73,12 +73,12 @@ var PagesController	=	Composer.Controller.extend({
 		// fires after the "loaded" event
 		(function() { this.page_loading(false); }).delay(200, this);
 
-		// scroll_to_top is set in the musio::route_callback function in tagit.js
+		// scroll_to_top is set in the turtl::route_callback function in turtl.js
 		//console.log('scroll');
-		if(tagit.scroll_to_top)
+		if(turtl.scroll_to_top)
 		{
 			window.scrollTo(0, 0);
-			tagit.scroll_to_top	=	false;
+			turtl.scroll_to_top	=	false;
 		}
 
 		// used to give our scraper a heads up on whether or not the page has
@@ -148,7 +148,7 @@ var PagesController	=	Composer.Controller.extend({
 		this.html(content);
 
 		// inject the page into the content
-		this.el.inject(tagit.main_container);
+		this.el.inject(turtl.main_container);
 		return this;
 	},
 
@@ -160,7 +160,7 @@ var PagesController	=	Composer.Controller.extend({
 	{
 		// clear title so it doesn't persist across pages when the target page
 		// doesn't set it
-		tagit.set_title('');
+		turtl.set_title('');
 
 		if(!this.cur_controller) return false;
 		this.cur_controller.release();

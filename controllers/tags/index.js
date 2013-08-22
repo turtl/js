@@ -15,6 +15,11 @@ var TagsController = Composer.Controller.extend({
 
 		this.render();
 
+		// make sure our tags are enabled
+		this.board.get('tags').each(function(tag) {
+			tag.unset('disabled', {silent: true});
+		});
+
 		this.tags	=	new TagsFilter(this.board.get('tags'), {
 			sort_event: true,
 			refresh_on_change: false
@@ -58,7 +63,7 @@ var TagsController = Composer.Controller.extend({
 	gray_tags: function()
 	{
 		var start	=	performance.now();
-		var notes	=	tagit.controllers.pages.cur_controller.notes_controller.filter_list;
+		var notes	=	turtl.controllers.pages.cur_controller.notes_controller.filter_list;
 		if(!notes) return;
 
 		notes		=	notes
@@ -71,8 +76,8 @@ var TagsController = Composer.Controller.extend({
 		// notes. an empty list means the tag has no notes.
 		tags.each(function(tag) {
 			var enabled		=	!tag.get('disabled', false);
-			var note_list	=	tagit.search.index_tags[tag.get('name')];
-			var tag_enable	=	tagit.search.intersect(notes, note_list).length > 0;
+			var note_list	=	turtl.search.index_tags[tag.get('name')];
+			var tag_enable	=	turtl.search.intersect(notes, note_list).length > 0;
 
 			if(tag_enable != enabled)
 			{

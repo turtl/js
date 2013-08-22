@@ -10,20 +10,22 @@ var BoardsController = Composer.Controller.extend({
 	},
 
 	profile: null,
+	add_bare: false,
 
 	init: function()
 	{
 		this.render();
 		this.profile.bind_relational('boards', ['add', 'remove', 'reset', 'change:title'], this.render.bind(this), 'boards:change');
 		this.profile.bind('change:current_board', this.render.bind(this), 'boards:track_current');
-		tagit.keyboard.bind('b', this.add_board.bind(this), 'boards:shortcut:add_board');
+		turtl.keyboard.bind('b', this.add_board.bind(this), 'boards:shortcut:add_board');
 	},
 
 	release: function()
 	{
+		this.unbind('change-board');
 		this.profile.unbind_relational('boards', ['add', 'remove', 'reset', 'change:title'], 'boards:change');
 		this.profile.unbind('change:current_board', 'boards:track_current');
-		tagit.keyboard.unbind('b', 'boards:shortcut:add_board');
+		turtl.keyboard.unbind('b', 'boards:shortcut:add_board');
 		this.parent.apply(this, arguments);
 	},
 
@@ -40,10 +42,25 @@ var BoardsController = Composer.Controller.extend({
 
 	add_board: function(e)
 	{
+		if(modal.is_open) return false;
 		if(e) e.stop();
-		new BoardEditController({
-			profile: this.profile
+
+		var parent	=	this.el.getParent();
+		var edit	=	new BoardEditController({
+			inject: this.add_bare ? parent : null,
+			profile: this.profile,
+			bare: this.add_bare
 		});
+		if(this.add_bare)
+		{
+			this.el.setStyle('display', 'none');
+			edit.el.dispose().inject(this.el, 'after');
+			edit.bind('release', function() {
+				edit.unbind('boards:index:edit:release');
+				this.inject	=	parent;
+				this.el.setStyle('display', '');
+			}.bind(this), 'boards:index:edit:release');
+		}
 	},
 
 	manage_boards: function(e)
@@ -56,6 +73,7 @@ var BoardsController = Composer.Controller.extend({
 
 	change_board: function(e)
 	{
+		this.trigger('change-board');
 		var board_id = this.selector.value;
 		var board = this.profile.get('boards').find_by_id(board_id);
 		if(board) this.profile.set_current_board(board);

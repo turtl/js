@@ -25,12 +25,15 @@ body {
 }
 body.bare {background: #fff;}
 body.bare header {display: none;}
-body.bare #main {padding: 0;}
+body.bare #main {padding: 0; min-height: 0;}
 body.bare footer {display: none;}
 
 a { text-decoration: none; }
 
-header {height: 40px; margin: 0 0 32px 0; border-bottom: 1px solid #292929;}
+#wrap > .sidebar-bg {position: fixed; z-index: -1; top: 0; left: 0; width: 20%; padding-right: 9px; height: 100%; background: #e3e3e3; border-right: 1px solid #ddd;}
+body.bare #wrap > .sidebar-bg {display: none;}
+
+header {float: left; width: 20%; height: 40px; margin: 0 0 22px 0; padding: 0 10px 0 0; border-bottom: 1px solid #222;}
 header {
 	background: #222; /* Old browsers */
 	background: -moz-linear-gradient(top,  #333333 1%, #111111 100%); /* FF3.6+ */
@@ -41,7 +44,7 @@ header {
 	background: linear-gradient(to bottom,  #333333 1%,#111111 100%); /* W3C */
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#333333', endColorstr='#111111',GradientType=0 ); /* IE6-9 */
 }
-header h1 {float: left; padding: 10px 0 0 10px; font-size: 16px; text-transform: lowercase; font-weight: bold;}
+header h1 {float: left; padding: 10px 0 0 10px; font-size: 16px; font-weight: bold; text-transform: lowercase;}
 header h1 a {color: #eee;}
 header h1 a span {display: inline-block; padding: 0 2px;}
 header h1 a:hover span {color: #73b8d1;}
@@ -50,43 +53,44 @@ header div.loading {visibility: hidden; float: left; margin: 13px 16px 0 16px;}
 header .apps ul.switch a {display: block; height: 40px;}
 header .apps ul.switch a span {display: block;}
 header .apps ul.switch a {
-	background: #333; /* Old browsers */
-	background: -moz-linear-gradient(top, #444444 1%, #222222 100%); /* FF3.6+ */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(1%,#444444), color-stop(100%,#222222)); /* Chrome,Safari4+ */
-	background: -webkit-linear-gradient(top, #444444 1%,#222222 100%); /* Chrome10+,Safari5.1+ */
-	background: -o-linear-gradient(top, #444444 1%,#222222 100%); /* Opera 11.10+ */
-	background: -ms-linear-gradient(top, #444444 1%,#222222 100%); /* IE10+ */
-	background: linear-gradient(to bottom, #444444 1%,#222222 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#444444', endColorstr='#222222',GradientType=0 ); /* IE6-9 */
+	/*background: #333; [> Old browsers <]
+	background: -moz-linear-gradient(top, #444444 1%, #222222 100%); [> FF3.6+ <]
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(1%,#444444), color-stop(100%,#222222)); [> Chrome,Safari4+ <]
+	background: -webkit-linear-gradient(top, #444444 1%,#222222 100%); [> Chrome10+,Safari5.1+ <]
+	background: -o-linear-gradient(top, #444444 1%,#222222 100%); [> Opera 11.10+ <]
+	background: -ms-linear-gradient(top, #444444 1%,#222222 100%); [> IE10+ <]
+	background: linear-gradient(to bottom, #444444 1%,#222222 100%); [> W3C <]
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#444444', endColorstr='#222222',GradientType=0 ); [> IE6-9 <]
 	border-left: 1px solid #111;
-	border-right: 1px solid #111;
+	border-right: 1px solid #111;*/
 }
-header .apps {margin-left: 15px;}
+header .apps {float: left; margin: 0 6px 0 0;}
 header .apps ul.switch a.sel {background: #202020;}
-header .apps ul.switch {float: left; list-style: none; margin: 0 0 0 0; border-left: 1px solid #111;}
+header .apps ul.switch {float: left; list-style: none; margin: 0 0 0 6px;}
 header .apps ul.switch.hidden {display: none;}
 header .apps ul.switch li {float: left;}
 header .apps ul.switch li a {position: relative; width: 40px; border-left: 0;}
-header .apps ul.switch li a span {width: 40px; height: 40px; opacity: .6;}
+header .apps ul.switch li a span {width: 40px; height: 40px; opacity: .8;}
+header .apps ul.switch li a:hover span {opacity: 1;}
 header .apps ul.switch li a small {position: absolute; z-index: 4; right: 0; bottom: 0; display: block; padding: 1px 4px; font-size: 11px; font-weight: bold; color: #fff; background: #c44;}
-/*header .apps ul.switch li a.notes span {background: url(/images/template/app_notes_24x24.png) center center no-repeat;}*/
-header .apps ul.switch li a.notifications span {background: url(/images/template/app_messages_24x24.png) center center no-repeat;}
+/*header .apps ul.switch li a.notes span {background: url(../images/template/app_notes_24x24.png) center center no-repeat;}*/
+header .apps ul.switch li a.notifications span {background: url(../images/template/app_messages_24x24.png) center center no-repeat;}
 
 /* logged out menu */
 header div.actions {float: right; margin: 0;}
-header div.actions ul {list-style: none; margin: 0 16px 0 0;}
-header div.actions ul li {display: block; margin: 0; float: left;}
-header div.actions ul a {display: block; height: 40px;}
-header div.actions ul a span {display: block; padding: 13px 8px; color: #73b8d1; font-weight: normal; text-transform: uppercase; font-size: 11px; line-height: 12px;}
-header div.actions ul a {
+header div.actions > ul {list-style: none; margin: 0 0 0 0;}
+header div.actions > ul li {display: block; margin: 0; float: left;}
+header div.actions > ul a {display: block; height: 40px; border-left: 1px solid #111;}
+header div.actions > ul a span {display: block; padding: 13px 8px; color: #73b8d1; font-weight: normal; text-transform: uppercase; font-size: 11px; line-height: 12px;}
+header div.actions > ul a {
 }
-header div.actions li:first-child a {border-left: 1px solid #111;}
-header div.actions ul a.sel {background: #202020;}
+header div.actions > ul li:first-child a {}
+header div.actions > ul a.sel {background: #202020;}
 
 /* logged in menu */
-header div.actions > a.menu {display: inline-block; height: 36px; margin: 5px 8px 0 0; opacity: .9;}
+header div.actions > a.menu {display: inline-block; height: 36px; margin: 5px 0px 0 0; opacity: .9;}
 header div.actions > a.menu:hover {opacity: 1;}
-header div.actions ul.menu {display: none; position: absolute; right: 8px; z-index: 10; width: 230px; margin: 0; list-style: none; background: #111;}
+header div.actions ul.menu {display: none; position: absolute; left: 20%; z-index: 10; width: 230px; margin: -1px 0 0 -220px; list-style: none; background: #111;}
 header div.actions ul.menu.open {display: block;}
 header div.actions ul.menu li {display: block; float: none; margin: 0;}
 header div.actions ul.menu li:hover {background: #222;}

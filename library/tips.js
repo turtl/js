@@ -1,4 +1,4 @@
-var TagitTips = new Class({
+var TurtlTips = new Class({
 	Extends: Tips,
 
 	initialize: function(selector, options)

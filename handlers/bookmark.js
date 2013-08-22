@@ -2,7 +2,7 @@ var bookmark = {
 	index: function()
 	{
 		var qs = parse_querystring();
-		if(!tagit.user.logged_in)
+		if(!turtl.user.logged_in)
 		{
 			var redirect = [];
 			Object.each(qs, function(v, k) {
@@ -10,15 +10,15 @@ var bookmark = {
 			});
 			redirect = '/bookmark?'+redirect.join('&');
 			redirect = Base64.encode(redirect);
-			tagit.route('/users/login?redirect='+redirect);
+			turtl.route('/users/login?redirect='+redirect);
 			return false;
 		}
 
-		if(!tagit.profile.profile_data)
+		if(!turtl.profile.profile_data)
 		{
 			return false;
 		}
 
-		tagit.controllers.pages.load(BookmarkController, {});
+		turtl.controllers.pages.load(BookmarkController, {});
 	}
 };

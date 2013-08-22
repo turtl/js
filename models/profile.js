@@ -26,8 +26,14 @@ var Profile = Composer.RelationalModel.extend({
 				this.set_current_board(this.get('boards').first());
 			}
 		}.bind(this));
+		var profile_mod_timer	=	new Timer(100);
+		profile_mod_timer.end	=	function()
+		{
+			if(window.port) window.port.send('profile-mod');
+		};
 		this.bind_relational('boards', ['add', 'remove', 'reset', 'change', 'note_change'], function() {
 			this.persist();
+			profile_mod_timer.start();
 		}.bind(this));
 		this.persist_timer		=	new Timer(200);
 		this.persist_timer.end	=	false;
@@ -40,7 +46,7 @@ var Profile = Composer.RelationalModel.extend({
 			from_storage || (from_storage = false);
 
 			this.profile_data = true;
-			tagit.user.set(profile.user);
+			turtl.user.set(profile.user);
 			if(options.init)
 			{
 				//this.clear({silent: true});
@@ -56,13 +62,22 @@ var Profile = Composer.RelationalModel.extend({
 			}
 		}.bind(this);
 
-		if(profile = this.from_persist())
+		// load from addon
+		if((profile = (window._profile || false)) !== false)
+		{
+			// this next line recursively wraps the profile as mootools objects/arrays
+			profile	=	data_from_addon(profile);
+			(function () { success(profile, true); }).delay(0);
+		}
+		// load from local storage mirror
+		else if((profile = this.from_persist()) !== false)
 		{
 			(function () { success(profile, true); }).delay(0);
 		}
+		// load from API
 		else
 		{
-			tagit.api.get('/profiles/users/'+tagit.user.id(), {}, {
+			turtl.api.get('/profiles/users/'+turtl.user.id(), {}, {
 				success: function(profile) {
 					success(profile, false);
 				},
@@ -96,19 +111,82 @@ var Profile = Composer.RelationalModel.extend({
 		}));
 	},
 
+	/**
+	 * Grab all profile/persona profile data and init it into this profile
+	 * object.
+	 */
+	initial_load: function(options)
+	{
+		options || (options = {});
+		this.load_data({
+			init: true,
+			success: function(_, from_storage) {
+				turtl.user.load_personas({
+					success: function(prof) {
+						// message data can be loaded independently once personas
+						// are loaded, so do it
+						turtl.messages.sync();
+
+						// this function gets called when all profile/persona data
+						// has been loaded
+						var finish	=	function()
+						{
+							this.trigger('loaded');
+							if(options.complete) options.complete();
+						}.bind(this);
+
+						var num_personas	=	turtl.user.get('personas').models().length;
+
+						// if we loaded from storage, we already have all the
+						// persona profile junk, so don't bother loading it
+						if(num_personas > 0 && !from_storage)
+						{
+							// wait for all personas to load their profiles before
+							// finishing the load
+							var i		=	0;
+							var track	=	function()
+							{
+								i++;
+								if(i >= num_personas) finish();
+							};
+
+							// loop over each persona and load its profile data
+							turtl.user.get('personas').each(function(p) {
+								p.load_profile({
+									success: function() {
+										track();
+									},
+									error: function(err) {
+										barfr.barf('Error loading the profile data for your persona "'+p.get('email')+'":'+ err);
+										// don't want to freeze the app just because one
+										// persona doesn't load, do we?
+										track();
+									}
+								});
+							});
+						}
+						else
+						{
+							// no personas to load (or we loaded all the profile
+							// data from locstor newayz), just finish up the load
+							finish();
+						}
+					}.bind(this)
+				});
+			}.bind(this)
+		});
+	},
+
 	get_current_board: function()
 	{
-		return this.get('current_board', false);
+		var cur	=	this.get('current_board', false);
+		if(!cur) cur = this.get('boards').first();
+		return cur;
 	},
 
 	set_current_board: function(obj, options)
 	{
 		options || (options = {});
-		if(typeOf(obj) == 'string')
-		{
-			obj	=	this.get('boards').find_by_id(obj);
-		}
-		if(!obj) return false;
 		return this.set({current_board: obj}, options);
 	},
 
@@ -123,13 +201,13 @@ var Profile = Composer.RelationalModel.extend({
 	sync: function(options)
 	{
 		options || (options = {});
-		if(!tagit.sync || !tagit.user.logged_in) return false;
+		if(!turtl.sync || !turtl.user.logged_in) return false;
 
 		var sync_time = this.get('sync_time', 9999999);
-		tagit.api.post('/sync', {time: sync_time}, {
+		turtl.api.post('/sync', {time: sync_time}, {
 			success: function(sync) {
 				this.set({sync_time: sync.time});
-				this.process_sync(sync);
+				this.process_sync(sync, options);
 				// reset ignore list
 				this.sync_ignore	=	[];
 			}.bind(this),
@@ -149,15 +227,53 @@ var Profile = Composer.RelationalModel.extend({
 			}.bind(this)
 		});
 
-		tagit.messages.sync({
+		turtl.messages.sync({
 			success: function(_, persona) {
 				persona.sync_data(sync_time);
 			}
 		});
 	},
 
-	process_sync: function(sync)
+	process_sync: function(sync, options)
 	{
+		options || (options = {});
+
+		// send synced data to addon
+		if(window.port && turtl.sync && sync)
+		{
+			window.port.send('profile-sync', sync);
+		}
+
+		// if we're syncing user data, update it
+		if(sync.user && (!turtl.sync || !window._in_ext))
+		{
+			turtl.user.set(sync.user);
+		}
+
+		sync.boards.each(function(board_data) {
+			// don't sync ignored items
+			if(this.sync_ignore.contains(board_data.id))
+			{
+				this.sync_ignore.erase(board_data.id);
+				return false;
+			}
+
+			var board	=	turtl.profile.get('boards').find_by_id(board_data.id);
+			if(board_data.deleted)
+			{
+				if(board) board.destroy({skip_sync: true});
+			}
+			else if(board)
+			{
+				board.set(board_data);
+			}
+			else
+			{
+				turtl.profile.get('boards').upsert(new Board(board_data));
+			}
+		}.bind(this));
+		this.persist(options);
+
 		sync.notes.each(function(note_data) {
 			// don't sync ignored items
 			if(this.sync_ignore.contains(note_data.id))
@@ -200,39 +316,18 @@ var Profile = Composer.RelationalModel.extend({
 				}
 			}
 			// note isn't existing and isn't being deleted. add it!
-			else if(!note_data.deleted)
+			else if(!note_data.deleted && newboard)
 			{
 				newboard.get('notes').add(note_data);
 			}
 		}.bind(this));
-
-		sync.boards.each(function(board_data) {
-			// don't sync ignored items
-			if(this.sync_ignore.contains(board_data.id))
-			{
-				this.sync_ignore.erase(board_data.id);
-				return false;
-			}
-
-			var board	=	tagit.profile.get('boards').find_by_id(board_data.id);
-			if(!board) return;
-			if(board_data.deleted)
-			{
-				board.destroy({skip_sync: true});
-			}
-			else
-			{
-				board.set(board_data);
-			}
-		}.bind(this));
-		this.persist();
 	},
 
 	get_sync_time: function()
 	{
 		if(this.get('sync_time', false)) return;
 
-		tagit.api.get('/sync', {}, {
+		turtl.api.get('/sync', {}, {
 			success: function(time) {
 				this.set({sync_time: time});
 			}.bind(this),
@@ -245,45 +340,50 @@ var Profile = Composer.RelationalModel.extend({
 	persist: function(options)
 	{
 		options || (options = {});
-		return false;
-		if(!this.persist_timer.end)
+
+		var do_persist	=	function(options)
 		{
-			this.persist_timer.end	=	function()
-			{
-				var store	=	{
-					user: tagit.user.toJSON(),
-					boards: []
-				};
-				tagit.profile.get('boards').each(function(board) {
-					var boardobj	=	board.toJSON();
-					boardobj.notes	=	board.get('notes').toJSON();
-					store.boards.push(boardobj);
-				});
-				var tsnow	=	Math.floor(new Date().getTime()/1000);
-				store.time	=	this.get('sync_time', tsnow);
-				localStorage['profile:user:'+tagit.user.id()]	=	JSON.encode(store);
-				localStorage['scheme_version']					=	config.mirror_scheme_version;
-			}.bind(this);
-		}
+			options || (options = {});
+			var store	=	{
+				user: turtl.user.toJSON(),
+				boards: []
+			};
+			turtl.profile.get('boards').each(function(board) {
+				var boardobj	=	board.toJSON();
+				boardobj.notes	=	board.get('notes').toJSON();
+				store.boards.push(boardobj);
+			});
+			var tsnow	=	Math.floor(new Date().getTime()/1000);
+			store.time	=	this.get('sync_time', tsnow);
+			if(window.port) window.port.send('profile-save', store);
+
+			if(!turtl.mirror) return false;
+
+			localStorage['profile:user:'+turtl.user.id()]	=	JSON.encode(store);
+			localStorage['scheme_version']					=	config.mirror_scheme_version;
+		}.bind(this);
+
 		if(options.now)
 		{
-			this.persist_timer.end();
+			do_persist(options);
 		}
 		else
 		{
+			this.persist_timer.end	=	function() { do_persist(options); };
 			this.persist_timer.start();
 		}
 	},
 
 	from_persist: function()
 	{
-		return false;
+		if(!turtl.mirror) return false;
+
 		if((localStorage['scheme_version'] || 0) < config.mirror_scheme_version)
 		{
 			localStorage.clear();
 			return false;
 		}
-		var data	=	localStorage['profile:user:'+tagit.user.id()] || false
+		var data	=	localStorage['profile:user:'+turtl.user.id()] || false
 		if(data) data = JSON.decode(data);
 		if(data && data.time) this.set({sync_time: data.time});
 		return data;

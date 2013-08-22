@@ -1,12 +1,12 @@
 var PersonaSelector = Composer.Controller.extend({
 	elements: {
-		'img.load': 'screenname_loading',
-		'input[name=screenname]': 'inp_screenname',
+		'img.load': 'email_loading',
+		'input[name=email]': 'inp_email',
 		'div.personas-list': 'persona_list_el'
 	},
 
 	events: {
-		'keyup input[name=screenname]': 'screenname_search',
+		'keyup input[name=email]': 'email_search',
 		'click a[href=#change]': 'change_persona',
 		'click .personas-list > ul > li': 'pick_persona'
 	},
@@ -25,15 +25,20 @@ var PersonaSelector = Composer.Controller.extend({
 		if(!this.persona) this.persona = new Persona();
 		this.render();
 
-		tagit.keyboard.detach(); // disable keyboard shortcuts while editing
+		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
 
 		this.sn_timer = new Timer(500);
-		this.sn_timer.end = this.do_search_screenname.bind(this);
+		this.sn_timer.end = this.do_search_email.bind(this);
 	},
 
 	release: function()
 	{
-		tagit.keyboard.attach(); // re-enable shortcuts
+		if(this.persona_list)
+		{
+			this.persona_list.unbind('release', 'personas:selector:invites:release');
+			this.persona_list.release();
+		}
+		turtl.keyboard.attach(); // re-enable shortcuts
 		this.unbind('selected');
 		this.parent.apply(this, arguments);
 	},
@@ -49,37 +54,48 @@ var PersonaSelector = Composer.Controller.extend({
 		if(this.persona.is_new())
 		{
 			(function() {
-				this.inp_screenname.focus();
+				this.inp_email.focus();
 			}).delay(10, this);
 		}
 	},
 
-	get_screenname: function()
+	get_email: function()
 	{
-		return this.inp_screenname.get('value').replace(/[^a-z0-9\/\.]/gi, '').clean();
+		return this.inp_email.get('value').replace(/[^a-z0-9\-@\/\.]/gi, '').clean();
 	},
 
-	screenname_search: function(e)
+	is_valid_email: function(email)
 	{
-		var screenname = this.get_screenname();
+		return email.match(/[^@]+@[^@]+$/);
+	},
+
+	email_search: function(e)
+	{
+		var email = this.get_email();
 		this.sn_timer.start();
-		if(this.get_screenname() != '') this.screenname_loading.setStyle('display', 'inline');
+		if(this.get_email() != '') this.email_loading.setStyle('display', 'inline');
 	},
 
-	do_search_screenname: function()
+	do_search_email: function()
 	{
-		var screenname = this.get_screenname();
-		this.screenname_loading.setStyle('display', '');
-		if(screenname == '') return false;
-		this.screenname_loading.setStyle('display', 'inline');
-		this.persona.search_by_screenname(screenname, {
-			success: function(res) {
-				this.screenname_loading.setStyle('display', '');
-				this.refresh_personas(res);
+		var email = this.get_email();
+		this.email_loading.setStyle('display', '');
+		if(email == '') return false;
+		this.email_loading.setStyle('display', 'inline');
+		this.persona.get_by_email(email, {
+			success: function(persona) {
+				this.email_loading.setStyle('display', '');
+				this.refresh_personas([persona]);
 			}.bind(this),
 			error: function(err, xhr) {
-				this.screenname_loading.setStyle('display', '');
-				barfr.barf('There was an error while searching personas. Try again.');
+				this.email_loading.setStyle('display', '');
+				// simple not found error, setup invite screen
+				if(xhr.status == 404)
+				{
+					this.refresh_personas([]);
+					return;
+				}
+				barfr.barf('There was a problem pulling out that persona. Soooo sorry.');
 			}.bind(this)
 		});
 	},
@@ -114,17 +130,41 @@ var PersonaSelector = Composer.Controller.extend({
 		if(e) e.stop();
 		this.persona	=	new Persona();
 		this.render();
+		this.trigger('change-persona');
 	},
 
 	refresh_personas: function(personas)
 	{
 		this.last_res = personas;
 
-		if(this.persona_list) this.persona_list.release();
-		this.persona_list = new PersonaListController({
-			inject: this.persona_list_el,
-			personas: personas,
-			hide_edit: true
-		});
+		if(this.persona_list)
+		{
+			this.persona_list.unbind('release', 'personas:selector:list:release');
+			this.persona_list.release();
+		}
+		if(personas.length > 0)
+		{
+			this.persona_list	=	new PersonaListController({
+				inject: this.persona_list_el,
+				personas: personas,
+				hide_edit: true
+			});
+			this.trigger('show-personas');
+		}
+		else if(this.is_valid_email(this.get_email()))
+		{
+			this.persona_list	=	new InviteBoardController({
+				email: this.get_email(),
+				inject: this.persona_list_el,
+				board: this.model
+			});
+			this.persona_list.bind('sent', function() {
+				this.persona	=	null;
+			}.bind(this));
+			this.trigger('show-invite');
+		}
+		this.persona_list.bind('release', function() {
+			this.inp_email.set('value', '');
+		}.bind(this), 'personas:selector:list:release');
 	}
 });

@@ -31,7 +31,7 @@
     f = '<?=window.location.protocol?>//<?=window.location.host?>/bookmark?url='+ u +'&title='+ t +'&text='+ d +'&type='+ y;
 	t = function()
 	{
-		if(!window.open(f, 'tagit', 'location=yes,links=no,scrollbars=no,toolbar=no,width=740,height=525'))
+		if(!window.open(f, 'turtl', 'location=yes,links=no,scrollbars=no,toolbar=no,width=740,height=525'))
 		{
 			location.href = f;
 		}

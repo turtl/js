@@ -89,6 +89,7 @@ var User	=	Composer.RelationalModel.extend({
 	login_from_auth: function(auth)
 	{
 		if(!auth) return false;
+		this.set({id: auth.uid});
 		this.auth		=	auth.auth;
 		this.key		=	tcrypt.key_to_bin(auth.key);
 		this.logged_in	=	true;
@@ -117,7 +118,7 @@ var User	=	Composer.RelationalModel.extend({
 	join: function(options)
 	{
 		options || (options = {});
-		tagit.api.post('/users', {data: {a: this.get_auth()}}, {
+		turtl.api.post('/users', {data: {a: this.get_auth()}}, {
 			success: options.success,
 			error: function(e) {
 				barfr.barf('Error adding user: '+ e);
@@ -174,7 +175,7 @@ var User	=	Composer.RelationalModel.extend({
 				barfr.barf('There was an error saving your user settings:'+ err);
 			}.bind(this)
 		});
-		tagit.profile.persist({now: true});
+		turtl.profile.persist({now: true});
 	},
 
 	get_key: function()
@@ -188,7 +189,7 @@ var User	=	Composer.RelationalModel.extend({
 		if(!username || !password) return false;
 
 		// TODO: abstract key generation a bit better (iterations/keysize mainly)
-		var key = tcrypt.key(password, username + ':a_pinch_of_salt', {keySize: 256/32, iterations: 400});
+		var key = tcrypt.key(password, username + ':a_pinch_of_salt', {key_size: 32, iterations: 400});
 
 		// cache it
 		this.key = key;
@@ -218,18 +219,10 @@ var User	=	Composer.RelationalModel.extend({
 		return auth;
 	},
 
-	load_profile: function(options)
-	{
-		options || (options = {});
-		var profile = new Profile();
-		profile.load_data(options);
-		return profile;
-	},
-
 	load_personas: function(options)
 	{
 		var persona_keys = this.get('settings').get_by_key('personas').value();
-		if(!persona_keys)
+		if(!persona_keys || Object.getLength(persona_keys) == 0)
 		{
 			if(options.success) options.success();
 			return false;
@@ -255,12 +248,12 @@ var User	=	Composer.RelationalModel.extend({
 	test_auth: function(options)
 	{
 		options || (options = {});
-		tagit.api.set_auth(this.get_auth());
-		tagit.api.post('/auth', {}, {
+		turtl.api.set_auth(this.get_auth());
+		turtl.api.post('/auth', {}, {
 			success: options.success,
 			error: options.error
 		});
-		tagit.api.clear_auth();
+		turtl.api.clear_auth();
 	},
 
 	add_user_key: function(item_id, key)
