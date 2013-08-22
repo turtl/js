@@ -51,6 +51,73 @@ var Invite = Composer.Model.extend({
 		keymodel.key		=	encrypting_key;
 		keymodel.set({body: encrypted_key});
 		return keymodel.get('key');
+	},
+
+	accept: function(persona, options)
+	{
+		var item_key	=	tcrypt.key_to_bin(this.get('item_key'));
+		var item_id		=	this.get('item_id');
+
+		persona.get_challenge({
+			success: function(challenge) {
+				turtl.api.post('/invites/accepted/'+this.id(), {
+					code: this.get('code'),
+					persona: persona.id(),
+					challenge: persona.generate_response(challenge)
+				}, {
+					success: function(res) {
+						// we have no more use for this invite
+						if(window.port) window.port.send('invite-remove', this.id());
+
+						// if we have an item id/key, save them to the user's
+						// keychain
+						if(item_key && item_id)
+						{
+							turtl.user.add_user_key(item_id, item_key);
+						}
+
+						switch(this.get('type'))
+						{
+						case 'b':
+							var board	=	new Board({id: item_id});
+							board.key	=	item_key;
+							var _notes = res.notes;
+							delete res.notes;
+							res.shared	=	true;
+							board.set(res);
+							turtl.profile.get('boards').add(board);
+							board.update_notes(_notes);
+							break;
+						}
+
+						if(options.success) options.success();
+					}.bind(this),
+					error: options.error
+				});
+			}.bind(this),
+			error: options.error
+		});
+	},
+
+	deny: function(persona, options)
+	{
+		persona.get_challenge({
+			success: function(challenge) {
+				turtl.api.post('/invites/denied/'+this.id(), {
+					code: this.get('code'),
+					persona: persona.id(),
+					challenge: persona.generate_response(challenge)
+				}, {
+					success: function() {
+						// we have no more use for this invite
+						if(window.port) window.port.send('invite-remove', this.id());
+						if(options.success) options.success();
+					}.bind(this),
+					error: options.error
+				});
+			}.bind(this),
+			error: options.error
+		});
 	}
 });
 

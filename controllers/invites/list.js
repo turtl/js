@@ -1,6 +1,4 @@
 var InvitesListController	=	Composer.Controller.extend({
-	tag: 'ul',
-
 	elements: {
 	},
 
@@ -8,14 +6,22 @@ var InvitesListController	=	Composer.Controller.extend({
 		'click a[href=#accept]': 'accept_invite',
 		'click a[href=#unlock]': 'unlock_invite',
 		'click a[href=#deny]': 'deny_invite',
-		'submit form.secret': 'do_unlock_invite'
+		'submit form.secret': 'do_unlock_invite',
+		'click .button.add.persona': 'open_personas'
 	},
 
 	collection: null,
+	persona: null,
 
 	init: function()
 	{
-		if(!this.collection) return false;
+		if(!this.collection) this.collection = new Invites();
+		// TODO: persona selector (when allowing multiple personas)
+		if(!this.persona) this.persona = turtl.user.get('personas').first();
+
+		if(window.port) window.port.bind('invites-populate', function(invite_data) {
+			this.collection.reset(Object.values(invite_data));
+		}.bind(this));
 		this.collection.bind(['add', 'remove', 'reset', 'change'], this.render.bind(this), 'invites:list:collection:all');
 	},
 
@@ -28,7 +34,8 @@ var InvitesListController	=	Composer.Controller.extend({
 	render: function()
 	{
 		var content	=	Template.render('invites/list', {
-			invites: this.collection.toJSON()
+			invites: this.collection.toJSON(),
+			num_personas: turtl.user.get('personas').models().length
 		});
 		this.html(content);
 	},
@@ -70,7 +77,15 @@ var InvitesListController	=	Composer.Controller.extend({
 		var board_key	=	invite.decrypt_key(invite.get('data').board_key, invite.get('data').key, '');
 		if(!board_key || !this.key_valid(board_key)) return false;
 
-		port.send('accept', invite_id, board_key);
+		invite.set({item_key: board_key});
+		invite.accept(this.persona, {
+			success: function() {
+				this.collection.remove(invite);
+			}.bind(this),
+			error: function(err) {
+				barfr.barf('Error accepting invite: '+ err);
+			}
+		});
 	},
 
 	deny_invite: function(e)
@@ -81,7 +96,14 @@ var InvitesListController	=	Composer.Controller.extend({
 		var invite_id	=	this.get_invite_id_from_el(e.target);
 		var invite		=	this.collection.find_by_id(invite_id);
 		if(!invite) return;
-		port.send('deny', invite_id);
+		invite.deny(this.persona, {
+			success: function() {
+				this.collection.remove(invite);
+			}.bind(this),
+			error: function(err) {
+				barfr.barf('Error denying invite: '+ err);
+			}
+		});
 	},
 
 	unlock_invite: function(e)
@@ -110,7 +132,29 @@ var InvitesListController	=	Composer.Controller.extend({
 		var board_key	=	invite.decrypt_key(invite.get('data').board_key, invite.get('data').key, secret);
 		if(!board_key || !this.key_valid(board_key)) return false;
 
-		port.send('accept', invite_id, board_key);
+		invite.set({item_key: board_key});
+		invite.accept(this.persona, {
+			success: function() {
+				this.collection.remove(invite);
+			}.bind(this),
+			error: function(err) {
+				barfr.barf('Error accepting invite: '+ err);
+			}
+		});
+	},
+
+	open_personas: function(e)
+	{
+		if(e) e.stop();
+		if(window.port)
+		{
+			window.port.send('personas-add-open');
+		}
+		else
+		{
+			this.release();
+			new PersonasController();
+		}
 	}
 });
 
