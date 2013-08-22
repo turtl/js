@@ -215,12 +215,137 @@ var tcrypt = {
 		});
 	},
 
-	// TODO: do, obvis
-	gen_symmetric_keys: function(seed)
+	/**
+	 * RSA encrypt the given plaintext message using the given key.
+	 */
+	encrypt_rsa: function(public_key, message, options)
 	{
-		return {
-			public: '1234',
-			private: '5678'
+		options || (options = {});
+
+		var encoded		=	new PKCS1_v1_5().encode(message, public_key);
+		var encrypted	=	new RSA().encrypt(encoded, public_key);
+		return encrypted;
+	},
+
+	/**
+	 * Decrypt the given RSA-encrypted message using the given key.
+	 */
+	decrypt_rsa: function(private_key, message, options)
+	{
+		options || (options = {});
+
+		var decrypted	=	new RSA().decrypt(message, private_key);
+		var decoded		=	new PKCS1_v1_5().decode(message);
+		return decoded;
+	},
+
+	generate_rsa_keypair: function(options)
+	{
+		options || (options = {});
+		
+		//var public = new RSAKey({ n: rsa.get_modulus(), e: rsa.get_exponent_public() });
+		//var private = new RSAKey({ n: rsa.get_modulus(), d: rsa.get_exponent_private() })
+
+		// Ah ah! Parker, if you're going to ask a question, you better stick
+		// around for the answer. Next to me, Parker! Rest of the walk. Sko!
+		// Next to me!! Move, Parker!!!
+		if(!options.success) return false;
+
+		// hijack success to return split pub.priv keys
+		var _success	=	options.success;
+		options.success	=	function(rsakey)
+		{
+			var modulus	=	rsakey.get_modulus();
+			var pubkey	=	new RSAKey({ n: modulus, e: rsakey.get_exponent_public() });
+			var privkey	=	new RSAKey({ n: modulus, d: rsakey.get_exponent_private() });
+			_success(pubkey, privkey);
 		};
+
+		if(options.len !== 2048 || options.len !== 3072)
+		{
+			options.len	=	3072;
+		}
+
+		options.error || (options.error = function() {});
+
+		var nlen		= options.len;
+		var e 			= crypto_math.get_random_public_exponent();
+		var p, q, n, phi_n, u, d;
+
+		var generate_prime_threaded = function(e, nlen, callback, p)
+		{
+			var worker = new Worker(window._base_url + '/library/cowcrypt/crypto_math.js');
+
+			worker.addEventListener('message', function(e) {
+				var data = e.data;
+
+				switch (data.cmd) {
+					case 'get_csprng_random_values':
+						worker.postMessage({
+							cmd: 'put_csprng_random_values',
+							response: {
+								random_values: crypto_math.get_csprng_random_values(data.request.bits)
+							}
+						});
+						break;
+					case 'put_error':
+						worker.terminate();
+						delete worker;
+
+						// if "out of tries" error, recurse and try again
+						if (data.error.code == 3)
+							return generate_rsa_key_threaded();
+						else
+							options.error(data.error);
+						
+						break;
+					case 'put_console_log':
+						console.log(data.response.msg);
+						break;
+					case 'put_probable_prime':
+						worker.terminate();
+						callback(data.response.prime);
+						break;
+				}
+			}, false);
+
+			worker.postMessage({
+				cmd: 'get_probable_prime',
+				request: {
+					e: e,
+					nlen: nlen,
+					p: p
+				}
+			});
+		}
+
+		var generate_q_complete = function(prime)
+		{
+			q		= prime;
+
+			var inverse_data = crypto_math.compute_rsa_key_inverse_data(e, p, q);
+
+			n		= inverse_data.n;
+			phi_n	= inverse_data.phi_n;
+			d		= inverse_data.d;
+			u		= inverse_data.u;
+
+			// The order of p and q may have been swapped, such that p < q
+			p		= inverse_data.p;
+			q		= inverse_data.q;
+
+			var key	= new RSAKey({e: e, n: n, d: d, p: p, q: q, u: u});
+
+			options.success(key);
+		};
+
+		var generate_p_complete = function(prime)
+		{
+			p = prime;
+			generate_prime_threaded(e, nlen, generate_q_complete, p);
+		};
+
+		// Actually start the generation process
+		generate_prime_threaded(e, nlen, generate_p_complete, false);
 	}
 };
