@@ -5,6 +5,57 @@
  *	Licensed under The MIT License. (http://www.opensource.org/licenses/mit-license.php)
  *	Redistributions of files must retain the above copyright notice.
  */
+var threaded_mode = false;
+
+// Detect whether we're in threaded mode. and listen for messages if so
+if (typeof window === 'undefined')
+{
+	threaded_mode = true;
+
+	self.addEventListener('message', function(e) {
+		var data = e.data;
+		
+		switch (data.cmd)
+		{
+			case 'get_probable_prime':
+				crypto_math.thread_probable_prime_init(data.request.e, data.request.nlen, data.request.p);
+				break;
+			case 'get_rsa_encrypt':
+				crypto_math.thread_rsa_encrypt(data.request.plaintext, data.request.n, data.request.e);
+				break;
+			case 'get_rsa_decrypt':
+				crypto_math.thread_rsa_decrypt(data.request.ciphertext, data.request.n, data.request.d);
+				break;
+			case 'put_csprng_random_values':
+				var thread_state = crypto_math.thread_state;
+
+				if (thread_state.task == 'probable_prime' && thread_state.stage == 'begin')
+				{
+					crypto_math.thread_probable_prime_construct_candidate(data.response.random_values);
+				}
+				else if (thread_state.task == 'probable_prime' && thread_state.stage == 'miller_rabin_test_begin')
+				{
+					crypto_math.thread_probable_prime_miller_rabin_test_check(data.response.random_values);
+				}
+				break;
+
+			// RA NOTE ~ Removed provable prime generation until someone whines about it
+			/*
+			case 'get_provable_prime':
+				var result = crypto_math.s_t_random_prime(data.request.bitlength, data.request.seed);
+				self.postMessage({
+					cmd: 'put_provable_prime',
+					response: {
+						result: result,
+						timers: crypto_math.get_timers()
+					}
+				});
+				break;
+			*/
+		};
+	}, false);
+}
+
 /**
  *	@classdesc
  *	This static class offers a grab bag of methods for various types of mathematical operations.
@@ -171,29 +222,50 @@ var crypto_math = {
 	},
 
 	/**
-	 *	Given BigInts e, p and q, returns n, phi(n), and d
+	 *	Given BigInts e, p and q, returns an object containing the full private key data
 	 *
 	 *	@param {BigInt} e	The public exponent
 	 *	@param {BigInt} p	Private prime exponent p
 	 *	@param {BigInt} q	Private prime exponent q
-	 *	@return {Object}	Object containing BigInt properties n, phi_n, and d
+	 *	@return {Object}	Object containing the following properties: {
+	 *							e: 		public exponent,
+	 *							n: 		modulus,
+	 *							d: 		private exponent,
+	 * 							phi_n: 	the value Φ(n),
+	 *							p: 		large prime p such that p < q (may be reordered from input),
+	 *							q: 		large prime q such that q > p (may be reordered from input),
+	 *							u: 		multiplicative inverse of the (potentially reordered) p mod q
+	 *						}
 	 */
 	compute_rsa_key_inverse_data: function(e, p, q)
 	{
 		var _bigint		= new BigInt();
 
-		var n			= _bigint.mult(p, q);
-		var phi_n		= _bigint.mult(_bigint.addInt(p, -1), _bigint.addInt(q, -1));
+		if (_bigint.greater(p, q))
+		{
+			// We want to constrain p < q, to comply with RFC-4880
+			var tmp	= q;
+			q		= p;
+			p		= tmp;
+		}
 
-		var d = _bigint.inverseMod(e, phi_n);           
+		var n		= _bigint.mult(p, q);
+		var phi_n	= _bigint.mult(_bigint.addInt(p, -1), _bigint.addInt(q, -1));
+
+		var d 		= _bigint.inverseMod(e, phi_n);           
+		var u 		= _bigint.inverseMod(p, q);  
         
         if (!d)
 			throw new Error('The given public exponent was not relatively prime to (p - 1)(q - 1)');
 
 		return {
+			e: e,
 			n: n,
+			d: d,
 			phi_n: phi_n,
-			d: d
+			p: p,
+			q: q,
+			u: u
 		}
 	},
 
@@ -482,14 +554,44 @@ var crypto_math = {
 	},
 
 	/**
-	 *	Decrypts an RSA ciphertext
+	 *	Encrypts an RSA plaintext. You are responsible for doing any encoding (ie. PKCS1 v1.5)
+	 *	before calling this
+	 *	
+	 *	@param {string} plaintext	ASCII-encoded binary string data to encrypt. Any non-ASCII characters
+	 *								should be first encoded out using {@link convert.utf8.encode}
+	 *	@param {BigInt} n			Modulus n
+	 *	@param {BigInt} e			Public Exponent e
+	 */
+	encrypt: function(plaintext, n, e)
+	{
+		var big = crypto_math.binstring_to_bigint(padded);
+
+		// encrypt it
+		big = new BigInt().powMod(big, key.get_exponent_public(), key.get_modulus());
+		
+		// convert to a binstring
+		var binstring	= crypto_math.bigint_to_binstring(big);
+
+		self.postMessage({
+			cmd: 'put_rsa_encrypt',
+			response: {
+				ciphertext: binstring
+			}
+		});	
+	},
+
+	/**
+	 *	Decrypts an RSA ciphertext. You are responsible for doing any decoding (ie. PKCS1 v1.5) afterwards
+	 *	
+	 *	@param {string} ciphetext	ASCII-encoded binary string data to decrypt. Any non-ASCII characters
+	 *								should be first encoded out using {@link convert.utf8.encode}
+	 *	@param {BigInt} n			Modulus n
+	 *	@param {BigInt} d			Private Exponent d
 	 */
 	thread_rsa_decrypt: function(ciphertext, n, d)
 	{
-		var _bigint		= new BigInt();
-
 		var big			= crypto_math.binstring_to_bigint(ciphertext);
-		big				= _bigint.powMod(big, d, n);
+		big				= new BigInt().powMod(big, d, n);
 
 		// convert to a binstring
 		var binstring	= crypto_math.bigint_to_binstring(big);
@@ -497,7 +599,7 @@ var crypto_math = {
 		self.postMessage({
 			cmd: 'put_rsa_decrypt',
 			response: {
-				decrypted: binstring
+				plaintext: binstring
 			}
 		});	
 	},
@@ -606,51 +708,6 @@ var crypto_math = {
 
 		return bigint;		
 	}
-}
-
-var threaded_mode = false;
-
-if (typeof window === 'undefined')
-{
-	threaded_mode = true;
-
-	self.addEventListener('message', function(e) {
-		var data = e.data;
-		
-		switch (data.cmd)
-		{
-			/*
-			case 'get_provable_prime':
-				var result = crypto_math.s_t_random_prime(data.request.bitlength, data.request.seed);
-				self.postMessage({
-					cmd: 'put_provable_prime',
-					response: {
-						result: result,
-						timers: crypto_math.get_timers()
-					}
-				});
-				break;
-			*/
-			case 'get_probable_prime':
-				crypto_math.thread_probable_prime_init(data.request.e, data.request.nlen, data.request.p);
-				break;
-			case 'get_rsa_decrypt':
-				crypto_math.thread_rsa_decrypt(data.request.ciphertext, data.request.n, data.request.d);
-				break;
-			case 'put_csprng_random_values':
-				var thread_state = crypto_math.thread_state;
-
-				if (thread_state.task == 'probable_prime' && thread_state.stage == 'begin')
-				{
-					crypto_math.thread_probable_prime_construct_candidate(data.response.random_values);
-				}
-				else if (thread_state.task == 'probable_prime' && thread_state.stage == 'miller_rabin_test_begin')
-				{
-					crypto_math.thread_probable_prime_miller_rabin_test_check(data.response.random_values);
-				}
-				break;
-		};
-	}, false);
 }
 
 // -------------------------------------------------------------------------------------
