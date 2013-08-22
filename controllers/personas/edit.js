@@ -23,6 +23,7 @@ var PersonaEditController = Composer.Controller.extend({
 
 	init: function()
 	{
+		if(!this.collection) this.collection = turtl.user.get('personas');
 		if(!this.model) this.model = new Persona();
 		this.model.key = turtl.user.get_key();	// persona uses same key as user
 
