@@ -29,7 +29,11 @@ var BookmarkController = Composer.Controller.extend({
 
 		if(window.port) window.port.bind('bookmark-open', function(data) {
 			// prevent overwriting what's in the bookmark interface
-			if(data.url && data.url == this.last_url) return;
+			if(data.url && data.url == this.last_url)
+			{
+				this.resize();
+				return;
+			}
 			this.last_url	=	data.url;
 			this.linkdata	=	data;
 			this.profile.trigger('change:current_board');
@@ -42,6 +46,7 @@ var BookmarkController = Composer.Controller.extend({
 		}.bind(this));
 
 		this.profile	=	turtl.profile;
+
 		this.profile.bind('change:current_board', function() {
 			var board = this.profile.get_current_board();
 
@@ -76,7 +81,7 @@ var BookmarkController = Composer.Controller.extend({
 				if(window._in_ext && window.port)
 				{
 					window.port.send('close');
-					window.port.send('addon-controller.release');
+					window.port.send('addon-controller-release');
 				}
 				else this.edit_controller.release();
 			}.bind(this), 'bookmark:edit_note:saved');
@@ -107,6 +112,7 @@ var BookmarkController = Composer.Controller.extend({
 	release: function()
 	{
 		this.soft_release();
+		this.profile.unbind('change:current_board', 'bookmark:change_board');
 		return this.parent.apply(this, arguments);
 	},
 
