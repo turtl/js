@@ -242,7 +242,7 @@ var tcrypt = {
 	 */
 	rsa_key_to_string: function(rsakey)
 	{
-		var n	=	rsakey.get_moulus();
+		var n	=	rsakey.get_modulus();
 		var e	=	rsakey.get_exponent_public();
 		var d	=	rsakey.get_exponent_private();
 
