@@ -1,8 +1,8 @@
 <h1>Invites</h1>
 
-<? if(num_personas > 0) { ?>
-	<div class="invites-list">
-		<? if(invites.length > 0) { ?>
+<div class="invites-list">
+	<? if(invites.length > 0) { ?>
+		<? if(num_personas > 0) { ?>
 			<ul>
 				<? invites.each(function(inv) { ?>
 					<? inv.data || (inv.data = {}); ?>
@@ -28,12 +28,11 @@
 				<? }); ?>
 			</ul>
 		<? } else { ?>
-			<p>You have no pending invites.<p>
+			<div class="button add persona"><span>Add a persona</span></div>
+			<br><br>
+			<p>You have <?=invites.length?> invite(s), but you cannot accept them without a persona.</p>
 		<? } ?>
-	</div>
-
-<? } else { ?>
-	<div class="button add persona"><span>Add a persona</span></div>
-	<br><br>
-	<p>You have <?=invites.length?> invite(s), but you cannot accept them without a persona.</p>
-<? } ?>
+	<? } else { ?>
+		<p>You have no pending invites.<p>
+	<? } ?>
+</div>
