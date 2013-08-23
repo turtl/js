@@ -222,8 +222,7 @@ var tcrypt = {
 	{
 		options || (options = {});
 
-		var encoded		=	new PKCS1_v1_5().encode(message, public_key);
-		var encrypted	=	new RSA().encrypt(encoded, public_key);
+		var encrypted	=	new RSA().encrypt(message, public_key);
 		return encrypted;
 	},
 
@@ -235,8 +234,7 @@ var tcrypt = {
 		options || (options = {});
 
 		var decrypted	=	new RSA().decrypt(message, private_key);
-		var decoded		=	new PKCS1_v1_5().decode(message);
-		return decoded;
+		return decrypted;
 	},
 
 	/**

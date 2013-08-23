@@ -238,7 +238,7 @@ var turtl	=	{
 				success: function(pub, priv) {
 					window.port.send('rsa-keypair', {
 						public: tcrypt.rsa_key_to_string(pub),
-						private: tcrypt.rsa_key_to_string(priv);
+						private: tcrypt.rsa_key_to_string(priv)
 					});
 				},
 				error: function(err) {
