@@ -146,7 +146,7 @@ var InvitesListController	=	Composer.Controller.extend({
 	open_personas: function(e)
 	{
 		if(e) e.stop();
-		if(window.port)
+		if(window._in_ext && window.port)
 		{
 			window.port.send('personas-add-open');
 		}
