@@ -16,6 +16,11 @@ var FirefoxAddonPort	=	new Class({
 	bind: function(ev, cb)
 	{
 		this.comm.on(ev, cb);
+	},
+
+	unbind: function()
+	{
+		this.comm.off.apply(this.comm, arguments);
 	}
 });
 
