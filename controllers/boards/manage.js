@@ -79,11 +79,18 @@ var BoardManageController = Composer.Controller.extend({
 	open_personas: function(e)
 	{
 		if(e) e.stop();
-		this.release();
-		new PersonaEditController({
-			collection: turtl.user.get('personas'),
-			return_to_manage: true
-		});
+		if(window._in_ext && window.port)
+		{
+			window.port.send('personas-add-open');
+		}
+		else
+		{
+			this.release();
+			new PersonaEditController({
+				collection: turtl.user.get('personas'),
+				return_to_manage: true
+			});
+		}
 	},
 
 	open_add: function(e)
