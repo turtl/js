@@ -9,7 +9,8 @@ var PersonaEditController = Composer.Controller.extend({
 	events: {
 		'keyup input[name=email]': 'check_email',
 		'submit form': 'edit_persona',
-		'click h1 a': 'open_personas'
+		'click h1 a': 'open_personas',
+		'click a[href=#skip]': 'do_close'
 	},
 
 	edit_in_modal: true,
@@ -17,6 +18,9 @@ var PersonaEditController = Composer.Controller.extend({
 	collection: null,
 	model: null,
 	sn_timer: null,
+
+	// whether or not this was opened after a join (shows a different interface)
+	join: false,
 
 	// if true, will return to board management instead of persona mgmt on close
 	return_to_manage: false,
@@ -61,6 +65,7 @@ var PersonaEditController = Composer.Controller.extend({
 	{
 		var content = Template.render('personas/edit', {
 			persona: toJSON(this.model),
+			was_join: this.join,
 			return_to_manage: this.return_to_manage
 		});
 		this.html(content);
@@ -94,9 +99,8 @@ var PersonaEditController = Composer.Controller.extend({
 		var is_new = this.model.is_new();
 		if(is_new)
 		{
-			var symkey	=	tcrypt.gen_symmetric_keys(turtl.user);
-			set.pubkey	=	symkey.public;
-			set.privkey	=	symkey.private;
+			set.pubkey	=	false;
+			set.privkey	=	false;
 			set.secret	=	this.model.generate_secret(turtl.user.get_key());
 			args.secret	=	set.secret;
 		}
@@ -110,7 +114,15 @@ var PersonaEditController = Composer.Controller.extend({
 					turtl.loading(false);
 					if(is_new) this.collection.add(this.model);
 					this.model.trigger('saved');
-					this.open_personas();
+					if(window.port) window.port.send('persona-created', this.model.toJSON());
+					if(this.join)
+					{
+						this.do_close();
+					}
+					else
+					{
+						this.open_personas();
+					}
 				}.bind(this),
 				error: function(model, err) {
 					turtl.loading(false);
@@ -141,16 +153,16 @@ var PersonaEditController = Composer.Controller.extend({
 
 	get_email: function()
 	{
-		return this.inp_email.get('value').replace(/[^a-z0-9\/\.]/gi, '').clean();
+		return this.inp_email.get('value').clean();
 	},
 
 	email_valid: function(email)
 	{
-		if(email.match(/[^a-z0-9@\-\.]/i))
+		if(email.match(/^\S+@\S+$/i))
 		{
-			return false;
+			return true;
 		}
-		return true;
+		return false;
 	},
 
 	email_msg: function(msg, success)
@@ -238,5 +250,12 @@ var PersonaEditController = Composer.Controller.extend({
 				edit_in_modal: this.edit_in_modal
 			});
 		}
+	},
+
+	do_close: function(e)
+	{
+		if(e) e.stop();
+		this.release();
+		if(window.port) window.port.send('close');
 	}
 });
