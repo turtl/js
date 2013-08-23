@@ -113,6 +113,7 @@ var BookmarkController = Composer.Controller.extend({
 	{
 		this.soft_release();
 		this.profile.unbind('change:current_board', 'bookmark:change_board');
+		//if(window.port) window.port.unbind('bookmark-open');
 		return this.parent.apply(this, arguments);
 	},
 
