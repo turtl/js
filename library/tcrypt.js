@@ -92,9 +92,9 @@ var tcrypt = {
 		options || (options = {});
 		
 		var _kdf = new PBKDF2({
-			key_size: (options.key_size || 32),			// note the key size is in bytes
-			hasher: SHA1,								// PBKDF2 uses HMAC internally
-			iterations: (options.iterations || 400)		// moar = bettar (slowar)
+			key_size: (options.key_size || 32),
+			hasher: SHA1,
+			iterations: (options.iterations || 400)
 		});
 		var key = _kdf.compute(passphrase, salt);
 
@@ -239,13 +239,41 @@ var tcrypt = {
 		return decoded;
 	},
 
+	/**
+	 * Serializes an RSAKey object into a string.
+	 */
+	rsa_key_to_string: function(rsakey)
+	{
+		var n	=	rsakey.get_moulus();
+		var e	=	rsakey.get_exponent_public();
+		var d	=	rsakey.get_exponent_private();
+
+		var obj	=	{n: n};
+		if(e) obj.e = e;
+		if(d) obj.d = d;
+
+		return JSON.encode(obj);
+	},
+
+	/**
+	 * Deserializes a string into a RSAKey object.
+	 */
+	rsa_key_from_string: function(rsakey_str)
+	{
+		var obj	=	JSON.decode(rsakey_str);
+		var n	=	obj.n;
+		var e	=	obj.e;
+		var d	=	obj.d;
+
+		var key	=	new RSAKey({n: n, e: e, d: d});
+
+		return key;
+	},
+
 	generate_rsa_keypair: function(options)
 	{
 		options || (options = {});
 		
-		//var public = new RSAKey({ n: rsa.get_modulus(), e: rsa.get_exponent_public() });
-		//var private = new RSAKey({ n: rsa.get_modulus(), d: rsa.get_exponent_private() })
-
 		// Ah ah! Parker, if you're going to ask a question, you better stick
 		// around for the answer. Next to me, Parker! Rest of the walk. Sko!
 		// Next to me!! Move, Parker!!!
