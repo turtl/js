@@ -233,7 +233,18 @@ var turtl	=	{
 			window.port.send('set-height', height);
 		});
 
-		window.port.bind('gen-rsa-key', function() {
+		window.port.bind('generate-rsa-keypair', function() {
+			tcrypt.generate_rsa_keypair({
+				success: function(pub, priv) {
+					window.port.send('rsa-keypair', {
+						public: tcrypt.rsa_key_to_string(pub),
+						private: tcrypt.rsa_key_to_string(priv);
+					});
+				},
+				error: function(err) {
+					window.port.send('rsa-keygen-error', err);
+				}
+			});
 		});
 	},
 
