@@ -240,7 +240,7 @@ var tcrypt = {
 	/**
 	 * Serializes an RSAKey object into a string.
 	 */
-	rsa_key_to_string: function(rsakey)
+	rsa_key_to_json: function(rsakey)
 	{
 		var n	=	rsakey.get_modulus();
 		var e	=	rsakey.get_exponent_public();
@@ -250,15 +250,15 @@ var tcrypt = {
 		if(e) obj.e = e;
 		if(d) obj.d = d;
 
-		return JSON.encode(obj);
+		return obj;
 	},
 
 	/**
 	 * Deserializes a string into a RSAKey object.
 	 */
-	rsa_key_from_string: function(rsakey_str)
+	rsa_key_from_json: function(rsakey_obj)
 	{
-		var obj	=	JSON.decode(rsakey_str);
+		var obj	=	rsakey_obj;
 		var n	=	obj.n;
 		var e	=	obj.e;
 		var d	=	obj.d;
@@ -268,6 +268,11 @@ var tcrypt = {
 		return key;
 	},
 
+	/**
+	 * Generate an RSA keypair asynchronously. Does the work in a Worker thread
+	 * so we don't block the browser for 8 years while generating. Calls
+	 * options.success when finished, options.error on error.
+	 */
 	generate_rsa_keypair: function(options)
 	{
 		options || (options = {});
@@ -277,14 +282,19 @@ var tcrypt = {
 		// Next to me!! Move, Parker!!!
 		if(!options.success) return false;
 
-		// hijack success to return split pub.priv keys
+		// hijack success to return split pub/priv keys (if requested);
 		var _success	=	options.success;
 		options.success	=	function(rsakey)
 		{
-			var modulus	=	rsakey.get_modulus();
-			var pubkey	=	new RSAKey({ n: modulus, e: rsakey.get_exponent_public() });
-			var privkey	=	new RSAKey({ n: modulus, d: rsakey.get_exponent_private() });
-			_success(pubkey, privkey);
+			if(options.split)
+			{
+				var split	=	tcrypt.split_rsa_key(rsakey);
+				_success(split.public, split.private);
+			}
+			else
+			{
+				_success(rsakey);
+			}
 		};
 
 		if(options.len !== 2048 || options.len !== 3072)
@@ -373,5 +383,18 @@ var tcrypt = {
 
 		// Actually start the generation process
 		generate_prime_threaded(e, nlen, generate_p_complete, false);
+	},
+
+	/**
+	 * Take a full RSA key and split it into its public/private components.
+	 * Returns an object holding two RSAKey objects:
+	 *   {public: RSAKey, private: RSAKey}
+	 */
+	split_rsa_key: function(rsakey)
+	{
+		var modulus	=	rsakey.get_modulus();
+		var pubkey	=	new RSAKey({ n: modulus, e: rsakey.get_exponent_public() });
+		var privkey	=	new RSAKey({ n: modulus, d: rsakey.get_exponent_private() });
+		return {public: pubkey, private: privkey};
 	}
 };
