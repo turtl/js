@@ -58,42 +58,36 @@ var Invite = Composer.Model.extend({
 		var item_key	=	tcrypt.key_to_bin(this.get('item_key'));
 		var item_id		=	this.get('item_id');
 
-		persona.get_challenge({
-			success: function(challenge) {
-				turtl.api.post('/invites/accepted/'+this.id(), {
-					code: this.get('code'),
-					persona: persona.id(),
-					challenge: persona.generate_response(challenge)
-				}, {
-					success: function(res) {
-						// we have no more use for this invite
-						if(window.port) window.port.send('invite-remove', this.id());
+		turtl.api.post('/invites/accepted/'+this.id(), {
+			code: this.get('code'),
+			persona: persona.id()
+		}, {
+			success: function(res) {
+				// we have no more use for this invite
+				if(window.port) window.port.send('invite-remove', this.id());
 
-						// if we have an item id/key, save them to the user's
-						// keychain
-						if(item_key && item_id)
-						{
-							turtl.user.add_user_key(item_id, item_key);
-						}
+				// if we have an item id/key, save them to the user's
+				// keychain
+				if(item_key && item_id)
+				{
+					turtl.user.add_user_key(item_id, item_key);
+				}
 
-						switch(this.get('type'))
-						{
-						case 'b':
-							var board	=	new Board({id: item_id});
-							board.key	=	item_key;
-							var _notes = res.notes;
-							delete res.notes;
-							res.shared	=	true;
-							board.set(res);
-							turtl.profile.get('boards').add(board);
-							board.update_notes(_notes);
-							break;
-						}
+				switch(this.get('type'))
+				{
+				case 'b':
+					var board	=	new Board({id: item_id});
+					board.key	=	item_key;
+					var _notes = res.notes;
+					delete res.notes;
+					res.shared	=	true;
+					board.set(res);
+					turtl.profile.get('boards').add(board);
+					board.update_notes(_notes);
+					break;
+				}
 
-						if(options.success) options.success();
-					}.bind(this),
-					error: options.error
-				});
+				if(options.success) options.success();
 			}.bind(this),
 			error: options.error
 		});
@@ -101,20 +95,14 @@ var Invite = Composer.Model.extend({
 
 	deny: function(persona, options)
 	{
-		persona.get_challenge({
-			success: function(challenge) {
-				turtl.api.post('/invites/denied/'+this.id(), {
-					code: this.get('code'),
-					persona: persona.id(),
-					challenge: persona.generate_response(challenge)
-				}, {
-					success: function() {
-						// we have no more use for this invite
-						if(window.port) window.port.send('invite-remove', this.id());
-						if(options.success) options.success();
-					}.bind(this),
-					error: options.error
-				});
+		turtl.api.post('/invites/denied/'+this.id(), {
+			code: this.get('code'),
+			persona: persona.id()
+		}, {
+			success: function() {
+				// we have no more use for this invite
+				if(window.port) window.port.send('invite-remove', this.id());
+				if(options.success) options.success();
 			}.bind(this),
 			error: options.error
 		});
@@ -139,27 +127,21 @@ var BoardInvite = Invite.extend({
 		var encrypting_pass	=	encdata.encrypting_pass;
 		var used_secret		=	encdata.used_secret;
 
-		from_persona.get_challenge({
-			success: function(challenge) {
-				turtl.api.post('/invites/boards/'+board.id(), {
-					persona: from_persona.id(),
-					challenge: from_persona.generate_response(challenge),
-					to: this.get('email'),
-					key: encrypting_pass,
-					board_key: encrypted_key,
-					used_secret: used_secret ? 1 : 0
-				}, {
-					success: function(invite) {
-						if(invite.priv)
-						{
-							var privs			=	Object.clone(board.get('privs', {}));
-							privs[invite.id]	=	invite.priv;
-							board.set({privs: privs});
-						}
-						if(options.success) options.success(invite);
-					}.bind(this),
-					error: options.error
-				});
+		turtl.api.post('/invites/boards/'+board.id(), {
+			persona: from_persona.id(),
+			to: this.get('email'),
+			key: encrypting_pass,
+			board_key: encrypted_key,
+			used_secret: used_secret ? 1 : 0
+		}, {
+			success: function(invite) {
+				if(invite.priv)
+				{
+					var privs			=	Object.clone(board.get('privs', {}));
+					privs[invite.id]	=	invite.priv;
+					board.set({privs: privs});
+				}
+				if(options.success) options.success(invite);
 			}.bind(this),
 			error: options.error
 		});

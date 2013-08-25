@@ -401,18 +401,13 @@ var ProtectedShared = Protected.extend({
 
 	decrypt_key: function(decrypting_key, encrypted_key)
 	{
-		// JL NOTE ~ LOL
-		/*
-		if(typeOf(encrypted_key) == 'string')
-		{
-			encrypted_key	=	CryptoJS.enc.Hex.parse(encrypted_key);
-		}
-		*/
+		encrypted_key	=	tcrypt.key_to_bin(encrypted_key);
 		return encrypted_key;
 	},
 
 	encrypt_key: function(key, key_to_encrypt)
 	{
+		key_to_encrypt	=	tcrypt.key_to_string(key_to_encrypt);
 		return key_to_encrypt;
 	},
 

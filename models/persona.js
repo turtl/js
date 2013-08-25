@@ -35,55 +35,6 @@ var Persona = Composer.Model.extend({
 		}.bind(this), 'persona:user:cleanup');
 	},
 
-	load_profile: function(options)
-	{
-		this.get_challenge({
-			success: function(challenge) {
-				turtl.api.get('/profiles/personas/'+this.id(), {challenge: this.generate_response(challenge)}, {
-					success: function(profile) {
-						// mark shared boards as such
-						profile.boards.each(function(board) {
-							board.shared	=	true;
-						});
-
-						// add the boards to the profile
-						turtl.profile.load(profile, {
-							complete: function() {
-								if(options.success) options.success();
-							}
-						});
-					}.bind(this),
-					error: options.error
-				})
-			}.bind(this),
-			error: options.error
-		});
-	},
-
-	sync_data: function(sync_time, options)
-	{
-		options || (options = {});
-
-		turtl.api.post('/sync/personas/'+this.id(), {
-			time: sync_time,
-			challenge: this.generate_response(this.challenge)
-		}, {
-			success: function(sync) {
-				turtl.profile.process_sync(sync);
-			},
-			error: function(err, xhr) {
-				if(xhr.status == 403 && !options.retry)
-				{
-					// mah, message sync will generate a new persistent
-				}
-				else
-				{
-					barfr.barf('Error syncing persona profile with server: '+ err);
-				}
-			}
-		});
-	},
-
 	destroy_persona: function(options)
 	{
 		options || (options = {});
@@ -160,6 +111,128 @@ var Persona = Composer.Model.extend({
 		return tcrypt.hash(secret + challenge);
 	},
 
+	get_messages: function(options)
+	{
+		options || (options = {});
+		if(!options.after)
+		{
+			var last = turtl.messages.models().filter(function() { return true; }).sort(function(a, b) {
+				return a.id().localeCompare(b.id());
+			})[0];
+			if(last) options.after = last.id();
+		}
+
+		turtl.api.get('/messages/personas/'+this.id(), {after: options.after}, {
+			success: function(res) {
+				var my_personas	=	turtl.user.get('personas');
+
+				// add our messages into the pool
+				turtl.messages.add(res.received);
+				// messages we sent have the "to" persona replaced with our own for
+				// display purposes
+				turtl.messages.add((res.sent || []).map(function(sent) {
+					var persona		=	my_personas.find_by_id(sent.from);
+					if(!persona) return false;
+					sent.persona	=	persona.toJSON();
+					sent.mine		=	true;	// let the app know WE sent it
+					return sent;
+				}));
+				if(options.success) options.success(res, this);
+			}.bind(this),
+			error: options.error
+		});
+	},
+
+	send_message: function(message, options)
+	{
+		options || (options = {});
+		message.save({
+			success: function() {
+				if(options.success) options.success();
+			},
+			error: function(err) {
+				if(options.error) options.error(err);
+			}
+		});
+	},
+
+	delete_message: function(message, options)
+	{
+		options || (options = {});
+		message.destroy({
+			args: {
+				persona: this.id()
+			},
+			success: function() {
+				if(options.success) options.success();
+			},
+			error: function(_, err) {
+				if(options.error) options.error(err);
+			}
+		});
+	}
+}, Protected);
+
+var Personas = Composer.Collection.extend({
+	model: Persona
+});
+
+/**
+ * Entirely unused model. A relic from the time when normal personas were
+ * obscured from the account. Now, personas just have a user_id field. This
+ * model is kept around for the sole purposes of offering obscured personas in
+ * the future, and will be built on top of regular personas (not replace them).
+ */
+var PersonaPrivate	=	Persona.extend({
+	load_profile: function(options)
+	{
+		this.get_challenge({
+			success: function(challenge) {
+				turtl.api.get('/profiles/personas/'+this.id(), {challenge: this.generate_response(challenge)}, {
+					success: function(profile) {
+						// mark shared boards as such
+						profile.boards.each(function(board) {
+							board.shared	=	true;
+						});
+
+						// add the boards to the profile
+						turtl.profile.load(profile, {
+							complete: function() {
+								if(options.success) options.success();
+							}
+						});
+					}.bind(this),
+					error: options.error
+				})
+			}.bind(this),
+			error: options.error
+		});
+	},
+
+	sync_data: function(sync_time, options)
+	{
+		options || (options = {});
+
+		turtl.api.post('/sync/personas/'+this.id(), {
+			time: sync_time,
+			challenge: this.generate_response(this.challenge)
+		}, {
+			success: function(sync) {
+				turtl.profile.process_sync(sync);
+			},
+			error: function(err, xhr) {
+				if(xhr.status == 403 && !options.retry)
+				{
+					// mah, message sync will generate a new persistent
+				}
+				else
+				{
+					barfr.barf('Error syncing persona profile with server: '+ err);
+				}
+			}
+		});
+	},
+
 	get_messages: function(challenge, options)
 	{
 		options || (options = {});
@@ -224,50 +297,7 @@ var Persona = Composer.Model.extend({
 				}
 			}.bind(this)
 		});
-	},
-
-	send_message: function(message, options)
-	{
-		options || (options = {});
-		this.get_challenge({
-			success: function(challenge) {
-				message.save({
-					args: { challenge: this.generate_response(challenge) },
-					success: function() {
-						if(options.success) options.success();
-					},
-					error: function(err) {
-						if(options.error) options.error(err);
-					}
-				});
-			}.bind(this),
-			error: options.error
-		})
-	},
-
-	delete_message: function(message, options)
-	{
-		options || (options = {});
-		this.get_challenge({
-			success: function(challenge) {
-				message.destroy({
-					args: {
-						challenge: this.generate_response(challenge),
-						persona: this.id()
-					},
-					success: function() {
-						if(options.success) options.success();
-					},
-					error: function(_, err) {
-						if(options.error) options.error(err);
-					}
-				});
-			}.bind(this),
-			error: options.error
-		});
 	}
-}, Protected);
-
-var Personas = Composer.Collection.extend({
-	model: Persona
 });
+
+

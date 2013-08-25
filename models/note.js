@@ -94,23 +94,13 @@ var Note = Composer.RelationalModel.extend({
 			return false;
 		}
 
+		do_save();
+
 		if(board.get('shared', false))
 		{
-			var persona	=	board.get_shared_persona();
-			persona.get_challenge({
-				use_persistent: true,
-				success: function(challenge) {
-					args.persona	=	persona.id();
-					args.challenge	=	persona.generate_response(challenge);
-					do_save();
-				}.bind(this),
-				error: options.error
-			});
+			args.persona	=	persona.id();
 		}
-		else
-		{
-			do_save();
-		}
+		do_save();
 	},
 
 	destroy: function(options)
@@ -138,21 +128,9 @@ var Note = Composer.RelationalModel.extend({
 
 		if(board.get('shared', false) && !options.skip_sync)
 		{
-			var persona	=	board.get_shared_persona();
-			persona.get_challenge({
-				use_persistent: true,
-				success: function(challenge) {
-					args.persona	=	persona.id();
-					args.challenge	=	persona.generate_response(challenge);
-					do_destroy();
-				}.bind(this),
-				error: options.error
-			});
+			args.persona	=	persona.id();
 		}
-		else
-		{
-			do_destroy();
-		}
+		do_destroy();
 	},
 
 	find_key: function(keys, search, options)

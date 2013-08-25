@@ -120,59 +120,12 @@ var Profile = Composer.RelationalModel.extend({
 		options || (options = {});
 		this.load_data({
 			init: true,
-			success: function(_, from_storage) {
-				turtl.user.load_personas({
-					success: function(prof) {
-						// message data can be loaded independently once personas
-						// are loaded, so do it
-						turtl.messages.sync();
-
-						// this function gets called when all profile/persona data
-						// has been loaded
-						var finish	=	function()
-						{
-							this.trigger('loaded');
-							if(options.complete) options.complete();
-						}.bind(this);
-
-						var num_personas	=	turtl.user.get('personas').models().length;
-
-						// if we loaded from storage, we already have all the
-						// persona profile junk, so don't bother loading it
-						if(num_personas > 0 && !from_storage)
-						{
-							// wait for all personas to load their profiles before
-							// finishing the load
-							var i		=	0;
-							var track	=	function()
-							{
-								i++;
-								if(i >= num_personas) finish();
-							};
-
-							// loop over each persona and load its profile data
-							turtl.user.get('personas').each(function(p) {
-								p.load_profile({
-									success: function() {
-										track();
-									},
-									error: function(err) {
-										barfr.barf('Error loading the profile data for your persona "'+p.get('email')+'":'+ err);
-										// don't want to freeze the app just because one
-										// persona doesn't load, do we?
-										track();
-									}
-								});
-							});
-						}
-						else
-						{
-							// no personas to load (or we loaded all the profile
-							// data from locstor newayz), just finish up the load
-							finish();
-						}
-					}.bind(this)
-				});
+			success: function() {
+				// message data can be loaded independently once personas
+				// are loaded, so do it
+				turtl.messages.sync();
+				this.trigger('loaded');
+				if(options.complete) options.complete();
 			}.bind(this)
 		});
 	},

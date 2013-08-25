@@ -233,30 +233,23 @@ var Board = Composer.RelationalModel.extend({
 	{
 		options || (options = {});
 
-		persona.get_challenge({
-			success: function(challenge) {
-				turtl.api.put('/boards/'+this.id()+'/persona/'+persona.id(), {
-					challenge: persona.generate_response(challenge)
-				}, {
-					success: function(board) {
-						// save the board key into the user's data
-						turtl.user.add_user_key(this.id(), this.key);
-						var _notes = board.notes;
-						delete board.notes;
-						board.shared	=	true;
-						this.set(board);
+		turtl.api.put('/boards/'+this.id()+'/persona/'+persona.id(), {}, {
+			success: function(board) {
+				// save the board key into the user's data
+				turtl.user.add_user_key(this.id(), this.key);
+				var _notes = board.notes;
+				delete board.notes;
+				board.shared	=	true;
+				this.set(board);
 
-						// add this project to the end of the user's list
-						var sort		=	Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
-						sort[this.id()]	=	99999;
-						turtl.user.get('settings').get_by_key('board_sort').value(sort);
+				// add this project to the end of the user's list
+				var sort		=	Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
+				sort[this.id()]	=	99999;
+				turtl.user.get('settings').get_by_key('board_sort').value(sort);
 
-						turtl.profile.get('boards').add(this);
-						this.update_notes(_notes);
-						if(options.success) options.success();
-					}.bind(this),
-					error: options.error
-				});
+				turtl.profile.get('boards').add(this);
+				this.update_notes(_notes);
+				if(options.success) options.success();
 			}.bind(this),
 			error: options.error
 		});
@@ -266,24 +259,15 @@ var Board = Composer.RelationalModel.extend({
 	{
 		options || (options = {});
 
-		persona.get_challenge({
-			success: function(challenge) {
-				turtl.api._delete('/boards/'+this.id()+'/persona/'+persona.id(), {
-					challenge: persona.generate_response(challenge)
-				}, {
-					success: function() {
-						this.destroy({skip_sync: true});
+		turtl.api._delete('/boards/'+this.id()+'/persona/'+persona.id(), {}, {
+			success: function() {
+				this.destroy({skip_sync: true});
 
-						if(options.success) options.success();
-					}.bind(this),
-					error: function(err) {
-						if(options.error) options.error(err);
-					}
-				});
+				if(options.success) options.success();
 			}.bind(this),
 			error: function(err) {
 				if(options.error) options.error(err);
-			}.bind(this)
+			}
 		});
 	},
 

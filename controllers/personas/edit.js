@@ -101,8 +101,6 @@ var PersonaEditController = Composer.Controller.extend({
 		{
 			set.pubkey	=	false;
 			set.privkey	=	false;
-			set.secret	=	this.model.generate_secret(turtl.user.get_key());
-			args.secret	=	set.secret;
 		}
 		this.model.set(set);
 		turtl.loading(true);
@@ -130,25 +128,7 @@ var PersonaEditController = Composer.Controller.extend({
 				}.bind(this)
 			});
 		}.bind(this);
-		if(is_new)
-		{
-			do_save();
-		}
-		else
-		{
-			this.model.get_challenge({
-				success: function(res) {
-					var challenge = res;
-					// set the challenge/response into the args sent with the save.
-					// this lets the server know we own the persona.
-					args.challenge = this.model.generate_response(challenge);
-					do_save();
-				}.bind(this),
-				error: function(err, xhr) {
-					barfr.barf('There was a problem verifying your ownership of this persona: '+ err);
-				}.bind(this)
-			});
-		}
+		do_save();
 	},
 
 	get_email: function()
