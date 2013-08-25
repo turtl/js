@@ -301,19 +301,34 @@ var Profile = Composer.RelationalModel.extend({
 				user: turtl.user.toJSON(),
 				boards: []
 			};
+
+			var finish_persist	=	function()
+			{
+				var tsnow	=	Math.floor(new Date().getTime()/1000);
+				store.time	=	this.get('sync_time', tsnow);
+				if(window.port) window.port.send('profile-save', store);
+
+				if(!turtl.mirror) return false;
+
+				localStorage['profile:user:'+turtl.user.id()]	=	JSON.encode(store);
+				localStorage['scheme_version']					=	config.mirror_scheme_version;
+			}.bind(this);
+
+			var boards			=	turtl.profile.get('boards');	// clone
+			var num_boards		=	boards.models().length;
+			var num_finished	=	0;
 			turtl.profile.get('boards').each(function(board) {
-				var boardobj	=	board.toJSON();
-				boardobj.notes	=	board.get('notes').toJSON();
-				store.boards.push(boardobj);
-			});
-			var tsnow	=	Math.floor(new Date().getTime()/1000);
-			store.time	=	this.get('sync_time', tsnow);
-			if(window.port) window.port.send('profile-save', store);
-
-			if(!turtl.mirror) return false;
-
-			localStorage['profile:user:'+turtl.user.id()]	=	JSON.encode(store);
-			localStorage['scheme_version']					=	config.mirror_scheme_version;
+				board.get('notes').toJSONAsync(function(notes) {
+					var boardobj	=	board.toJSON();
+					boardobj.notes	=	notes;
+					store.boards.push(boardobj);
+					num_finished++;
+					if(num_finished >= num_boards)
+					{
+						finish_persist();
+					}
+				}.bind(this));
+			}.bind(this));
 		}.bind(this);
 
 		if(options.now)

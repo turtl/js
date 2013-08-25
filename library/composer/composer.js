@@ -632,6 +632,17 @@
 		},
 
 		/**
+		 * generally called by Collection.toJSONAsync. just wraps Model.toJSON,
+		 * async, but can be extended.
+		 */
+		toJSONAsync: function(finish_cb)
+		{
+			(function() {
+				finish_cb(this.toJSON());
+			}).delay(0, this);
+		},
+
+		/**
 		 * validate the model using its validation function (if it exists)
 		 */
 		perform_validation: function(data, options)
@@ -788,6 +799,37 @@
 		toJSON: function()
 		{
 			return this.models().map( function(model) { return model.toJSON(); } );
+		},
+
+		/**
+		 * clone each model in this collection aynchronously, passing the final
+		 * result to the given finish cb.
+		 */
+		toJSONAsync: function(finish_cb)
+		{
+			// clone models
+			var models	=	this.models().slice(0);
+			var results	=	[];
+			var local_finish_cb	=	function(obj)
+			{
+				results.push(obj);
+				if(results.length >= models.length)
+				{
+					finish_cb(results);
+				}
+			};
+
+			// do it!
+			if(models.length > 0)
+			{
+				models.each(function(model) {
+					model.toJSONAsync(local_finish_cb);
+				});
+			}
+			else
+			{
+				finish_cb([]);
+			}
 		},
 
 		/**
@@ -2023,12 +2065,7 @@
 	// do a shallow clone of an array
 	var shallow_array_clone	=	function(from)
 	{
-		var to	=	new Array();
-		for(i in from)
-		{
-			to[i]	=	from[i];
-		}
-		return to;
+		return from.slice(0);
 	};
 
 	// Composer equality function. It replaces _.eq, which wasn't able to tell

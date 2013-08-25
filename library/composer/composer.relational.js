@@ -34,6 +34,10 @@
 		relations: false,
 		relation_data: {},
 
+		// if true, toJSON will just call Model.toJSON instead of serializing
+		// the relational data
+		skip_relational_serialize: false,
+
 		initialize: function(data, options)
 		{
 			options || (options = {});
@@ -91,13 +95,52 @@
 		toJSON: function()
 		{
 			// modify the underlying data to match the data of the relational models
-			Object.each(this.relations, function(relation, k) {
-				var obj	=	this._get_key(this.relation_data, k);
-				if(obj) this._set_key(this.data, k, obj.toJSON());
-			}, this);
+			if(!this.skip_relational_serialize)
+			{
+				Object.each(this.relations, function(relation, k) {
+					var obj	=	this._get_key(this.relation_data, k);
+					if(obj) this._set_key(this.data, k, obj.toJSON());
+				}, this);
+			}
 
 			// call Model.toJSON()
 			return this.parent();
+		},
+
+		toJSONAsync: function(finish_cb)
+		{
+			var result			=	{};
+			var num_relations	=	0;
+			var num_results		=	0;
+			Object.each(this.relations, function(relation, k) {
+				num_relations++;
+				var obj	=	this._get_key(this.relation_data, k);
+				if(obj)
+				{
+					obj.toJSONAsync(function(data) {
+						// like RelationalModel.toJSON, works by populating this.data
+						// then calling toJSON
+						this._set_key(this.data, k, data);
+						num_results++;
+						if(num_results >= num_relations)
+						{
+							(function() {
+								// disable relational serializing (otherwise
+								// we'll just end up doing a sync serialization)
+								this.skip_relational_serialize	=	true;
+								var data	=	this.toJSON();
+								this.skip_relational_serialize	=	false;
+								finish_cb(data);
+							}).delay(0, this);
+						}
+					}.bind(this));
+				}
+				else
+				{
+					// didn't get a real object, so don't count it
+					num_relations--;
+				}
+			}, this);
 		},
 
 		set: function(data, options)
