@@ -94,8 +94,6 @@ var Note = Composer.RelationalModel.extend({
 			return false;
 		}
 
-		do_save();
-
 		if(board.get('shared', false))
 		{
 			args.persona	=	persona.id();
