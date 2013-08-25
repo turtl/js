@@ -301,11 +301,6 @@ var Protected = Composer.RelationalModel.extend({
 			key	=	turtl.user.find_user_key(this.id());
 		}
 
-		// do more complicated user key search
-		if(!key)
-		{
-		}
-
 		return key;
 	},
 
@@ -385,8 +380,9 @@ var ProtectedShared = Protected.extend({
 	deserialize: function(data, parentobj)
 	{
 		var search	=	{
-			a: turtl.user.get('personas').map(function(p) {
-				return {id: p.id(), k: p.get('privkey')};
+			p: turtl.user.get('personas').map(function(p) {
+				//return {id: p.id(), k: p.get('privkey')};
+				return {id: p.id(), k: true};
 			})
 		};
 		this.key	=	this.find_key(parentobj.keys, search);
@@ -414,7 +410,7 @@ var ProtectedShared = Protected.extend({
 	add_recipient: function(persona)
 	{
 		this.recipients.push({
-			a: persona.id(),
+			p: persona.id(),
 			k: persona.get('pubkey')
 		});
 		this.generate_subkeys(this.recipients, {skip_user_key: true});
