@@ -21,10 +21,11 @@
 		<? if(personas.length > 0 || invites.length > 0) { ?>
 			<ul>
 				<? personas.each(function(p) { ?>
+					<? if(!p || !p.privs || !p.privs.p) { return; } ?>
 					<li class="persona_<?=p.id?> clear">
 						<h3>
 							<?=p.email?>
-							<? if(p.privs.i) { ?>
+							<? if(p.privs && p.privs.i) { ?>
 								<small>- invite pending</small>
 							<? } ?>
 						</h3>

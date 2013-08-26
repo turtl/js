@@ -222,7 +222,14 @@ var Board = Composer.RelationalModel.extend({
 		permissions	=	parseInt(permissions);
 
 		turtl.api.put('/boards/'+this.id()+'/invites/persona/'+persona.id(), {permissions: permissions}, {
-			success: options.success,
+			success: function(priv) {
+				var privs	=	Object.clone(this.get('privs', {}));
+				privs[persona.id()]	=	priv;
+				this.set({privs: privs});
+				this.get('personas').add(persona);
+				turtl.profile.track_sync_changes(this.id());
+				if(options.success) options.success.apply(this, arguments);
+			}.bind(this),
 			error: function(err) {
 				if(options.error) options.error(err);
 			}
@@ -235,6 +242,15 @@ var Board = Composer.RelationalModel.extend({
 
 		turtl.api.put('/boards/'+this.id()+'/persona/'+persona.id(), {}, {
 			success: function(board) {
+				console.log('found: ', board.id, turtl.profile.get('boards').find_by_id(board.id));
+				if(turtl.profile.get('boards').find_by_id(board.id))
+				{
+					// board's already shared with them, must be a double invite.
+					// ignore.
+					if(options.success) options.success();
+					return;
+				}
+
 				// save the board key into the user's data
 				turtl.user.add_user_key(this.id(), this.key);
 				var _notes = board.notes;
@@ -299,7 +315,7 @@ var Board = Composer.RelationalModel.extend({
 		var shared	=	false;
 		var privs	=	this.get('privs');
 		Object.each(privs, function(v, k) {
-			if(v.p > 0 && !v.d) shared	=	true;
+			if(v && v.p > 0 && !v.d) shared	=	true;
 		});
 		return shared;
 	},

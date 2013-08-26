@@ -158,6 +158,7 @@ ul.note_list.list_grid .note a.img {display: table-cell; width: 182px; max-width
 
 /* masonry */
 ul.note_list.list_masonry > li {
+	position: absolute;		/* makes masonry JS a bit faster */
 	float: left;
 	display: block;
 	width: 200px;

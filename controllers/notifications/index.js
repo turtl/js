@@ -137,9 +137,11 @@ var NotificationsController = Composer.Controller.extend({
 				success: function() {
 					turtl.loading(false);
 					// removeing the message from turtl.messages isn't necessary,
-					// but is less visually jarring.
+					// but is less visually jarring since otherwise we'd have to
+					// wait for a sync to remove it
 					turtl.messages.remove(message);
 
+					// actually delete the message
 					persona.delete_message(message);
 					barfr.barf('Invite accepted!');
 				}.bind(this),

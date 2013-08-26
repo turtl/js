@@ -196,10 +196,6 @@ var BoardShareController = Composer.Controller.extend({
 						turtl.loading(false);
 						barfr.barf('Invite sent.');
 						this.share_container.removeClass('open');
-						var privs	=	Object.clone(this.board.get('privs', {}));
-						privs[this.to_persona.id()] = {p: perms, i: true};
-						this.board.set({privs: privs});
-						this.board.get('personas').add(this.to_persona);
 
 						this.persona_selector.persona	=	new Persona();
 						this.persona_selector.render();
