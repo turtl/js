@@ -10,7 +10,8 @@ var NotesController = TrackController.extend({
 		'click ul.list-type a': 'change_list_type',
 		'keyup input[name=search]': 'do_text_search',
 		'focus input[name=search]': 'search_focus',
-		'blur input[name=search]': 'search_blur'
+		'blur input[name=search]': 'search_blur',
+		'click a[href=#clear-filters]': 'clear_filters'
 	},
 
 	board: null,
@@ -400,8 +401,9 @@ var NotesController = TrackController.extend({
 		turtl.keyboard.attach(); // re-enable shortcuts
 	},
 
-	clear_filters: function()
+	clear_filters: function(e)
 	{
+		if(e) e.stop();
 		this.search_text	=	'';
 		this.inp_search.set('value', '');
 		this.board.get('tags').each(function(t) {
