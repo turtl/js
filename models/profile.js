@@ -31,10 +31,12 @@ var Profile = Composer.RelationalModel.extend({
 		{
 			if(window.port) window.port.send('profile-mod');
 		};
+		/*
 		this.bind_relational('boards', ['add', 'remove', 'reset', 'change', 'note_change'], function() {
 			this.persist();
 			profile_mod_timer.start();
 		}.bind(this));
+		*/
 		this.persist_timer		=	new Timer(200);
 		this.persist_timer.end	=	false;
 	},
@@ -180,11 +182,7 @@ var Profile = Composer.RelationalModel.extend({
 			}.bind(this)
 		});
 
-		turtl.messages.sync({
-			success: function(_, persona) {
-				persona.sync_data(sync_time);
-			}
-		});
+		turtl.messages.sync();
 	},
 
 	process_sync: function(sync, options)
@@ -225,7 +223,6 @@ var Profile = Composer.RelationalModel.extend({
 				turtl.profile.get('boards').upsert(new Board(board_data));
 			}
 		}.bind(this));
-		this.persist(options);
 
 		sync.notes.each(function(note_data) {
 			// don't sync ignored items
@@ -274,6 +271,8 @@ var Profile = Composer.RelationalModel.extend({
 				newboard.get('notes').add(note_data);
 			}
 		}.bind(this));
+
+		//this.persist(options);
 	},
 
 	get_sync_time: function()

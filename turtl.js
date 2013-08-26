@@ -130,7 +130,7 @@ var turtl	=	{
 					turtl.show_loading_screen(false);
 					this.controllers.pages.release_current();
 					this.last_url = '';
-					turtl.profile.persist();
+					//turtl.profile.persist();
 					this.search.reindex();
 					var initial_route	=	options.initial_route || '';
 					if(initial_route.match(/^\/users\//)) initial_route = '/';

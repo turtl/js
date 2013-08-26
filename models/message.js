@@ -62,7 +62,7 @@ var Messages = Composer.Collection.extend({
 	{
 		options || (options = {});
 		turtl.user.get('personas').each(function(persona) {
-			persona.get_messages(persona.challenge, {
+			persona.get_messages({
 				after: this.last_id,
 				success: options.success,
 				error: function(err, xhr) {

@@ -175,7 +175,7 @@ var User	=	Composer.RelationalModel.extend({
 				barfr.barf('There was an error saving your user settings:'+ err);
 			}.bind(this)
 		});
-		turtl.profile.persist({now: true});
+		//turtl.profile.persist({now: true});
 	},
 
 	get_key: function()

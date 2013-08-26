@@ -163,8 +163,11 @@ var PersonaSelector = Composer.Controller.extend({
 			}.bind(this));
 			this.trigger('show-invite');
 		}
+
+		if(!this.persona_list) return;
+
 		this.persona_list.bind('release', function() {
-			this.inp_email.set('value', '');
+			if(this.inp_email) this.inp_email.set('value', '');
 		}.bind(this), 'personas:selector:list:release');
 	}
 });

@@ -123,6 +123,7 @@ var BoardShareController = Composer.Controller.extend({
 			this.inp_submit.disabled	=	false;
 			this.invite	=	true;
 			this.persona_selector.persona_list.bind('sent', function() {
+				// close the share container and re-render
 				this.share_container.addClass('open');
 				this.open_share();
 			}.bind(this));
@@ -204,6 +205,7 @@ var BoardShareController = Composer.Controller.extend({
 						this.persona_selector.render();
 
 						this.to_persona	=	null;
+						this.render();
 					}.bind(this),
 					error: function() {
 						turtl.loading(false);
