@@ -149,6 +149,7 @@ var PersonaSelector = Composer.Controller.extend({
 				personas: personas,
 				hide_edit: true
 			});
+			this.el.getElement('.personas-list > ul > li').click();
 			this.trigger('show-personas');
 		}
 		else if(this.is_valid_email(this.get_email()))
