@@ -201,6 +201,29 @@ var Profile = Composer.RelationalModel.extend({
 			turtl.user.set(sync.user);
 		}
 
+		sync.personas.each(function(persona_data) {
+			// don't sync ignored items
+			if(this.sync_ignore.contains(persona_data.id))
+			{
+				this.sync_ignore.erase(persona_data.id);
+				return false;
+			}
+
+			var persona	=	turtl.user.get('personas').find_by_id(persona_data.id);
+			if(persona_data.deleted)
+			{
+				if(persona) persona.destroy({skip_sync: true});
+			}
+			else if(persona)
+			{
+				persona.set(persona_data);
+			}
+			else
+			{
+				turtl.user.get('personas').upsert(new Persona(persona_data));
+			}
+		}.bind(this));
+
 		sync.boards.each(function(board_data) {
 			// don't sync ignored items
 			if(this.sync_ignore.contains(board_data.id))
