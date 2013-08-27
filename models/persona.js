@@ -37,15 +37,7 @@ var Persona = Composer.Model.extend({
 
 	destroy_persona: function(options)
 	{
-		options || (options = {});
-		this.get_challenge({
-			success: function(res) {
-				var challenge = res;
-				options.args = {challenge: this.generate_response(challenge)};
-				this.destroy(options);
-			}.bind(this),
-			error: options.error
-		});
+		return this.destroy(options);
 	},
 
 	get_by_email: function(email, options)
