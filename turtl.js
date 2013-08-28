@@ -101,7 +101,7 @@ var turtl	=	{
 
 		this.loaded	=	true;
 		if(window.port) window.port.send('loaded');
-		this.route(initial_route);
+		if(!window._in_ext) this.route(initial_route);
 	},
 
 	setup_user: function(options)

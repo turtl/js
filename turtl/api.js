@@ -200,7 +200,7 @@ var Api	=	new Class({
 
 	send_request: function(request)
 	{
-		if(window._in_ext)
+		if(window._in_ext && !window._disable_api_tracker)
 		{
 			this.tracker.send(request);
 		}
