@@ -242,7 +242,7 @@ var Board = Composer.RelationalModel.extend({
 
 		turtl.api.put('/boards/'+this.id()+'/persona/'+persona.id(), {}, {
 			success: function(board) {
-				console.log('found: ', board.id, turtl.profile.get('boards').find_by_id(board.id));
+				//console.log('found: ', board.id, turtl.profile.get('boards').find_by_id(board.id));
 				if(turtl.profile.get('boards').find_by_id(board.id))
 				{
 					// board's already shared with them, must be a double invite.

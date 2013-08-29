@@ -1,6 +1,5 @@
 // MT1.11 Compat - who the fuck would remove these??
 //
-// $(this.main_container_selector).set('html', '');
 var $E = function(selector, filter){ return ($(filter) || document).getElement(selector); };
 var $ES = function(selector, filter){ return ($(filter) || document).getElements(selector); };
 
@@ -84,7 +83,9 @@ var turtl	=	{
 		this.keyboard	=	new Composer.Keyboard({meta_bind: true});
 
 		// set up our user object
-		this.setup_user({initial_route: initial_route});
+		this.user	=	new User();
+
+		this.setup_profile({initial_route: initial_route});
 
 		// if a user exists, log them in
 		if(window._in_ext)
@@ -104,17 +105,14 @@ var turtl	=	{
 		if(!window._in_ext) this.route(initial_route);
 	},
 
-	setup_user: function(options)
+	setup_profile: function(options)
 	{
 		options || (options = {});
-
-		// create the user model
-		this.user	=	new User();
 
 		// update the user_profiles collection on login
 		this.user.bind('login', function() {
 			// if the user is logged in, we'll put their auth info into the api object
-			if(!window._in_ext)
+			if(!window._in_ext && !window._disable_cookie)
 			{
 				this.user.bind('change', this.user.write_cookie.bind(this.user), 'user:write_changes_to_cookie');
 			}
@@ -128,17 +126,18 @@ var turtl	=	{
 			this.profile.initial_load({
 				complete: function() {
 					turtl.show_loading_screen(false);
-					this.controllers.pages.release_current();
-					this.last_url = '';
+					turtl.controllers.pages.release_current();
+					turtl.last_url = '';
 					//turtl.profile.persist();
-					this.search.reindex();
+					turtl.search.reindex();
 					var initial_route	=	options.initial_route || '';
 					if(initial_route.match(/^\/users\//)) initial_route = '/';
 					if(initial_route.match(/index.html/)) initial_route = '/';
 					if(initial_route.match(/background.html/)) initial_route = '/';
-					this.route(initial_route);
-					this.setup_syncing();
-					this.setup_background_panel();
+					if(!window._in_app) turtl.route(initial_route);
+					else dashboard.load();
+					turtl.setup_syncing();
+					turtl.setup_background_panel();
 					if(window.port) window.port.send('profile-load-complete');
 				}.bind(this)
 			});
@@ -152,15 +151,15 @@ var turtl	=	{
 			turtl.controllers.pages.release_current();
 			turtl.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
 			turtl.show_loading_screen(false);
-			this.user.unbind('change', 'user:write_changes_to_cookie');
+			turtl.user.unbind('change', 'user:write_changes_to_cookie');
 			turtl.api.clear_auth();
 			modal.close();
 
 			// this should give us a clean slate
-			this.user.unbind();
-			this.user	=	null;
-			this.setup_user();
-			this.setup_header_bar();
+			turtl.user.unbind();
+			turtl.user	=	new User();
+			turtl.setup_profile();
+			turtl.setup_header_bar();
 		}.bind(this));
 	},
 
@@ -197,7 +196,7 @@ var turtl	=	{
 		turtl.profile.get_sync_time();
 
 		// monitor for sync changes
-		if(turtl.sync && !window._in_ext)
+		if(turtl.sync && (!window._in_ext || window._in_background) && !window._in_app)
 		{
 			this.sync_timer = new Timer(10000);
 			this.sync_timer.end = function()
@@ -209,15 +208,22 @@ var turtl	=	{
 		}
 
 		// listen for syncing from addon
-		if(window.port) window.port.bind('profile-sync', function(sync) {
-			if(!sync) return false;
-			turtl.profile.process_sync(data_from_addon(sync));
-		});
+		if(window.port && !window._in_background)
+		{
+			window.port.bind('profile-sync', function(sync) {
+				if(!sync) return false;
+				console.log('sync from bg!');
+				turtl.profile.process_sync(data_from_addon(sync));
+			});
+		}
 
 		// set up manual syncing
-		if(window.port) window.port.bind('do-sync', function() {
-			turtl.profile.sync();
-		});
+		if(window.port && !window._in_app)
+		{
+			window.port.bind('do-sync', function() {
+				turtl.profile.sync();
+			});
+		}
 	},
 
 	setup_background_panel: function()
@@ -371,7 +377,6 @@ window.addEvent('domready', function() {
 	window.__api_url		=	window.__api_url || '';
 	window.__api_key		=	window.__api_key || '';
 	window._base_url		=	window._base_url || '';
-	turtl.main_container	=	$E(turtl.main_container_selector);
 	turtl.site_url			=	__site_url || '';
 	turtl.base_window_title	=	document.title.replace(/.*\|\s*/, '');
 	turtl.api				=	new Api(

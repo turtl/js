@@ -31,12 +31,10 @@ var Profile = Composer.RelationalModel.extend({
 		{
 			if(window.port) window.port.send('profile-mod');
 		};
-		/*
 		this.bind_relational('boards', ['add', 'remove', 'reset', 'change', 'note_change'], function() {
-			this.persist();
+			//this.persist();
 			profile_mod_timer.start();
 		}.bind(this));
-		*/
 		this.persist_timer		=	new Timer(200);
 		this.persist_timer.end	=	false;
 	},
@@ -190,7 +188,7 @@ var Profile = Composer.RelationalModel.extend({
 		options || (options = {});
 
 		// send synced data to addon
-		if(window.port && turtl.sync && sync)
+		if(window.port && window._in_background && turtl.sync && sync)
 		{
 			window.port.send('profile-sync', sync);
 		}
@@ -329,6 +327,8 @@ var Profile = Composer.RelationalModel.extend({
 				var tsnow	=	Math.floor(new Date().getTime()/1000);
 				store.time	=	this.get('sync_time', tsnow);
 				if(window.port) window.port.send('profile-save', store);
+
+				if(options.complete) options.complete(store);
 
 				if(!turtl.mirror) return false;
 
