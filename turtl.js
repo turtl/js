@@ -215,6 +215,7 @@ var turtl	=	{
 		{
 			window.port.bind('profile-sync', function(sync) {
 				if(!sync) return false;
+				if(!turtl.user || !turtl.user.logged_in) return false;
 				if(!console)
 				{
 					// ok, window got destroyed (via refresh maybe?) unbind our
