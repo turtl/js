@@ -49,7 +49,6 @@ var BookmarkController = Composer.Controller.extend({
 
 		this.profile.bind('change:current_board', function() {
 			var board = this.profile.get_current_board();
-
 			if(!board) return;
 
 			turtl.user.get('settings').get_by_key('last_board').value(board.id());

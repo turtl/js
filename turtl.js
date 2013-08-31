@@ -160,6 +160,8 @@ var turtl	=	{
 			turtl.user	=	new User();
 			turtl.setup_profile();
 			turtl.setup_header_bar();
+			turtl.profile.destroy();
+			turtl.profile	=	null;
 		}.bind(this));
 	},
 
@@ -201,28 +203,38 @@ var turtl	=	{
 			this.sync_timer = new Timer(10000);
 			this.sync_timer.end = function()
 			{
+				if(!turtl.user.logged_in) return false;
 				turtl.profile.sync();
 				this.sync_timer.start();
 			}.bind(this);
 			this.sync_timer.start();
 		}
 
-		// listen for syncing from addon
+		// listen for syncing from addon/background
 		if(window.port && !window._in_background)
 		{
 			window.port.bind('profile-sync', function(sync) {
 				if(!sync) return false;
-				console.log('sync from bg!');
+				if(!console)
+				{
+					// ok, window got destroyed (via refresh maybe?) unbind our
+					// listeners and let's never speak of this again.
+					// NOTE: this really only happens in chrome.
+					window.port.unbind();
+					return;
+				}
+				console.log('bg: sync: ', sync);
 				turtl.profile.process_sync(data_from_addon(sync));
 			});
 		}
 
 		// set up manual syncing
-		if(window.port && !window._in_app)
+		if(window.port && window._in_background)
 		{
 			window.port.bind('do-sync', function() {
+				this.sync_timer.reset();
 				turtl.profile.sync();
-			});
+			}.bind(this));
 		}
 	},
 

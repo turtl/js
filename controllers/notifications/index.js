@@ -17,6 +17,8 @@ var NotificationsController = Composer.Controller.extend({
 	{
 		var notifications = function()
 		{
+			if(!turtl.messages) return false;
+
 			this.render();
 			turtl.messages.bind(['add', 'remove', 'reset'], function() {
 				this.render()
@@ -44,7 +46,8 @@ var NotificationsController = Composer.Controller.extend({
 		{
 			turtl.user.bind('login', function() {
 				turtl.user.unbind('login', 'notifications:init:login');
-				notifications();
+				// delay in case this handler runs before turtl.messages is created
+				(function() { notifications(); }).delay(10, this);
 			}, 'notifications:init:login');
 		}
 	},

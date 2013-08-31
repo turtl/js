@@ -38,6 +38,7 @@ var InvitesListController	=	Composer.Controller.extend({
 			num_personas: turtl.user.get('personas').models().length
 		});
 		this.html(content);
+		if(window.port) window.port.send('resize');
 	},
 
 	get_invite_id_from_el: function(el)
@@ -130,7 +131,11 @@ var InvitesListController	=	Composer.Controller.extend({
 		if(!invite) return false;
 
 		var board_key	=	invite.decrypt_key(invite.get('data').board_key, invite.get('data').key, secret);
-		if(!board_key || !this.key_valid(board_key)) return false;
+		if(!board_key || !this.key_valid(board_key))
+		{
+			barfr.barf('Sorry, that secret wasn\'t correct.');
+			return false;
+		}
 
 		invite.set({item_key: board_key});
 		invite.accept(this.persona, {

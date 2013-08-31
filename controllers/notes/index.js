@@ -337,30 +337,81 @@ var NotesController = TrackController.extend({
 
 		if(this.board.get('display_type') == 'masonry') return false;
 
+		var note_being_sorted_el	=	null;
 		this.sort_notes	=	new Sortables(this.note_list, {
 			clone: true,
 			opacity: .5,
 			handle: '.actions a.sort span',
-			onStart: function() {
+			onStart: function(note_el) {
+				note_being_sorted_el	=	note_el;
 				this.sorting	=	true;
 			}.bind(this),
 			onComplete: function() {
 				this.sorting	=	false;
-				var ids	=	this.note_list.getElements('> li.note').map(function(el) {
-					return el.className.replace(/^.*id_([0-9a-f-]+).*?$/, '$1').clean();
+				var sorted_el	=	note_being_sorted_el;
+				var prev_el		=	sorted_el.getPrevious();
+				var next_el		=	sorted_el.getNext();
+				var get_id		=	function(classname)
+				{
+					return classname.replace(/^.*id_([0-9a-f-]+).*?$/, '$1').clean();
+				};
+
+				note_being_sorted_el	=	null;
+
+				var ids			=	this.note_list.getElements('> li.note').map(function(el) {
+					return get_id(el.className);
 				});
 
-				// save all note sorts as a batch
 				var notes_collection	=	this.board.get('notes');
+
+				var sorted_id	=	get_id(sorted_el.className);
+				var prev_id		=	prev_el ? get_id(prev_el.className) : null;
+				var next_id		=	next_el ? get_id(next_el.className) : null;
+				var sorted		=	notes_collection.find_by_id(sorted_id);
+				var prev		=	notes_collection.find_by_id(prev_id);
+				var next		=	notes_collection.find_by_id(next_id);
+
+				if(prev && next)
+				{
+					// manwich
+					var sortval	=	prev.get('sort') + ((next.get('sort') - prev.get('sort')) / 2);
+				}
+				else if(next)
+				{
+					// sorted item was put at beginning
+					var sortval	=	next.get('sort') - 1;
+				}
+				else if(prev)
+				{
+					// sorted item was put at end
+					var sortval	=	prev.get('sort') + 1;
+				}
+				else
+				{
+					// sorted item is ...alone?
+					return;
+				}
+
+				sorted.set({sort: sortval});
+				sorted.save();
+
+				/**
+				 * Leaving this code since it's the only working example of
+				 * batch note saving
+				 *
+				// save all note sorts as a batch
 				notes_collection.start_batch_save();
 				notes_collection.each(function(note) {
 					if(!ids.contains(note.id())) return;
-					note.set({sort: ids.indexOf(note.id())});
+					var sortval	=	ids.indexOf(note.id()) + 1;
+					console.log('sort: ', sortval, note.get('text'));
+					note.set({sort: sortval});
 				});
 				notes_collection.finish_batch_save({
 					shared: this.board.get('shared'),
 					persona: this.board.get_shared_persona()
 				});
+				*/
 			}.bind(this)
 		});
 

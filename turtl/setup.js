@@ -6,13 +6,13 @@ if(window.chrome && window.chrome.extension)
 	window.__api_url			=	config.api_url;
 	window._disable_cookie		=	true;
 	window._in_ext				=	true;
-	window.port					=	new ChromeAddonPort();
 	window._disable_api_tracker	=	true;
 
 	if(window._in_background)
 	{
 		// this is a background page of the chrome app.
 		turtl.sync	=	true;
+		window.port	=	new ChromeAddonPort();
 	}
 	else
 	{
@@ -20,6 +20,10 @@ if(window.chrome && window.chrome.extension)
 		// NOTE: this particular setup relies on the fact that setup.js loads
 		// *after* turtl.js
 		window._in_app		=	true;
+
+		// we're going to use a comm object for our port that was given to us by
+		// the gracious background app.
+		window.port			=	new ChromeAddonPort({comm: window._comm});
 
 		// log the user in on load
 		var bg				=	chrome.extension.getBackgroundPage();
@@ -44,13 +48,13 @@ if(window.chrome && window.chrome.extension)
 				win._profile	=	data;
 
 				// replace the hijacked function
-				turtl.setup_profile	=	setup_profile;
+				win.turtl.setup_profile	=	setup_profile;
 
 				// if setup_profile was called before the profile finished
 				// serializing, call it again after replacing it with its 
 				// original (and with its original args, stored in
 				// `setup_called`)
-				if(setup_called) turtl.setup_profile.apply(turtl, setup_called);
+				if(setup_called) win.turtl.setup_profile.apply(win.turtl, setup_called);
 			}
 		});
 	}

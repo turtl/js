@@ -18,6 +18,10 @@ var Profile = Composer.RelationalModel.extend({
 	// timer for persisting
 	persist_timer: null,
 
+	// if true, will NOT send "profile changed" event on profile...change.
+	// mainly used to prevent double-syncs
+	in_sync: false,
+
 	init: function()
 	{
 		this.bind_relational('boards', 'destroy', function(board) {
@@ -30,9 +34,12 @@ var Profile = Composer.RelationalModel.extend({
 		profile_mod_timer.end	=	function()
 		{
 			if(window.port) window.port.send('profile-mod');
-		};
+		}.bind(this);
 		this.bind_relational('boards', ['add', 'remove', 'reset', 'change', 'note_change'], function() {
-			//this.persist();
+			// we're probably responding to a profile sync, don't send out the
+			// "profile modified!1" event, which generally triggers another sync
+			// (if in the addon)
+			if(this.in_sync) return false;
 			profile_mod_timer.start();
 		}.bind(this));
 		this.persist_timer		=	new Timer(200);
@@ -183,6 +190,19 @@ var Profile = Composer.RelationalModel.extend({
 		turtl.messages.sync();
 	},
 
+	/**
+	 * Process data gotten from a server sync. It can be changed user data, new
+	 * boards, deleted notes, etc. This is basically the function that applies
+	 * the diffs that come from `POST /sync`
+	 *
+	 * Note that the changes here happen synchronously. If they are ever changed
+	 * to be async (which is entirely possible, and very likely) then the state
+	 * var in_sync must be set to trigger at the very and of all the updates.
+	 * Otherwise, it could case endless sync loops (or at least double-syncs).
+	 *
+	 * TODO: if sync data is ever applied async (most probably to the notes)
+	 * then be sure to update in_sync accordingly
+	 */
 	process_sync: function(sync, options)
 	{
 		options || (options = {});
@@ -193,8 +213,11 @@ var Profile = Composer.RelationalModel.extend({
 			window.port.send('profile-sync', sync);
 		}
 
+		// disable sync tracking to prevent endless sync loops
+		this.in_sync	=	true;
+
 		// if we're syncing user data, update it
-		if(sync.user && (!turtl.sync || !window._in_ext))
+		if(sync.user)
 		{
 			turtl.user.set(sync.user);
 		}
@@ -293,7 +316,9 @@ var Profile = Composer.RelationalModel.extend({
 			}
 		}.bind(this));
 
-		//this.persist(options);
+		// enable sync tracking again. if the above was processed async, then
+		// this needs to be at the end of the async processing.
+		this.in_sync	=	false;
 	},
 
 	get_sync_time: function()
@@ -317,8 +342,10 @@ var Profile = Composer.RelationalModel.extend({
 		var do_persist	=	function(options)
 		{
 			options || (options = {});
-			var store	=	{
-				user: turtl.user.toJSON(),
+			var user		=	turtl.user.toJSON();
+			user.personas	=	turtl.user.get('personas').toJSON();
+			var store		=	{
+				user: user,
 				boards: []
 			};
 

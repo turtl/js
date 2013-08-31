@@ -1,8 +1,13 @@
 var ChromeAddonPort	=	new Class({
 	comm: false,
 
-	initialize: function()
+	initialize: function(options)
 	{
+		options || (options = {});
+
+		// if a comm object was specified, use it instead of the background comm
+		// object.
+		if(options.comm) this.comm = options.comm;
 	},
 
 	_comm: function()
