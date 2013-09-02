@@ -284,6 +284,7 @@ var Board = Composer.RelationalModel.extend({
 
 		turtl.api._delete('/boards/'+this.id()+'/persona/'+persona.id(), {}, {
 			success: function() {
+				this.track_sync();
 				this.destroy({skip_sync: true});
 
 				if(options.success) options.success();
