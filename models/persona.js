@@ -20,7 +20,10 @@ var Persona = Protected.extend({
 	initialize: function(data)
 	{
 		// steal user's key for this persona
-		if(turtl.user.logged_in) this.key = turtl.user.get_key();
+		if(turtl.user.logged_in && data && data.user_id == turtl.user.id())
+		{
+			this.key = turtl.user.get_key();
+		}
 
 		// fix "false" pubkey bug
 		if(data && data.pubkey && data.pubkey == 'false') data.pubkey = false;
@@ -55,9 +58,12 @@ var Persona = Protected.extend({
 		});
 	},
 
-	has_rsa: function()
+	has_rsa: function(options)
 	{
-		return this.get('pubkey') && this.get('privkey');
+		options || (options = {});
+		var has_key	=	this.get('pubkey') && true;
+		if(options.check_private) has_key = has_key && this.get('privkey') && true;
+		return has_key;
 	},
 
 	set: function(data, options)
