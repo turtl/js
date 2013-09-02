@@ -155,7 +155,6 @@ var Profile = Composer.RelationalModel.extend({
 	 */
 	track_sync_changes: function(id)
 	{
-		console.log('tracking sync: ', id);
 		this.sync_ignore.push(id);
 	},
 
@@ -246,7 +245,6 @@ var Profile = Composer.RelationalModel.extend({
 
 		if(sync.boards) sync.boards.each(function(board_data) {
 			// don't sync ignored items
-			console.log('sync: board data: ', this.sync_ignore.contains(board_data.id), board_data);
 			if(this.sync_ignore.contains(board_data.id))
 			{
 				this.sync_ignore.erase(board_data.id);
@@ -254,7 +252,6 @@ var Profile = Composer.RelationalModel.extend({
 			}
 
 			var board	=	turtl.profile.get('boards').find_by_id(board_data.id);
-			console.log('sync: board: ', board, board_data);
 			if(board_data.deleted)
 			{
 				if(board) board.destroy({skip_sync: true});
