@@ -35,6 +35,48 @@ var Persona = Composer.Model.extend({
 		}.bind(this), 'persona:user:cleanup');
 	},
 
+	set_rsa: function(rsakey, options)
+	{
+		options || (options = {});
+
+		var split	=	tcrypt.split_rsa_key(rsakey);
+		this.set({
+			pubkey: tcrypt.rsa_key_to_json(split.public),
+			privkey: tcrypt.rsa_key_to_json(split.private)
+		});
+	},
+
+	has_rsa: function()
+	{
+		return this.get('pubkey') && this.get('privkey');
+	},
+
+	set: function(data, options)
+	{
+		if(data.pubkey)
+		{
+			data.pubkey		=	tcrypt.rsa_key_from_json(data.pubkey);
+		}
+		if(data.privkey)
+		{
+			data.privkey	=	tcrypt.rsa_key_from_json(data.privkey);
+		}
+		return this.parent.call(this, data, options);
+	},
+
+	toJSON: function()
+	{
+		var privkey	=	this.get('privkey');
+		if(privkey) this.data.privkey = tcrypt.rsa_key_to_json(privkey);
+		var data	=	this.parent.apply(this, arguments);
+		this.data.privkey	=	privkey;
+
+		var pubkey	=	this.get('pubkey');
+		if(pubkey) pubkey = tcrypt.rsa_key_to_json(pubkey);
+		data.pubkey	=	pubkey;
+		return data;
+	},
+
 	destroy_persona: function(options)
 	{
 		return this.destroy(options);
@@ -291,5 +333,4 @@ var PersonaPrivate	=	Persona.extend({
 		});
 	}
 });
-
 
