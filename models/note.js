@@ -127,6 +127,7 @@ var Note = Composer.RelationalModel.extend({
 
 		if(board.get('shared', false) && !options.skip_sync)
 		{
+			var persona		=	board.get_shared_persona();
 			args.persona	=	persona.id();
 		}
 		do_destroy();
