@@ -1,4 +1,4 @@
-var Persona = Composer.Model.extend({
+var Persona = Protected.extend({
 	base_url: '/personas',
 
 	public_fields: [
@@ -17,11 +17,17 @@ var Persona = Composer.Model.extend({
 	challenge: null,
 	challenge_timer: null,
 
+	initialize: function()
+	{
+		// steal user's key for this persona
+		if(turtl.user.logged_in) this.key = turtl.user.get_key();
+
+		// carry on
+		return this.parent.apply(this, arguments);
+	},
+
 	init: function()
 	{
-		// make sure we always have a key (just copy the user's key)
-		if(!this.key) this.key = turtl.user.get_key();
-
 		this.challenge_timer		=	new Timer(1);
 		this.challenge_timer.end	=	function()
 		{
@@ -61,7 +67,7 @@ var Persona = Composer.Model.extend({
 		{
 			data.privkey	=	tcrypt.rsa_key_from_json(data.privkey);
 		}
-		return this.parent.call(this, data, options);
+		return this.parent.apply(this, arguments);
 	},
 
 	toJSON: function()
@@ -205,7 +211,7 @@ var Persona = Composer.Model.extend({
 			}
 		});
 	}
-}, Protected);
+});
 
 var Personas = Composer.Collection.extend({
 	model: Persona
