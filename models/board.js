@@ -104,12 +104,17 @@ var Board = Composer.RelationalModel.extend({
 		// important* that you file de patent and put de button on de website
 		// or de VC not put de money in de company!!!)
 		this.bind('change:privs', function() {
+			console.log('board: change privs');
 			if(this.get('shared', false))
 			{
 				// board was UNshared from us
 				var persona	=	this.get_shared_persona();
-				barfr.barf('The board "'+ this.get('title') + '" is no longer shared with you.');
-				if(!persona) this.destroy({skip_sync: true});
+				console.log('board: change privs: persona: ', persona);
+				if(!persona)
+				{
+					barfr.barf('The board "'+ this.get('title') + '" is no longer shared with you.');
+					this.destroy({skip_sync: true});
+				}
 			}
 			else
 			{
@@ -265,6 +270,8 @@ var Board = Composer.RelationalModel.extend({
 
 				turtl.profile.get('boards').add(this);
 				this.update_notes(_notes);
+				// sync the new board as if it came through in a /sync POST
+				if(window.port) window.port.send('profile-sync', {boards: [board], notes: _notes});
 				if(options.success) options.success();
 			}.bind(this),
 			error: options.error

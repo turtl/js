@@ -3,9 +3,11 @@ var InvitesListController	=	Composer.Controller.extend({
 	},
 
 	events: {
-		'click a[href=#accept]': 'accept_invite',
-		'click a[href=#unlock]': 'unlock_invite',
-		'click a[href=#deny]': 'deny_invite',
+		'click li.message a[href=#accept]': 'accept_message_invite',
+		'click li.message a[href=#deny]': 'deny_message_invite',
+		'click li.invite a[href=#accept]': 'accept_invite',
+		'click li.invite a[href=#unlock]': 'unlock_invite',
+		'click li.invite a[href=#deny]': 'deny_invite',
 		'submit form.secret': 'do_unlock_invite',
 		'click .button.add.persona': 'open_personas'
 	},
@@ -23,11 +25,13 @@ var InvitesListController	=	Composer.Controller.extend({
 			this.collection.reset(Object.values(invite_data));
 		}.bind(this));
 		this.collection.bind(['add', 'remove', 'reset', 'change'], this.render.bind(this), 'invites:list:collection:all');
+		turtl.messages.bind(['add', 'remove', 'reset', 'change'], this.render.bind(this), 'invites:list:messages:all');
 	},
 
 	release: function()
 	{
 		this.collection.unbind(['add', 'remove', 'reset', 'change'], 'invites:list:collection:all');
+		turtl.messages.unbind(['add', 'remove', 'reset', 'change'], 'invites:list:messages:all');
 		this.parent.apply(this, arguments);
 	},
 
@@ -35,6 +39,7 @@ var InvitesListController	=	Composer.Controller.extend({
 	{
 		var content	=	Template.render('invites/list', {
 			invites: this.collection.toJSON(),
+			messages: toJSON(turtl.messages),
 			num_personas: turtl.user.get('personas').models().length
 		});
 		this.html(content);
@@ -58,7 +63,7 @@ var InvitesListController	=	Composer.Controller.extend({
 
 		if(!li) return false;
 
-		return li.className.replace(/^.*invite_([0-9a-f-]+).*?$/, '$1');
+		return li.className.replace(/^.*(invite|message)_([0-9a-f-]+).*?$/, '$2');
 	},
 
 	key_valid: function(key)
@@ -146,6 +151,80 @@ var InvitesListController	=	Composer.Controller.extend({
 				barfr.barf('Error accepting invite: '+ err);
 			}
 		});
+	},
+
+	accept_message_invite: function(e)
+	{
+		if(!e) return false;
+		e.stop();
+		var nid		=	this.get_invite_id_from_el(e.target);
+		var message	=	turtl.messages.find_by_id(nid);
+		if(!message) return;
+
+		var body	=	message.get('body');
+		switch(body.type)
+		{
+		case 'share_board':
+			var board_id	=	body.board_id;
+			var board_key	=	tcrypt.key_to_bin(body.board_key);
+			var persona		=	turtl.user.get('personas').find_by_id(message.get('to'));
+			if(!persona) return false;
+			// this should never happen, but you never know
+			if(!board_id || !board_key) persona.delete_message(message);
+			var board	=	new Board({
+				id: board_id
+			});
+			board.key	=	board_key;
+			turtl.loading(true);
+			board.accept_share(persona, {
+				success: function() {
+					turtl.loading(false);
+					// removeing the message from turtl.messages isn't necessary,
+					// but is less visually jarring since otherwise we'd have to
+					// wait for a sync to remove it
+					turtl.messages.remove(message);
+
+					// actually delete the message
+					persona.delete_message(message);
+					barfr.barf('Invite accepted!');
+				}.bind(this),
+				error: function(err) {
+					turtl.loading(false);
+					barfr.barf('There was a problem accepting the invite: '+ err);
+				}.bind(this)
+			});
+			break;
+		default:
+			return false;
+			break;
+		}
+	},
+
+	deny_message_invite: function(e)
+	{
+		if(!e) return false;
+		e.stop();
+		var nid		=	this.get_invite_id_from_el(e.target);
+		var message	=	turtl.messages.find_by_id(nid);
+		if(!message) return;
+
+		var body	=	message.get('body');
+		switch(body.type)
+		{
+		case 'share_board':
+			var board_id	=	body.board_id;
+			var persona		=	turtl.user.get('personas').find_by_id(message.get('to'));
+			if(!persona) return false;
+			turtl.loading(true);
+			persona.delete_message(message, {
+				success: function() { turtl.loading(false); },
+				error: function() { turtl.loading(false); }
+			});
+			break;
+		default:
+			return false;
+			break;
+		}
 	},
 
 	open_personas: function(e)

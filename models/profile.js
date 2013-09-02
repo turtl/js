@@ -155,6 +155,7 @@ var Profile = Composer.RelationalModel.extend({
 	 */
 	track_sync_changes: function(id)
 	{
+		console.log('tracking sync: ', id);
 		this.sync_ignore.push(id);
 	},
 
@@ -168,8 +169,6 @@ var Profile = Composer.RelationalModel.extend({
 			success: function(sync) {
 				this.set({sync_time: sync.time});
 				this.process_sync(sync, options);
-				// reset ignore list
-				this.sync_ignore	=	[];
 			}.bind(this),
 			error: function(e, xhr) {
 				if(xhr.status == 0)
@@ -222,7 +221,7 @@ var Profile = Composer.RelationalModel.extend({
 			turtl.user.set(sync.user);
 		}
 
-		sync.personas.each(function(persona_data) {
+		if(sync.personas) sync.personas.each(function(persona_data) {
 			// don't sync ignored items
 			if(this.sync_ignore.contains(persona_data.id))
 			{
@@ -245,8 +244,9 @@ var Profile = Composer.RelationalModel.extend({
 			}
 		}.bind(this));
 
-		sync.boards.each(function(board_data) {
+		if(sync.boards) sync.boards.each(function(board_data) {
 			// don't sync ignored items
+			console.log('sync: board data: ', this.sync_ignore.contains(board_data.id), board_data);
 			if(this.sync_ignore.contains(board_data.id))
 			{
 				this.sync_ignore.erase(board_data.id);
@@ -254,6 +254,7 @@ var Profile = Composer.RelationalModel.extend({
 			}
 
 			var board	=	turtl.profile.get('boards').find_by_id(board_data.id);
+			console.log('sync: board: ', board, board_data);
 			if(board_data.deleted)
 			{
 				if(board) board.destroy({skip_sync: true});
@@ -268,7 +269,7 @@ var Profile = Composer.RelationalModel.extend({
 			}
 		}.bind(this));
 
-		sync.notes.each(function(note_data) {
+		if(sync.notes) sync.notes.each(function(note_data) {
 			// don't sync ignored items
 			if(this.sync_ignore.contains(note_data.id))
 			{
@@ -319,6 +320,9 @@ var Profile = Composer.RelationalModel.extend({
 		// enable sync tracking again. if the above was processed async, then
 		// this needs to be at the end of the async processing.
 		this.in_sync	=	false;
+
+		// reset ignore list
+		this.sync_ignore	=	[];
 	},
 
 	get_sync_time: function()
