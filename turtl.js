@@ -114,16 +114,16 @@ var turtl	=	{
 			// if the user is logged in, we'll put their auth info into the api object
 			if(!window._in_ext && !window._disable_cookie)
 			{
-				this.user.bind('change', this.user.write_cookie.bind(this.user), 'user:write_changes_to_cookie');
+				turtl.user.bind('change', turtl.user.write_cookie.bind(turtl.user), 'user:write_changes_to_cookie');
 			}
-			this.api.set_auth(this.user.get_auth());
-			this.controllers.pages.release_current();
-			this.messages	=	new Messages();
-			this.profile	=	new Profile();
-			this.search		=	new Search();
+			turtl.api.set_auth(turtl.user.get_auth());
+			turtl.controllers.pages.release_current();
+			turtl.messages	=	new Messages();
+			turtl.profile	=	new Profile();
+			turtl.search		=	new Search();
 
 			turtl.show_loading_screen(true);
-			this.profile.initial_load({
+			turtl.profile.initial_load({
 				complete: function() {
 					turtl.show_loading_screen(false);
 					turtl.controllers.pages.release_current();
@@ -139,15 +139,20 @@ var turtl	=	{
 					turtl.setup_syncing();
 					turtl.setup_background_panel();
 					if(window.port) window.port.send('profile-load-complete');
-				}.bind(this)
+				}.bind(turtl)
 			});
 
 			// logout shortcut
 			turtl.keyboard.bind('S-l', function() {
 				turtl.route('/users/logout');
 			}, 'dashboard:shortcut:logout');
-		}.bind(this));
-		this.user.bind('logout', function() {
+
+			// notify addon of new messages
+			turtl.messages.bind('add', function() {
+				if(window.port) window.port.send('new-message');
+			});
+		}.bind(turtl));
+		turtl.user.bind('logout', function() {
 			turtl.controllers.pages.release_current();
 			turtl.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
 			turtl.show_loading_screen(false);
@@ -162,13 +167,13 @@ var turtl	=	{
 			turtl.setup_header_bar();
 			turtl.profile.destroy();
 			turtl.profile	=	null;
-		}.bind(this));
+		}.bind(turtl));
 	},
 
 	setup_header_bar: function()
 	{
-		if(this.controllers.HeaderBar) this.controllers.HeaderBar.release();
-		this.controllers.HeaderBar = new HeaderBarController();
+		if(turtl.controllers.HeaderBar) turtl.controllers.HeaderBar.release();
+		turtl.controllers.HeaderBar = new HeaderBarController();
 	},
 
 	load_controller: function(name, controller, params, options)

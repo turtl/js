@@ -42,8 +42,11 @@ var HeaderBarController = Composer.Controller.extend({
 		});
 		this.html(content);
 
-		if(this.notifications) this.notifications.release();
-		this.notifications	=	new NotificationsController({inject: this.apps_container});
+		if(!window._in_ext)
+		{
+			if(this.notifications) this.notifications.release();
+			this.notifications	=	new NotificationsController({inject: this.apps_container});
+		}
 	},
 
 	toggle_menu: function(e)

@@ -17,10 +17,13 @@ var Persona = Protected.extend({
 	challenge: null,
 	challenge_timer: null,
 
-	initialize: function()
+	initialize: function(data)
 	{
 		// steal user's key for this persona
 		if(turtl.user.logged_in) this.key = turtl.user.get_key();
+
+		// fix "false" pubkey bug
+		if(data && data.pubkey && data.pubkey == 'false') data.pubkey = false;
 
 		// carry on
 		return this.parent.apply(this, arguments);
@@ -59,13 +62,16 @@ var Persona = Protected.extend({
 
 	set: function(data, options)
 	{
-		if(data.pubkey)
+		if(data)
 		{
-			data.pubkey		=	tcrypt.rsa_key_from_json(data.pubkey);
-		}
-		if(data.privkey)
-		{
-			data.privkey	=	tcrypt.rsa_key_from_json(data.privkey);
+			if(data.pubkey)
+			{
+				data.pubkey		=	tcrypt.rsa_key_from_json(data.pubkey);
+			}
+			if(data.privkey)
+			{
+				data.privkey	=	tcrypt.rsa_key_from_json(data.privkey);
+			}
 		}
 		return this.parent.apply(this, arguments);
 	},
