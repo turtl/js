@@ -250,7 +250,7 @@ var tcrypt = {
 		if(e) obj.e = e;
 		if(d) obj.d = d;
 
-		return obj;
+		return JSON.stringify(obj);
 	},
 
 	/**
@@ -258,7 +258,7 @@ var tcrypt = {
 	 */
 	rsa_key_from_json: function(rsakey_obj)
 	{
-		var obj	=	rsakey_obj;
+		var obj	=	JSON.parse(rsakey_obj);
 		var n	=	obj.n;
 		var e	=	obj.e;
 		var d	=	obj.d;
