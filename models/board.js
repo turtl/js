@@ -104,12 +104,10 @@ var Board = Composer.RelationalModel.extend({
 		// important* that you file de patent and put de button on de website
 		// or de VC not put de money in de company!!!)
 		this.bind('change:privs', function() {
-			console.log('board: change privs');
 			if(this.get('shared', false))
 			{
 				// board was UNshared from us
 				var persona	=	this.get_shared_persona();
-				console.log('board: change privs: persona: ', persona);
 				if(!persona)
 				{
 					barfr.barf('The board "'+ this.get('title') + '" is no longer shared with you.');

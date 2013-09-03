@@ -50,8 +50,10 @@ var tcrypt = {
 		}, options);
 
 		// auto-generate an initial vector if needed
-		if(!opts.iv)
-			opts.iv = tcrypt.iv();
+		if(!opts.iv) opts.iv = tcrypt.iv();
+
+		// make sure to UTF8 encode data
+		data	=	convert.utf8.encode(data);
 
 		var ciphertext = new AES(opts).encrypt(data);
 
