@@ -184,12 +184,12 @@ var BoardShareController = Composer.Controller.extend({
 		});
 
 		// make sure we generate keys for this recipient
-		message.add_recipient(this.from_persona);
+		//message.add_recipient(this.from_persona);
 		message.add_recipient(this.to_persona);
 
 		turtl.loading(true);
 		var perms	=	2;
-		this.board.share_with(this.to_persona, perms, {
+		this.board.share_with(this.from_persona, this.to_persona, perms, {
 			success: function() {
 				this.from_persona.send_message(message, {
 					success: function() {
@@ -239,7 +239,7 @@ var BoardShareController = Composer.Controller.extend({
 		var persona	=	this.board.get('personas').find_by_id(pid);
 		if(!persona) return false;
 		turtl.loading(true);
-		this.board.share_with(persona, 0, {
+		this.board.share_with(this.from_persona, persona, 0, {
 			success: function() {
 				turtl.loading(false);
 				barfr.barf('User successfully removed from board.');

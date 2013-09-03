@@ -217,19 +217,22 @@ var Board = Composer.RelationalModel.extend({
 		});
 	},
 
-	share_with: function(persona, permissions, options)
+	share_with: function(from_persona, to_persona, permissions, options)
 	{
 		options || (options = {});
 
 		// must be 0-2
 		permissions	=	parseInt(permissions);
 
-		turtl.api.put('/boards/'+this.id()+'/invites/persona/'+persona.id(), {permissions: permissions}, {
+		turtl.api.put('/boards/'+this.id()+'/invites/persona/'+to_persona.id(), {
+			permissions: permissions,
+			from_persona: from_persona.id()
+		}, {
 			success: function(priv) {
 				var privs	=	Object.clone(this.get('privs', {}));
-				privs[persona.id()]	=	priv;
+				privs[to_persona.id()]	=	priv;
 				this.set({privs: privs});
-				this.get('personas').add(persona);
+				this.get('personas').add(to_persona);
 				turtl.profile.track_sync_changes(this.id());
 				if(options.success) options.success.apply(this, arguments);
 			}.bind(this),

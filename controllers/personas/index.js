@@ -1,13 +1,15 @@
 var PersonasController = Composer.Controller.extend({
 	elements: {
-		'div.personas-list': 'personas_list'
+		'div.personas-list': 'personas_list',
 	},
 
 	events: {
 		'click .button.add': 'add_persona',
 		'click a.add': 'add_persona',
 		'click a[href=#edit]': 'edit_persona',
-		'click a[href=#delete]': 'delete_persona'
+		'click a[href=#delete]': 'delete_persona',
+		'click a[href=#email]': 'toggle_email_settings',
+		'change .email-settings input[type=checkbox]': 'update_email_setting'
 	},
 
 	edit_in_modal: true,
@@ -105,5 +107,41 @@ var PersonasController = Composer.Controller.extend({
 		if(!persona) return false;
 		if(!confirm('Really delete this persona? It will be gone forever, along with its keys (both public and private). All data shared with this persona will no longer be accessible to you. THIS IS IRREVERSIBLE.')) return false;
 		persona.destroy_persona();
+	},
+
+	toggle_email_settings: function(e)
+	{
+		if(e) e.stop();
+		var persona_li	=	next_tag_up('li', next_tag_up('li', e.target).getParent());
+		if(!persona_li) return false;
+		var settings	=	persona_li.getElement('.email-settings');
+		if(!settings) return false;
+		if(settings.getStyle('display') == 'block')
+		{
+			settings.setStyle('display', '');
+		}
+		else
+		{
+			settings.setStyle('display', 'block');
+		}
+	},
+
+	update_email_setting: function(e)
+	{
+		if(!e) return false;
+		e.stop();
+		var pid		=	 next_tag_up('li', e.target).className.replace(/^.*persona_([0-9a-f-]+).*?$/, '$1');
+		var persona	=	this.collection.find_by_id(pid);
+		var setting	=	e.target.name;
+		var enabled	=	e.target.checked;
+		if(!persona) return false;
+		var settings	=	Object.clone(persona.get('settings', {}));
+		settings[setting]	=	enabled ? 1 : 0;
+
+		// update the settings silently (otherwise dropdown will disappear)
+		persona.set({settings: settings}, {silent: true});
+		persona.save({silent: true});
+		// make sure the next sync ignores this persona
+		turtl.profile.track_sync_changes(persona.id());
 	}
 });

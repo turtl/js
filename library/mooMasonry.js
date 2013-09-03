@@ -124,7 +124,6 @@ var MasonryClass = new Class({
 	},
 
 	masonryResize : function() {
-		console.log('masonry: resize');
 		this.brickParent = this.element;
 		this.lastColY=this.colY;
 		this.lastColCount = this.colCount;

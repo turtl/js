@@ -10,16 +10,44 @@
 		<? if(show_edit) { ?>
 			<ul>
 				<li>
-					<a href="#edit">
+					<a href="#email" title="Update this persona's email/notification settings">
+						<img src="<?=img('/images/site/icons/email_16x16_black.png')?>" width="16" height="16" alt="email">
+					</a>
+				</li>
+				<li>
+					<a href="#edit" title="Edit this persona">
 						<img src="<?=img('/images/site/icons/edit_16x16_black.png')?>" width="16" height="16" alt="edit">
 					</a>
 				</li>
 				<li>
-					<a href="#delete">
+					<a href="#delete" title="Delete this persona permanently">
 						<img src="<?=img('/images/site/icons/delete_16x16_black.png')?>" width="16" height="16" alt="delete">
 					</a>
 				</li>
 			</ul>
+			<div class="email-settings">
+				<? var settings = p.settings || {}; ?>
+				<h4>Email settings</h4>
+				<table>
+					<tr>
+						<?
+						var email_invite	=	true;
+						var label_id		=	'email_'+p.id;
+						var name			=	'notify_invite';
+						if(typeof settings[name] != 'undefined' && settings[name] === 0)
+						{
+							email_invite	=	false;
+						}
+						?>
+						<td>
+							<label for="<?=label_id?>">Notify me when I get a board invitation</label>
+						</td>
+						<td>
+							<input id="<?=label_id?>" type="checkbox" name="<?=name?>" value="1" <? if(email_invite) { ?>checked<? } ?>>
+						</td>
+					</tr>
+				</table>
+			</div>
 		<? } ?>
 	</li>
 <? }); ?>
