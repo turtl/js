@@ -77,7 +77,7 @@ var Protected = Composer.RelationalModel.extend({
 	 */
 	decrypt_key: function(decrypting_key, encrypted_key)
 	{
-		return tcrypt.decrypt(decrypting_key, encrypted_key, {raw: true});
+		return tcrypt.decrypt(decrypting_key, encrypted_key);
 	},
 
 	/**
