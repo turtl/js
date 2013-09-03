@@ -43,6 +43,8 @@ var tcrypt = {
 	{
 		options || (options = {});
 
+		if(key.length > 32) key = convert.utf8.decode(key);
+
 		var opts = Object.merge({
 			key: key,
 			block_mode: CBC,
@@ -69,6 +71,8 @@ var tcrypt = {
 	{
 		options || (options = {});
 
+		if(key.length > 32) key = convert.utf8.decode(key);
+
 		var opts = Object.merge({
 			key: key,
 			block_mode: CBC,
@@ -80,10 +84,16 @@ var tcrypt = {
 
 		var de = new AES(opts).decrypt(params.ciphertext);
 
-		if (options.raw)
-			return de;
+		try
+		{
+			var decode	=	convert.utf8.decode(de);
+		}
+		catch(e)
+		{
+			var decode	=	de;
+		}
 
-		return convert.utf8.decode(de);
+		return decode;
 	},
 
 	/**
