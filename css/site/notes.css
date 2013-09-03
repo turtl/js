@@ -24,8 +24,6 @@
 .notes div.note-actions ul li a.grid span {background: url(../../images/site/notes/icons/grid.png) center center no-repeat;}
 .notes div.note-actions ul li a.masonry span {background: url(../../images/site/notes/icons/masonry.png) center center no-repeat;}
 .notes div.note-actions ul li a.list span {background: url(../../images/site/notes/icons/list.png) center center no-repeat;}
-.notes div.note-actions input[name=search] {float: left; width: 200px; margin: 1px 0 0 32px; padding: 4px 4px 5px 4px; border: 1px solid #aaa; border-radius: 3px;}
-.notes div.note-actions a.clear {float: left; margin: 7px 0 0 32px;}
 
 /* individual note actions */
 .notes div.actions {display: none; z-index: 2; position: absolute; top: 0; right: 0; height: 24px; padding: 0 0 0 4px; opacity: .95; background: #222; border: 1px solid #333;}

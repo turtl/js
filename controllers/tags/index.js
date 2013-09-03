@@ -1,9 +1,14 @@
 var TagsController = Composer.Controller.extend({
 	elements: {
-		'ul.tags': 'tag_list'
+		'ul.tags': 'tag_list',
+		'input[name=search]': 'inp_search'
 	},
 
 	events: {
+		'keyup input[name=search]': 'do_text_search',
+		'focus input[name=search]': 'search_focus',
+		'blur input[name=search]': 'search_blur',
+		'click a[href=#clear-filters]': 'clear_filters'
 	},
 
 	board: null,
@@ -31,6 +36,8 @@ var TagsController = Composer.Controller.extend({
 			this.tags.sort();
 		}.bind(this), 'tags:listing:monitor_sort');
 
+		turtl.keyboard.bind('x', this.clear_filters.bind(this), 'notes:shortcut:clear_filters');
+
 		// track all changes to our sub-controllers
 		this.setup_tracking(this.tags);
 	},
@@ -43,6 +50,7 @@ var TagsController = Composer.Controller.extend({
 			this.tags.unbind('change:count', 'tags:listing:monitor_sort');
 			this.tags.detach();
 		}
+		turtl.keyboard.unbind('x', 'notes:shortcut:clear_filters');
 		this.parent.apply(this, arguments);
 	},
 
@@ -86,5 +94,65 @@ var TagsController = Composer.Controller.extend({
 			}
 		});
 		//console.log('gray time: ', performance.now() - start);
+	},
+
+	do_text_search: function(e)
+	{
+		var do_search	=	function()
+		{
+			// NOTE: kind of a hack...search box used to belong to notes controller
+			// and instead of using a central filtering model, we just set the
+			// search text into the notes controller manually and trigger a filter
+			// change. not the best way to do it.
+			var notes_controller			=	turtl.controllers.pages.cur_controller.notes_controller;
+			notes_controller.search_text	=	this.inp_search.get('value');
+			this.board.get('tags').trigger('change:filters');
+		}.bind(this);
+
+		if(e.key && e.key == 'esc')
+		{
+			this.inp_search.set('value', '');
+			this.inp_search.focus();
+			do_search();
+			return;
+		}
+
+		if(!this.search_timer)
+		{
+			this.search_timer		=	new Timer(100);
+			this.search_timer.end	=	do_search;
+		}
+		this.search_timer.start();
+	},
+
+	search_focus: function(e)
+	{
+		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
+	},
+
+	search_blur: function(e)
+	{
+		turtl.keyboard.attach(); // re-enable shortcuts
+	},
+
+	clear_filters: function(e)
+	{
+		if(e) e.stop();
+
+		// as noted above, it's stupid to have controllers holding search state.
+		// don't worry, I'm aware. but this is a quick.dirty way to get things
+		// moving
+		var notes_controller	=	turtl.controllers.pages.cur_controller.notes_controller;
+		notes_controller.search_text	=	'';
+		this.inp_search.set('value', '');
+		notes_controller.board.get('tags').each(function(t) {
+			t.set({
+				selected: false,
+				excluded: false
+			}, {silent: true});
+		});
+		notes_controller.board.set({filters: []});
+		notes_controller.board.get('tags').trigger('reset');
+		notes_controller.board.get('tags').trigger('change:filters');
 	}
 }, TrackController);

@@ -1,17 +1,12 @@
 var NotesController = TrackController.extend({
 	elements: {
 		'ul.note_list': 'note_list',
-		'ul.list-type': 'display_actions',
-		'input[name=search]': 'inp_search'
+		'ul.list-type': 'display_actions'
 	},
 
 	events: {
 		'click div.button.add.note': 'open_add_note',
 		'click ul.list-type a': 'change_list_type',
-		'keyup input[name=search]': 'do_text_search',
-		'focus input[name=search]': 'search_focus',
-		'blur input[name=search]': 'search_blur',
-		'click a[href=#clear-filters]': 'clear_filters'
 	},
 
 	board: null,
@@ -131,7 +126,6 @@ var NotesController = TrackController.extend({
 		turtl.keyboard.bind('e', this.sub_edit_note.bind(this), 'notes:shortcut:edit_note');
 		turtl.keyboard.bind('m', this.sub_move_note.bind(this), 'notes:shortcut:move_note');
 		turtl.keyboard.bind('delete', this.sub_delete_note.bind(this), 'notes:shortcut:delete_note');
-		turtl.keyboard.bind('x', this.clear_filters.bind(this), 'notes:shortcut:clear_filters');
 
 		this.setup_masonry();
 		this.setup_sort();
@@ -156,7 +150,6 @@ var NotesController = TrackController.extend({
 		turtl.keyboard.unbind('e', 'notes:shortcut:edit_note');
 		turtl.keyboard.unbind('m', 'notes:shortcut:move_note');
 		turtl.keyboard.unbind('delete', 'notes:shortcut:delete_note');
-		turtl.keyboard.unbind('x', 'notes:shortcut:clear_filters');
 		if(this.masonry) this.masonry.detach();
 		if(this.masonry_timer) this.masonry_timer.end = null;
 		if(this.search_timer) this.search_timer.end = null;
@@ -416,56 +409,6 @@ var NotesController = TrackController.extend({
 		});
 
 		$(window).addEvent('mousemove', this.edge_check);
-	},
-
-	do_text_search: function(e)
-	{
-		var do_search	=	function()
-		{
-			this.search_text	=	this.inp_search.get('value');
-			this.board.get('tags').trigger('change:filters');
-		}.bind(this);
-
-		if(e.key && e.key == 'esc')
-		{
-			this.inp_search.set('value', '');
-			this.inp_search.focus();
-			do_search();
-			return;
-		}
-
-		if(!this.search_timer)
-		{
-			this.search_timer		=	new Timer(100);
-			this.search_timer.end	=	do_search;
-		}
-		this.search_timer.start();
-	},
-
-	search_focus: function(e)
-	{
-		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
-	},
-
-	search_blur: function(e)
-	{
-		turtl.keyboard.attach(); // re-enable shortcuts
-	},
-
-	clear_filters: function(e)
-	{
-		if(e) e.stop();
-		this.search_text	=	'';
-		this.inp_search.set('value', '');
-		this.board.get('tags').each(function(t) {
-			t.set({
-				selected: false,
-				excluded: false
-			}, {silent: true});
-		});
-		this.board.set({filters: []});
-		this.board.get('tags').trigger('reset');
-		this.board.get('tags').trigger('change:filters');
 	},
 
 	// -------------------------------------------------------------------------
