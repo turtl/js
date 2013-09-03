@@ -63,6 +63,7 @@ var Protected = Composer.RelationalModel.extend({
 	 */
 	serialize: function(data, parentobj)
 	{
+		if(!this.key) return false;
 		var json	=	JSON.encode(data);
 		// TODO: crypto: investigate prefixing/suffixing padding with random
 		// bytes. Should be easy enough to filter out when deserializing (since
@@ -318,7 +319,7 @@ var Protected = Composer.RelationalModel.extend({
 
 	/**
 	 * (re)generate the keys for this object. `members` is an object describing
-	 * what items will ahve access to this object, and is in the format:
+	 * what items will have access to this object, and is in the format:
 	 *
 	 * [
 	 *   {b: <board id>, k: <board's key>},
@@ -369,21 +370,20 @@ var Protected = Composer.RelationalModel.extend({
  */
 var ProtectedShared = Protected.extend({
 	recipients: [],
-	private_key: null,
 
 	initialize: function()
 	{
-		var ret	=	this.parent.apply(this, arguments);
 		if(!this.key) this.key = tcrypt.random_key();
-		return ret;
+		return this.parent.apply(this, arguments);
 	},
 
 	deserialize: function(data, parentobj)
 	{
+		// grab our private keys from our personas and use them to decrypt the
+		// object's AES key
 		var search	=	{
 			p: turtl.user.get('personas').map(function(p) {
-				//return {id: p.id(), k: p.get('privkey')};
-				return {id: p.id(), k: true};
+				return {id: p.id(), k: p.get('privkey')};
 			})
 		};
 		this.key	=	this.find_key(parentobj.keys, search);
@@ -398,14 +398,16 @@ var ProtectedShared = Protected.extend({
 
 	decrypt_key: function(decrypting_key, encrypted_key)
 	{
-		encrypted_key	=	tcrypt.key_to_bin(encrypted_key);
-		return encrypted_key;
+		encrypted_key		=	convert.base64.decode(encrypted_key);
+		var decrypted_key	=	tcrypt.decrypt_rsa(decrypting_key, encrypted_key);
+		return decrypted_key;
 	},
 
 	encrypt_key: function(key, key_to_encrypt)
 	{
-		key_to_encrypt	=	tcrypt.key_to_string(key_to_encrypt);
-		return key_to_encrypt;
+		var encrypted_key	=	tcrypt.encrypt_rsa(key, key_to_encrypt);
+		encrypted_key		=	convert.base64.encode(encrypted_key);
+		return encrypted_key;
 	},
 
 	add_recipient: function(persona)
