@@ -1,6 +1,7 @@
 var TagsController = Composer.Controller.extend({
 	elements: {
 		'ul.tags': 'tag_list',
+		'div.filters': 'filters',
 		'input[name=search]': 'inp_search'
 	},
 
@@ -35,6 +36,7 @@ var TagsController = Composer.Controller.extend({
 		this.tags.bind('change:count', function() {
 			this.tags.sort();
 		}.bind(this), 'tags:listing:monitor_sort');
+		this.board.bind_relational('notes', ['add', 'remove', 'reset'], this.update_filters.bind(this), 'tags:listing:update_filters');
 
 		turtl.keyboard.bind('f', function() { this.inp_search.focus(); }.bind(this), 'notes:shortcut:search_focus');
 		turtl.keyboard.bind('x', this.clear_filters.bind(this), 'notes:shortcut:clear_filters');
@@ -49,6 +51,7 @@ var TagsController = Composer.Controller.extend({
 		{
 			this.board.unbind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], 'tags:listing:gray_disabled');
 			this.tags.unbind('change:count', 'tags:listing:monitor_sort');
+			this.board.unbind_relational('notes', ['add', 'remove', 'reset'], 'tags:listing:update_filters');
 			this.tags.detach();
 		}
 		turtl.keyboard.unbind('x', 'notes:shortcut:clear_filters');
@@ -60,6 +63,7 @@ var TagsController = Composer.Controller.extend({
 	{
 		var content = Template.render('tags/index', {});
 		this.html(content);
+		this.update_filters();
 	},
 
 	create_subcontroller: function(tag)
@@ -146,15 +150,23 @@ var TagsController = Composer.Controller.extend({
 		// moving
 		var notes_controller	=	turtl.controllers.pages.cur_controller.notes_controller;
 		notes_controller.search_text	=	'';
+
 		this.inp_search.set('value', '');
-		notes_controller.board.get('tags').each(function(t) {
+		this.board.get('tags').each(function(t) {
 			t.set({
 				selected: false,
 				excluded: false
 			}, {silent: true});
 		});
-		notes_controller.board.set({filters: []});
-		notes_controller.board.get('tags').trigger('reset');
-		notes_controller.board.get('tags').trigger('change:filters');
+		this.board.set({filters: []});
+		this.board.get('tags').trigger('reset');
+		this.board.get('tags').trigger('change:filters');
+	},
+
+	update_filters: function()
+	{
+		var num_notes	=	this.board.get('notes').models().length;
+		if(num_notes > 0) this.filters.setStyle('display', 'block');
+		else this.filters.setStyle('display', 'none');
 	}
 }, TrackController);
