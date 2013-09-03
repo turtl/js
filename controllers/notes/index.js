@@ -102,9 +102,9 @@ var NotesController = TrackController.extend({
 			this.update_display_type.delay(10, this);
 		}.bind(this), 'notes:listing:display_type');
 		this.filter_list.bind(['add', 'remove', 'change'], function() {
-			this.setup_masonry();
+			this.update_display_type();
 			this.setup_sort();
-		}.bind(this), 'notes:listing:update_masonry');
+		}.bind(this), 'notes:listing:update_display');
 
 		this.board.get('notes').bind(['add', 'remove', 'reset', 'clear', 'misc'], function() {
 			if(this.board.get('notes').models().length == 0)
@@ -126,7 +126,7 @@ var NotesController = TrackController.extend({
 		turtl.keyboard.bind('m', this.sub_move_note.bind(this), 'notes:shortcut:move_note');
 		turtl.keyboard.bind('delete', this.sub_delete_note.bind(this), 'notes:shortcut:delete_note');
 
-		this.setup_masonry();
+		this.update_display_type();
 		this.setup_sort();
 	},
 
@@ -138,7 +138,7 @@ var NotesController = TrackController.extend({
 			this.board.unbind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], 'notes:listing:track_filters');
 			this.board.unbind('change:display_type', 'notes:listing:display_type');
 			this.filter_list.unbind('reset', 'notes:listing:display_type');
-			this.filter_list.unbind(['add', 'remove', 'change'], 'notes:listing:update_masonry');
+			this.filter_list.unbind(['add', 'remove', 'change'], 'notes:listing:update_display');
 			this.board.get('notes').unbind(['add', 'remove', 'reset', 'clear', 'misc'], 'notes:listing:show_display_buttons');
 			this.filter_list.detach();
 			this.release_subcontrollers();
@@ -278,6 +278,7 @@ var NotesController = TrackController.extend({
 			}
 			this.masonry = this.note_list.masonry({
 				singleMode: true,
+				resizeable: true,
 				itemSelector: '> li.note:not(.hide)'
 			});
 			var images	=	this.note_list.getElements('> li.note:not(.hide) > .gutter img');

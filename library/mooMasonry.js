@@ -57,16 +57,16 @@ var MasonryClass = new Class({
 			this.masonryArrange();
 		
 			var resizeOn = this.options.resizeable;
-				if (resizeOn) {
-					if(this.bound == undefined) {
-						this.bound = this.masonryResize.bind(this);
-						this.attach();
-					}
+			if (resizeOn) {
+				if(this.bound == undefined) {
+					this.bound = this.masonryResize.bind(this);
+					this.attach();
 				}
+			}
 
-				if (!resizeOn) {
-					this.detach();
-				}
+			if (!resizeOn) {
+				this.detach();
+			}
 		}
 	},
 
@@ -124,6 +124,7 @@ var MasonryClass = new Class({
 	},
 
 	masonryResize : function() {
+		console.log('masonry: resize');
 		this.brickParent = this.element;
 		this.lastColY=this.colY;
 		this.lastColCount = this.colCount;
@@ -240,6 +241,6 @@ var MasonryClass = new Class({
 
 Element.implement({
 	masonry : function(options) {
-		new MasonryClass(this, options);
+		return new MasonryClass(this, options);
 	}
 });
