@@ -165,6 +165,8 @@ var TagsController = Composer.Controller.extend({
 
 	update_filters: function()
 	{
+		if(!this.filters) return false;
+
 		var num_notes	=	this.board.get('notes').models().length;
 		if(num_notes > 0) this.filters.setStyle('display', 'block');
 		else this.filters.setStyle('display', 'none');
