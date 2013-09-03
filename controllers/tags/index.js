@@ -36,6 +36,7 @@ var TagsController = Composer.Controller.extend({
 			this.tags.sort();
 		}.bind(this), 'tags:listing:monitor_sort');
 
+		turtl.keyboard.bind('f', function() { this.inp_search.focus(); }.bind(this), 'notes:shortcut:search_focus');
 		turtl.keyboard.bind('x', this.clear_filters.bind(this), 'notes:shortcut:clear_filters');
 
 		// track all changes to our sub-controllers
@@ -51,6 +52,7 @@ var TagsController = Composer.Controller.extend({
 			this.tags.detach();
 		}
 		turtl.keyboard.unbind('x', 'notes:shortcut:clear_filters');
+		turtl.keyboard.unbind('f', 'notes:shortcut:search_focus');
 		this.parent.apply(this, arguments);
 	},
 

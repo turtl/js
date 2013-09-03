@@ -120,7 +120,6 @@ var NotesController = TrackController.extend({
 		// track all changes to our sub-controllers
 		this.setup_tracking(this.filter_list);
 
-		turtl.keyboard.bind('f', function() { this.inp_search.focus(); }.bind(this), 'notes:shortcut:search_focus');
 		turtl.keyboard.bind('a', this.open_add_note.bind(this), 'notes:shortcut:add_note');
 		turtl.keyboard.bind('enter', this.sub_view_note.bind(this), 'notes:shortcut:view_note');
 		turtl.keyboard.bind('e', this.sub_edit_note.bind(this), 'notes:shortcut:edit_note');
@@ -144,7 +143,6 @@ var NotesController = TrackController.extend({
 			this.filter_list.detach();
 			this.release_subcontrollers();
 		}
-		turtl.keyboard.unbind('f', 'notes:shortcut:search_focus');
 		turtl.keyboard.unbind('a', 'notes:shortcut:add_note')
 		turtl.keyboard.unbind('enter', 'notes:shortcut:view_note');
 		turtl.keyboard.unbind('e', 'notes:shortcut:edit_note');
