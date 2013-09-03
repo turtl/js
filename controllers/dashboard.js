@@ -72,7 +72,7 @@ var DashboardController = Composer.Controller.extend({
 			profile: this.profile
 		});
 		this.boards_controller.bind('change-board', function() {
-			this.notes_controller.clear_filters();
+			this.tags_controller.clear_filters();
 		}.bind(this), 'dashboard:boards:change-board');
 
 		turtl.keyboard.bind('S-/', this.open_help.bind(this), 'dashboard:shortcut:open_help');
