@@ -160,6 +160,7 @@ var Search	=	Composer.Model.extend({
 	index_note: function(note)
 	{
 		var json	=	toJSON(note);
+		if(json.url && json.url.match(/^data:/)) json.url = '';
 		this.index_json.notes[note.id()]	=	json;
 
 		note.get('tags').each(function(tag) {
