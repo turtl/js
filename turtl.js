@@ -229,7 +229,7 @@ var turtl	=	{
 					window.port.unbind();
 					return;
 				}
-				console.log('bg: sync: ', sync);
+				//console.log('bg: sync: ', sync);
 				turtl.profile.process_sync(data_from_addon(sync));
 			});
 		}
