@@ -216,6 +216,7 @@ var Persona = Protected.extend({
 				persona: this.id()
 			},
 			success: function() {
+				if(window.port) window.port.send('message-remove', message.id());
 				if(options.success) options.success();
 			},
 			error: function(_, err) {
