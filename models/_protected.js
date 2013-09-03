@@ -341,6 +341,7 @@ var Protected = Composer.RelationalModel.extend({
 
 		var keys = [];
 		members.each(function(m) {
+			m	=	Object.clone(m);
 			var key = m.k;
 			var enc = this.encrypt_key(key, this.key).toString();
 			m.k = enc;
