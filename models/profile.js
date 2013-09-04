@@ -367,6 +367,10 @@ var Profile = Composer.RelationalModel.extend({
 			var boards			=	turtl.profile.get('boards');	// clone
 			var num_boards		=	boards.models().length;
 			var num_finished	=	0;
+
+			// check for empty profile =]
+			if(num_boards == 0) finish_persist();
+
 			turtl.profile.get('boards').each(function(board) {
 				board.get('notes').toJSONAsync(function(notes) {
 					var boardobj	=	board.toJSON();
