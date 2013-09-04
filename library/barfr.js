@@ -150,6 +150,12 @@ var Barfr	=	new Class({
 		li.innerHTML	= msg + '<a href="#" class="close"></a>';
 		li.addEvent('click', function(e) {
 			this.close_barf(id);
+			li.removeEvent('click', arguments.callee);
+		}.bind(this));
+		li.addEvent('click:relay(a)', function(e) {
+			if(e) e.stop();
+			this.close_barf(id);
+			li.removeEvent('click:relay(a)', arguments.callee);
 		}.bind(this));
 
 		li.inject(this.objects.list, 'top');
