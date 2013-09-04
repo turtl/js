@@ -147,7 +147,7 @@ var Barfr	=	new Class({
 		var id =  new Date().getTime() + Math.random();
 
 		var li 			= new Element('li');
-		li.innerHTML	= msg + '<a href="#" class="close" onclick="return false;"></a>';
+		li.innerHTML	= msg + '<a href="#" class="close"></a>';
 		li.addEvent('click', function(e) {
 			this.close_barf(id);
 		}.bind(this));

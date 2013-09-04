@@ -285,7 +285,18 @@ var Board = Composer.RelationalModel.extend({
 
 		turtl.api._delete('/boards/'+this.id()+'/persona/'+persona.id(), {}, {
 			success: function() {
+				// track the sync twice: once in a while wires will get crossed
+				// and a board we *just left* will come through in a sync that
+				// start just before leaving. this way, if we track the board
+				// pre and post sync, if a second sync comes through right after
+				// leaving with the board info AGAIN, it'll be ignored.
 				this.track_sync();
+				turtl.profile.bind('sync-post', function() {
+					turtl.profile.unbind('sync-post', arguments.callee);
+					this.track_sync();
+				}.bind(this));
+
+				// destroy our local copy
 				this.destroy({skip_sync: true});
 
 				if(options.success) options.success();

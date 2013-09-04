@@ -221,14 +221,6 @@ var turtl	=	{
 			window.port.bind('profile-sync', function(sync) {
 				if(!sync) return false;
 				if(!turtl.user || !turtl.user.logged_in) return false;
-				if(!console)
-				{
-					// ok, window got destroyed (via refresh maybe?) unbind our
-					// listeners and let's never speak of this again.
-					// NOTE: this really only happens in chrome.
-					window.port.unbind();
-					return;
-				}
 				//console.log('bg: sync: ', sync);
 				turtl.profile.process_sync(data_from_addon(sync));
 			});

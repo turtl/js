@@ -30,6 +30,12 @@ var Profile = Composer.RelationalModel.extend({
 				this.set_current_board(this.get('boards').first());
 			}
 		}.bind(this));
+		this.bind_relational('boards', 'add', function(board) {
+			if(this.get('boards').models().length == 1)
+			{
+				this.set_current_board(board);
+			}
+		}.bind(this));
 		var profile_mod_timer	=	new Timer(100);
 		profile_mod_timer.end	=	function()
 		{
@@ -205,6 +211,9 @@ var Profile = Composer.RelationalModel.extend({
 	{
 		options || (options = {});
 
+		// starting a sync
+		this.trigger('sync-pre');
+
 		// send synced data to addon
 		if(window.port && window._in_background && turtl.sync && sync)
 		{
@@ -258,6 +267,10 @@ var Profile = Composer.RelationalModel.extend({
 			}
 			else if(board)
 			{
+				if(board_data.user_id && board_data.user_id != turtl.user.id())
+				{
+					board_data.shared	=	true;
+				}
 				board.set(board_data);
 			}
 			else
@@ -320,6 +333,9 @@ var Profile = Composer.RelationalModel.extend({
 
 		// reset ignore list
 		this.sync_ignore	=	[];
+
+		// let the world know syncing is done
+		this.trigger('sync-post');
 	},
 
 	get_sync_time: function()
