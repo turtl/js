@@ -292,9 +292,9 @@ var Board = Composer.RelationalModel.extend({
 				// leaving with the board info AGAIN, it'll be ignored.
 				this.track_sync();
 				turtl.profile.bind('sync-post', function() {
-					turtl.profile.unbind('sync-post', arguments.callee);
+					turtl.profile.unbind('sync-post', 'profile:track_sync:board:'+this.id());
 					this.track_sync();
-				}.bind(this));
+				}.bind(this), 'profile:track_sync:board:'+this.id());
 
 				// destroy our local copy
 				this.destroy({skip_sync: true});
