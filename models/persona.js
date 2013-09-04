@@ -112,6 +112,10 @@ var Persona = Protected.extend({
 		{
 			args.ignore_persona_id = this.id(true);
 		}
+		if(options.require_pubkey)
+		{
+			args.require_key	=	1;
+		}
 		turtl.api.get('/personas/email/'+email, args, options);
 	},
 

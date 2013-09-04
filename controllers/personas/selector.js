@@ -83,6 +83,7 @@ var PersonaSelector = Composer.Controller.extend({
 		if(email == '') return false;
 		this.email_loading.setStyle('display', 'inline');
 		this.persona.get_by_email(email, {
+			require_pubkey: true,
 			success: function(persona) {
 				this.email_loading.setStyle('display', '');
 				this.refresh_personas([persona]);
