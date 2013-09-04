@@ -21,12 +21,14 @@ if(window.chrome && window.chrome.extension)
 		// *after* turtl.js
 		window._in_app		=	true;
 
+		// grab the background page, we'll be using it to bootstrap
+		var bg				=	chrome.extension.getBackgroundPage();
+
 		// we're going to use a comm object for our port that was given to us by
 		// the gracious background app.
-		window.port			=	new ChromeAddonPort({comm: window._comm});
+		window.port			=	new ChromeAddonPort({comm: bg.ext.last_opened_tab.comm});
 
 		// log the user in on load
-		var bg				=	chrome.extension.getBackgroundPage();
 		var user			=	bg.turtl.user;
 		window._auth		=	{
 			uid: user.id(),
@@ -41,21 +43,20 @@ if(window.chrome && window.chrome.extension)
 			setup_called	=	arguments;
 		};
 		// grab the background page's profile data (async)
-		var win	=	window;		// save window in case of scope issues
 		bg.turtl.profile.persist({
 			now: true,
 			complete: function(data) {
-				win._profile	=	data;
+				window._profile	=	data;
 
 				// replace the hijacked function
-				win.turtl.setup_profile	=	setup_profile;
+				turtl.setup_profile	=	setup_profile;
 
 				// if setup_profile was called before the profile finished
 				// serializing, call it again after replacing it with its 
 				// original (and with its original args, stored in
 				// `setup_called`)
-				if(setup_called) win.turtl.setup_profile.apply(win.turtl, setup_called);
-			}
+				if(setup_called) turtl.setup_profile.apply(turtl, setup_called);
+			}.bind(window)
 		});
 	}
 }
