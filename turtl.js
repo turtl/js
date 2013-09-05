@@ -134,8 +134,7 @@ var turtl	=	{
 					if(initial_route.match(/^\/users\//)) initial_route = '/';
 					if(initial_route.match(/index.html/)) initial_route = '/';
 					if(initial_route.match(/background.html/)) initial_route = '/';
-					if(!window._in_app) turtl.route(initial_route);
-					else dashboard.load();
+					turtl.route(initial_route);
 					turtl.setup_syncing();
 					turtl.setup_background_panel();
 					if(window.port) window.port.send('profile-load-complete');
@@ -440,3 +439,6 @@ window.addEvent('domready', function() {
 	turtl.init.delay(50, turtl);
 });
 
+window.addEvent('beforeunload', function() {
+	if(window.port) window.port.send('tab-unload');
+});
