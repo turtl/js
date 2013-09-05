@@ -98,6 +98,16 @@ var Persona = Protected.extend({
 
 	destroy_persona: function(options)
 	{
+		// in addition to destroying the persona, we need to UNset all board
+		// priv entries that contain this persona.
+		turtl.profile.get('boards').each(function(board) {
+			var privs	=	Object.clone(board.get('privs', {}));
+			var shared	=	privs[this.id()];
+			if(!shared) return;
+
+			delete privs[this.id()];
+			board.set({privs: privs});
+		}.bind(this));
 		return this.destroy(options);
 	},
 

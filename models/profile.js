@@ -240,7 +240,7 @@ var Profile = Composer.RelationalModel.extend({
 			var persona	=	turtl.user.get('personas').find_by_id(persona_data.id);
 			if(persona_data.deleted)
 			{
-				if(persona) persona.destroy({skip_sync: true});
+				if(persona) persona.destroy_persona({skip_sync: true});
 			}
 			else if(persona)
 			{
