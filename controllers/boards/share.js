@@ -76,11 +76,11 @@ var BoardShareController = Composer.Controller.extend({
 
 		var invites	=	[];
 		Object.each(privs, function(entry, id) {
-			if(!entry || !entry.e) return;
+			if(!entry || !entry.email) return;
 			var invite	=	{
 				id: id,
-				email: entry.e,
-				p: entry.p
+				email: entry.email,
+				p: entry.perms
 			};
 			invites.push(invite);
 		});

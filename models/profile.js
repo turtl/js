@@ -275,6 +275,24 @@ var Profile = Composer.RelationalModel.extend({
 			}
 			else
 			{
+				// make sure this isn't a rogue/shared board sync. sometimes a
+				// shared board will sync AFTER it's deleted, bringing us here.
+				// luckily, we can detect it via board.shared == true, and
+				// board.privs.does_not_contain(any_of_my_personas).
+				if(board_data.shared)
+				{
+					var persona_ids		=	turtl.user.get('personas').map(function(p) { return p.id(); });
+					var has_my_persona	=	false;
+					Object.keys(board_data.privs).each(function(pid) {
+						if(persona_ids.contains(pid)) has_my_persona = true;
+					});
+
+					// board is shared, and I'm not on the guest list. not sure
+					// why I got an invite telling me to join a board I'm not
+					// actually invited to, but let's save ourselves the heart-
+					// break and skip out on this one
+					if(!has_my_persona) return false;
+				}
 				turtl.profile.get('boards').upsert(new Board(board_data));
 			}
 		}.bind(this));

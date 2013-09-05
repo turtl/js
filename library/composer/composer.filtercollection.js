@@ -274,6 +274,7 @@
 		{
 			if(!this.filter(model, this)) return false;
 			this.refresh({silent: true});
+			if(this.sort_event) this.fire_event('sort', options);
 			this.fire_event('add', options, model, this, options);
 		},
 

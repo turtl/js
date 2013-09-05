@@ -354,6 +354,7 @@ var NotesController = TrackController.extend({
 					return get_id(el.className);
 				});
 
+				/*
 				var notes_collection	=	this.board.get('notes');
 
 				var sorted_id	=	get_id(sorted_el.className);
@@ -384,14 +385,16 @@ var NotesController = TrackController.extend({
 					return;
 				}
 
+				//console.log('prev:', prev.get('sort'));
+				//console.log('next: ', next.get('sort'));
+				//console.log('sort: ', sortval);
+				//return;
 				sorted.set({sort: sortval});
 				sorted.save();
+				*/
 
-				/**
-				 * Leaving this code since it's the only working example of
-				 * batch note saving
-				 *
 				// save all note sorts as a batch
+				var notes_collection	=	this.board.get('notes');
 				notes_collection.start_batch_save();
 				notes_collection.each(function(note) {
 					if(!ids.contains(note.id())) return;
@@ -403,7 +406,6 @@ var NotesController = TrackController.extend({
 					shared: this.board.get('shared'),
 					persona: this.board.get_shared_persona()
 				});
-				*/
 			}.bind(this)
 		});
 

@@ -21,16 +21,16 @@
 		<? if(personas.length > 0 || invites.length > 0) { ?>
 			<ul>
 				<? personas.each(function(p) { ?>
-					<? if(!p || !p.privs || !p.privs.p) { return; } ?>
+					<? if(!p || !p.privs || !p.privs.perms) { return; } ?>
 					<li class="persona_<?=p.id?> clear">
 						<h3>
 							<?=p.email?>
-							<? if(p.privs && p.privs.i) { ?>
+							<? if(p.privs && p.privs.invite) { ?>
 								<small>- invite pending</small>
 							<? } ?>
 						</h3>
 						<small>
-							(has <?=(p.privs.p == 2 ? 'write' : 'read')?> permissions)
+							(has <?=(p.privs.perms == 2 ? 'write' : 'read')?> permissions)
 						</small>
 						<ul>
 							<li>
@@ -49,7 +49,7 @@
 							<small>- invite pending</small>
 						</h3>
 						<small>
-							(has <?=(i.p == 2 ? 'write' : 'read')?> permissions)
+							(has <?=(i.perms == 2 ? 'write' : 'read')?> permissions)
 						</small>
 						<ul>
 							<li>

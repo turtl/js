@@ -30,6 +30,7 @@ var InvitesListController	=	Composer.Controller.extend({
 
 	release: function()
 	{
+		if(window.port) window.port.unbind('invites-populate');
 		this.collection.unbind(['add', 'remove', 'reset', 'change'], 'invites:list:collection:all');
 		turtl.messages.unbind(['add', 'remove', 'reset', 'change'], 'invites:list:messages:all');
 		this.parent.apply(this, arguments);

@@ -78,12 +78,13 @@ var Invite = Composer.Model.extend({
 				case 'b':
 					var board	=	new Board({id: item_id});
 					board.key	=	item_key;
-					var _notes = res.notes;
+					var _notes	=	res.notes;
 					delete res.notes;
 					res.shared	=	true;
 					board.set(res);
 					turtl.profile.get('boards').add(board);
 					board.update_notes(_notes);
+					if(window.port) window.port.send('profile-sync', {boards: [res], notes: _notes});
 					break;
 				}
 

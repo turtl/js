@@ -119,7 +119,7 @@ var Board = Composer.RelationalModel.extend({
 				// this is our board, but let's make the personas match the privs
 				var privs		=	this.get('privs');
 				var personas	=	this.get('personas').filter(function(p) {
-					return privs[p.id()] && !privs[p.id()].d && privs[p.id()].p > 0;
+					return privs[p.id()] && !privs[p.id()].deleted && privs[p.id()].perms > 0;
 				});
 				this.get('personas').reset(personas);
 			}
@@ -248,7 +248,6 @@ var Board = Composer.RelationalModel.extend({
 
 		turtl.api.put('/boards/'+this.id()+'/persona/'+persona.id(), {}, {
 			success: function(board) {
-				//console.log('found: ', board.id, turtl.profile.get('boards').find_by_id(board.id));
 				if(turtl.profile.get('boards').find_by_id(board.id))
 				{
 					// board's already shared with them, must be a double invite.
@@ -320,7 +319,7 @@ var Board = Composer.RelationalModel.extend({
 		if(!privs) return false;
 		turtl.user.get('personas').each(function(p) {
 			if(!privs[p.id()]) return;
-			var this_privs	=	privs[p.id()].p;
+			var this_privs	=	privs[p.id()].perms;
 			if(this_privs > high_priv)
 			{
 				persona		=	p;
@@ -335,7 +334,7 @@ var Board = Composer.RelationalModel.extend({
 		var shared	=	false;
 		var privs	=	this.get('privs');
 		Object.each(privs, function(v, k) {
-			if(v && v.p > 0 && !v.d) shared	=	true;
+			if(v && v.perms > 0 && !v.deleted) shared = true;
 		});
 		return shared;
 	},
