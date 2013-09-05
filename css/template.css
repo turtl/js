@@ -45,9 +45,9 @@ header {
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#333333', endColorstr='#111111',GradientType=0 ); /* IE6-9 */
 }
 header h1 {float: left; padding: 10px 0 0 10px; font-size: 16px; font-weight: bold; text-transform: lowercase;}
-header h1 a {color: #eee; color: #92b579;}
-header h1 a span {display: inline-block; padding: 0 2px;}
-header h1 a:hover span {color: #73b8d1;}
+header h1 {color: #eee; color: #92b579; cursor: default;}
+header h1 span {display: inline-block; padding: 0 2px;}
+header h1:hover span {color: #73b8d1;}
 header div.loading {visibility: hidden; float: left; margin: 13px 16px 0 16px;}
 
 header .apps ul.switch a {display: block; height: 40px;}
