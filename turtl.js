@@ -228,9 +228,15 @@ var turtl	=	{
 		// set up manual syncing
 		if(window.port && window._in_background)
 		{
+			var manual_sync_ok	=	true;
+			var do_sync_timer	=	new Timer(5000);
+			do_sync_timer.end	=	function() { manual_sync_ok = true; };
 			window.port.bind('do-sync', function() {
+				if(!manual_sync_ok) return false;
 				this.sync_timer.reset();
 				turtl.profile.sync();
+				manual_sync_ok	=	false;
+				do_sync_timer.start();
 			}.bind(this));
 		}
 	},
