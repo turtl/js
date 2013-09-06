@@ -4,8 +4,7 @@ var NoteMoveController = Composer.Controller.extend({
 	},
 
 	events: {
-		'change select': 'select_board',
-		'click select': 'select_board'  	// keeps modal from closing on select
+		'change select': 'select_board'
 	},
 
 	note: null,
@@ -49,7 +48,6 @@ var NoteMoveController = Composer.Controller.extend({
 	select_board: function(e)
 	{
 		if(e) e.stop();
-		if(e.type == 'click') return false;		// fuck you, click
 		var bid = this.inp_select.get('value');
 		var curbid = this.note.get('board_id');
 		if(curbid == bid) return false;
@@ -58,10 +56,10 @@ var NoteMoveController = Composer.Controller.extend({
 		var boardto = turtl.profile.get('boards').find_by_id(bid);
 		if(!boardfrom || !boardto) return false;
 
-		this.note.set({board_id: bid});
+		this.note.set({board_id: bid}, {silent: true});
 		this.note.generate_subkeys([
 			{b: bid, k: boardto.key}
-		]);
+		], {silent: true});
 
 		turtl.loading(true);
 		this.note.save({
