@@ -56,6 +56,9 @@ var NoteMoveController = Composer.Controller.extend({
 		var boardto = turtl.profile.get('boards').find_by_id(bid);
 		if(!boardfrom || !boardto) return false;
 
+		// save our note's keys in case something goes...awry
+		var keys		=	this.note.get('keys');
+
 		this.note.set({board_id: bid}, {silent: true});
 		this.note.generate_subkeys([
 			{b: bid, k: boardto.key}
@@ -68,13 +71,14 @@ var NoteMoveController = Composer.Controller.extend({
 				turtl.loading(false);
 				this.note.set(note_data);
 				boardfrom.get('notes').remove(this.note);
-				//boardfrom.get('tags').trigger('change:selected');
 				boardto.get('notes').add(this.note);
 			}.bind(this),
 			error: function(e) {
 				barfr.barf('There was a problem moving your note: '+ e);
 				turtl.loading(false);
-			}
+				// restore our note's keys
+				this.note.set({keys: keys, board_id: curbid});
+			}.bind(this)
 		});
 	}
 });
