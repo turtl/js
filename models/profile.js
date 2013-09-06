@@ -223,6 +223,13 @@ var Profile = Composer.RelationalModel.extend({
 		// disable sync tracking to prevent endless sync loops
 		this.in_sync	=	true;
 
+		if(	(sync.personas && sync.personas.length > 0) ||
+			(sync.boards && sync.boards.length > 0) ||
+			(sync.notes && sync.notes.length > 0) )
+		{
+			console.log('sync: ', sync, this.sync_ignore);
+		}
+
 		// if we're syncing user data, update it
 		if(sync.user)
 		{
