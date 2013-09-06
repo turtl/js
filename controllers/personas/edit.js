@@ -110,9 +110,12 @@ var PersonaEditController = Composer.Controller.extend({
 				args: args,
 				success: function(res) {
 					turtl.loading(false);
-					if(is_new) this.collection.add(this.model);
+					if(is_new)
+					{
+						this.collection.add(this.model);
+						if(window.port) window.port.send('persona-created', this.model.toJSON());
+					}
 					this.model.trigger('saved');
-					if(window.port) window.port.send('persona-created', this.model.toJSON());
 					if(this.join)
 					{
 						this.do_close();
