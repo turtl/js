@@ -349,7 +349,7 @@ var Protected = Composer.RelationalModel.extend({
 			keys.push(m);
 		}.bind(this));
 
-		this.set({keys: keys});
+		this.set({keys: keys}, options);
 		return keys;
 	}
 });
