@@ -94,7 +94,7 @@ var Note = Composer.RelationalModel.extend({
 			return false;
 		}
 
-		if(board.get('shared', false))
+		if(board.get('shared', false) && this.get('user_id') != turtl.user.id())
 		{
 			var persona		=	board.get_shared_persona();
 			args.persona	=	persona.id();
