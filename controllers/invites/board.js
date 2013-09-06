@@ -44,7 +44,7 @@ var InviteBoardController	=	Composer.Controller.extend({
 		this.invite.send(persona, this.board, secret, {
 			success: function() {
 				turtl.loading(false);
-				barfr.barf('Invite send to '+ this.invite.get('email'));
+				barfr.barf('Invite sent to '+ this.invite.get('email'));
 				this.trigger('sent');
 				this.release();
 			}.bind(this),
