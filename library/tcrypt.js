@@ -270,11 +270,19 @@ var tcrypt = {
 	 */
 	rsa_key_from_json: function(rsakey_obj)
 	{
+		var obj	=	null;
 		try {
-			var obj	=	JSON.parse(rsakey_obj);
+			if(rsakey_obj.n && (rsakey_obj.e || rsakey_obj.d))
+			{
+				obj	=	rsakey_obj;
+			}
+			else
+			{
+				obj	=	JSON.parse(rsakey_obj);
+			}
 		} catch(e) {
-			console.log('RSA: json: parse: ', e);
-			console.log(rsakey_obj);
+			console.log('RSA: json: parse: ', e, rsakey_obj);
+			console.trace();
 			throw(e);
 		}
 		var n	=	obj.n;

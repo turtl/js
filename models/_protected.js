@@ -53,7 +53,15 @@ var Protected = Composer.RelationalModel.extend({
 	{
 		if(!this.key) return false;
 		var decrypted	=	tcrypt.decrypt(this.key, data);
-		return JSON.decode(decrypted);
+		try
+		{
+			var obj			=	JSON.decode(decrypted);
+		}
+		catch(e)
+		{
+			console.log('protected: error deserializing: ', e, decrypted);
+		}
+		return obj;
 	},
 
 	/**
@@ -399,8 +407,10 @@ var ProtectedShared = Protected.extend({
 	decrypt_key: function(decrypting_key, encrypted_key)
 	{
 		encrypted_key		=	convert.base64.decode(encrypted_key);
-		var decrypted_key	=	tcrypt.decrypt_rsa(decrypting_key, encrypted_key);
-		return decrypted_key;
+		tcrypt.decrypt_rsa(decrypting_key, encrypted_key, {async: function(key) {
+			this.trigger('rsa-decrypt', data);
+		}.bind(this)});
+		return false;
 	},
 
 	encrypt_key: function(key, key_to_encrypt)
@@ -421,11 +431,55 @@ var ProtectedShared = Protected.extend({
 
 	ensure_key_exists: function()
 	{
-		// TODO: remove me once shared key generation works
 		return true;
+	},
 
-		if(!this.public_key || !this.private_key) return false;
-		return true;
+	/**
+	 *
+	 */
+	set: function(obj, options)
+	{
+		obj || (obj = {});
+
+		// grab this.parent
+		var parent_set	=	get_parent(this);
+		var args		=	Array.prototype.slice.call(arguments, 0);
+
+		var keys		=	this.get('keys', obj.keys);
+
+		if(this.key)
+		{
+			// we already have a decrypted key, so just do a normal set (async)
+			(function() { 
+				parent_set.apply(this, args);
+			}).delay(0, this);
+		}
+		else if(keys)
+		{
+			// we don't have a key! decrypt it from our keys data and run our
+			// deserialize/set when done
+			var parent	=	get_parent(this);
+			this.unbind('rsa-decrypt');
+			console.log('rsa decrypt start!');
+			this.bind('rsa-decrypt', function(key) {
+				console.log('rsa decrypt done!');
+				this.key	=	key;
+				parent.apply(this, args);
+			}.bind(this));
+
+			// this will find/decrypt our key
+			var search	=	{
+				p: turtl.user.get('personas').map(function(p) {
+					return {id: p.id(), k: p.get('privkey')};
+				})
+			};
+			this.find_key(keys, search);
+		}
+		else
+		{
+			// no existing key, no passed key data
+			return false;
+		}
 	}
 });
 

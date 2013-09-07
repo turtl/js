@@ -120,7 +120,7 @@ var turtl	=	{
 			turtl.controllers.pages.release_current();
 			turtl.messages	=	new Messages();
 			turtl.profile	=	new Profile();
-			turtl.search		=	new Search();
+			turtl.search	=	new Search();
 
 			turtl.show_loading_screen(true);
 			turtl.profile.initial_load({
@@ -146,9 +146,10 @@ var turtl	=	{
 				turtl.route('/users/logout');
 			}, 'dashboard:shortcut:logout');
 
-			// notify addon of new messages
-			turtl.messages.bind('add', function() {
-				if(window.port) window.port.send('new-message');
+			// notify addon of message changes
+			turtl.messages.bind(['add', 'remove', 'reset', 'change'], function() {
+				var messages	=	turtl.messages.toJSON();
+				if(window.port) window.port.send('num-messages', turtl.messages.models().length);
 			});
 		}.bind(turtl));
 		turtl.user.bind('logout', function() {

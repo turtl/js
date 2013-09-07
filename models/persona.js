@@ -194,8 +194,19 @@ var Persona = Protected.extend({
 			success: function(res) {
 				var my_personas	=	turtl.user.get('personas');
 
+				// messages decrypt async (because RSA is slooowwww). because of
+				// this, we dont add them to turtl.messages until they are done
+				// decrypting.
+				res.received.each(function(msgdata) {
+					var msg	=	new Message(msgdata);
+				});
+
 				// add our messages into the pool
 				turtl.messages.add(res.received);
+
+				/**
+				 * disable processing "sent" messages
+				 *
 				// messages we sent have the "to" persona replaced with our own for
 				// display purposes
 				turtl.messages.add((res.sent || []).map(function(sent) {
@@ -205,6 +216,7 @@ var Persona = Protected.extend({
 					sent.mine		=	true;	// let the app know WE sent it
 					return sent;
 				}));
+				*/
 				if(options.success) options.success(res, this);
 			}.bind(this),
 			error: options.error
@@ -232,7 +244,6 @@ var Persona = Protected.extend({
 				persona: this.id()
 			},
 			success: function() {
-				if(window.port) window.port.send('message-remove', message.id());
 				if(options.success) options.success();
 			},
 			error: function(_, err) {

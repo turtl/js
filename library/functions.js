@@ -7,6 +7,19 @@ function toJSON(object)
 }
 
 /**
+ * HACK: Mootools internals!
+ * Allows using this.parent() async
+ */
+function get_parent(obj)
+{
+	var name	=	obj.$caller.$name,
+	parent		=	obj.$caller.$owner.parent,
+	previous	=	(parent) ? parent.prototype[name] : null;
+	if (!previous) throw new Error('The method "' + name + '" has no parent.');
+	return previous;
+}
+
+/**
  * takes raw (non-mootools) object from whatever addon is running and ensures
  * that it is recursively turned into a mootools object
  */
