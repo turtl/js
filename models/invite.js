@@ -84,7 +84,12 @@ var Invite = Composer.Model.extend({
 					board.set(res);
 					turtl.profile.get('boards').add(board);
 					board.update_notes(_notes);
-					if(window.port) window.port.send('profile-sync', {boards: [res], notes: _notes});
+					// sync the new board as if it came through in a /sync POST
+					if(window.port) window.port.send('profile-sync', {
+						user: turtl.user.toJSON(),
+						boards: [res],
+						notes: _notes
+					});
 					break;
 				}
 

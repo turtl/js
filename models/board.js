@@ -272,7 +272,13 @@ var Board = Composer.RelationalModel.extend({
 				turtl.profile.get('boards').add(this);
 				this.update_notes(_notes);
 				// sync the new board as if it came through in a /sync POST
-				if(window.port) window.port.send('profile-sync', {boards: [board], notes: _notes});
+				var user		=	turtl.user.toJSON();
+				user.personas	=	turtl.user.get('personas').toJSON();
+				if(window.port) window.port.send('profile-sync', {
+					user: user,
+					boards: [board],
+					notes: _notes
+				});
 				if(options.success) options.success();
 			}.bind(this),
 			error: options.error
