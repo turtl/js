@@ -4,13 +4,19 @@ var FirefoxAddonPort	=	new Class({
 	initialize: function(comm_object)
 	{
 		this.comm	=	comm_object;
+		for(key in comm_object)
+		{
+			var val = comm_object[key];
+			if(typeof val == 'function')
+			{
+				console.log('['+key+']: ', val);
+			}
+		}
 	},
 
-	send: function(ev)
+	send: function(ev, args)
 	{
-		var args	=	Array.clone(arguments);
-		args.shift();
-		this.comm.emit.apply(this.comm.emit, [ev].append(args));
+		this.comm.emit.apply(this.comm.emit, arguments);
 	},
 
 	bind: function(ev, cb)
@@ -20,7 +26,7 @@ var FirefoxAddonPort	=	new Class({
 
 	unbind: function()
 	{
-		this.comm.off.apply(this.comm, arguments);
+		this.comm.removeListener.apply(this.comm, arguments);
 	}
 });
 
