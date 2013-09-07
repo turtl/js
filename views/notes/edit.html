@@ -3,28 +3,30 @@ var action = note.id ? 'Edit' : 'Add';
 ?>
 <h1><?=action?> note</h1>
 <div class="note-edit clear">
-	<?
-	var showtab = function(name)
-	{
-		var slug = name.toLowerCase();
-		var t = '<li class="'+slug;
-		if(note.type == slug) t += ' sel';
-		t += '">'+ name +'</li>';
-		return t;
-	};
-	?>
-	<ul class="type clear">
-		<? if(!note.id) { ?>
-			<?=showtab('Quick')?>
-		<? } ?>
-		<?=showtab('Text')?>
-		<?=showtab('Link')?>
-		<?=showtab('Image')?>
-		<!--
-		<li>Embed</li>
-		<li>PDF</li>
-		-->
-	</ul>
+	<? if(show_tabs) { ?>
+		<?
+		var showtab = function(name)
+		{
+			var slug = name.toLowerCase();
+			var t = '<li class="'+slug;
+			if(note.type == slug) t += ' sel';
+			t += '">'+ name +'</li>';
+			return t;
+		};
+		?>
+		<ul class="type clear">
+			<? if(!note.id) { ?>
+				<?=showtab('Quick')?>
+			<? } ?>
+			<?=showtab('Text')?>
+			<?=showtab('Link')?>
+			<?=showtab('Image')?>
+			<!--
+			<li>Embed</li>
+			<li>PDF</li>
+			-->
+		</ul>
+	<? } ?>
 	<form class="standard-form">
 		<div class="tags"></div>
 

@@ -20,6 +20,7 @@ var NoteEditController = Composer.Controller.extend({
 	},
 
 	edit_in_modal: true,
+	show_tabs: true,
 
 	board: null,
 	note: null,
@@ -57,7 +58,8 @@ var NoteEditController = Composer.Controller.extend({
 	{
 		var content = Template.render('notes/edit', {
 			note: toJSON(this.note_copy),
-			board: toJSON(this.board)
+			board: toJSON(this.board),
+			show_tabs: this.show_tabs
 		});
 		this.html(content);
 		if(this.tips) this.tips.detach();

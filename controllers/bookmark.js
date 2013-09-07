@@ -69,7 +69,8 @@ var BookmarkController = Composer.Controller.extend({
 				inject: this.edit_container,
 				note: note,
 				board: board,
-				edit_in_modal: false
+				edit_in_modal: false,
+				show_tabs: false	// who needs tabs when the bookmarker is smart?
 			});
 
 			this.edit_controller.bind('release', function() {
