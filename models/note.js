@@ -10,6 +10,7 @@ var Note = Composer.RelationalModel.extend({
 
 	public_fields: [
 		'id',
+		'user_id',
 		'board_id',
 		'keys',
 		'body',
