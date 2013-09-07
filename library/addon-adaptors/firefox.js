@@ -4,14 +4,6 @@ var FirefoxAddonPort	=	new Class({
 	initialize: function(comm_object)
 	{
 		this.comm	=	comm_object;
-		for(key in comm_object)
-		{
-			var val = comm_object[key];
-			if(typeof val == 'function')
-			{
-				console.log('['+key+']: ', val);
-			}
-		}
 	},
 
 	send: function(ev, args)
