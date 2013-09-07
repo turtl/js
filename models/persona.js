@@ -3,6 +3,7 @@ var Persona = Protected.extend({
 
 	public_fields: [
 		'id',
+		'user_id',
 		'pubkey',
 		'email',
 		'name',
