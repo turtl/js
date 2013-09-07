@@ -134,7 +134,7 @@ var turtl	=	{
 					if(initial_route.match(/^\/users\//)) initial_route = '/';
 					if(initial_route.match(/index.html/)) initial_route = '/';
 					if(initial_route.match(/background.html/)) initial_route = '/';
-					turtl.route(initial_route);
+					if(!window._in_background) turtl.route(initial_route);
 					turtl.setup_syncing();
 					turtl.setup_background_panel();
 					if(window.port) window.port.send('profile-load-complete');
