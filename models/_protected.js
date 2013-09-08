@@ -384,7 +384,7 @@ var ProtectedShared = Protected.extend({
 
 	initialize: function()
 	{
-		if(!this.key) this.key = tcrypt.random_key();
+		if(!this.key) this.key = this.generate_key();
 		return this.parent.apply(this, arguments);
 	},
 
