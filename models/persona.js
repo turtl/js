@@ -108,6 +108,8 @@ var Persona = Protected.extend({
 
 			delete privs[this.id()];
 			board.set({privs: privs});
+
+			if(window.port) window.port.send('persona-deleted', this.id());
 		}.bind(this));
 		return this.destroy(options);
 	},
@@ -198,6 +200,9 @@ var Persona = Protected.extend({
 				// this, we dont add them to turtl.messages until they are done
 				// decrypting.
 				res.received.each(function(msgdata) {
+					// if we already have this message, don't bother with all
+					// the crypto stuff
+					if(turtl.messages.find_by_id(msgdata.id)) return;
 					var msg	=	new Message();
 					msg.setup_keys(msgdata.keys);
 					msg.bind('have-key', function() {

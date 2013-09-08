@@ -32,7 +32,7 @@ var turtl	=	{
 	scroll_to_top: true,
 
 	// whether or not to sync data w/ server
-	sync: false,
+	sync: true,
 	sync_timer: null,
 
 	// if true, tells the app to mirror data to local storage
@@ -148,13 +148,21 @@ var turtl	=	{
 
 			// notify addon of message changes
 			turtl.messages.bind(['add', 'remove', 'reset', 'change'], function() {
-				var messages	=	turtl.messages.toJSON();
-				if(window.port) window.port.send('num-messages', turtl.messages.models().length);
-			});
+				var num_messages	=	turtl.messages.map(function(msg) {
+					return msg.id();
+				});
+				if(window.port) window.port.send('num-messages', num_messages.length);
+			}, 'turtl:messages:counter');
+			turtl.user.bind_relational('personas', ['add', 'remove', 'reset'], function() {
+				var num_personas	=	turtl.user.get('personas').models().length;
+				if(window.port) window.port.send('num-personas', num_personas);
+			}, 'turtl:personas:counter');
 		}.bind(turtl));
 		turtl.user.bind('logout', function() {
 			turtl.controllers.pages.release_current();
 			turtl.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
+			turtl.messages.unbind(['add', 'remove', 'reset', 'change'], 'turtl:messages:counter');
+			turtl.user.unbind_relational('personas', ['add', 'remove', 'reset'], 'turtl:personas:counter');
 			turtl.show_loading_screen(false);
 			turtl.user.unbind('change', 'user:write_changes_to_cookie');
 			turtl.api.clear_auth();
