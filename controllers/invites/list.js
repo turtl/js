@@ -171,7 +171,11 @@ var InvitesListController	=	Composer.Controller.extend({
 			var persona		=	turtl.user.get('personas').find_by_id(message.get('to'));
 			if(!persona) return false;
 			// this should never happen, but you never know
-			if(!board_id || !board_key) persona.delete_message(message);
+			if(!board_id || !board_key)
+			{
+				persona.delete_message(message);
+				return false;
+			}
 			var board	=	new Board({
 				id: board_id
 			});
