@@ -245,8 +245,44 @@ var tcrypt = {
 	{
 		options || (options = {});
 
-		var decrypted	=	new RSA().decrypt(message, private_key);
-		return decrypted;
+		if(options.async)
+		{
+			var worker = new Worker(window._base_url + '/library/cowcrypt/crypto_math.js');
+
+			var decryption_complete_callback = function(decrypted)
+			{
+				// Manually undo the PKCS1 v1.5 padding
+				decrypted = new PKCS1_v1_5().decode(decrypted);
+				options.async(decrypted);
+			}
+
+			worker.addEventListener('message', function(e) {
+				var data = e.data;
+
+				switch (data.cmd) {
+					case 'put_rsa_decrypt':
+						decryption_complete_callback(data.response.plaintext)
+						worker.terminate();
+						break;
+				}
+			}, false);
+
+			worker.postMessage({
+				cmd: 'get_rsa_decrypt',
+				request: {
+					ciphertext: message,
+					n: private_key.get_modulus(),
+					d: private_key.get_exponent_private()
+				}
+			});
+
+			return false;
+		}
+		else
+		{
+			var decrypted	=	new RSA().decrypt(message, private_key);
+			return decrypted;
+		}
 	},
 
 	/**
@@ -270,21 +306,7 @@ var tcrypt = {
 	 */
 	rsa_key_from_json: function(rsakey_obj)
 	{
-		var obj	=	null;
-		try {
-			if(rsakey_obj.n && (rsakey_obj.e || rsakey_obj.d))
-			{
-				obj	=	rsakey_obj;
-			}
-			else
-			{
-				obj	=	JSON.parse(rsakey_obj);
-			}
-		} catch(e) {
-			console.log('RSA: json: parse: ', e, rsakey_obj);
-			console.trace();
-			throw(e);
-		}
+		var obj	=	JSON.parse(rsakey_obj);
 		var n	=	obj.n;
 		var e	=	obj.e;
 		var d	=	obj.d;

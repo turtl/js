@@ -59,7 +59,10 @@ var Protected = Composer.RelationalModel.extend({
 		}
 		catch(e)
 		{
-			console.log('protected: error deserializing: ', e, decrypted);
+			console.log('protected: error deserializing: ', e, this.key, decrypted.substr(0, 20));
+			console.log('this id: ', this.id());
+			console.log('key: ', this.key);
+			//console.trace();
 		}
 		return obj;
 	},
@@ -268,7 +271,7 @@ var Protected = Composer.RelationalModel.extend({
 		for(x in keys)
 		{
 			var key		=	keys[x];
-			if(!key.k) continue;
+			if(!key || !key.k) continue;
 			var enckey	=	key.k;
 			delete(key.k);
 			var match	=	false;
@@ -406,9 +409,10 @@ var ProtectedShared = Protected.extend({
 
 	decrypt_key: function(decrypting_key, encrypted_key)
 	{
-		encrypted_key		=	convert.base64.decode(encrypted_key);
+		encrypted_key	=	convert.base64.decode(encrypted_key);
+		console.log('ras threaded');
 		tcrypt.decrypt_rsa(decrypting_key, encrypted_key, {async: function(key) {
-			this.trigger('rsa-decrypt', data);
+			this.trigger('rsa-decrypt', key);
 		}.bind(this)});
 		return false;
 	},
@@ -445,7 +449,8 @@ var ProtectedShared = Protected.extend({
 		var parent_set	=	get_parent(this);
 		var args		=	Array.prototype.slice.call(arguments, 0);
 
-		var keys		=	this.get('keys', obj.keys);
+		var keys	=	this.get('keys').toJSON();
+		if(keys.length == 0 && obj.keys) keys = obj.keys;
 
 		if(this.key)
 		{
@@ -460,11 +465,11 @@ var ProtectedShared = Protected.extend({
 			// deserialize/set when done
 			var parent	=	get_parent(this);
 			this.unbind('rsa-decrypt');
-			console.log('rsa decrypt start!');
 			this.bind('rsa-decrypt', function(key) {
-				console.log('rsa decrypt done!');
 				this.key	=	key;
+				console.log('rsa decrypt done!', this.key);
 				parent.apply(this, args);
+				window._key = key;
 			}.bind(this));
 
 			// this will find/decrypt our key
