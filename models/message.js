@@ -25,11 +25,6 @@ var Message = ProtectedShared.extend({
 
 	init: function()
 	{
-		// NOTE: although the persona is not serialized with the message, not
-		// having a persona key will break message serialization anyway. this is
-		// hard to get around, so we add a little hack here.
-		this.get('persona').key	=	tcrypt.random_key();
-
 		// keep the "created" timestamp updated (not that the ID changes, but w/e)
 		this.bind('change:id', function() {
 			var id		=	this.id(true);

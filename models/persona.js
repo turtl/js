@@ -193,19 +193,22 @@ var Persona = Protected.extend({
 		turtl.api.get('/messages/personas/'+this.id(), {after: options.after}, {
 			success: function(res) {
 				var my_personas	=	turtl.user.get('personas');
-				console.log('made it');
 
 				// messages decrypt async (because RSA is slooowwww). because of
 				// this, we dont add them to turtl.messages until they are done
 				// decrypting.
 				res.received.each(function(msgdata) {
 					var msg	=	new Message();
-					msg.key	=	false;
-					msg.set(msgdata);
+					msg.setup_keys(msgdata.keys);
+					msg.bind('have-key', function() {
+						msg.unbind('have-key');
+						msg.set(msgdata);
+						turtl.messages.add(msg);
+					});
 				});
 
 				/**
-				 * disable processing "sent" messages
+				 * disable processing "sent" messages since nobody cares ATM
 				 *
 				// messages we sent have the "to" persona replaced with our own for
 				// display purposes
@@ -219,10 +222,7 @@ var Persona = Protected.extend({
 				*/
 				if(options.success) options.success(res, this);
 			}.bind(this),
-			error: function() {
-				console.log('messages error: ', arguments);
-				if(options.error) options.error.apply(this, arguments);
-			}.bind(this)
+			error: options.error
 		});
 	},
 

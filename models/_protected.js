@@ -59,9 +59,9 @@ var Protected = Composer.RelationalModel.extend({
 		}
 		catch(e)
 		{
-			console.log('protected: error deserializing: ', e, this.key, decrypted.substr(0, 20));
-			console.log('this id: ', this.id());
-			console.log('key: ', this.key);
+			console.log('err: protected: error deserializing: ', e);
+			console.log('err: this id: ', this.id());
+			console.log('err: key: ', this.key.length, this.key);
 			//console.trace();
 		}
 		return obj;
@@ -202,7 +202,7 @@ var Protected = Composer.RelationalModel.extend({
 		// serialize the body (encrypted)
 		var encbody	=	this.serialize(_body, newdata);
 
-		newdata[this.body_key]	=	encbody.toString();
+		newdata[this.body_key]	=	encbody;
 		return newdata;
 	},
 
@@ -397,7 +397,6 @@ var ProtectedShared = Protected.extend({
 				return {id: p.id(), k: p.get('privkey')};
 			})
 		};
-		this.key	=	this.find_key(parentobj.keys, search);
 		if(!this.key) return false;
 		return this.parent.apply(this, arguments);
 	},
@@ -410,7 +409,6 @@ var ProtectedShared = Protected.extend({
 	decrypt_key: function(decrypting_key, encrypted_key)
 	{
 		encrypted_key	=	convert.base64.decode(encrypted_key);
-		console.log('ras threaded');
 		tcrypt.decrypt_rsa(decrypting_key, encrypted_key, {async: function(key) {
 			this.trigger('rsa-decrypt', key);
 		}.bind(this)});
@@ -435,56 +433,32 @@ var ProtectedShared = Protected.extend({
 
 	ensure_key_exists: function()
 	{
-		return true;
+		if(!this.key) return false;
+		return this.key;
 	},
 
-	/**
-	 *
-	 */
-	set: function(obj, options)
+	setup_keys: function(keydata)
 	{
-		obj || (obj = {});
+		// we're looking for a key, and the one we have is probably the auto-
+		// generated one from initialize
+		this.key	=	false;
 
-		// grab this.parent
-		var parent_set	=	get_parent(this);
-		var args		=	Array.prototype.slice.call(arguments, 0);
-
-		var keys	=	this.get('keys').toJSON();
-		if(keys.length == 0 && obj.keys) keys = obj.keys;
-
-		if(this.key)
-		{
-			// we already have a decrypted key, so just do a normal set (async)
-			(function() { 
-				parent_set.apply(this, args);
-			}).delay(0, this);
-		}
-		else if(keys)
-		{
-			// we don't have a key! decrypt it from our keys data and run our
-			// deserialize/set when done
-			var parent	=	get_parent(this);
+		// we don't have a key! decrypt it from our keys data and run our
+		// deserialize/set when done
+		this.bind('rsa-decrypt', function(key) {
 			this.unbind('rsa-decrypt');
-			this.bind('rsa-decrypt', function(key) {
-				this.key	=	key;
-				console.log('rsa decrypt done!', this.key);
-				parent.apply(this, args);
-				window._key = key;
-			}.bind(this));
+			this.key	=	key;
+			this.trigger('have-key');
+		}.bind(this));
 
-			// this will find/decrypt our key
-			var search	=	{
-				p: turtl.user.get('personas').map(function(p) {
-					return {id: p.id(), k: p.get('privkey')};
-				})
-			};
-			this.find_key(keys, search);
-		}
-		else
-		{
-			// no existing key, no passed key data
-			return false;
-		}
+		// this will find/decrypt our key, but async (and triggers rsa-decrypt
+		// when it's done, which is bound above)
+		var search	=	{
+			p: turtl.user.get('personas').map(function(p) {
+				return {id: p.id(), k: p.get('privkey')};
+			})
+		};
+		this.find_key(keydata, search);
 	}
 });
 
