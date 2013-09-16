@@ -124,6 +124,7 @@ var PersonasController = Composer.Controller.extend({
 		{
 			settings.setStyle('display', 'block');
 		}
+		if(window.port) window.port.send('resize');
 	},
 
 	update_email_setting: function(e)
