@@ -3,9 +3,6 @@
 var $E = function(selector, filter){ return ($(filter) || document).getElement(selector); };
 var $ES = function(selector, filter){ return ($(filter) || document).getElements(selector); };
 
-// stores the object that communicates with the addon
-var addon_comm	=	null;
-
 var turtl	=	{
 	site_url: null,
 
@@ -234,7 +231,7 @@ var turtl	=	{
 			});
 		}
 
-		// set up manual syncing
+		// set up manual syncing, and listen for persona key assignments
 		if(window.port && window._in_background)
 		{
 			var manual_sync_ok	=	true;
@@ -247,6 +244,25 @@ var turtl	=	{
 				manual_sync_ok	=	false;
 				do_sync_timer.start();
 			}.bind(this));
+
+			window.port.bind('persona-attach-key', function(key, persona_data) {
+				var persona	=	turtl.user.get('personas').find_by_id(persona_data.id);
+				if(!persona || persona.has_rsa())
+				{
+					console.log('key attached, but persona gone (or has key)');
+					// persona doesn't exist (or already has key), return the key
+					window.port.send('rsa-keypair', key);
+					return false;
+				}
+				persona.set_rsa(tcrypt.rsa_key_from_json(key));
+				persona.save();
+			});
+			var persona	=	turtl.user.get('personas').first();
+			if(persona && !persona.has_rsa({check_private: true}))
+			{
+				window.port.send('persona-created', persona.toJSON());
+				console.log('turtl: persona created (init)');
+			}
 		}
 	},
 
