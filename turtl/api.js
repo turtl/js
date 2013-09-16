@@ -58,6 +58,11 @@ var ApiTracker	=	new Class({
 		}
 		else
 		{
+			// trick the Request into having the "correct" xhr info
+			request.xhr	=	{
+				status: status,
+				responseText: text
+			};
 			request.failure();
 		}
 	}
