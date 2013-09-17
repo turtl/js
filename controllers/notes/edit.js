@@ -30,6 +30,7 @@ var NoteEditController = Composer.Controller.extend({
 
 	init: function()
 	{
+		if(!this.board) return false;
 		if(!this.note) this.note = new Note({type: 'quick'});
 		// clone the note so any changes to it pre-save don't show up in the listings.
 		this.note_copy = this.note.clone();

@@ -16,6 +16,9 @@ var BoardEditController = Composer.Controller.extend({
 
 	// if true, brings up an inline-editing interface
 	bare: false,
+	edit_in_modal: true,
+
+	title: false,
 
 	// if true, opens management modal after successful update
 	return_to_manage: false,
@@ -28,7 +31,7 @@ var BoardEditController = Composer.Controller.extend({
 		{
 			this.el.addClass('board-bare');
 		}
-		else
+		else if(this.edit_in_modal)
 		{
 			modal.open(this.el);
 			var close_fn = function() {
@@ -52,7 +55,8 @@ var BoardEditController = Composer.Controller.extend({
 		var content = Template.render('boards/edit', {
 			return_to_manage: this.return_to_manage,
 			board: toJSON(this.board),
-			bare: this.bare
+			bare: this.bare,
+			title: this.title
 		});
 		this.html(content);
 		(function() { this.inp_title.focus(); }).delay(10, this);
@@ -91,7 +95,8 @@ var BoardEditController = Composer.Controller.extend({
 			success: function() {
 				turtl.loading(false);
 				if(success) success();
-				if(modal.is_open) modal.close();
+				if(this.edit_in_modal && modal.is_open) modal.close();
+				else this.release();
 
 				if(this.return_to_manage)
 				{
@@ -112,7 +117,8 @@ var BoardEditController = Composer.Controller.extend({
 	open_manager: function(e)
 	{
 		if(e) e.stop();
-		modal.close();
+		if(this.edit_in_modal) modal.close();
+		else this.release();
 
 		// open management back up
 		new BoardManageController({

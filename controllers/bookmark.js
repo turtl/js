@@ -48,9 +48,18 @@ var BookmarkController = Composer.Controller.extend({
 		this.profile	=	turtl.profile;
 
 		this.profile.bind('change:current_board', function() {
-			var board = this.profile.get_current_board();
-			if(!board) return;
-
+			var board	=	this.profile.get_current_board();
+			if(!board)
+			{
+				this.edit_controller	=	new BoardEditController({
+					inject: this.edit_container,
+					profile: turtl.profile,
+					edit_in_modal: false,
+					title: 'Add your first board to start bookmarking'
+				});
+				this.resize();
+				return false;
+			}
 			turtl.user.get('settings').get_by_key('last_board').value(board.id());
 			this.soft_release();
 
@@ -60,17 +69,18 @@ var BookmarkController = Composer.Controller.extend({
 				title: this.linkdata.title,
 				text: this.linkdata.text
 			});
-			this.board_controller = new BoardsController({
-				inject: this.board_container,
-				profile: this.profile,
-				add_bare: true
-			});
 			this.edit_controller = new NoteEditController({
 				inject: this.edit_container,
 				note: note,
 				board: board,
 				edit_in_modal: false,
 				show_tabs: false	// who needs tabs when the bookmarker is smart?
+			});
+
+			this.board_controller = new BoardsController({
+				inject: this.board_container,
+				profile: this.profile,
+				add_bare: true
 			});
 
 			this.edit_controller.bind('release', function() {
@@ -119,7 +129,9 @@ var BookmarkController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var content = Template.render('bookmark/index');
+		var content = Template.render('bookmark/index', {
+			have_boards: turtl.profile.get('boards').models().length > 0
+		});
 		this.html(content);
 	},
 

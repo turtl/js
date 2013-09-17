@@ -3,7 +3,11 @@ var action	=	(board.id ? 'Edit' : 'Add');
 ?>
 <? if(!bare) { ?>
 	<h1>
-		<?=action?> board
+		<? if(title) { ?>
+			<?=title?>
+		<? } else { ?>
+			<?=action?> board
+		<? } ?>
 		<? if(return_to_manage) { ?>
 			<small><a href="#manage">&laquo; Back to board manager</a></small>
 		<? } ?>
