@@ -30,22 +30,6 @@ var PagesController	=	Composer.Controller.extend({
 
 	pre_route: function(url)
 	{
-		// process url rewrites, but only on non-initial route
-		if(this.base_url)
-		{
-			var match	=	turtl.router.find_matching_route(url, config.rewrite);
-			if(match)
-			{
-				var cur_url	=	profiles.cur_url({skip_content_modal: true});
-				var newurl	=	url
-					.replace(eval(match.regex), match.route)
-					.replace(/\[\[base_url\]\]/g, this.base_url)
-					.replace(/\[\[cur_url\]\]/g, cur_url)
-					.replace(/\[\[url\]\]/g, match.args[0]);
-				url.rewrite(newurl);
-			}
-		}
-
 		// scroll to the top of the window (but ONLY if we're not in a modal).
 		var last	=	(turtl.last_url || window.location.pathname).replace(/\-\-.*/, '');
 		var cur		=	url.replace(/\-\-.*/, '');
@@ -93,7 +77,7 @@ var PagesController	=	Composer.Controller.extend({
 
 		if(typeof(cls) == 'string')
 		{
-			var cls	=	eval(cls);
+			var cls	=	window[cls];
 		}
 
 		// load the controller, setting is as the current controller for the page.

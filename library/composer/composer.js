@@ -14,8 +14,7 @@
 (function() {
 	var Composer	=	{};
 	var global	=	typeof(global) != 'undefined' ? global :
-						typeof(window) != 'undefined' ? window :
-							this;
+						typeof(window) != 'undefined' ? window : this;
 
 	/**
 	 * You must override this function in your app.
@@ -777,7 +776,7 @@
 			// instantiation and store it back into Collection.model.
 			//
 			// NOTE: this happens before the initial reset =]
-			this.model	=	typeof(this.model) == 'string' ? eval(this.model) : this.model;
+			this.model	=	typeof(this.model) == 'string' ? global[this.model] : this.model;
 
 			if(models)
 			{
@@ -1852,8 +1851,8 @@
 			var regex	=	null;
 			for(var re in routes)
 			{
-				regex	=	'/^' + re.replace(/\//g, '\\\/') + '$/';
-				match	=	eval(regex).exec(url);
+				regex	=	new RegExp('^' + re.replace(/\//g, '\\\/') + '$');
+				match	=	regex.exec(url);
 				if(match)
 				{
 					route	=	routes[re];
@@ -2124,6 +2123,8 @@
 	Composer._export	=	function(exports)
 	{
 		exports.each(function(name) {
+			// TODO: eliminate eval here
+			name		=	name.replace(/[^a-z]/gi, '');	// make eval not so bad for now
 			var _do_try	=	function(classname) { return 'try{'+classname+'}catch(e){false}'; };
 			var cls		=	eval(_do_try(name)) || eval(_do_try('Composer.'+name));
 			if(!cls) return false;
