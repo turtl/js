@@ -26,8 +26,8 @@ var User	=	Composer.RelationalModel.extend({
 
 	logged_in: false,
 
-	auth: null,
 	key: null,
+	auth: null,
 
 	settings_timer: null,
 
@@ -199,8 +199,7 @@ var User	=	Composer.RelationalModel.extend({
 
 	get_auth: function()
 	{
-		var auth = this.auth;
-		if(auth) return auth;
+		if(this.auth) return this.auth;
 
 		var username = this.get('username');
 		var password = this.get('password');
@@ -213,8 +212,7 @@ var User	=	Composer.RelationalModel.extend({
 		var iv = tcrypt.iv(username+'4c281987249be78a');	// make sure IV always has 16 bytes
 		var auth =  tcrypt.encrypt(key, user_record, {iv: iv}).toString();
 
-		// cache it
-		this.auth = auth;
+		this.auth	=	auth;
 
 		return auth;
 	},
