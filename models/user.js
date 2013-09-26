@@ -199,9 +199,6 @@ var User	=	Composer.RelationalModel.extend({
 
 	get_auth: function()
 	{
-		var auth = this.auth;
-		if(auth) return auth;
-
 		var username = this.get('username');
 		var password = this.get('password');
 
