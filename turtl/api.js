@@ -231,8 +231,8 @@ var Api	=	new Class({
 		for(var i = 0; i < config.auth.length; i++)
 		{
 			var entry	=	config.auth[i];
-			var regex	=	'/^' + entry.resource.replace(/\//g, '\\\/') + '$/';
-			match		=	eval(regex).exec(resource);
+			var regex	=	new RegExp('^' + entry.resource.replace(/\//g, '\\\/') + '$')
+			match		=	regex.exec(resource);
 			if(match && entry.method.toUpperCase() == method)
 			{
 				if(!auth && entry.auth) auth = true;

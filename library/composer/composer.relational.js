@@ -19,6 +19,10 @@
  * Redistributions of files must retain the above copyright notice.
  */
 (function() {
+	var global	=	typeof(global) != 'undefined' ? global :
+						typeof(window) != 'undefined' ? window : this;
+	var Composer	=	global.Composer;
+
 	// set up relationship types
 	// TODO: deprecate these...
 	Composer.HasOne		=	1;
@@ -26,8 +30,6 @@
 
 	// very simple wrapper around Model to support relationships between data.
 	// TODO: support reverse relationships
-	// TODO: set up event bubbling (or give option to do so) for related models/
-	//       collections
 	var RelationalModel	=	new Class({
 		Extends: Composer.Model,
 
@@ -50,18 +52,18 @@
 					// objects they refer to.
 					if(relation.model && typeof(relation.model) == 'string')
 					{
-						relation.model	=	eval(relation.model);
+						relation.model	=	this._get_key(global, relation.model);
 					}
 					else if(relation.collection && typeof(relation.collection) == 'string')
 					{
-						relation.collection	=	eval(relation.collection);
+						relation.collection	=	this._get_key(global, relation.collection);
 					}
 					else if(relation.filter_collection && typeof(relation.filter_collection) == 'string')
 					{
 						// set up the filter collection. if one doesn't exist, create a function
 						// that looks withing the keys of the relational data to pull a master
 						// collection out of.
-						relation.filter_collection	=	eval(relation.filter_collection);
+						relation.filter_collection	=	this._get_key(global, relation.filter_collection);
 						var master	=	relation.master;
 						if(typeof(master) == 'string')
 						{

@@ -271,7 +271,7 @@ var turtl	=	{
 		if(!window.port) return false;
 
 		window.port.bind('addon-controller-open', function(controller_name, params) {
-			var controller	=	turtl.controllers.pages.load(eval(controller_name), params);
+			var controller	=	turtl.controllers.pages.load(window[controller_name], params);
 		});
 
 		window.port.bind('get-height', function() {
@@ -392,7 +392,8 @@ var turtl	=	{
 
 	set_title: function(title)
 	{
-		title	=	title.clean().replace(eval('/(\\s*\\|\\s*'+(turtl.base_window_title).escapeRegExp()+')*(\\s*\\|)?$/g'), '');
+		var regex	=	new RegExp('(\\s*\\|\\s*'+(turtl.base_window_title).escapeRegExp()+')*(\\s*\\|)?$', 'g');
+		title		=	title.clean().replace(regex, '');
 		if(title == '') title = this.base_window_title;
 		else title = title + ' | ' + this.base_window_title;
 		document.title	=	title;
