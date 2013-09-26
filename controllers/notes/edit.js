@@ -168,6 +168,7 @@ var NoteEditController = Composer.Controller.extend({
 		this.note_copy.save({
 			success: function(note_data) {
 				turtl.loading(false);
+				this.start_file_upload(this.note);
 				this.note.key = this.note_copy.key;
 				this.note.set(note_data);
 				if(isnew) this.board.get('notes').add(this.note);
@@ -181,6 +182,13 @@ var NoteEditController = Composer.Controller.extend({
 				turtl.loading(false);
 			}
 		});
+	},
+
+	start_file_upload: function(note)
+	{
+		if(!this.file) return false;
+
+
 	},
 
 	select_tab: function(typename)
