@@ -4,19 +4,24 @@ var NoteEditController = Composer.Controller.extend({
 		'textarea[name=quick]': 'inp_quick',
 		'input[name=title]': 'inp_title',
 		'input[name=url]': 'inp_url',
-		'textarea[name=text]': 'inp_text'
+		'textarea[name=text]': 'inp_text',
+		'input[name=file]': 'inp_file',
+		'.upload a.remove': 'upload_remove',
+		'.upload .preview': 'upload_preview'
 	},
 
 	events: {
 		'submit form': 'edit_note',
-		'click ul.type li': 'switch_type'
+		'click ul.type li': 'switch_type',
+		'change input[name=file]': 'set_attachment',
+		'click a[href=#remove-attachment]': 'clear_attachment'
 	},
 
 	type_fields: {
-		'quick':   ['quick'],
-		'link':  ['url', 'title', 'text'],
-		'text':  ['text'],
-		'image': ['url', 'title', 'text']
+		'quick':   ['quick', 'upload'],
+		'link':  ['url', 'title', 'text', 'upload'],
+		'text':  ['text', 'upload'],
+		'image': ['url', 'title', 'text', 'upload']
 	},
 
 	edit_in_modal: true,
@@ -25,6 +30,7 @@ var NoteEditController = Composer.Controller.extend({
 	board: null,
 	note: null,
 	note_copy: null,
+	file: null,			// holds any upload data
 	tag_controller: null,
 	tips: null,
 
@@ -211,6 +217,40 @@ var NoteEditController = Composer.Controller.extend({
 		var li = next_tag_up('li', e.target);
 		var typename = li.get('html').clean().toLowerCase();
 		this.select_tab(typename);
+	},
+
+	set_attachment: function(e)
+	{
+		var file	=	e.target.files[0];
+		var reader	=	new FileReader();
+		reader.onload	=	function(e)
+		{
+			var binary	=	e.target.result;
+			this.file	=	new FileData({
+				name: file.name,
+				type: file.type,
+				data: binary
+			});
+			this.upload_remove.setStyle('display', 'inline');
+			this.upload_preview.set('html', '');
+			if(file.type.match(/^image\//))
+			{
+				var img	=	new Image();
+				img.src	=	'data:'+file.type+';base64,'+btoa(binary);
+				this.upload_preview.adopt(img);
+			}
+		}.bind(this);
+		reader.readAsBinaryString(file);
+		this.upload_preview.set('html', 'Reading file...');
+	},
+
+	clear_attachment: function(e)
+	{
+		if(e) e.stop();
+		this.inp_file.value	=	'';
+		this.upload_remove.setStyle('display', '');
+		this.upload_preview.set('html', '');
+		this.file	=	null;
 	}
 });
 
