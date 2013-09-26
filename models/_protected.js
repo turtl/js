@@ -365,6 +365,9 @@ var Protected = Composer.RelationalModel.extend({
 	}
 });
 
+var ProtectedThread = Protected.extend({
+});
+
 /**
  * Provides what the Protected model does (a way to have public/private auto-
  * encrypted fields in a model) but with shared-key encryption instead of
