@@ -40,6 +40,9 @@ var NoteEditController = Composer.Controller.extend({
 		if(!this.note) this.note = new Note({type: 'quick'});
 		// clone the note so any changes to it pre-save don't show up in the listings.
 		this.note_copy = this.note.clone();
+		// give the new note a key (if it hasn't got one)
+		if(this.note_copy.is_new()) this.note_copy.generate_key();
+
 		this.render();
 		if(this.edit_in_modal)
 		{
@@ -156,7 +159,7 @@ var NoteEditController = Composer.Controller.extend({
 
 		if(isnew)
 		{
-			this.note_copy.generate_key()
+			if(!this.note_copy.key) this.note_copy.generate_key()
 			this.note_copy.generate_subkeys([
 				{b: this.board.id(), k: this.board.key}
 			]);
@@ -239,6 +242,7 @@ var NoteEditController = Composer.Controller.extend({
 				type: file.type,
 				data: binary
 			});
+			window._file	=	this.file;
 			this.upload_remove.setStyle('display', 'inline');
 			this.upload_preview.set('html', '');
 			if(file.type.match(/^image\//))

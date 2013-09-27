@@ -167,8 +167,10 @@ var Protected = Composer.RelationalModel.extend({
 	 * Special toJSON function that serializes the model making sure to put any
 	 * protected fields into an encrypted container before returning.
 	 */
-	toJSON: function()
+	toJSON: function(options)
 	{
+		options || (options = {});
+
 		// grab the normal serialization
 		var data	=	this.parent();
 		var _body	=	{};
@@ -200,7 +202,7 @@ var Protected = Composer.RelationalModel.extend({
 		}.bind(this));
 
 		// serialize the body (encrypted)
-		var encbody	=	this.serialize(_body, newdata);
+		var encbody	=	this.serialize(_body, newdata, options);
 
 		newdata[this.body_key]	=	encbody;
 		return newdata;
@@ -365,7 +367,126 @@ var Protected = Composer.RelationalModel.extend({
 	}
 });
 
-var ProtectedThread = Protected.extend({
+var ProtectedThreaded = Protected.extend({
+	/**
+	 * deserialize the model in a thread (async)
+	 */
+	deserialize: function(data, parentobj, options)
+	{
+		options || (options = {});
+		if(!this.key) return false;
+
+		var worker	=	new Worker(window._base_url + '/library/tcrypt.thread.js');
+		worker.postMessage({
+			cmd: 'decrypt',
+			key: this.key,
+			data: data
+		});
+		worker.addEventListener('message', function(e) {
+			var res		=	e.data;
+			if(res.type != 'success')
+			{
+				var dec	=	false;
+			}
+			else
+			{
+				var dec	=	JSON.parse(res.data);
+			}
+			this.trigger('deserialize', dec);
+			if(options.complete) options.complete(dec);
+		}.bind(this));
+	},
+
+	/**
+	 * serialize the model in a thread (async)
+	 */
+	serialize: function(data, parentobj, options)
+	{
+		options || (options = {});
+		if(!this.key) return false;
+
+		var worker	=	new Worker(window._base_url + '/library/tcrypt.thread.js');
+		worker.postMessage({
+			cmd: 'encrypt',
+			key: this.key,
+			data: JSON.encode(data),
+			options: {
+				// can't use window.crypto, so generate an IV here
+				iv: tcrypt.iv()
+			}
+		});
+		worker.addEventListener('message', function(e) {
+			var res		=	e.data;
+			if(res.type != 'success')
+			{
+				var enc	=	false;
+			}
+			else
+			{
+				var enc	=	res.data;
+			}
+			this.trigger('serialize', enc);
+			if(options.complete) options.complete(enc);
+		}.bind(this));
+	},
+
+	/**
+	 * Like it's sync parent, but expects deserialization to be async.
+	 */
+	process_body: function(obj, options)
+	{
+		options || (options = {});
+
+		var _body	=	obj[this.body_key];
+		if(!_body) return false;
+
+		if(!this.ensure_key_exists(obj.keys)) return false;
+
+		var finish_fn	=	function(_body)
+		{
+			if(typeOf(_body) == 'object')
+			{
+				this.set(_body, Object.merge({ignore_body: true}, options));
+				Object.each(_body, function(v, k) {
+					var _body	=	this.get('_body');
+					var set		=	{};
+					set[k]		=	v;
+					_body.set(set);
+				}.bind(this));
+			}
+		}.bind(this);
+
+		if(typeOf(_body) == 'string')
+		{
+			// decrypt/deserialize the body
+			this.deserialize(_body, obj, {
+				complete: function(body) {
+					finish_fn(body);
+				}
+			});
+		}
+		else
+		{
+			finish_fn(_body);
+		}
+	},
+	
+	/**
+	 * Wraps Protected.toJSON(), serializing the model async (in a thread) and
+	 * then running the finish_cb once complete.
+	 */
+	toJSONAsync: function(finish_cb)
+	{
+		var data		=	{};
+
+		var do_finish	=	function(encrypted)
+		{
+			data[this.body_key]	=	encrypted;
+			finish_cb(data);
+		}.bind(this);
+		data	=	this.toJSON({complete: do_finish});
+		return false;
+	}
 });
 
 /**

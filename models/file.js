@@ -1,10 +1,11 @@
-var FileData = Protected.extend({
+var FileData = ProtectedThreaded.extend({
 	public_fields: [
 		'id'
 	],
 
 	private_fields: [
 		'name',
+		'hash',
 		'type',
 		'data'
 	],
