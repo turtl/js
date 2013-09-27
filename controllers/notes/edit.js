@@ -191,7 +191,13 @@ var NoteEditController = Composer.Controller.extend({
 	{
 		if(!this.file) return false;
 
-
+		this.file.upload({
+			success: function(data) {
+			},
+			error: function(err) {
+				barfr.barf('There was a problem uploading your file: '+ err);
+			}
+		});
 	},
 
 	select_tab: function(typename)
@@ -262,6 +268,7 @@ var NoteEditController = Composer.Controller.extend({
 		this.inp_file.value	=	'';
 		this.upload_remove.setStyle('display', '');
 		this.upload_preview.set('html', '');
+		this.file.clear();
 		this.file	=	null;
 	}
 });
