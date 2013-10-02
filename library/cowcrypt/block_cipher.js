@@ -271,6 +271,20 @@ var BlockCipherMode = new Class(
 	{
 		for (var i=0; i < block1.length; i++) block1[i] ^= block2[i];		
 		return block1;
+	},
+
+	array_concat: function(arr1, arr2)
+	{
+		// faster on very small arrays, extremely slow on larger arrays
+		//arr1		=	arr1.concat(arr2);
+
+		// not as good as the for(){} loop below (leaving for reference)
+		//arr1.push.apply(arr1, arr2);
+
+		// fastest, overall, in FF and Chrome on larger datasets
+		for(var i = 0, n = arr2.length; i < n; i++) arr1.push(arr2[i]);
+
+		return arr1;
 	}
 
 });
@@ -318,7 +332,7 @@ var ECB = new Class(
 		for (var i = 0; i < words.length; i += words_per_block)
 		{
 			var block = words.slice(i, i+words_per_block);
-			ciphertext = ciphertext.concat(this.cipher.block_encrypt(block));
+			ciphertext = this.array_concat(ciphertext, this.cipher.block_encrypt(block));
 		}
 
 		return ciphertext;
@@ -398,7 +412,7 @@ var CBC = new Class(
 			var block			= words.slice(i, i+words_per_block);
 			var xor_block		= this.xor_block(block, _prev_block);
 			var cipher_block	= this.cipher.block_encrypt(xor_block)
-			ciphertext 			= ciphertext.concat(cipher_block);
+			ciphertext			= this.array_concat(ciphertext, cipher_block);
 			_prev_block			= cipher_block;
 		}
 
@@ -422,7 +436,7 @@ var CBC = new Class(
 			var block 			= words.slice(i, i+words_per_block);
 			var decrypted 		= this.cipher.block_decrypt(block);
 			var xor_decrypted	= this.xor_block(decrypted, _prev_block);
-			plaintext 			= plaintext.concat(xor_decrypted);
+			plaintext			= this.array_concat(plaintext, xor_decrypted);
 			_prev_block			= block;
 		}
 
@@ -484,7 +498,7 @@ var CFB = new Class(
 			var cipher_block	= this.cipher.block_encrypt(_prev_block)
 			var block			= words.slice(i, i+words_per_block);
 			var xor_block		= this.xor_block(block, cipher_block);
-			ciphertext 			= ciphertext.concat(xor_block);
+			ciphertext			= this.array_concat(ciphertext, xor_block);
 			_prev_block			= xor_block;
 		}
 
@@ -508,7 +522,7 @@ var CFB = new Class(
 			var cipher_block	= this.cipher.block_encrypt(_prev_block)
 			var block 			= words.slice(i, i+words_per_block);
 			var xor_decrypted	= this.xor_block(cipher_block, block);
-			plaintext 			= plaintext.concat(xor_decrypted);
+			plaintext			= this.array_concat(plaintext, xor_decrypted);
 			_prev_block			= block;
 		}
 
