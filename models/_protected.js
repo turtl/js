@@ -477,7 +477,7 @@ var ProtectedThreaded = Protected.extend({
 	 * Wraps Protected.toJSON(), serializing the model async (in a thread) and
 	 * then running the finish_cb once complete.
 	 */
-	toJSONAsync: function(finish_cb)
+	toJSONAsync: function(finish_cb, options)
 	{
 		var data		=	{};
 
@@ -486,7 +486,7 @@ var ProtectedThreaded = Protected.extend({
 			data[this.body_key]	=	encrypted;
 			finish_cb(data);
 		}.bind(this);
-		data	=	this.toJSON({complete: do_finish});
+		data	=	this.toJSON(Object.merge({}, options, {complete: do_finish}));
 		return false;
 	}
 });
