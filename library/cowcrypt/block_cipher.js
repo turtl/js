@@ -1,3 +1,5 @@
+"use strict";
+
 /*
  *	Symmetric block cipher support classes
  *	Copyright (c) 2013, Jeff Lyon. (http://rubbingalcoholic.com)

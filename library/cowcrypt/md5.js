@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  *	MD5 Hashing Class
  *	Copyright (c) 2013, Jeff Lyon. (http://rubbingalcoholic.com)

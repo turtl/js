@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  *	CAST5 Symmetric Encryption Class
  *	Copyright (c) 2013, Jeff Lyon. (http://rubbingalcoholic.com)

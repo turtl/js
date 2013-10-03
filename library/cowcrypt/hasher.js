@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  *	Generic Hasher Base Class
  *	Copyright (c) 2013, Jeff Lyon. (http://rubbingalcoholic.com)

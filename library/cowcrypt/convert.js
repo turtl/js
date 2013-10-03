@@ -1,3 +1,5 @@
+"use strict";
+
 /*
  *	Data Conversion Utilities:
  *	Copyright (c) 2013, Jeff Lyon. (http://rubbingalcoholic.com)
@@ -234,7 +236,7 @@ var convert = {
 		encode: function(data)
 		{
 			var output = '';
-			for (i=0, c=data.length; i<c; i += 3)
+			for (var i=0, c=data.length; i<c; i += 3)
 			{
 				var char1 = data.charCodeAt(i) >> 2;
 				var char2 = ((data.charCodeAt(i) & 3) << 4) | data.charCodeAt(i+1) >> 4;
@@ -270,7 +272,7 @@ var convert = {
 		{
 			var data = '';
 
-			for (i=0, c=str.length; i<c; i += 4)
+			for (var i=0, c=str.length; i<c; i += 4)
 			{
 				var char1 = this.chars.indexOf(str.charAt(i));
 				var char2 = this.chars.indexOf(str.charAt(i+1));

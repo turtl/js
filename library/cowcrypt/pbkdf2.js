@@ -1,3 +1,5 @@
+"use strict";
+
 /*
  *	Passphrase based key-derivation classes
  *	Copyright (c) 2013, Jeff Lyon. (http://rubbingalcoholic.com)
@@ -100,7 +102,7 @@ var PBKDF2 = new Class(
 		var hmac	= new HMAC({hasher: this.hasher, passphrase: passphrase});
 		var key		= '';	// RA NOTE ~ It's faster to track this as a string than a word array!
 
-		for (i = 1; key.length < this.key_size; i++)
+		for (var i = 1; key.length < this.key_size; i++)
 		{
 			var block = hmac.hash(salt, {stream: true}).hash(convert.word_to_bytes(i), {return_format: 'words'});
 
@@ -168,7 +170,7 @@ var EVPKDF = new Class(
 		var md5		= new MD5();
 		var key		= '';
 
-		for (i = 1; key.length < this.key_size; i++)
+		for (var i = 1; key.length < this.key_size; i++)
 		{
 			if (block)
 				md5.hash(block, {stream: true});

@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  *	AES Symmetric Encryption Class
  *	Copyright (c) 2013, Jeff Lyon. (http://rubbingalcoholic.com)
@@ -392,7 +394,7 @@ var AES = new Class(
 		var pad32 = function(num)
 		{
 			var str = (num >>> 0).toString(16);
-			for (i=0; str.length % 8 != 0; i++)
+			for (var i=0; str.length % 8 != 0; i++)
 				var str = '0' + str;
 			return str;
 		};
