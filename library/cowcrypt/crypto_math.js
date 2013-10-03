@@ -1,3 +1,5 @@
+"use strict";
+
 /*
  *	Crypto Math Utilities:
  *	Copyright (c) 2013, Jeff Lyon. (http://rubbingalcoholic.com)

@@ -1,3 +1,5 @@
+"use strict";
+
 var BinaryIO = new Class({
 
 	defaults: {
@@ -237,7 +239,7 @@ var BinaryIO = new Class({
 			this.to_binary(mpi_length, {bytes: 2});
 
 			// If necessary, pad out our base-2 representation to have a mod 8 number of bits
-			for (i=0; mpi_base_2.length % 8 != 0; i++)
+			for (var i=0; mpi_base_2.length % 8 != 0; i++)
 				var mpi_base_2 = '0' + mpi_base_2;
 
 			while (mpi_base_2.length)
@@ -336,7 +338,7 @@ var BinaryIO = new Class({
 		else
 			var biggest = bin2;
 
-		for (i=0; i<biggest.length; i++)
+		for (var i=0; i<biggest.length; i++)
 		{
 			var _debug_str	= 	'';
 			var _char_1 	= 	bin1.charCodeAt(i);

@@ -1,3 +1,5 @@
+"use strict";
+
 /*
  *	RSA Cryptography classes
  *	Copyright (c) 2013, Jeff Lyon. (http://rubbingalcoholic.com)

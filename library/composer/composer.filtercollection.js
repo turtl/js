@@ -19,6 +19,7 @@
  * Redistributions of files must retain the above copyright notice.
  */
 (function() {
+	"use strict";
 	/**
 	 * Collection that exists solely to be a "materialized view" of another
 	 * "master" collection. Whenever items are added/removed from the master

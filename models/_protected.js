@@ -1,3 +1,5 @@
+"use strict";
+
 // Simple container collection to hold subkeys in an object
 var Keys = Composer.Collection.extend({});
 

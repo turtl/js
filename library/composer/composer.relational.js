@@ -19,6 +19,7 @@
  * Redistributions of files must retain the above copyright notice.
  */
 (function() {
+	"use strict";
 	var global	=	typeof(global) != 'undefined' ? global :
 						typeof(window) != 'undefined' ? window : this;
 	var Composer	=	global.Composer;
@@ -182,7 +183,7 @@
 			var obj	=	this._create_obj(relation, key);
 
 			// bind the event to the object
-			var args	=	Array.from(arguments);
+			var args	=	Array.prototype.slice.call(arguments, 0);
 			obj.bind.apply(obj, args.slice(1));
 		},
 
@@ -194,7 +195,7 @@
 			// grab the object and unbind the event
 			var obj	=	this._get_key(this.relation_data, key);
 			if(!obj) return false;
-			var args	=	Array.from(arguments);
+			var args	=	Array.prototype.slice.call(arguments, 0);
 			obj.unbind.apply(obj, args.slice(1));
 		},
 

@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  *	Twofish Symmetric Encryption Class
  *	Copyright (c) 2013, Jeff Lyon. (http://rubbingalcoholic.com)
@@ -125,7 +127,7 @@ var Twofish = new Class(
 	 */
 	pad_key: function(key, length)
 	{
-		for (i=0; key.length != length; i++)
+		for (var i=0; key.length != length; i++)
 			key.push(0);
 
 		return key;

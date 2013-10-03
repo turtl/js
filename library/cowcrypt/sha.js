@@ -1,3 +1,5 @@
+"use strict";
+
 /*
  *	Secure Hash Algorithm classes
  *	Copyright (c) 2013, Jeff Lyon. (http://rubbingalcoholic.com)
