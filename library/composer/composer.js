@@ -12,6 +12,7 @@
  * Redistributions of files must retain the above copyright notice.
  */
 (function() {
+	"use strict";
 	var Composer	=	{};
 	var global	=	typeof(global) != 'undefined' ? global :
 						typeof(window) != 'undefined' ? window : this;
@@ -140,7 +141,7 @@
 		 */
 		trigger: function(ev)
 		{
-			var args	=	shallow_array_clone(Array.from(arguments));
+			var args	=	Array.prototype.slice.call(arguments, 0);
 			[ev, 'all'].each(function(type) {
 				if(!this._events[type]) return;
 				Array.clone(this._events[type]).each(function(callback) {
@@ -241,7 +242,7 @@
 		 */
 		fire_event: function()
 		{
-			var args	=	shallow_array_clone(Array.from(arguments));
+			var args	=	Array.prototype.slice.call(arguments, 0);
 			var evname	=	args.shift();
 			var options	=	args.shift();
 
@@ -504,13 +505,13 @@
 
 			var old		=	this.data;
 			var obj		=	{};
-			for(key in old) obj[key] = void(0);
+			for(var key in old) obj[key] = void(0);
 			if(!options.silent && !this.perform_validation(obj, options)) return false;
 
 			this.data	=	{};
 			if(!options.silent)
 			{
-				for(key in old)
+				for(var key in old)
 				{
 					this._changed	=	true;
 					this.fire_event('change'+key, options, this, void 0, options);
@@ -763,7 +764,7 @@
 		initialize: function(models, params, options)
 		{
 			params || (params = {});
-			for(x in params)
+			for(var x in params)
 			{
 				this[x]	=	params[x];
 			}
@@ -1398,7 +1399,7 @@
 		{
 			options || (options = {});
 
-			for(x in params)
+			for(var x in params)
 			{
 				this[x]	=	params[x];
 			}
@@ -1550,7 +1551,7 @@
 		delegate_events: function()
 		{
 			// setup the events given
-			for(ev in this.events)
+			for(var ev in this.events)
 			{
 				var fn			=	this[this.events[ev]];
 				if(typeof(fn) != 'function')
@@ -1582,7 +1583,7 @@
 		refresh_elements: function()
 		{
 			// setup given elements as instance variables
-			for(selector in this.elements)
+			for(var selector in this.elements)
 			{
 				var iname	=	this.elements[selector];
 				this[iname]	=	this.el.getElement(selector);

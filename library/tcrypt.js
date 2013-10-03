@@ -1,3 +1,5 @@
+"use strict";
+
 var tcrypt = {
 	// NOTE: completely unused
 	cipher: 'AES',
