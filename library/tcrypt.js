@@ -376,7 +376,6 @@ var tcrypt = {
 						break;
 					case 'put_error':
 						worker.terminate();
-						delete worker;
 
 						// if "out of tries" error, recurse and try again
 						if (data.error.code == 3)
