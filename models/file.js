@@ -1,11 +1,11 @@
 var FileData = ProtectedThreaded.extend({
 	public_fields: [
-		'id'
+		'id',
+		'hash'
 	],
 
 	private_fields: [
 		'name',
-		'hash',
 		'type',
 		'data'
 	],
@@ -29,5 +29,9 @@ var FileData = ProtectedThreaded.extend({
 });
 
 var Files = Composer.Collection.extend({
-	model: 'FileData'
+	model: 'FileData',
+
+	init: function()
+	{
+	}
 });

@@ -49,6 +49,10 @@ var turtl	=	{
 
 	// holds the search model
 	search: null,
+
+	// this is our local storage DB "server" (right now an IndexedDB abstraction
+	// which stores files and notes locally).
+	db: null,
 	// -------------------------------------------------------------------------
 
 	init: function()
@@ -123,6 +127,9 @@ var turtl	=	{
 			turtl.files		=	new Files();
 			turtl.search	=	new Search();
 
+			// sets up local storage (indexeddb)
+			turtl.setup_local_db();
+
 			turtl.show_loading_screen(true);
 			turtl.profile.initial_load({
 				complete: function() {
@@ -169,6 +176,10 @@ var turtl	=	{
 			turtl.api.clear_auth();
 			modal.close();
 
+			// local storage is for logged in people only
+			turtl.db.close();
+			turtl.db	=	null;
+
 			// this should give us a clean slate
 			turtl.user.unbind();
 			turtl.user	=	new User();
@@ -177,6 +188,48 @@ var turtl	=	{
 			turtl.profile.destroy();
 			turtl.profile	=	null;
 		}.bind(turtl));
+	},
+
+	setup_local_db: function()
+	{
+		// initialize our backing local storrage. this could be filesystem,
+		// SQL, etc. right now it's indexeddb (wrapped via db.js).
+		db.open({
+			server: 'turtl.'+turtl.user.id(),
+			version: 1,
+			schema: {
+				boards: {
+					key: { keyPath: 'id', autoIncrement: false },
+					indexes: { user_id: {} }
+				},
+				notes: {
+					key: { keyPath: 'id', autoIncrement: false },
+					indexes: {
+						user_id: {},
+						board_id: {}
+					}
+				},
+				files: {
+					key: { keyPath: 'id', autoIncrement: false }
+				},
+				personas: {
+					key: { keyPath: 'id', autoIncrement: false },
+					indexes: { user_id: {} }
+				},
+				messages: {
+					key: { keyPath: 'id', autoIncrement: false },
+					indexes: {
+						to: {},
+						from: {}
+					}
+				},
+				userdata: {
+					key: { keyPath: 'id', autoIncrement: false }
+				}
+			}
+		}).done(function(server) {
+			turtl.db	=	server;
+		});
 	},
 
 	setup_header_bar: function()

@@ -370,6 +370,24 @@ var Protected = Composer.RelationalModel.extend({
 });
 
 var ProtectedThreaded = Protected.extend({
+	// holds all running background workers
+	workers: [],
+
+	/**
+	 * Extend Model.clear() to stop all workers
+	 */
+	clear: function()
+	{
+		// terminate all workers
+		this.workers.each(function(worker) {
+			if(worker) worker.terminate();
+		});
+		this.workers	=	[];
+
+		// call Model.clear() (or whoever is next in the call chain)
+		return this.parent.apply(this, arguments);
+	},
+
 	/**
 	 * deserialize the model in a thread (async)
 	 */
@@ -379,6 +397,7 @@ var ProtectedThreaded = Protected.extend({
 		if(!this.key) return false;
 
 		var worker	=	new Worker(window._base_url + '/library/tcrypt.thread.js');
+		this.workers.push(worker);
 		worker.postMessage({
 			cmd: 'decrypt',
 			key: this.key,
@@ -396,6 +415,10 @@ var ProtectedThreaded = Protected.extend({
 			}
 			this.trigger('deserialize', dec);
 			if(options.complete) options.complete(dec);
+
+			// got a response, clean up
+			worker.terminate();
+			this.workers	=	this.workers.erase(worker);
 		}.bind(this));
 	},
 
@@ -408,6 +431,7 @@ var ProtectedThreaded = Protected.extend({
 		if(!this.key) return false;
 
 		var worker	=	new Worker(window._base_url + '/library/tcrypt.thread.js');
+		this.workers.push(worker);
 		worker.postMessage({
 			cmd: 'encrypt',
 			key: this.key,
@@ -429,11 +453,15 @@ var ProtectedThreaded = Protected.extend({
 			}
 			this.trigger('serialize', enc);
 			if(options.complete) options.complete(enc);
+
+			// got a response, clean up
+			worker.terminate();
+			this.workers	=	this.workers.erase(worker);
 		}.bind(this));
 	},
 
 	/**
-	 * Like it's sync parent, but expects deserialization to be async.
+	 * Like its sync parent, but expects deserialization to be async.
 	 */
 	process_body: function(obj, options)
 	{
