@@ -178,9 +178,25 @@ var view	=	{
 		return str;
 	},
 
-	tagetize: function(tag_name)
+	tagetize: function(tag_name, options)
 	{
-		return tag_name.toLowerCase().clean();
+		options || (options = {});
+
+		tag_name	=	tag_name.toLowerCase();
+		if(options.escape)
+		{
+			tag_name	=	tag_name
+				.replace(/&(?!amp;)/g, '&amp;')
+				.replace(/"/g, '&quot;');
+		}
+		else
+		{
+			tag_name	=	tag_name
+				.replace(/&amp;/g, '&')
+				.replace(/&quot;/g, '"')
+		}
+		tag_name	=	tag_name.clean();
+		return tag_name;
 	},
 
 	boardize: function(board_name)
