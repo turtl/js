@@ -9,6 +9,11 @@ var NoteEditController = Composer.Controller.extend({
 
 	events: {
 		'submit form': 'edit_note',
+		'change .note-edit form input': 'save_form_to_copy',
+		'change .note-edit form textarea': 'save_form_to_copy',
+		'keyup .note-edit form input': 'save_form_to_copy',
+		'keyup .note-edit form textarea': 'save_form_to_copy',
+		'change .note-edit form select': 'save_form_to_copy',
 		'click ul.type li': 'switch_type'
 	},
 
@@ -49,6 +54,13 @@ var NoteEditController = Composer.Controller.extend({
 
 	release: function()
 	{
+		if(this.note_copy)
+		{
+			this.note_copy.unbind();
+			this.note_copy.get('tags').unbind();
+			this.note_copy.clear();
+			this.note_copy	=	null;
+		}
 		if(this.tag_controller) this.tag_controller.release();
 		turtl.keyboard.attach(); // re-enable shortcuts
 		if(this.tips) this.tips.detach();
@@ -75,10 +87,8 @@ var NoteEditController = Composer.Controller.extend({
 		this.select_tab(this.note_copy.get('type'));
 	},
 
-	edit_note: function(e)
+	save_form_to_copy: function(e)
 	{
-		if(e) e.stop();
-
 		if(this.note_copy.get('type') == 'quick')
 		{
 			// do some basic guessing/intelligence stuff
@@ -143,6 +153,13 @@ var NoteEditController = Composer.Controller.extend({
 		var color = null;
 		if(inp_color) color = parseInt(inp_color.get('value'));
 		if(color) this.note_copy.set({color: color});
+	},
+
+	edit_note: function(e)
+	{
+		if(e) e.stop();
+
+		this.save_form_to_copy();
 
 		var isnew	=	this.note_copy.is_new();
 		if(!this.note_copy.get('board_id'))

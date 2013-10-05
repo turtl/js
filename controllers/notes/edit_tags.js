@@ -82,7 +82,6 @@ var NoteEditTagController = Composer.Controller.extend({
 		var li = next_tag_up('li', e.target);
 		var tag	=	view.tagetize(li.get('html'));
 		if(this.note.get('tags').find(function(t) {
-			console.log('loc/com: ', t.get('name'), tag);
 			return t.get('name') == tag;
 		}))
 		{
