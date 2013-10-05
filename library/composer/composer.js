@@ -1561,7 +1561,7 @@
 				}
 				fn	=	fn.bind(this);
 
-				match			=	ev.match(this.event_splitter);
+				var match		=	ev.match(this.event_splitter);
 				var evname		=	match[1].trim();
 				var selector	=	match[2].trim();
 
