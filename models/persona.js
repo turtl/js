@@ -11,13 +11,8 @@ var Persona = Protected.extend({
 	],
 
 	private_fields: [
-		'secret',
 		'privkey'
 	],
-
-	// persistent challenge
-	challenge: null,
-	challenge_timer: null,
 
 	initialize: function(data)
 	{
@@ -36,12 +31,6 @@ var Persona = Protected.extend({
 
 	init: function()
 	{
-		this.challenge_timer		=	new Timer(1);
-		this.challenge_timer.end	=	function()
-		{
-			this.challenge	=	null;
-		}.bind(this);
-
 		this.bind('destroy', function() {
 			var settings	=	Object.clone(turtl.user.get('settings').get_by_key('personas').value());
 			delete settings[this.id()];
@@ -139,48 +128,6 @@ var Persona = Protected.extend({
 		turtl.api.get('/personas/email/'+email+'*', {}, options);
 	},
 
-	generate_secret: function(key)
-	{
-		return tcrypt.encrypt(key, tcrypt.uuid()).toString().replace(/:.*/, '');
-	},
-
-	get_challenge: function(options)
-	{
-		options || (options = {});
-		var args = {};
-		if(options.use_persistent && this.challenge)
-		{
-			if(options.success) options.success(this.challenge);
-			return;
-		}
-		if(options.expire) args.expire = options.expire;
-		if(options.persist) args.persist = 1;
-		turtl.api.post('/personas/'+this.id()+'/challenge', args, {
-			success: function(challenge) {
-				if(options.persist)
-				{
-					this.challenge = challenge;
-					if(options.expire)
-					{
-						// expire the local challenge before it expires on the server
-						this.challenge_timer.ms	=	(options.expire - 5) * 1000;
-						this.challenge_timer.reset();
-					}
-				}
-				if(options.success) options.success(challenge);
-			}.bind(this),
-			error: options.error
-		});
-	},
-
-	generate_response: function(challenge)
-	{
-		var secret	=	this.get('secret');
-		if(!secret) secret = turtl.user.get('settings').get_by_key('personas').value()[this.id()];
-		if(!secret) return false;
-		return tcrypt.hash(secret + challenge);
-	},
-
 	get_messages: function(options)
 	{
 		options || (options = {});
@@ -272,6 +219,19 @@ var Personas = Composer.Collection.extend({
  * the future, and will be built on top of regular personas (not replace them).
  */
 var PersonaPrivate	=	Persona.extend({
+	// persistent challenge
+	challenge: null,
+	challenge_timer: null,
+
+	init: function()
+	{
+		this.challenge_timer		=	new Timer(1);
+		this.challenge_timer.end	=	function()
+		{
+			this.challenge	=	null;
+		}.bind(this);
+	},
+
 	load_profile: function(options)
 	{
 		this.get_challenge({
@@ -295,6 +255,48 @@ var PersonaPrivate	=	Persona.extend({
 			}.bind(this),
 			error: options.error
 		});
+	},
+
+	generate_secret: function(key)
+	{
+		return tcrypt.encrypt(key, tcrypt.uuid()).toString().replace(/:.*/, '');
+	},
+
+	get_challenge: function(options)
+	{
+		options || (options = {});
+		var args = {};
+		if(options.use_persistent && this.challenge)
+		{
+			if(options.success) options.success(this.challenge);
+			return;
+		}
+		if(options.expire) args.expire = options.expire;
+		if(options.persist) args.persist = 1;
+		turtl.api.post('/personas/'+this.id()+'/challenge', args, {
+			success: function(challenge) {
+				if(options.persist)
+				{
+					this.challenge = challenge;
+					if(options.expire)
+					{
+						// expire the local challenge before it expires on the server
+						this.challenge_timer.ms	=	(options.expire - 5) * 1000;
+						this.challenge_timer.reset();
+					}
+				}
+				if(options.success) options.success(challenge);
+			}.bind(this),
+			error: options.error
+		});
+	},
+
+	generate_response: function(challenge)
+	{
+		var secret	=	this.get('secret');
+		if(!secret) secret = turtl.user.get('settings').get_by_key('personas').value()[this.id()];
+		if(!secret) return false;
+		return tcrypt.hash(secret + challenge);
 	},
 
 	sync_data: function(sync_time, options)

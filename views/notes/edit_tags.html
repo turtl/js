@@ -1,7 +1,7 @@
 <?
 var format_tag = function(tagname, selected)
 {
-	var t = '<li class="'+view.tagetize(tagname).replace(/["]/g, '')+' '+(selected ? 'sel': '')+'">';
+var t = '<li class="'+view.tagetize(tagname, {escape: true})+' '+(selected ? 'sel': '')+'">';
 	t += view.tagetize(tagname);
 	t += '</li>';
 	return t;
@@ -15,12 +15,12 @@ var format_tag = function(tagname, selected)
 <? } else { ?>
 	<ul class="tags clear">
 		<? suggested_tags.each(function(tagname) { ?>
-			<? var sel = note.tags ? note.tags.filter(function(t) { return t.name == tagname; }).length > 0 : false; ?>
+			<? var sel = note.tags ? note.tags.filter(function(t) { return view.tagetize(t.name) == view.tagetize(tagname); }).length > 0 : false; ?>
 			<?=format_tag(tagname, sel)?>
 		<? }); ?>
 		<? if(note.tags) { ?>
 			<? note.tags.each(function(tag) { ?>
-				<? if(suggested_tags.contains(tag.name)) { return; } ?>
+				<? if(suggested_tags.contains(view.tagetize(tag.name))) { return; } ?>
 				<?=format_tag(tag.name, true)?>
 			<? }); ?>
 		<? } ?>

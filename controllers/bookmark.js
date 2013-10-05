@@ -7,6 +7,12 @@ var BookmarkController = Composer.Controller.extend({
 		'div.edit': 'edit_container'
 	},
 
+	events: {
+		'change .note-edit form input': 'save_form',
+		'change .note-edit form textarea': 'save_form',
+		'change .note-edit form select': 'save_form'
+	},
+
 	linkdata: {
 		type: 'link',
 		url: '',
@@ -63,12 +69,22 @@ var BookmarkController = Composer.Controller.extend({
 			turtl.user.get('settings').get_by_key('last_board').value(board.id());
 			this.soft_release();
 
-			var note = new Note({
-				type: this.linkdata.type,
-				url: this.linkdata.url,
-				title: this.linkdata.title,
-				text: this.linkdata.text
-			});
+			var savedstr	=	localStorage['bookmarker:note:saved'];
+			var saved		=	savedstr && JSON.parse(savedstr);
+			if(saved && saved.url == this.linkdata.url)
+			{
+				var note = new Note(saved.note);
+			}
+			else
+			{
+				window.localStorage.removeItem('bookmarker:note:saved');
+				var note = new Note({
+					type: this.linkdata.type,
+					url: this.linkdata.url,
+					title: this.linkdata.title,
+					text: this.linkdata.text
+				});
+			}
 			this.edit_controller = new NoteEditController({
 				inject: this.edit_container,
 				note: note,
@@ -76,6 +92,10 @@ var BookmarkController = Composer.Controller.extend({
 				edit_in_modal: false,
 				show_tabs: false	// who needs tabs when the bookmarker is smart?
 			});
+
+			// save the note in case bookmarker is clooooseeed
+			this.edit_controller.note_copy.bind('change', this.track_note_changes.bind(this))
+			this.edit_controller.note_copy.bind_relational('tags', 'all', this.track_note_changes.bind(this))
 
 			this.board_controller = new BoardsController({
 				inject: this.board_container,
@@ -133,6 +153,21 @@ var BookmarkController = Composer.Controller.extend({
 			have_boards: turtl.profile.get('boards').models().length > 0
 		});
 		this.html(content);
+	},
+
+	/**
+	 * save the currently-edited note into localstorage so if the bookmarker is
+	 * closed, the data is still there.
+	 */
+	track_note_changes: function()
+	{
+		if(!this.edit_controller || !this.edit_controller.note_copy) return false;
+		var note	=	this.edit_controller.note_copy;
+		var data	=	{
+			url: this.linkdata.url,
+			note: toJSON(note)
+		}
+		localStorage['bookmarker:note:saved']	=	JSON.encode(data);
 	},
 
 	get_height: function()

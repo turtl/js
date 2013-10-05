@@ -184,7 +184,6 @@ var Notes = Composer.Collection.extend({
 		if(options.shared && options.persona)
 		{
 			args.persona	=	options.persona.id();
-			args.challenge	=	options.persona.generate_response(options.persona.challenge);
 		}
 		turtl.api.put('/notes/batch', args, {
 			success: options.success,

@@ -44,7 +44,7 @@ var NoteEditTagController = Composer.Controller.extend({
 	{
 		var content = Template.render('notes/edit_tags', {
 			note: toJSON(this.note),
-			suggested_tags: this.suggested_tags.slice(0, 48)
+			suggested_tags: this.suggested_tags.slice(0, 20)
 		});
 		this.html(content);
 		new Autocomplete(this.inp_tag, this.suggested_tags, {});
@@ -57,9 +57,9 @@ var NoteEditTagController = Composer.Controller.extend({
 		tags.each(function(tag) {
 			tag = tag.clean();
 			if(tag == '') return;
-			if(this.note.add_tag(tag.clean().toLowerCase()) && !this.suggested_tags.contains(tag))
+			if(this.note.add_tag(view.tagetize(tag)) && !this.suggested_tags.contains(view.tagetize(tag)))
 			{
-				this.suggested_tags.push(tag);
+				this.suggested_tags.push(view.tagetize(tag));
 			}
 		}.bind(this));
 		this.inp_tag.value = '';
@@ -80,8 +80,10 @@ var NoteEditTagController = Composer.Controller.extend({
 		if(!e) return false;
 		e.stop();
 		var li = next_tag_up('li', e.target);
-		var tag = li.get('html').clean().toLowerCase();
-		if(this.note.get('tags').find(function(t) { return t.get('name') == tag; }))
+		var tag	=	view.tagetize(li.get('html'));
+		if(this.note.get('tags').find(function(t) {
+			return t.get('name') == tag;
+		}))
 		{
 			this.note.remove_tag(tag);
 		}
