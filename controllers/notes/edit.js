@@ -87,8 +87,10 @@ var NoteEditController = Composer.Controller.extend({
 		this.select_tab(this.note_copy.get('type'));
 	},
 
-	save_form_to_copy: function(e)
+	save_form_to_copy: function(e, options)
 	{
+		options || (options = {});
+
 		if(this.note_copy.get('type') == 'quick')
 		{
 			// do some basic guessing/intelligence stuff
@@ -121,6 +123,7 @@ var NoteEditController = Composer.Controller.extend({
 					text: val,
 				});
 			}
+			if(!options.set_type) this.note_copy.set({type: 'quick'});
 		}
 		else
 		{
@@ -159,7 +162,7 @@ var NoteEditController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 
-		this.save_form_to_copy();
+		this.save_form_to_copy(e, {set_type: true});
 
 		var isnew	=	this.note_copy.is_new();
 		if(!this.note_copy.get('board_id'))
