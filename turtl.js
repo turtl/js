@@ -29,7 +29,7 @@ var turtl	=	{
 	scroll_to_top: true,
 
 	// whether or not to sync data w/ server
-	sync: false,
+	sync: true,
 	sync_timer: null,
 
 	// if true, tells the app to mirror data to local storage
