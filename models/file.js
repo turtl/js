@@ -38,7 +38,7 @@ var FileData = ProtectedThreaded.extend({
 					barfr.barf('Error saving file: '+ err);
 				}.bind(this)
 			);
-		});
+		}.bind(this));
 	},
 
 	upload: function(enc_data, options)

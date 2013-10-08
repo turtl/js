@@ -71,7 +71,7 @@ var Note = Composer.RelationalModel.extend({
 	save: function(options)
 	{
 		options || (options = {});
-		var args	=	{};
+		var args	=	options.args || {};
 		var do_save	=	function()
 		{
 			var url		=	this.id(true) ? '/notes/'+this.id() : '/boards/'+this.get('board_id')+'/notes';
