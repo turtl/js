@@ -29,7 +29,7 @@ var turtl	=	{
 	scroll_to_top: true,
 
 	// whether or not to sync data w/ server
-	sync: true,
+	sync: false,
 	sync_timer: null,
 
 	// if true, tells the app to mirror data to local storage
@@ -192,7 +192,7 @@ var turtl	=	{
 
 	setup_local_db: function()
 	{
-		// initialize our backing local storrage. this could be filesystem,
+		// initialize our backing local storage. this could be filesystem,
 		// SQL, etc. right now it's indexeddb (wrapped via db.js).
 		db.open({
 			server: 'turtl.'+turtl.user.id(),
@@ -210,7 +210,11 @@ var turtl	=	{
 					}
 				},
 				files: {
-					key: { keyPath: 'id', autoIncrement: false }
+					key: { keyPath: 'id', autoIncrement: false },
+					indexes: {
+						hash: {},
+						synced: {}
+					}
 				},
 				personas: {
 					key: { keyPath: 'id', autoIncrement: false },

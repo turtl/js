@@ -29,6 +29,9 @@ self.addEventListener('message', function(e) {
 			case 'decrypt':
 				res	=	tcrypt.decrypt(key, data, options);
 				break;
+			case 'hash':
+				res	=	tcrypt.hash(data);
+				break;
 		}
 	}
 	catch(e)

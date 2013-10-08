@@ -411,7 +411,7 @@ var ProtectedThreaded = Protected.extend({
 			}
 			else
 			{
-				var dec	=	JSON.parse(res.data);
+				var dec	=	res.data;
 			}
 			this.trigger('deserialize', dec);
 			if(options.complete) options.complete(dec);
@@ -453,6 +453,34 @@ var ProtectedThreaded = Protected.extend({
 			}
 			this.trigger('serialize', enc);
 			if(options.complete) options.complete(enc);
+
+			// got a response, clean up
+			worker.terminate();
+			this.workers	=	this.workers.erase(worker);
+		}.bind(this));
+	},
+
+	hash: function(data, options)
+	{
+		options || (options = {});
+
+		var worker	=	new Worker(window._base_url + '/library/tcrypt.thread.js');
+		this.workers.push(worker);
+		worker.postMessage({
+			cmd: 'hash',
+			data: data
+		});
+		worker.addEventListener('message', function(e) {
+			var res		=	e.data;
+			if(res.type != 'success')
+			{
+				var hash	=	false;
+			}
+			else
+			{
+				var hash	=	res.data;
+			}
+			if(options.complete) options.complete(hash);
 
 			// got a response, clean up
 			worker.terminate();

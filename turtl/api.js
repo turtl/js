@@ -170,7 +170,7 @@ var Api	=	new Class({
 			url: url,
 			method: (method.toLowerCase() == 'get' ? 'GET' : 'POST'),
 			emulation: false,
-			headers: {},
+			headers: params.headers || {},
 			data: data,
 			onSuccess: function(res)
 			{
@@ -189,9 +189,6 @@ var Api	=	new Class({
 		if(this.user && send_auth)
 		{
 			request.headers['X-Auth-Api-Key']	=	this.api_key;
-
-			//request.user		=	this.user.email;
-			//request.password	=	this.user.password;
 			request.headers['Authorization']	=	'Basic ' + Base64.encode('user:' + this.user.auth_key);
 		}
 

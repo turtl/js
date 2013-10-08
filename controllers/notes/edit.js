@@ -182,15 +182,27 @@ var NoteEditController = Composer.Controller.extend({
 			]);
 		}
 
+		var args	=	{};
+		if(this.file)
+		{
+			args.file	=	1;
+		}
+
 		// save the note copy, and on success, set the resulting data back into
 		// the original note (not the copy)
 		turtl.loading(true);
 		this.note_copy.save({
+			args: args,
 			success: function(note_data) {
 				turtl.loading(false);
-				this.start_file_upload(this.note);
 				this.note.key = this.note_copy.key;
 				this.note.set(note_data);
+				if(note_data.file_id && this.file)
+				{
+					this.file.key	=	this.note.key;
+					this.file.set({id: note_data.file_id});
+					this.file.do_save();
+				}
 				if(isnew) this.board.get('notes').add(this.note);
 				// make sure the current filter applies to the edited note
 				this.board.get('tags').trigger('change:selected');
@@ -200,19 +212,6 @@ var NoteEditController = Composer.Controller.extend({
 			error: function(e) {
 				barfr.barf('There was a problem saving your note: '+ e);
 				turtl.loading(false);
-			}
-		});
-	},
-
-	start_file_upload: function(note)
-	{
-		if(!this.file) return false;
-
-		this.file.upload({
-			success: function(data) {
-			},
-			error: function(err) {
-				barfr.barf('There was a problem uploading your file: '+ err);
 			}
 		});
 	},
@@ -259,13 +258,15 @@ var NoteEditController = Composer.Controller.extend({
 		var reader	=	new FileReader();
 		reader.onload	=	function(e)
 		{
+			// create a new file record with the binary file data
 			var binary	=	e.target.result;
 			this.file	=	new FileData({
 				name: file.name,
 				type: file.type,
 				data: binary
 			});
-			window._file	=	this.file;
+
+			// update the preview window (if image)
 			this.upload_remove.setStyle('display', 'inline');
 			this.upload_preview.set('html', '');
 			if(file.type.match(/^image\//))
