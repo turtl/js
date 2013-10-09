@@ -1,71 +1,213 @@
 "use strict";
 
 var tcrypt = {
-	// NOTE: completely unused
-	cipher: 'AES',
+	// -------------------------------------------------------------------------
+	// NOTE: never inject items into these lists. only append them!
+	cipher_index: [
+		'AES',
+		'Twofish'
+	],
+	block_index: [
+		'CBC'
+	],
+	padding_index: [
+		'AnsiX923',
+		'PKCS7'
+	],
+	// -------------------------------------------------------------------------
+
+	current_version: 1,
+
+	// define some getters. these really just wrap grabbing values out of the
+	// global window context, but in the future could be expanded
+	get_cipher: function(ciphername) { return window[ciphername]; },
+	get_block_mode: function(blockmode) { return window[blockmode]; },
+	get_padding: function(padding) { return window[padding]; },
 
 	/**
-	 * Formats data like so:
+	 * This is the original Turtl encryption format
 	 *
-	 *   <payload>:i<initial vector>:s<salt>
+	 *   [payload (base64)]:i[initial vector]
 	 *
-	 * This scheme assumes Base64 encoding (otherwise : would be a bad separator)
+	 * It was stupid because it forced things to be in base64, which increases
+	 * size by 2-3x. Binary storage was not an option.
 	 */
-	TurtlFormatter: {
-		stringify: function (cipherParams)
-		{
-			// create json object with ciphertext
-			var crypto = convert.base64.encode(cipherParams.ciphertext);
-
-			// optionally add iv and salt
-			if(cipherParams.iv) crypto += ':i' + convert.binstring_to_hex(cipherParams.iv);
-			if(cipherParams.salt) crypto += ':s' + convert.binstring_to_hex(cipherParams.salt);
-
-			// stringify json object
-			return crypto;
-		},
-
-		parse: function (crypto)
-		{
-			// parse json string
-			var parts = crypto.split(/:/g);
-			var params = {
-				ciphertext: convert.base64.decode(parts[0])
-			}
-			parts.shift();
-			parts.each(function(p) {
-				if(p.match(/^i/)) params.iv = convert.hex_to_binstring(p.slice(1));
-				if(p.match(/^s/)) params.salt = convert.hex_to_binstring(p.slice(1));
-			});
-			return params;
+	old_formatter: function(crypto)
+	{
+		// parse json string
+		var parts = crypto.split(/:/g);
+		var params = {
+			ciphertext: convert.base64.decode(parts[0]),
+			cipher: 'AES',
+			block_mode: 'CBC',
+			padding: 'AnsiX923'
 		}
+		parts.shift();
+		parts.each(function(p) {
+			if(p.match(/^i/)) params.iv = convert.hex_to_binstring(p.slice(1));
+			if(p.match(/^s/)) params.salt = convert.hex_to_binstring(p.slice(1));
+		});
+		return params;
+	},
+
+	/**
+	 * Given a serialization version and a payload description *string*, pull
+	 * out any pertinant information (cipher, block mode, padding, etc).
+	 */
+	decode_payload_description: function(version, desc_str)
+	{
+		if(version >= 1)
+		{
+			// desc is three bytes: |cipher index|block mode index|padding index|
+			var cipher_index	=	desc_str.charCodeAt(0);
+			var block_index		=	desc_str.charCodeAt(1);
+			var padding_index	=	desc_str.charCodeAt(2);
+		}
+
+		return {
+			cipher: tcrypt.cipher_index[cipher_index],
+			block_mode: tcrypt.block_index[block_index],
+			padding: tcrypt.padding_index[padding_index]
+		};
+	},
+
+	/**
+	 * Given a serialization version and a set of information about how a
+	 * payload is serialized, return a payload description string
+	 */
+	encode_payload_description: function(version, options)
+	{
+		if(!options || !options.cipher || !options.block_mode || !options.padding)
+		{
+			throw 'tcrypt.encode_payload_description: must provide cipher, block_mode, and padding in options';
+		}
+
+		if(version >= 1)
+		{
+			var cipher		=	tcrypt.cipher_index.indexOf(options.cipher);
+			var block_mode	=	tcrypt.block_index.indexOf(options.block_mode);
+			var padding		=	tcrypt.padding_index.indexOf(options.padding);
+			var desc		=	String.fromCharCode(cipher) + String.fromCharCode(block_mode) + String.fromCharCode(padding);
+		}
+
+		return desc;
+	},
+
+	/**
+	 * Turtl encryption serialization format is as follows:
+	 *
+	 *   |-2 bytes-| |-1 byte----| |-N bytes-----------| |-16 bytes-| |-N bytes----|
+	 *   | version | |desc length| |payload description| |    IV    | |payload data|
+	 *
+	 * - version tells us the serialization version. although it will probably
+	 *   not get over 255, it has two bytes just in case. never say never.
+	 * - desc length is the length of the payload description, which may change
+	 *   in length from version to version.
+	 * - payload description tells us what algorithm/format the encryption uses.
+	 *   for instance, it could be AES+CBC, or Twofish+CBC, etc etc. payload
+	 *   description encoding/length may change from version to version.
+	 * - IV is the initial vector of the payload, in binary form
+	 * - payload data is our actual data, encrypted.
+	 */
+	deserialize: function(enc)
+	{
+		// if the first character is not 0, either Turtl has come a really long
+		// way (and had over 255 serialization versions) or we're at the very
+		// first version, which just uses Base64.
+		var version	=	(enc.charCodeAt(0) << 8) + enc.charCodeAt(1)
+
+		// TODO: if we ever get above 1000 versions, change this. The lowest
+		// allowable Base64 message is '++', which translates to 11,051 but for
+		// now we'll play it safe and cap at 1K
+		if(version > 1000) return tcrypt.old_formatter(enc);
+
+		// grab the payload description and decode it
+		var desc_length	=	enc.charCodeAt(2);
+		var desc_str	=	enc.substr(3, desc_length);
+		var desc		=	tcrypt.decode_payload_description(version, desc_str);
+
+		// grab the IV
+		var iv			=	enc.substr(3 + desc_length, 16);
+
+		// finally, the encrypted data
+		var enc			=	enc.substr(3 + desc_length + 16);
+
+		var params	=	{
+			cipher: desc.cipher,
+			block_mode: desc.block_mode,
+			padding: desc.padding,
+			iv: iv,
+			ciphertext: enc
+		};
+		return params;
+	},
+
+	/**
+	 * Serialize our encrypted data into the standard format (see the comments
+	 * above the deserialize method).
+	 *
+	 * `enc` is our *encrypted* ciphertext, options contains information
+	 * explaining how enc was created (iv, cipher, block mode, padding, etc).
+	 */
+	serialize: function(enc, options)
+	{
+		// create a version identifier
+		var version		=	tcrypt.current_version;
+		var serialized	=	String.fromCharCode(version >> 8) + String.fromCharCode(version & 255);
+
+		// create/append our description length and description
+		var desc		=	tcrypt.encode_payload_description(version, options);
+		serialized		+=	String.fromCharCode(desc.length)
+		serialized		+=	desc;
+
+		// append the IV
+		serialized		+=	options.iv;
+
+		// last but definitely not least, the actual crypto data
+		serialized		+=	enc;
+
+		return serialized;
 	},
 
 	encrypt: function(key, data, options)
 	{
 		options || (options = {});
 
+		// because of some errors in judgement, in some cases keys were UTF8
+		// encoded early-on. this should remain here until all keys for all data
+		// for all users are not UTF8 encoded...so, forever probably.
 		if(key.length > 32) key = convert.utf8.decode(key);
 
-		var opts = Object.merge({
+		// if we didn't specify cipher, block_mode, or padding in the options,
+		// use the tcrypt defaults.
+		var cipher		=	options.cipher || tcrypt.cipher_index[0];
+		var block_mode	=	options.block_mode || tcrypt.block_index[0];
+		var padding		=	options.padding || tcrypt.padding_index[0];
+
+		var opts		=	Object.merge({}, options, {
 			key: key,
-			block_mode: CBC,
-			pad_mode: AnsiX923,
-		}, options);
+			block_mode: tcrypt.get_block_mode(block_mode),
+			pad_mode: tcrypt.get_padding(padding),
+		});
 
 		// auto-generate an initial vector if needed
 		if(!opts.iv) opts.iv = tcrypt.iv();
 
-		// make sure to UTF8 encode data
+		// make sure to UTF8 encode data (turns multi-byte characters into
+		// single-byte characters so the crypto doesn't lose data).
 		data	=	convert.utf8.encode(data);
 
-		var ciphertext = new AES(opts).encrypt(data);
+		var cipherclass	=	tcrypt.get_cipher(cipher);
+		var ciphertext	=	new cipherclass(opts).encrypt(data);
 
-		var formatted = tcrypt.TurtlFormatter.stringify({
-			ciphertext: ciphertext,
+		// serialize our ciphertext along with all the options user to create it
+		// into the Turtl serialization format
+		var formatted	=	tcrypt.serialize(ciphertext, {
+			cipher: cipher,
+			block_mode: block_mode,
+			padding: padding,
 			iv: opts.iv
 		});
-
 		return formatted;
 	},
 
@@ -73,18 +215,25 @@ var tcrypt = {
 	{
 		options || (options = {});
 
+		// because of some errors in judgement, in some cases keys were UTF8
+		// encoded early-on. this should remain here until all keys for all data
+		// for all users are not UTF8 encoded...so, forever probably.
 		if(key.length > 32) key = convert.utf8.decode(key);
 
-		var opts = Object.merge({
+		// split a serialized crypto message into a set of params and options,
+		// including what cipher we used to encrypt it, block mode, padding, iv,
+		// ciphertext (obvis).
+		var params	=	tcrypt.deserialize(encrypted);
+		var opts	=	Object.merge({
 			key: key,
-			block_mode: CBC,
-			pad_mode: AnsiX923,
+			block_mode: this.get_block_mode(params.block_mode),
+			pad_mode: this.get_padding(params.padding),
+			iv: params.iv || null
 		}, options);
 
-		var params = tcrypt.TurtlFormatter.parse(encrypted);
-		if(params.iv) opts.iv = params.iv;
-
-		var de = new AES(opts).decrypt(params.ciphertext);
+		// run the decryption using the cipher the data is encrypted with
+		var cipher	=	this.get_cipher(params.cipher);
+		var de		=	new cipher(opts).decrypt(params.ciphertext);
 
 		try
 		{
@@ -124,6 +273,8 @@ var tcrypt = {
 	},
 
 	/**
+	 * Given a Base64 encoded key, convert it to a binary key (keys MUST be in
+	 * binary format when using tcrypt.encrypt/decrypt)
 	 */
 	key_to_bin: function(keystring)
 	{
