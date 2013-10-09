@@ -208,10 +208,14 @@ var User	=	Composer.RelationalModel.extend({
 
 		var user_record = tcrypt.hash(password) +':'+ username;
 		// use username as salt/initial vector
-		var key = this.get_key();
-		var iv = tcrypt.iv(username+'4c281987249be78a');	// make sure IV always has 16 bytes
-		var auth =  tcrypt.encrypt(key, user_record, {iv: iv}).toString();
+		var key	=	this.get_key();
+		var iv	=	tcrypt.iv(username+'4c281987249be78a');	// make sure IV always has 16 bytes
 
+		// note we serialize with version 0 (the original Turtl serialization
+		// format) for backwards compat
+		var auth	=	tcrypt.encrypt(key, user_record, {iv: iv, version: 0}).toString();
+
+		// save auth
 		this.auth	=	auth;
 
 		return auth;
