@@ -47,6 +47,18 @@ var Protected = Composer.RelationalModel.extend({
 	private_fields: [],
 
 	/**
+	 * here, we test for the old serialization format. if detected, we pass it
+	 * in verbatim to tcrypt (which is adept at handling it). if not detected,
+	 * we base64-decode the data before handing the raw serialized data off to
+	 * tcrypt.
+	 */
+	detect_old_format: function(data)
+	{
+		var raw	=	data.match(/:i[0-9a-f]{32}$/) ? data : convert.base64.decode(data);
+		return raw;
+	},
+
+	/**
 	 * This is the main function for data deserialization for any extending model.
 	 * It provides a standard interface, using the current key, to decrypt the
 	 * model's protected data.
@@ -54,7 +66,8 @@ var Protected = Composer.RelationalModel.extend({
 	deserialize: function(data, parentobj)
 	{
 		if(!this.key) return false;
-		var decrypted	=	tcrypt.decrypt(this.key, data);
+		var raw			=	this.detect_old_format(data);
+		var decrypted	=	tcrypt.decrypt(this.key, raw);
 		try
 		{
 			var obj			=	JSON.decode(decrypted);
@@ -82,7 +95,9 @@ var Protected = Composer.RelationalModel.extend({
 		// bytes. Should be easy enough to filter out when deserializing (since
 		// it's always JSON), but would give an attacker less data about the
 		// payload (it wouldn't ALWAYS start with "{")
-		return tcrypt.encrypt(this.key, json);
+		var encrypted	=	tcrypt.encrypt(this.key, json);
+		encrypted		=	convert.base64.encode(encrypted);
+		return encrypted;
 	},
 
 	/**
@@ -90,7 +105,8 @@ var Protected = Composer.RelationalModel.extend({
 	 */
 	decrypt_key: function(decrypting_key, encrypted_key)
 	{
-		return tcrypt.decrypt(decrypting_key, encrypted_key);
+		var raw	=	this.detect_old_format(encrypted_key);
+		return tcrypt.decrypt(decrypting_key, raw);
 	},
 
 	/**
@@ -98,7 +114,9 @@ var Protected = Composer.RelationalModel.extend({
 	 */
 	encrypt_key: function(key, key_to_encrypt)
 	{
-		return tcrypt.encrypt(key, key_to_encrypt);
+		var encrypted	=	tcrypt.encrypt(key, key_to_encrypt);
+		encrypted		=	convert.base64.encode(encrypted);
+		return encrypted;
 	},
 
 	/**
