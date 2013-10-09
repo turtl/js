@@ -32,22 +32,35 @@ var tcrypt = {
 	 * It was stupid because it forced things to be in base64, which increases
 	 * size by 2-3x. Binary storage was not an option.
 	 */
-	old_formatter: function(crypto)
-	{
-		// parse json string
-		var parts = crypto.split(/:/g);
-		var params = {
-			ciphertext: convert.base64.decode(parts[0]),
-			cipher: 'AES',
-			block_mode: 'CBC',
-			padding: 'AnsiX923'
+	old_formatter: {
+		stringify: function (cipherParams)
+		{
+			// create json object with ciphertext
+			var crypto = convert.base64.encode(cipherParams.ciphertext);
+
+			// optionally add iv
+			if(cipherParams.iv) crypto += ':i' + convert.binstring_to_hex(cipherParams.iv);
+
+			// stringify json object
+			return crypto;
+		},
+
+		parse: function(crypto)
+		{
+			// parse json string
+			var parts = crypto.split(/:/g);
+			var params = {
+				ciphertext: convert.base64.decode(parts[0]),
+				cipher: 'AES',
+				block_mode: 'CBC',
+				padding: 'AnsiX923'
+			}
+			parts.shift();
+			parts.each(function(p) {
+				if(p.match(/^i/)) params.iv = convert.hex_to_binstring(p.slice(1));
+			});
+			return params;
 		}
-		parts.shift();
-		parts.each(function(p) {
-			if(p.match(/^i/)) params.iv = convert.hex_to_binstring(p.slice(1));
-			if(p.match(/^s/)) params.salt = convert.hex_to_binstring(p.slice(1));
-		});
-		return params;
 	},
 
 	/**
@@ -119,7 +132,7 @@ var tcrypt = {
 		// TODO: if we ever get above 1000 versions, change this. The lowest
 		// allowable Base64 message is '++', which translates to 11,051 but for
 		// now we'll play it safe and cap at 1K
-		if(version > 1000) return tcrypt.old_formatter(enc);
+		if(version > 1000) return tcrypt.old_formatter.parse(enc);
 
 		// grab the payload description and decode it
 		var desc_length	=	enc.charCodeAt(2);
@@ -151,8 +164,20 @@ var tcrypt = {
 	 */
 	serialize: function(enc, options)
 	{
-		// create a version identifier
-		var version		=	tcrypt.current_version;
+		options || (options = {});
+
+		// grab our serialization version (default to tcrypt.current_version)
+		var version		=	((options.version || options.version === 0) && options.version % 1 === 0) ?  options.version : tcrypt.current_version;
+
+		// support serializing the old version if needed (auth, for example)
+		if(version === 0)
+		{
+			return tcrypt.old_formatter.stringify({
+				ciphertext: enc,
+				iv: options.iv
+			});
+		}
+
 		var serialized	=	String.fromCharCode(version >> 8) + String.fromCharCode(version & 255);
 
 		// create/append our description length and description
@@ -206,7 +231,8 @@ var tcrypt = {
 			cipher: cipher,
 			block_mode: block_mode,
 			padding: padding,
-			iv: opts.iv
+			iv: opts.iv,
+			version: opts.version
 		});
 		return formatted;
 	},
