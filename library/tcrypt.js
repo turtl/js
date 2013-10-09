@@ -282,7 +282,7 @@ var tcrypt = {
 		
 		var _kdf = new PBKDF2({
 			key_size: (options.key_size || 32),
-			hasher: SHA1,
+			hasher: options.hasher || SHA1,
 			iterations: (options.iterations || 400)
 		});
 		var key = _kdf.compute(passphrase, salt);
