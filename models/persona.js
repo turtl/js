@@ -259,7 +259,11 @@ var PersonaPrivate	=	Persona.extend({
 
 	generate_secret: function(key)
 	{
-		return tcrypt.encrypt(key, tcrypt.uuid()).toString().replace(/:.*/, '');
+		// don't do this. i know this code is obsolete, but it's no longer ok to
+		// slap this model in and go. this function needs more thought (or just
+		// use tcrypt.uuid() since there's no point in encrypting a random
+		// value)...news flash, the result is still random!
+		//return tcrypt.encrypt(key, tcrypt.uuid()).toString().replace(/:.*/, '');
 	},
 
 	get_challenge: function(options)

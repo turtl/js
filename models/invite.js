@@ -16,7 +16,7 @@ var Invite = Composer.Model.extend({
 		// create a key used to encrypt the board's key before emailing it
 		var salt			=	(secret || '') + ':throw the NSA down the well';
 		var encrypting_pass	=	tcrypt.uuid();
-		var encrypting_key	=	tcrypt.key(encrypting_pass, salt, {keySize: 256/32, iterations: 400});
+		var encrypting_key	=	tcrypt.key(encrypting_pass, salt, {key_size: 32, iterations: 400});
 
 		// don't do encryption directly, use the Protected model.
 		var keymodel		=	new InviteKey({key: tcrypt.key_to_string(key)});
@@ -44,7 +44,7 @@ var Invite = Composer.Model.extend({
 
 		// create a key used to encrypt the board's key before emailing it
 		var salt			=	(secret || '') + ':throw the NSA down the well';
-		var encrypting_key	=	tcrypt.key(encrypting_pass, salt, {keySize: 256/32, iterations: 400});
+		var encrypting_key	=	tcrypt.key(encrypting_pass, salt, {key_size: 32, iterations: 400});
 
 		// don't do encryption directly, use the Protected model.
 		var keymodel		=	new InviteKey();
