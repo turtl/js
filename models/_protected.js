@@ -67,7 +67,16 @@ var Protected = Composer.RelationalModel.extend({
 	{
 		if(!this.key) return false;
 		var raw			=	this.detect_old_format(data);
-		var decrypted	=	tcrypt.decrypt(this.key, raw);
+		try
+		{
+			var decrypted	=	tcrypt.decrypt(this.key, raw);
+		}
+		catch(e)
+		{
+			console.log('item ('+ (this.id(true) || parentobj.id) +'): ', e.message);
+			return false;
+		}
+
 		try
 		{
 			var obj			=	JSON.decode(decrypted);
@@ -105,8 +114,17 @@ var Protected = Composer.RelationalModel.extend({
 	 */
 	decrypt_key: function(decrypting_key, encrypted_key)
 	{
-		var raw	=	this.detect_old_format(encrypted_key);
-		return tcrypt.decrypt(decrypting_key, raw);
+		var raw			=	this.detect_old_format(encrypted_key);
+		try
+		{
+			var decrypted	=	tcrypt.decrypt(decrypting_key, raw);
+		}
+		catch(e)
+		{
+			console.log('item ('+ (this.id(true) || parentobj.id) +'): ', e.message);
+			return false;
+		}
+		return decrypted;
 	},
 
 	/**
