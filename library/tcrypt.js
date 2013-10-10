@@ -1,28 +1,65 @@
 "use strict";
 
+// define error(s) used by tcrypt
+var extend_error	=	function(extend, errname)
+{
+	var err						=	function() {
+		var tmp	=	extend.apply(this, arguments);
+		tmp.name = this.name = errname;
+
+		this.stack		=	tmp.stack
+		this.message	=	tmp.message
+
+		return this;
+	};
+	err.prototype	=	Object.create(extend.prototype, { constructor: { value: err } });
+	return err;
+}
+var TcryptError			=	extend_error(Error, 'TcryptError');
+var TcryptAuthFailed	=	extend_error(TcryptError, 'TcryptAuthFailed');
+
 var tcrypt = {
 	// -------------------------------------------------------------------------
-	// NOTE: never inject items into these lists. only append them!
+	// NOTE: never inject items into these lists. only append them!!!!
+	// NOTE: these lists can only support 256 items each!!!!
+	// -------------------------------------------------------------------------
 	cipher_index: [
 		'AES',
 		'Twofish'
 	],
 	block_index: [
-		'CBC'
+		'CBC',
+		//'CFB'
 	],
 	padding_index: [
 		'AnsiX923',
 		'PKCS7'
 	],
+	// this list holds items used by tcrypt.derive_keys to turn a master key
+	// (which is the main key passed into tcrypt.ecrypt/decrypt) into two keys:
+	// a key for encryption/decryption, and a key for HMAC verification.
+	//
+	// Format:
+	//   [hasher, iterations, length]
+	kdf_index: [
+		['SHA256', 2, 64]
+	],
 	// -------------------------------------------------------------------------
 
-	current_version: 1,
+	current_version: 3,		// current serialization version
+
+	// serialization options (array index values for the tcrypt.*_index arrays)
+	default_cipher: 0,
+	default_block: 0,
+	default_padding: 0,
+	default_kdf_mode: 0,	// corresponds to tcrypt.kdf_index
 
 	// define some getters. these really just wrap grabbing values out of the
 	// global window context, but in the future could be expanded
 	get_cipher: function(ciphername) { return window[ciphername]; },
 	get_block_mode: function(blockmode) { return window[blockmode]; },
 	get_padding: function(padding) { return window[padding]; },
+	get_hasher: function(hasher) { return window[hasher]; },
 
 	/**
 	 * This is the original Turtl encryption format
@@ -75,12 +112,14 @@ var tcrypt = {
 			var cipher_index	=	desc_str.charCodeAt(0);
 			var block_index		=	desc_str.charCodeAt(1);
 			var padding_index	=	desc_str.charCodeAt(2);
+			var kdf_mode		=	desc_str.charCodeAt(3);
 		}
 
 		return {
 			cipher: tcrypt.cipher_index[cipher_index],
 			block_mode: tcrypt.block_index[block_index],
-			padding: tcrypt.padding_index[padding_index]
+			padding: tcrypt.padding_index[padding_index],
+			kdf_mode: kdf_mode
 		};
 	},
 
@@ -92,7 +131,7 @@ var tcrypt = {
 	{
 		if(!options || !options.cipher || !options.block_mode || !options.padding)
 		{
-			throw 'tcrypt.encode_payload_description: must provide cipher, block_mode, and padding in options';
+			throw new TcryptError('tcrypt.encode_payload_description: must provide cipher, block_mode, and padding in options');
 		}
 
 		if(version >= 1)
@@ -100,17 +139,32 @@ var tcrypt = {
 			var cipher		=	tcrypt.cipher_index.indexOf(options.cipher);
 			var block_mode	=	tcrypt.block_index.indexOf(options.block_mode);
 			var padding		=	tcrypt.padding_index.indexOf(options.padding);
-			var desc		=	String.fromCharCode(cipher) + String.fromCharCode(block_mode) + String.fromCharCode(padding);
+			var kdf_mode	=	options.kdf_mode;
+			var desc		=	String.fromCharCode(cipher) +
+								String.fromCharCode(block_mode) +
+								String.fromCharCode(padding) +
+								String.fromCharCode(kdf_mode);
 		}
 
 		return desc;
 	},
 
 	/**
+	 * Authenticate a crypto payload via HMAC
+	 */
+	authenticate_payload: function(passphrase, version, payload_description, iv, ciphertext)
+	{
+		var payload	=	version + payload_description.length + payload_description + iv + ciphertext;
+		var hmac	=	new HMAC({passphrase: passphrase, hasher: tcrypt.get_hasher('SHA256')});
+		var hash	=	hmac.hash(payload, {return_format: 'binary'});
+		return hash;
+	},
+
+	/**
 	 * Turtl encryption serialization format is as follows:
 	 *
-	 *   |-2 bytes-| |-1 byte----| |-N bytes-----------| |-16 bytes-| |-N bytes----|
-	 *   | version | |desc length| |payload description| |    IV    | |payload data|
+	 *   |-2 bytes-| |-32 bytes-| |-1 byte----| |-N bytes-----------| |-16 bytes-| |-N bytes----|
+	 *   | version | |   HMAC   | |desc length| |payload description| |    IV    | |payload data|
 	 *
 	 * - version tells us the serialization version. although it will probably
 	 *   not get over 255, it has two bytes just in case. never say never.
@@ -132,23 +186,31 @@ var tcrypt = {
 		// TODO: if we ever get above 1000 versions, change this. The lowest
 		// allowable Base64 message is '++', which translates to 11,051 but for
 		// now we'll play it safe and cap at 1K
-		if(version > 1000) return tcrypt.old_formatter.parse(enc);
+		if(version > 1000)
+		{
+			return Object.merge(tcrypt.old_formatter.parse(enc), {
+				version: 0,
+				hmac: null,
+			});
+		}
+
+		// grab HMAC for auth
+		var hmac		=	enc.substr(2, 32);
 
 		// grab the payload description and decode it
-		var desc_length	=	enc.charCodeAt(2);
-		var desc_str	=	enc.substr(3, desc_length);
-		var desc		=	tcrypt.decode_payload_description(version, desc_str);
+		var desc_length	=	enc.charCodeAt(34);
+		var desc_str	=	enc.substr(35, desc_length);
 
 		// grab the IV
-		var iv			=	enc.substr(3 + desc_length, 16);
+		var iv			=	enc.substr(35 + desc_length, 16);
 
 		// finally, the encrypted data
-		var enc			=	enc.substr(3 + desc_length + 16);
+		var enc			=	enc.substr(35 + desc_length + 16);
 
 		var params	=	{
-			cipher: desc.cipher,
-			block_mode: desc.block_mode,
-			padding: desc.padding,
+			version: version,
+			hmac: hmac,
+			desc: desc_str,
 			iv: iv,
 			ciphertext: enc
 		};
@@ -166,8 +228,7 @@ var tcrypt = {
 	{
 		options || (options = {});
 
-		// grab our serialization version (default to tcrypt.current_version)
-		var version		=	((options.version || options.version === 0) && options.version % 1 === 0) ?  options.version : tcrypt.current_version;
+		var version	=	options.version;
 
 		// support serializing the old version if needed (auth, for example)
 		if(version === 0)
@@ -178,12 +239,15 @@ var tcrypt = {
 			});
 		}
 
+		// create initial string, with two version bytes
 		var serialized	=	String.fromCharCode(version >> 8) + String.fromCharCode(version & 255);
 
+		// add our hmac
+		serialized		+=	options.hmac;
+
 		// create/append our description length and description
-		var desc		=	tcrypt.encode_payload_description(version, options);
-		serialized		+=	String.fromCharCode(desc.length)
-		serialized		+=	desc;
+		serialized		+=	String.fromCharCode(options.desc.length)
+		serialized		+=	options.desc;
 
 		// append the IV
 		serialized		+=	options.iv;
@@ -194,6 +258,49 @@ var tcrypt = {
 		return serialized;
 	},
 
+	/**
+	 * Given a master key and a set of options, derive two sub-keys: one for
+	 * encryption/decryption and one for HMAC generation.
+	 */
+	derive_keys: function(master_key, options)
+	{
+		options || (options = {});
+
+		var hasher		=	options.hasher || tcrypt.get_hasher('SHA1');
+		var iterations	=	options.iterations || 50;
+		var key_size	=	options.key_size || 64;
+
+		var both_keys	=	tcrypt.key(master_key, null, {
+			hasher: hasher,
+			iterations: iterations,
+			key_size: key_size
+		});
+
+		// split the resulting key down the middle, first half is crypto key,
+		// second half is hmac key
+		var enc_key		=	both_keys.substr(0, key_size / 2);
+		var hmac_key	=	both_keys.substr(key_size / 2);
+
+		return {crypto: enc_key, hmac: hmac_key};
+	},
+
+	/**
+	 * Encrypt data with key.
+	 *
+	 * `options` allows specifying of cipher ('AES'/'Twofish'), block mode
+	 * ('CBC', 'CFB'), padding mode ('AnsiX923'/'PKCS7'), and serialization
+	 * version (defaults to tcrypt.current_version).
+	 *
+	 * Note that unless using version === 0 (the original serialization version,
+	 * still used in some places for backwards compatibility), the given `key`
+	 * is used to derive two other keys (and is otherwise not used directly): a
+	 * crypto key (used to encrypt the data) and an HMAC key used to protect the
+	 * ciphertext against tampering.
+	 *
+	 * This function returns a binary string of the serialized encrypted data.
+	 * All information needed to decrypt the string is encoded in the string.
+	 * See tcrypt.deserialize for more information.
+	 */
 	encrypt: function(key, data, options)
 	{
 		options || (options = {});
@@ -205,12 +312,35 @@ var tcrypt = {
 
 		// if we didn't specify cipher, block_mode, or padding in the options,
 		// use the tcrypt defaults.
-		var cipher		=	options.cipher || tcrypt.cipher_index[0];
-		var block_mode	=	options.block_mode || tcrypt.block_index[0];
-		var padding		=	options.padding || tcrypt.padding_index[0];
+		var cipher		=	options.cipher || tcrypt.cipher_index[tcrypt.default_cipher];
+		var block_mode	=	options.block_mode || tcrypt.block_index[tcrypt.default_block];
+		var padding		=	options.padding || tcrypt.padding_index[tcrypt.default_padding];
+		var kdf_mode	=	tcrypt.default_kdf_mode;	// hardcode for now
+
+		// grab our serialization version (default to tcrypt.current_version)
+		var version		=	((options.version || options.version === 0) && options.version % 1 === 0) ?  options.version : tcrypt.current_version;
+
+		if(version === 0)
+		{
+			var crypto_key	=	key;
+			var hmac_key	=	null;
+		}
+		else
+		{
+			// generate an encryption key and an authentication key from the
+			// master key `key`.
+			var kdf_entry	=	tcrypt.kdf_index[kdf_mode];
+			var keys		=	tcrypt.derive_keys(key, {
+				hasher: tcrypt.get_hasher(kdf_entry[0]),
+				iterations: kdf_entry[1],
+				key_size: kdf_entry[2]
+			});
+			var crypto_key	=	keys.crypto;
+			var hmac_key	=	keys.hmac;
+		}
 
 		var opts		=	Object.merge({}, options, {
-			key: key,
+			key: crypto_key,
 			block_mode: tcrypt.get_block_mode(block_mode),
 			pad_mode: tcrypt.get_padding(padding),
 		});
@@ -225,22 +355,52 @@ var tcrypt = {
 		var cipherclass	=	tcrypt.get_cipher(cipher);
 		var ciphertext	=	new cipherclass(opts).encrypt(data);
 
-		// serialize our ciphertext along with all the options user to create it
-		// into the Turtl serialization format
-		var formatted	=	tcrypt.serialize(ciphertext, {
+		// generate serialized description
+		var desc		=	tcrypt.encode_payload_description(version, {
 			cipher: cipher,
 			block_mode: block_mode,
 			padding: padding,
-			iv: opts.iv,
-			version: opts.version
+			kdf_mode: kdf_mode
+		});
+
+		// generate HMAC for this payload
+		var hmac	=	(version !== 0 && hmac_key) ? tcrypt.authenticate_payload(hmac_key, version, desc, opts.iv, ciphertext) : null;
+
+		// serialize our ciphertext along with all the options user to create it
+		// into the Turtl serialization format
+		var formatted	=	tcrypt.serialize(ciphertext, {
+			version: version,
+			hmac: hmac,
+			desc: desc,
+			iv: opts.iv
 		});
 		return formatted;
 	},
 
-	decrypt: function(key, encrypted, options)
+	/**
+	 * Decrypt data with key.
+	 *
+	 * The given `encrypted` data is first deserialized from Turtl's standard
+	 * format, which gives us serialization version, HMAC authentication hash,
+	 * ciphertext description (which includes the algorithm, padding mode, block
+	 * mode, and key derivation method), and the actual ciphertext.
+	 *
+	 * We then create a decryption key and an HMAC key (based on the "master"
+	 * key passed in) using the key derivation method in the description.
+	 *
+	 * The HMAC included in the payload is then checked against the HMAC we get
+	 * from hashing the version, description, iv, and ciphertext with the HMAC
+	 * password we got from the master key.
+	 *
+	 * If the hashes match, great, decrypt the ciphertext and return the result.
+	 * If the hashes do not match, an exception is thrown, blocking decryption.
+	 *
+	 * Note that all of the above deserialization/authentication is skipped if
+	 * the payload has a version === 0 (Turtl's old serialization format), in
+	 * which case the data is just decrypted without question.
+	 */
+	decrypt: function(key, encrypted)
 	{
-		options || (options = {});
-
 		// because of some errors in judgement, in some cases keys were UTF8
 		// encoded early-on. this should remain here until all keys for all data
 		// for all users are not UTF8 encoded...so, forever probably.
@@ -250,15 +410,57 @@ var tcrypt = {
 		// including what cipher we used to encrypt it, block mode, padding, iv,
 		// ciphertext (obvis).
 		var params	=	tcrypt.deserialize(encrypted);
-		var opts	=	Object.merge({
-			key: key,
-			block_mode: this.get_block_mode(params.block_mode),
-			pad_mode: this.get_padding(params.padding),
+		var version	=	params.version;
+		if(version === 0)
+		{
+			// we're deserializing/decrypting an old-version message. use the
+			// values passed to us by tcrypt.old_formatter.parse to form a
+			// description object. note in this case, we skip HMAC generation
+			// and authentication, and use the master key as the crypto key.
+			var desc	=	{
+				cipher: params.cipher,
+				block_mode: params.block_mode,
+				padding: params.padding,
+				kdf_mode: null
+			};
+			var crypto_key	=	key;
+			var hmac_key	=	null;
+		}
+		else
+		{
+			var desc	=	tcrypt.decode_payload_description(params.version, params.desc);
+
+			// generate an encryption key and an authentication key from the
+			// master key `key`.
+			var kdf_entry	=	tcrypt.kdf_index[desc.kdf_mode];
+			var keys		=	tcrypt.derive_keys(key, {
+				hasher: tcrypt.get_hasher(kdf_entry[0]),
+				iterations: kdf_entry[1],
+				key_size: kdf_entry[2]
+			});
+			var crypto_key	=	keys.crypto;
+			var hmac_key	=	keys.hmac;
+		}
+
+		// build/authenticate HMAC
+		var hmac	=	params.hmac;
+		if(params.version !== 0 && hmac && hmac_key)
+		{
+			if(hmac !== tcrypt.authenticate_payload(hmac_key, version, params.desc, params.iv, params.ciphertext))
+			{
+				throw new TcryptAuthFailed('Authentication error. This data has been tampered with.');
+			}
+		}
+
+		var opts	=	{
+			key: crypto_key,
+			block_mode: this.get_block_mode(desc.block_mode),
+			pad_mode: this.get_padding(desc.padding),
 			iv: params.iv || null
-		}, options);
+		};
 
 		// run the decryption using the cipher the data is encrypted with
-		var cipher	=	this.get_cipher(params.cipher);
+		var cipher	=	this.get_cipher(desc.cipher);
 		var de		=	new cipher(opts).decrypt(params.ciphertext);
 
 		try
@@ -282,7 +484,7 @@ var tcrypt = {
 		
 		var _kdf = new PBKDF2({
 			key_size: (options.key_size || 32),
-			hasher: SHA1,
+			hasher: (options.hasher || tcrypt.get_hasher('SHA1')),
 			iterations: (options.iterations || 400)
 		});
 		var key = _kdf.compute(passphrase, salt);
@@ -358,10 +560,11 @@ var tcrypt = {
 	{
 		options || (options = {});
 
-		if(options.raw)
-			return new SHA256().hash(data, {return_format: 'binary'});
+		var params	=	{};
+		if(options.raw) params.return_format = 'binary';
 
-		return new SHA256().hash(data);
+		var hasher	=	tcrypt.get_hasher('SHA256');
+		return new hasher().hash(data, params);
 	},
 
 	/**
