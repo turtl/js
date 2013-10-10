@@ -179,8 +179,7 @@ var Profile = Composer.RelationalModel.extend({
 				if(xhr.status == 0)
 				{
 					barfr.barf(
-						'Error connecting with server. Your changes may not be saved.<br><br><a href="#" onclick="window.location.reload()">Try reloading</a>.',
-						{message_persist: 'persist'}
+						'Error connecting with server. Your changes may not be saved.<br><br><a href="#" onclick="window.location.reload()">Try reloading</a>.'
 					);
 				}
 				else
