@@ -11,7 +11,7 @@ var tcrypt = {
 	],
 	block_index: [
 		'CBC',
-		'CFB'
+		//'CFB'
 	],
 	padding_index: [
 		'AnsiX923',
