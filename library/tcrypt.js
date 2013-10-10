@@ -1,5 +1,23 @@
 "use strict";
 
+// define error(s) used by tcrypt
+var extend_error	=	function(extend, errname)
+{
+	var err						=	function() {
+		var tmp	=	extend.apply(this, arguments);
+		tmp.name = this.name = errname;
+
+		this.stack		=	tmp.stack
+		this.message	=	tmp.message
+
+		return this;
+	};
+	err.prototype	=	Object.create(extend.prototype, { constructor: { value: err } });
+	return err;
+}
+var TcryptError			=	extend_error(Error, 'TcryptError');
+var TcryptAuthFailed	=	extend_error(TcryptError, 'TcryptAuthFailed');
+
 var tcrypt = {
 	// -------------------------------------------------------------------------
 	// NOTE: never inject items into these lists. only append them!!!!
@@ -28,7 +46,7 @@ var tcrypt = {
 	],
 	// -------------------------------------------------------------------------
 
-	current_version: 2,		// current serialization version
+	current_version: 3,		// current serialization version
 
 	// serialization options (array index values for the tcrypt.*_index arrays)
 	default_cipher: 0,
@@ -113,7 +131,7 @@ var tcrypt = {
 	{
 		if(!options || !options.cipher || !options.block_mode || !options.padding)
 		{
-			throw 'tcrypt.encode_payload_description: must provide cipher, block_mode, and padding in options';
+			throw new TcryptError('tcrypt.encode_payload_description: must provide cipher, block_mode, and padding in options');
 		}
 
 		if(version >= 1)
@@ -136,9 +154,9 @@ var tcrypt = {
 	 */
 	authenticate_payload: function(passphrase, version, payload_description, iv, ciphertext)
 	{
-		var desc_iv_data	=	version + payload_description + iv + ciphertext;
-		var hmac			=	new HMAC({passphrase: passphrase, hasher: tcrypt.get_hasher('SHA256')});
-		var hash			=	hmac.hash(desc_iv_data, {return_format: 'binary'});
+		var payload	=	version + payload_description.length + payload_description + iv + ciphertext;
+		var hmac	=	new HMAC({passphrase: passphrase, hasher: tcrypt.get_hasher('SHA256')});
+		var hash	=	hmac.hash(payload, {return_format: 'binary'});
 		return hash;
 	},
 
@@ -430,7 +448,7 @@ var tcrypt = {
 		{
 			if(hmac !== tcrypt.authenticate_payload(hmac_key, version, params.desc, params.iv, params.ciphertext))
 			{
-				throw 'tcrypt.decrypt: Authentication error. This data has been tampered with.';
+				throw new TcryptAuthFailed('Authentication error. This data has been tampered with.');
 			}
 		}
 
