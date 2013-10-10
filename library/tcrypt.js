@@ -56,10 +56,10 @@ var tcrypt = {
 
 	// define some getters. these really just wrap grabbing values out of the
 	// global window context, but in the future could be expanded
-	get_cipher: function(ciphername) { return window[ciphername]; },
-	get_block_mode: function(blockmode) { return window[blockmode]; },
-	get_padding: function(padding) { return window[padding]; },
-	get_hasher: function(hasher) { return window[hasher]; },
+	get_cipher: function(ciphername) { return (typeof window != 'undefined' ? window : self)[ciphername]; },
+	get_block_mode: function(blockmode) { return (typeof window != 'undefined' ? window : self)[blockmode]; },
+	get_padding: function(padding) { return (typeof window != 'undefined' ? window : self)[padding]; },
+	get_hasher: function(hasher) { return (typeof window != 'undefined' ? window : self)[hasher]; },
 
 	/**
 	 * This is the original Turtl encryption format
