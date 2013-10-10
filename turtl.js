@@ -172,6 +172,8 @@ var turtl	=	{
 			turtl.setup_header_bar();
 			turtl.profile.destroy();
 			turtl.profile	=	null;
+
+			if(window.port) window.port.send('logout');
 		}.bind(turtl));
 	},
 
