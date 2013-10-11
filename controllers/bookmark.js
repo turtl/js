@@ -107,6 +107,9 @@ var BookmarkController = Composer.Controller.extend({
 				if(!window._in_ext) window.close();
 			}, 'bookmark:edit_note:release');
 			this.edit_controller.bind('saved', function() {
+				// remove the localStorage entry for this note
+				window.localStorage.removeItem('bookmarker:note:saved');
+
 				this.profile.trigger('change:current_board');
 				if(window._in_ext && window.port)
 				{

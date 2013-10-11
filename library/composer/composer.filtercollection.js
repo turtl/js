@@ -86,6 +86,7 @@
 
 		match_action: function(event, model)
 		{
+			var args	=	Array.prototype.slice.call(arguments, 0);
 			switch(event)
 			{
 			case 'add':
@@ -97,11 +98,11 @@
 			case 'remove':
 				this.remove_event(model, {from_event: true}); break;
 			case 'change':
-				this.change_event(model); break;
+				this.change_event(model, {}, args); break;
 			case 'sort':
 				this.refresh(); break;
 			default:
-				this.forward_event.apply(this, arguments); break;
+				this.forward_event(event, model, args); break;
 			}
 		},
 
@@ -133,7 +134,7 @@
 			this.fire_event('reset', options, {has_reload: true});
 		},
 
-		change_event: function(model, options)
+		change_event: function(model, options, forward_args)
 		{
 			options || (options = {});
 
@@ -188,10 +189,14 @@
 				}
 			}
 
-			// do nothing if no change
+			// if the number of elements in the FC changed, just fire a standard
+			// "change" event (with the forwarded args), otherwise the change
+			// triggered a membership change, so fire a "reset"
 			if(this._models.length == num_items)
 			{
-				this.fire_event('change', options);
+				forward_args.shift();
+				var args	=	['change', options].append(forward_args);
+				this.fire_event.apply(this, args);
 			}
 			else
 			{
@@ -286,10 +291,18 @@
 			this.fire_event('remove', options, model);
 		},
 
-		forward_event: function()
+		forward_event: function(event, model, args)
 		{
+			// return if not forwarding events
 			if(!this.forward_all_events) return false;
-			this.trigger.apply(this, arguments);
+
+			// we're forwarding events, but we're not about to forward them for
+			// a model that doesn't "fit in" around here
+			if(model && model.__composer_type == 'model' && !this.filter(model, this))
+			{
+				return false;
+			}
+			this.trigger.apply(this, args);
 		}
 	});
 	FilterCollection.extend	=	function(obj, base)
