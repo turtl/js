@@ -14,7 +14,14 @@ var Board = Composer.RelationalModel.extend({
 		},
 		notes: {
 			type: Composer.HasMany,
-			collection: 'Notes',
+			filter_collection: 'NotesFilter',
+			master: function() { return turtl.profile.get('notes'); },
+			options: {
+				filter: function(model, notesfilter) {
+					return model.get('board_id') == notesfilter.get_parent().id();
+				},
+				forward_all_events: true
+			},
 			forward_events: true
 		},
 		personas: {
@@ -142,28 +149,6 @@ var Board = Composer.RelationalModel.extend({
 	track_tags: function(yesno)
 	{
 		this._track_tags = yesno;
-	},
-
-	/**
-	 * Given a set of note data, reset this board's notes, async, with said
-	 * data.
-	 */
-	update_notes: function(note_data, options)
-	{
-		options || (options = {});
-		this.get('notes').clear();
-		this.track_tags(false);
-		this.get('notes').reset_async(note_data, {
-			silent: true,
-			complete: function() {
-				this.get('notes').trigger('reset');
-				this.track_tags(true);
-				this.get('tags').refresh_from_notes(this.get('notes'), {silent: true});
-				this.get('tags').trigger('reset');
-				this.trigger('notes_updated');
-				if(options.complete) options.complete();
-			}.bind(this)
-		})
 	},
 
 	save: function(options)
@@ -430,39 +415,5 @@ var Boards = Composer.Collection.extend({
 			board.clear(options);
 		});
 		return this.parent.apply(this, arguments);
-	},
-
-	load_boards: function(boards, options)
-	{
-		options || (options = {});
-		var tally	=	0;
-		var nboards	=	boards.length;
-
-		// tracks the completion of note updating for each board.
-		var complete	=	function()
-		{
-			tally++;
-			if(tally >= nboards && options.complete)
-			{
-				options.complete();
-			}
-		};
-
-		if(nboards > 0)
-		{
-			boards.each(function(bdata) {
-				var notes = bdata.notes;
-				delete bdata.notes;
-				var board = new Board(bdata);
-				bdata.notes = notes;
-				this.add(board, options);
-				// this is async (notes added one by one), so track completion
-				board.update_notes(notes, Object.merge({}, options, {complete: complete}));
-			}.bind(this));
-		}
-		else
-		{
-			complete();
-		}
 	}
 });

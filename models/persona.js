@@ -212,6 +212,9 @@ var Personas = Composer.Collection.extend({
 	model: Persona
 });
 
+var PersonasFilter = Composer.FilterCollection.extend({
+});
+
 /**
  * Entirely unused model. A relic from the time when normal personas were
  * obscured from the account. Now, personas just have a user_id field. This

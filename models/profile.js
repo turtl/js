@@ -4,6 +4,15 @@ var Profile = Composer.RelationalModel.extend({
 			type: Composer.HasMany,
 			collection: 'Boards',
 			forward_events: true
+		},
+		notes: {
+			type: Composer.HasMany,
+			collection: 'Notes',
+			forward_events: true
+		},
+		personas: {
+			type: Composer.HasMany,
+			collection: 'Personas'
 		}
 	},
 
@@ -105,23 +114,57 @@ var Profile = Composer.RelationalModel.extend({
 	load: function(data, options)
 	{
 		options || (options = {});
-		var boards = this.get('boards');
-		var board_data = data.boards;
-		boards.load_boards(board_data, Object.merge({}, options, {
+
+		var boards		=	this.get('boards');
+		var notes		=	this.get('notes');
+		var personas	=	this.get('personas');
+
+		var tally		=	0;
+		var total		=	0;
+		var done		=	function()
+		{
+			tally++;
+			if(tally != total) return;
+			this.loaded	=	true;
+			// turn tag tracking back on
+			boards.each(function(b) {
+				b.get('notes').refresh();
+				b.track_tags(true);
+				(function() { 
+					b.get('tags').refresh_from_notes(b.get('notes'), {silent: true});
+					b.get('tags').trigger('reset');
+					b.trigger('notes_updated');
+				}).delay(1, this);
+			});
+			var board	=	null;
+			if(options.board)
+			{
+				board	=	boards.select_one({id: options.board.clean()});
+			}
+			if(!board) board = boards.first();
+			if(board) this.set_current_board(board);
+			if(options.complete) options.complete();
+		}.bind(this);
+
+		// reset the boards first
+		boards.reset_async(data.boards, {
 			complete: function() {
-				var board = null;
-				this.loaded = true;
-				if(options.board)
-				{
-					board = this.get('boards').find(function(p) {
-						return p.id() == options.board.clean();
-					});
-				}
-				if(!board) board = this.get('boards').first();
-				if(board) this.set_current_board(board);
-				if(options.complete) options.complete();
-			}.bind(this)
-		}));
+				// save some performance here by not tracking tags while updating
+				boards.each(function(b) { b.track_tags(false); });
+				total++;
+				notes.reset_async(data.notes, {
+					complete: function() {
+						done();
+					}
+				});
+				total++;
+				personas.reset_async(data.personas, {
+					complete: function() {
+						done();
+					}
+				});
+			}
+		});
 	},
 
 	/**
@@ -226,7 +269,7 @@ var Profile = Composer.RelationalModel.extend({
 			(sync.boards && sync.boards.length > 0) ||
 			(sync.notes && sync.notes.length > 0) )
 		{
-			console.log('sync: ', sync, this.sync_ignore);
+			//console.log('sync: ', sync, this.sync_ignore);
 		}
 
 		// if we're syncing user data, update it

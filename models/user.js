@@ -1,12 +1,18 @@
 var User	=	Composer.RelationalModel.extend({
 	base_url: '/users',
-	type: 'user',  // WTF is this for?
 
 	relations: {
 		personas: {
 			type: Composer.HasMany,
-			collection: 'Personas',
-			forward_events: true
+			filter_collection: 'PersonasFilter',
+			master: function() { return turtl.profile.get('personas'); },
+			options: {
+				filter: function(p) {
+					return p.get('user_id') == turtl.user.id();
+				}
+			},
+			forward_events: true,
+			delayed_init: true
 		},
 
 		settings: {
@@ -34,24 +40,6 @@ var User	=	Composer.RelationalModel.extend({
 	init: function()
 	{
 		this.logged_in		=	false;
-
-		// add new personas to user settings (where the shared secret is stored)
-		this.bind_relational('personas', ['saved'], function() {
-			var persona_settings	=	this.get('settings').get_by_key('personas');
-			var personas = {};
-			this.get('personas').each(function(persona) {
-				personas[persona.id()] = persona.get('secret');
-			});
-			persona_settings.value(personas);
-		}.bind(this), 'user:track_personas');
-
-		// make sure personas that are deleted are removed from user settings
-		this.bind_relational('personas', ['destroy'], function(persona) {
-			var persona_settings	=	this.get('settings').get_by_key('personas');
-			var personas = Object.clone(persona_settings.value());
-			delete personas[persona.id()];
-			persona_settings.value(personas);
-		}.bind(this), 'user:track_personas:destroy');
 
 		// used to throttle user settings saves
 		this.settings_timer		=	new Timer(10, 10);
@@ -219,31 +207,6 @@ var User	=	Composer.RelationalModel.extend({
 		this.auth	=	auth;
 
 		return auth;
-	},
-
-	load_personas: function(options)
-	{
-		var persona_keys = this.get('settings').get_by_key('personas').value();
-		if(!persona_keys || Object.getLength(persona_keys) == 0)
-		{
-			if(options.success) options.success();
-			return false;
-		}
-		var num_reqs = 0;
-		var target_reqs = Object.getLength(persona_keys);
-		var finish = function(persona)
-		{
-			num_reqs++;
-			this.get('personas').add(persona);
-			if(num_reqs >= target_reqs && options.success) options.success()
-		}.bind(this);
-		Object.each(persona_keys, function(secret, id) {
-			var persona = new Persona({
-				id: id,
-				secret: secret
-			});
-			persona.fetch({ success: finish });
-		}.bind(this));
 	},
 
 	test_auth: function(options)
