@@ -102,7 +102,7 @@
 			case 'sort':
 				this.refresh(); break;
 			default:
-				this.forward_event.apply(this, args); break;
+				this.forward_event(event, model, args); break;
 			}
 		},
 
@@ -291,10 +291,18 @@
 			this.fire_event('remove', options, model);
 		},
 
-		forward_event: function()
+		forward_event: function(event, model, args)
 		{
+			// return if not forwarding events
 			if(!this.forward_all_events) return false;
-			this.trigger.apply(this, arguments);
+
+			// we're forwarding events, but we're not about to forward them for
+			// a model that doesn't "fit in" around here
+			if(model && model.__composer_type == 'model' && !this.filter(model, this))
+			{
+				return false;
+			}
+			this.trigger.apply(this, args);
 		}
 	});
 	FilterCollection.extend	=	function(obj, base)
