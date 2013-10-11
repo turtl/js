@@ -915,7 +915,7 @@ var BigInt = (function() {
 
 	//the following global variables are scratchpad memory to 
 	//reduce dynamic memory allocation in the inner loop
-	t=new Array(0);
+	var t=new Array(0);
 	var ss=t;       //used in mult_()
 	var s0=t;       //used in multMod_(), squareMod_() 
 	var s1=t;       //used in powMod_(), multMod_(), squareMod_() 
@@ -1570,7 +1570,7 @@ var BigInt = (function() {
 	//x and y are nonnegative bigInts
 	//shift is a nonnegative integer
 	var greaterShift = function(x,y,shift) {
-	  var i, kx=x.length, ky=y.length;
+	  var i, k, kx=x.length, ky=y.length;
 	  k=((kx+shift)<ky) ? (kx+shift) : ky;
 	  for (i=ky-1-shift; i<kx && i>=0; i++) 
 		if (x[i]>0)
@@ -1702,7 +1702,7 @@ var BigInt = (function() {
 	  var i,k;
 	  k=Math.ceil(bits/bpe)+1;
 	  k=minSize>k ? minSize : k;
-	  buff=new Array(k);
+	  var buff=new Array(k);
 	  copyInt_(buff,t);
 	  return buff;
 	}
@@ -1831,7 +1831,7 @@ var BigInt = (function() {
 	//returns a duplicate of bigInt x
 	var dup = function(x) {
 	  var i;
-	  buff=new Array(x.length);
+	  var buff=new Array(x.length);
 	  copy_(buff,x);
 	  return buff;
 	}
