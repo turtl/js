@@ -173,8 +173,11 @@ var turtl	=	{
 			modal.close();
 
 			// local storage is for logged in people only
-			turtl.db.close();
-			turtl.db	=	null;
+			if(turtl.db)
+			{
+				turtl.db.close();
+				turtl.db	=	null;
+			}
 
 			// this should give us a clean slate
 			turtl.user.unbind();
