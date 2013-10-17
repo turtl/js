@@ -275,6 +275,15 @@ var User	=	Composer.RelationalModel.extend({
 		var key			=	user_keys[item_id];
 		if(!key) return false;
 		return tcrypt.key_to_bin(key);
+	},
+
+	// -------------------------------------------------------------------------
+	// Sync section
+	// -------------------------------------------------------------------------
+	sync_from_db: function(last_sync)
+	{
+		var userdata	=	turtl.db.user.get('user').done(function(userdata) {
+		});
 	}
 }, Protected);
 

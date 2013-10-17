@@ -174,6 +174,12 @@ var Profile = Composer.RelationalModel.extend({
 				return;
 			}
 
+			// update our mod time
+			collection	=	collection.map(function(item) {
+				item.last_change	=	new Date().getTime();
+				return item;
+			});
+
 			var errors	=	[];
 			turtl.db[table].update.apply(turtl.db[table], collection).then(
 				function(recs) {

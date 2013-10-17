@@ -322,12 +322,14 @@ var turtl	=	{
 
 
 		// always do local sync
-		turtl.sync.sync_local();
+		turtl.sync.sync_from_db();
 		if(turtl.sync && (!window._in_ext || window._in_background) && !window._in_app)
 		{
 			// only sync against the remote DB if we're in the standalone app
 			// OR if we're in the background thread of an addon
-			turtl.sync.sync_remote();
+			turtl.sync.setup_remote_trackers();
+			turtl.sync.sync_to_api();
+			turtl.sync.sync_from_api();
 		}
 
 		// listen for syncing from addon/background
