@@ -118,6 +118,7 @@ var turtl	=	{
 			}
 			turtl.api.set_auth(turtl.user.get_auth());
 			turtl.controllers.pages.release_current();
+			turtl.sync		=	new Sync();
 			turtl.messages	=	new Messages();
 			turtl.profile	=	new Profile();
 			turtl.search	=	new Search();
@@ -273,12 +274,16 @@ var turtl	=	{
 		}).done(function(server) {
 			turtl.db	=	server;
 			if(options.complete) options.complete();
+		}).fail(function(e) {
+			var idburl	=	__site_url + '/help/indexeddb';
+			barfr.barf('Error opening local database.<br><a href="'+idburl+'" target="_blank">Is IndexedDB enabled in your browser?</a>', {message_persist: 'persist'});
+			console.log('turtl.setup_local_db: ', e);
 		});
 	},
 
 	wipe_local_db: function()
 	{
-		turtl.db.close();
+		if(turtl.db) turtl.db.close();
 		window.indexedDB.deleteDatabase('turtl.'+turtl.user.id());
 		turtl.setup_local_db();
 	},
