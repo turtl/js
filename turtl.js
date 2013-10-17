@@ -29,8 +29,7 @@ var turtl	=	{
 	scroll_to_top: true,
 
 	// whether or not to sync data w/ server
-	sync: true,
-	sync_timer: null,
+	do_sync: true,
 
 	// if true, tells the app to mirror data to local storage
 	mirror: false,
@@ -313,17 +312,14 @@ var turtl	=	{
 	{
 		turtl.profile.get_sync_time();
 
-		// monitor for sync changes
+
+		// always do local sync
+		turtl.sync.sync_local();
 		if(turtl.sync && (!window._in_ext || window._in_background) && !window._in_app)
 		{
-			this.sync_timer = new Timer(10000);
-			this.sync_timer.end = function()
-			{
-				if(!turtl.user.logged_in) return false;
-				turtl.profile.sync();
-				this.sync_timer.start();
-			}.bind(this);
-			this.sync_timer.start();
+			// only sync against the remote DB if we're in the standalone app
+			// OR if we're in the background thread of an addon
+			turtl.sync.sync_remote();
 		}
 
 		// listen for syncing from addon/background
