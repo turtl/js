@@ -180,10 +180,10 @@ var NoteEditController = Composer.Controller.extend({
 		// the original note (not the copy)
 		turtl.loading(true);
 		this.note_copy.save({
-			success: function(note_data) {
+			success: function() {
 				turtl.loading(false);
 				this.note.key = this.note_copy.key;
-				this.note.set(note_data);
+				this.note.set(this.note_copy.toJSON());
 				if(isnew) this.board.get('notes').add(this.note);
 				// make sure the current filter applies to the edited note
 				this.board.get('tags').trigger('change:selected');

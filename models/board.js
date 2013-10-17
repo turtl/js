@@ -142,7 +142,7 @@ var Board = Composer.RelationalModel.extend({
 				return k.u != turtl.user.id();
 			});
 			this.set({keys: keys});
-			this.save_keys();
+			this.save();
 		}
 	},
 
@@ -151,55 +151,12 @@ var Board = Composer.RelationalModel.extend({
 		this._track_tags = yesno;
 	},
 
-	save: function(options)
+	get_url: function()
 	{
-		options || (options = {});
 		var url	=	this.id(true) ?
 			'/boards/'+this.id() :
 			'/boards/users/'+turtl.user.id();
-		var fn		=	(this.id(true) ? turtl.api.put : turtl.api.post).bind(turtl.api);
-		var data	=	this.toJSON();
-		if(!data.keys || (data.keys.length == 0))
-		{
-			// empty string gets converted to enpty array by the API for the keys
-			// type (this is the only way to serialize an empty array via 
-			// mootools' Request AJAX class)
-			data.keys	=	'';
-		}
-		fn(url, {data: data}, {
-			success: function(data) {
-				this.set(data);
-				if(options.success) options.success(data);
-			}.bind(this),
-			error: function(e) {
-				if(options.error) options.error(e);
-			}
-		});
-	},
-
-	save_keys: function(options)
-	{
-		options || (options = {});
-		var data	=	{};
-		data.keys	=	this.toJSON().keys;
-		if(!data.keys || data.keys.length == 0)
-		{
-			// empty string gets converted to enpty array by the API for the keys
-			// type (this is the only way to serialize an empty array via 
-			// mootools' Request AJAX class)
-			data.keys	=	'';
-		}
-
-		turtl.api.put('/boards/'+this.id(), {data: data}, {
-			success: function(data) {
-				this.set(data);
-				if(options.success) options.success(data);
-			}.bind(this),
-			error: function(e) {
-				barfr.barf('Error saving board: '+ e);
-				if(options.error) options.error(e);
-			}
-		});
+		return url;
 	},
 
 	share_with: function(from_persona, to_persona, permissions, options)
@@ -334,9 +291,9 @@ var Board = Composer.RelationalModel.extend({
 		var tags = this.get('tags');
 		var cats = this.get('categories');
 
-		notes.each(function(n) { n.destroy({skip_sync: true}); n.unbind(); });
-		tags.each(function(t) { t.destroy({skip_sync: true}); t.unbind(); });
-		cats.each(function(c) { c.destroy({skip_sync: true}); c.unbind(); });
+		notes.each(function(n) { n.destroy({skip_local_sync: true}); n.unbind(); });
+		tags.each(function(t) { t.destroy({skip_local_sync: true}); t.unbind(); });
+		cats.each(function(c) { c.destroy({skip_local_sync: true}); c.unbind(); });
 		notes.clear();
 		tags.clear();
 		cats.clear();

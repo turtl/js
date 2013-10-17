@@ -67,25 +67,31 @@ var Note = Composer.RelationalModel.extend({
 		});
 	},
 
+	get_url: function()
+	{
+		var url	=	this.id(true) ?
+						'/notes/'+this.id() :
+						'/boards/'+this.get('board_id')+'/notes';
+		return url;
+	},
+
 	save: function(options)
 	{
+		options.table	=	'notes';
+		return this.parent.call(this, options);
+	},
+
+	sync_to_api: function()
+	{
+		// TODO: !!!REMEMBER!!!
+		//       need to send persona_id if note is not owned by user and in
+		//       shared board!
 		options || (options = {});
 		var args	=	{};
 		var do_save	=	function()
 		{
-			var url		=	this.id(true) ? '/notes/'+this.id() : '/boards/'+this.get('board_id')+'/notes';
-			var fn		=	(this.id(true) ? turtl.api.put : turtl.api.post).bind(turtl.api);
-			args.data	=	this.toJSON();
-			fn(url, args, {
-				success: function(note_data) {
-					this.set(note_data);
-					if(options.success) options.success(note_data);
-				}.bind(this),
-				error: function (e) {
-					barfr.barf('There was a problem saving your note: '+ e);
-					if(options.error) options.error(e);
-				}.bind(this)
-			});
+			options.table	=	'notes';
+			var parentfn	=	get_parent(this).apply(this, [options]);
 		}.bind(this);
 
 		var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
@@ -94,6 +100,8 @@ var Note = Composer.RelationalModel.extend({
 			options.error('Problem finding board for that note.');
 			return false;
 		}
+
+		this.parent.apply(this, options);
 
 		if(board.get('shared', false) && this.get('user_id') != turtl.user.id())
 		{

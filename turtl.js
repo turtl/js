@@ -123,26 +123,31 @@ var turtl	=	{
 			turtl.profile	=	new Profile();
 			turtl.search	=	new Search();
 
-			// sets up local storage (indexeddb)
-			turtl.setup_local_db();
-
 			turtl.show_loading_screen(true);
-			turtl.profile.initial_load({
+
+			// sets up local storage (indexeddb)
+			turtl.setup_local_db({
 				complete: function() {
-					turtl.show_loading_screen(false);
-					turtl.controllers.pages.release_current();
-					turtl.last_url = '';
-					//turtl.profile.persist();
-					turtl.search.reindex();
-					var initial_route	=	options.initial_route || '';
-					if(initial_route.match(/^\/users\//)) initial_route = '/';
-					if(initial_route.match(/index.html/)) initial_route = '/';
-					if(initial_route.match(/background.html/)) initial_route = '/';
-					if(!window._in_background) turtl.route(initial_route);
-					turtl.setup_syncing();
-					turtl.setup_background_panel();
-					if(window.port) window.port.send('profile-load-complete');
-				}.bind(turtl)
+					// database is setup, populate the profile
+					turtl.profile.populate({
+						complete: function() {
+							turtl.show_loading_screen(false);
+							turtl.controllers.pages.release_current();
+							turtl.last_url = '';
+							//turtl.profile.persist();
+							turtl.search.reindex();
+							var initial_route	=	options.initial_route || '';
+							if(initial_route.match(/^\/users\//)) initial_route = '/';
+							if(initial_route.match(/index.html/)) initial_route = '/';
+							if(initial_route.match(/background.html/)) initial_route = '/';
+							if(!window._in_background) turtl.route(initial_route);
+							turtl.setup_syncing();
+							turtl.setup_background_panel();
+							if(window.port) window.port.send('profile-load-complete');
+						}.bind(turtl)
+					});
+
+				}.bind(this)
 			});
 
 			// logout shortcut
@@ -188,50 +193,92 @@ var turtl	=	{
 		}.bind(turtl));
 	},
 
-	setup_local_db: function()
+	setup_local_db: function(options)
 	{
-		// initialize our backing local storage. this could be filesystem,
-		// SQL, etc. right now it's indexeddb (wrapped via db.js).
+		options || (options = {});
+
+		// initialize our backing local storage.
 		db.open({
+			// DB has user id in it...client might have multiple users
 			server: 'turtl.'+turtl.user.id(),
-			version: 1,
+			version: 2,
+			// NOTE: all tables that are sync between the client and the API
+			// *must* have "local_change", "remote_change", "last_change"
+			// indexex. or else. or else what?? 
 			schema: {
+				// -------------------------------------------------------------
+				// k/v tables - always has "key" field as primary key
+				// -------------------------------------------------------------
+				// holds metadata about the sync process ("sync_time", etc)
+				sync: {
+					key: { keyPath: 'key', autoIncrement: false },
+					indexes: {
+					}
+				},
+				// holds one record (key="user") that stores the user's data/
+				// settings
+				user: {
+					key: { keyPath: 'key', autoIncrement: false },
+					indexes: {
+						local_change: {},
+						remote_change: {},
+						last_change: {}
+					}
+				},
+
+				// -------------------------------------------------------------
+				// regular tables (uses "id" as pk, id is always unique)
+				// -------------------------------------------------------------
+				personas: {
+					key: { keyPath: 'id', autoIncrement: false },
+					indexes: {
+						user_id: {},
+						local_change: {},
+						remote_change: {},
+						last_change: {}
+					}
+				},
 				boards: {
 					key: { keyPath: 'id', autoIncrement: false },
-					indexes: { user_id: {} }
+					indexes: {
+						user_id: {},
+						local_change: {},
+						remote_change: {},
+						last_change: {}
+					}
 				},
 				notes: {
 					key: { keyPath: 'id', autoIncrement: false },
 					indexes: {
 						user_id: {},
-						board_id: {}
+						board_id: {},
+						local_change: {},
+						remote_change: {},
+						last_change: {}
 					}
 				},
 				files: {
 					key: { keyPath: 'id', autoIncrement: false },
 					indexes: {
 						hash: {},
-						synced: {}
+						synced: {},
+						local_change: {},
+						remote_change: {},
+						last_change: {}
 					}
-				},
-				personas: {
-					key: { keyPath: 'id', autoIncrement: false },
-					indexes: { user_id: {} }
-				},
-				messages: {
-					key: { keyPath: 'id', autoIncrement: false },
-					indexes: {
-						to: {},
-						from: {}
-					}
-				},
-				userdata: {
-					key: { keyPath: 'id', autoIncrement: false }
 				}
 			}
 		}).done(function(server) {
 			turtl.db	=	server;
+			if(options.complete) options.complete();
 		});
+	},
+
+	wipe_local_db: function()
+	{
+		turtl.db.close();
+		window.indexedDB.deleteDatabase('turtl.'+turtl.user.id());
+		turtl.setup_local_db();
 	},
 
 	setup_header_bar: function()

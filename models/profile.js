@@ -61,57 +61,175 @@ var Profile = Composer.RelationalModel.extend({
 		this.persist_timer.end	=	false;
 	},
 
-	load_data: function(options)
+	/**
+	 * called when we want to populate the current user's profile.
+	 *
+	 * checks if the profile has already been synced against the API (first run)
+	 * and if so, loads from the local db where all the profile items should be
+	 * stored. if no local db profile data is present, populate() grabs the
+	 * profile from the API, syncs it to the local db, then continues populating
+	 * from the db data.
+	 */
+	populate: function(options)
 	{
-		var success = function(profile, from_storage)
-		{
-			from_storage || (from_storage = false);
+		options || (options = {});
 
-			this.profile_data = true;
-			turtl.user.set(profile.user);
-			if(options.init)
+		// called when we're sure we have downloaded the profile and populated
+		// the local DB with it
+		var finished	=	function()
+		{
+			this.profile_data	=	true;
+
+			var num_items	=	0;
+			var num_synced	=	0;
+
+			var data		=	{};
+
+			// called each time we get data from the local DB. 
+			var finished	=	function()
 			{
-				//this.clear({silent: true});
-				this.load(profile, Object.merge({}, options, {
-					complete: function() {
-						if(options.success) options.success(profile, from_storage);
-					}.bind(this)
-				}));
-			}
-			else if(options.success)
-			{
-				options.success(profile, from_storage);
-			}
+				num_synced++;
+				if(num_synced < num_items) return false;
+
+				// once we have all our data, populate the profile with it
+				this.load_from_data(data, options);
+			}.bind(this);
+
+			// populate the user data separately
+			turtl.db.user.get('user').done(function(userdata) {
+				turtl.user.set(userdata);
+			});
+
+			// load the profile from local db, collection by collection
+			['personas', 'boards', 'notes'].each(function(itemname) {
+				num_items++;
+				turtl.db[itemname].query().filter().execute().done(function(res) {
+					data[itemname]	=	res;
+					finished();
+				});
+			});
 		}.bind(this);
 
-		// load from addon
-		if((profile = (window._profile || false)) !== false)
-		{
-			// this next line recursively wraps the profile as mootools objects/arrays
-			profile	=	data_from_addon(profile);
-			(function () { success(profile, true); }).delay(0);
-		}
-		// load from local storage mirror
-		else if((profile = this.from_persist()) !== false)
-		{
-			(function () { success(profile, true); }).delay(0);
-		}
-		// load from API
-		else
-		{
-			turtl.api.get('/profiles/users/'+turtl.user.id(), {}, {
-				success: function(profile) {
-					success(profile, false);
-				},
-				error: function(err) {
-					barfr.barf('Error loading user profile: '+ err);
-					if(options.error) options.error(e);
-				}
-			});
-		}
+		// check if we need to download the profile (first-run). we do this by
+		// grabbing the last sync time. if present, then yes, syncing has
+		// already been setup on this client, otherwise we load the profile into
+		// the db, set the sync time record, and continue loading.
+		turtl.db.sync.get('sync_time').then(
+			function(res) {
+				if(res) return finished();
+
+				turtl.api.get('/profiles/users/'+turtl.user.id(), {}, {
+					success: function(profile) {
+						// send all profile data to the local db
+						this.persist_profile_to_db(profile, {
+							complete: function() {
+								// profile is downloaded, and all records are in
+								// our local db. continue.
+								finished();
+							}.bind(this)
+						});
+					}.bind(this),
+					error: function(err) {
+						barfr.barf('Error loading user profile from server: '+ err);
+						if(options.error) options.error(e);
+					}
+				});
+			}.bind(this),
+			function(err) {
+				barfr.barf('There was a problem with the initial load of your profile: '+ err);
+			}.bind(this)
+		);
 	},
 
-	load: function(data, options)
+	/**
+	 * Given a set of profile data (user, boards, notes, etc), save all the data
+	 * to the local db.
+	 *
+	 * the purpose of this is that once we do our initial profile sync, we save
+	 * it locally and from then on do incremental updates to the data instead of
+	 * loading it on every login.
+	 *
+	 * note that this function should only get called when:
+	 *  - the user has never logging in to their account on this client
+	 *  - the last sync the profile on this client had was more than the
+	 *    allowed time (config.sync_cutoff)
+	 */
+	persist_profile_to_db: function(profile, options)
+	{
+		options || (options = {});
+
+		var num_items	=	0;
+		var num_added	=	0;
+
+		// populates a collection of data into a table. collects all errors as
+		// it goes along. when finished, calls options.complete.
+		var populate	=	function(table, collection, options)
+		{
+			options || (options = {});
+
+			num_items++;
+			if(!collection)
+			{
+				if(options.complete) options.complete([]);
+				return;
+			}
+
+			var errors	=	[];
+			turtl.db[table].update.apply(turtl.db[table], collection).then(
+				function(recs) {
+					if(options.complete) options.complete(errors);
+				},
+				function(errs) {
+					if(!errs instanceof Array) errs = [errs];
+					errors.concat(errs);
+				}
+			);
+		};
+
+		// sets a particular key/value entry into a table, calls
+		// options.complete when finished.
+		var set_key	=	function(table, key, value, options)
+		{
+			options || (options = {});
+
+			// k/v pairs in the db should always use the primary field "key"
+			var clone	=	Object.clone(value);
+			clone['key']	=	key;
+
+			// let populate do the work
+			populate(table, [clone], options);
+		};
+
+		// called when our individual saves below finish
+		var complete_fn	=	function(name) {
+			return function(errors) {
+				if(errors.length > 0) barfr.barf('Error(s) persisting profile '+ name +': '+ errors.join(', '));
+				num_added++;
+				if(num_added < num_items) return false;
+
+				// only set the sync time once all data has been saved
+				set_key('sync', 'sync_time', {time: profile.time}, {});
+
+				// continue
+				if(options.complete) options.complete();
+			};
+		};
+
+		// run the actual data persists
+		populate('boards', profile.boards, {complete: complete_fn('boards')});
+		populate('notes', profile.notes, {complete: complete_fn('notes')});
+		populate('personas', profile.personas, {complete: complete_fn('personas')});
+		set_key('user', 'user', profile.user, {complete: complete_fn('user')});
+	},
+
+	/**
+	 * When we get a set of profile data, load it incrementally here, calling
+	 * options.complete() when finished.
+	 *
+	 * this function also does some basic setup, such as selecting the first
+	 * board as the current board.
+	 */
+	load_from_data: function(data, options)
 	{
 		options || (options = {});
 
@@ -164,25 +282,6 @@ var Profile = Composer.RelationalModel.extend({
 					}
 				});
 			}
-		});
-	},
-
-	/**
-	 * Grab all profile/persona profile data and init it into this profile
-	 * object.
-	 */
-	initial_load: function(options)
-	{
-		options || (options = {});
-		this.load_data({
-			init: true,
-			success: function() {
-				// message data can be loaded independently once personas
-				// are loaded, so do it
-				turtl.messages.sync();
-				this.trigger('loaded');
-				if(options.complete) options.complete();
-			}.bind(this)
 		});
 	},
 
@@ -419,6 +518,7 @@ var Profile = Composer.RelationalModel.extend({
 		});
 	},
 
+	// TODO: rename me to toJSONAsync
 	persist: function(options)
 	{
 		options || (options = {});
@@ -477,21 +577,6 @@ var Profile = Composer.RelationalModel.extend({
 			this.persist_timer.end	=	function() { do_persist(options); };
 			this.persist_timer.start();
 		}
-	},
-
-	from_persist: function()
-	{
-		if(!turtl.mirror) return false;
-
-		if((localStorage['scheme_version'] || 0) < config.mirror_scheme_version)
-		{
-			localStorage.clear();
-			return false;
-		}
-		var data	=	localStorage['profile:user:'+turtl.user.id()] || false
-		if(data) data = JSON.decode(data);
-		if(data && data.time) this.set({sync_time: data.time});
-		return data;
 	}
 });
 
