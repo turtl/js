@@ -448,7 +448,7 @@ var tcrypt = {
 		{
 			if(hmac !== tcrypt.authenticate_payload(hmac_key, version, params.desc, params.iv, params.ciphertext))
 			{
-				throw new TcryptAuthFailed('Authentication error. This data has been tampered with.');
+				throw new TcryptAuthFailed('Authentication error. This data has been tampered with (or the key is incorrect).');
 			}
 		}
 
