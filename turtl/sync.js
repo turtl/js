@@ -75,7 +75,6 @@ Composer.sync	=	function(method, model, options)
         // the server
         modeldata.deleted   =   1;
 	case 'update':
-        console.log('update (from local): ', JSON.encode(modeldata));
 		turtl.db[table].update(modeldata).then(success, error);
 		break;
 	default:

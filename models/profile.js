@@ -152,11 +152,11 @@ var Profile = Composer.RelationalModel.extend({
 	 * Given a set of profile data (user, boards, notes, etc), save all the data
 	 * to the local db.
 	 *
-	 * the purpose of this is that once we do our initial profile sync, we save
+	 * The purpose of this is that once we do our initial profile sync, we save
 	 * it locally and from then on do incremental updates to the data instead of
 	 * loading it on every login.
 	 *
-	 * note that this function should only get called when:
+	 * Note that this function should only get called when:
 	 *  - the user has never logging in to their account on this client
 	 *  - the last sync the profile on this client had was more than the
 	 *    allowed time (config.sync_cutoff)
@@ -320,6 +320,71 @@ var Profile = Composer.RelationalModel.extend({
 		this.sync_ignore.push(id);
 	},
 
+	// TODO: rename me to toJSONAsync, remove localStorage junk
+	persist: function(options)
+	{
+		options || (options = {});
+
+		var do_persist	=	function(options)
+		{
+			options || (options = {});
+			var user		=	turtl.user.toJSON();
+			user.personas	=	turtl.user.get('personas').toJSON();
+			var store		=	{
+				user: user,
+				boards: []
+			};
+
+			var finish_persist	=	function()
+			{
+				var tsnow	=	Math.floor(new Date().getTime()/1000);
+				store.time	=	this.get('sync_time', tsnow);
+				if(window.port) window.port.send('profile-save', store);
+
+				if(options.complete) options.complete(store);
+
+				if(!turtl.mirror) return false;
+
+				localStorage['profile:user:'+turtl.user.id()]	=	JSON.encode(store);
+				localStorage['scheme_version']					=	config.mirror_scheme_version;
+			}.bind(this);
+
+			var boards			=	turtl.profile.get('boards');	// clone
+			var num_boards		=	boards.models().length;
+			var num_finished	=	0;
+
+			// check for empty profile =]
+			if(num_boards == 0) finish_persist();
+
+			turtl.profile.get('boards').each(function(board) {
+				board.get('notes').toJSONAsync(function(notes) {
+					var boardobj	=	board.toJSON();
+					boardobj.notes	=	notes;
+					store.boards.push(boardobj);
+					num_finished++;
+					if(num_finished >= num_boards)
+					{
+						finish_persist();
+					}
+				}.bind(this));
+			}.bind(this));
+		}.bind(this);
+
+		if(options.now)
+		{
+			do_persist(options);
+		}
+		else
+		{
+			this.persist_timer.end	=	function() { do_persist(options); };
+			this.persist_timer.start();
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// old sync code. (keep around until we're sure the local DB stuff works)
+	// -------------------------------------------------------------------------
+	/*
 	sync: function(options)
 	{
 		options || (options = {});
@@ -348,6 +413,7 @@ var Profile = Composer.RelationalModel.extend({
 
 		turtl.messages.sync();
 	},
+	*/
 
 	/**
 	 * Process data gotten from a server sync. It can be changed user data, new
@@ -362,6 +428,7 @@ var Profile = Composer.RelationalModel.extend({
 	 * TODO: if sync data is ever applied async (most probably to the notes)
 	 * then be sure to update in_sync accordingly
 	 */
+	/*
 	process_sync: function(sync, options)
 	{
 		options || (options = {});
@@ -517,66 +584,6 @@ var Profile = Composer.RelationalModel.extend({
 		// let the world know syncing is done
 		this.trigger('sync-post');
 	},
-
-	// TODO: rename me to toJSONAsync
-	persist: function(options)
-	{
-		options || (options = {});
-
-		var do_persist	=	function(options)
-		{
-			options || (options = {});
-			var user		=	turtl.user.toJSON();
-			user.personas	=	turtl.user.get('personas').toJSON();
-			var store		=	{
-				user: user,
-				boards: []
-			};
-
-			var finish_persist	=	function()
-			{
-				var tsnow	=	Math.floor(new Date().getTime()/1000);
-				store.time	=	this.get('sync_time', tsnow);
-				if(window.port) window.port.send('profile-save', store);
-
-				if(options.complete) options.complete(store);
-
-				if(!turtl.mirror) return false;
-
-				localStorage['profile:user:'+turtl.user.id()]	=	JSON.encode(store);
-				localStorage['scheme_version']					=	config.mirror_scheme_version;
-			}.bind(this);
-
-			var boards			=	turtl.profile.get('boards');	// clone
-			var num_boards		=	boards.models().length;
-			var num_finished	=	0;
-
-			// check for empty profile =]
-			if(num_boards == 0) finish_persist();
-
-			turtl.profile.get('boards').each(function(board) {
-				board.get('notes').toJSONAsync(function(notes) {
-					var boardobj	=	board.toJSON();
-					boardobj.notes	=	notes;
-					store.boards.push(boardobj);
-					num_finished++;
-					if(num_finished >= num_boards)
-					{
-						finish_persist();
-					}
-				}.bind(this));
-			}.bind(this));
-		}.bind(this);
-
-		if(options.now)
-		{
-			do_persist(options);
-		}
-		else
-		{
-			this.persist_timer.end	=	function() { do_persist(options); };
-			this.persist_timer.start();
-		}
-	}
+	*/
 });
 

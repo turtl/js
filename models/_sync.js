@@ -200,6 +200,7 @@ var Sync = Composer.Model.extend({
 			this.sync_from_api.delay(10000, this);
 		}.bind(this);
 
+		// make sure we have a sync time before POST /sync
 		var sync_time	=	this.get('sync_time', false);
 		if(sync_time)
 		{
@@ -222,20 +223,47 @@ var Sync = Composer.Model.extend({
 	}
 });
 
+/**
+ * This collection abstracts most of the nittygritty nastiness that is dealing
+ * with local <--> remote syncing. Most collections can just extend it, and only
+ * implement process_local_sync themselves.
+ *
+ * However, in the event a collection needs finer-grained control over the sync
+ * process, SyncCollection is designed to be broken into small enough pieces so
+ * that control can be gained where needed by an extending collection without
+ * throwing out all of the wonderful work SyncCollection does.
+ */
 var SyncCollection	=	Composer.Collection.extend({
+	// stores the table in the local DB we operate on
 	local_table: 'overrideme',
 
-	process_local_sync: function()
+	/**
+	 * Takes data from a local db => mem sync (sync_from_db) and updates any
+	 * in-memory models/collections as needed. This is essentially what used to
+	 * be Profile.process_sync().
+	 */
+	process_local_sync: function(sync_item_data, sync_model)
 	{
 		console.log(this.local_table + '.process_local_sync: You *really* want to extend me!');
 	},
 
-	sync_from_db: function(last_mod)
+	/**
+	 * Looks for data modified in the local DB (last_mod > last_local_sync) for
+	 * this collection's table and syncs any changed data to in-memory models
+	 * via `process_local_sync`.
+	 *
+	 * It tries to be smart about the model it pulls out. When a new model is
+	 * added, it is added with a CID instead of an ID. When the API responds
+	 * back with "thx, added" it gives us a real ID. We can match the real ID to
+	 * the CID by trying to pull out the model by CID (if we don't find it by
+	 * the given ID).
+	 */
+	sync_from_db: function(last_local_sync)
 	{
 		// find all records in our owned table that were modified after the last
 		// time we synced db -> mem and sync them to our in-memory models
 		turtl.db[this.local_table].query('last_mod')
-			.lowerBound(last_mod)
+			.lowerBound(last_local_sync)
 			.execute()
 			.done(function(results) {
 				results.each(function(result) {
@@ -243,6 +271,9 @@ var SyncCollection	=	Composer.Collection.extend({
 					if(!model && result.cid)
 					{
 						model	=	this.find_by_id(result.cid, {strict: true});
+						// make sure we actually save the ID, even if
+						// process_local_sync neglects to
+						if(model) model.set({id: result.id}, {silent: true});
 					}
 					this.process_local_sync(result, model);
 				}.bind(this));
@@ -256,6 +287,8 @@ var SyncCollection	=	Composer.Collection.extend({
 	/**
 	 * Given an individual local DB record object, creates a model from the
 	 * record and syncs that model to the API.
+	 *
+	 * Called mainly by sync_to_api.
 	 */
 	sync_record_to_api: function(record, options)
 	{
@@ -281,6 +314,8 @@ var SyncCollection	=	Composer.Collection.extend({
 		// set our model to use the API sync function (instead of
 		// Composer.sync)
 		model.sync	=	api_sync;
+
+		// save the record into the model
 		model.set(record);
 
 		// store whether or not we're deleting this model
@@ -304,7 +339,6 @@ var SyncCollection	=	Composer.Collection.extend({
 				// saves the model into the database
 				var run_update		=	function()
 				{
-					console.log('update (from api): ', JSON.encode(modeldata));
 					table.update(modeldata).fail(function(e) {
 						console.log(this.local_table + '.sync_model_to_api: error setting last_mod on '+ this.local_table +'.'+ model.id() +' (local -> API): ', e);
 					});
@@ -363,6 +397,16 @@ var SyncCollection	=	Composer.Collection.extend({
 		}
 	},
 
+	/**
+	 * Looks for data in the local DB (under our table) that has been marked as
+	 * changed locally (local_change=1). Takes all found records, atomically
+	 * sets local_change=0, and calls sync_record_to_api on each.
+	 *
+	 * Also, this function searches its tables for records that have been marked
+	 * as deleted (deleted=1) and if their local_mod is more than 10s ago, they
+	 * are permenently removed. The 10s delay allows other pieces of the client
+	 * to process their deletion before the record is lost permenently.
+	 */
 	sync_to_api: function()
 	{
 		var table	=	turtl.db[this.local_table];
@@ -402,12 +446,19 @@ var SyncCollection	=	Composer.Collection.extend({
 			});
 	},
 
+	/**
+	 * This function takes items from a POST /sync call and saves them to the
+	 * local DB. POST /sync objects are full representations (not just diffs) so
+	 * saving them to the local DB fully is ok.
+	 */
 	sync_from_api: function(table, syncdata)
 	{
 		// loop over each of the synced items (this is a collection, remember)
 		// and perform any standard data transformations before saving to the
 		// local DB. update is the only operation we need.
 		syncdata.each(function(item) {
+			// POST /sync returns deleted === true, but we need it to be an int
+			// value, so we either set it to 1 or just delete it.
 			if(item.deleted)
 			{
 				item.deleted	=	1;
@@ -416,8 +467,11 @@ var SyncCollection	=	Composer.Collection.extend({
 			{
 				delete item.deleted;
 			}
+
+			// make sure the local "threads" know this data changed
 			item.last_mod	=	new Date().getTime();
 
+			// run the actual local DB update
 			table.update(item);
 		});
 	}
