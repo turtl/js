@@ -40,11 +40,15 @@ var turtl	=	{
 	// holds messages for all the user's personas
 	messages: null,
 
-	// holds project/note data for the user
+	// holds persona/board/note data for the user (ie, the user's profile)
 	profile: null,
 
 	// holds the search model
 	search: null,
+
+	// holds our sync model, responsible for coordinating synchronizing of data
+	// between in-memory models, the local DB, and the API
+	sync: null,
 
 	// this is our local storage DB "server" (right now an IndexedDB abstraction
 	// which stores files and notes locally).
