@@ -77,33 +77,33 @@ var Note = Composer.RelationalModel.extend({
 
 	save: function(options)
 	{
-        if(options.api_save)
-        {
-            var args    =   {};
-            var meta    =   this.get('meta');
-            if(meta && meta.persona)
-            {
-                args.persona    =   meta.persona;
-            }
-            return this.parent.call(this, options);
-        }
-        else
-        {
-            options.table	=	'notes';
+		if(options.api_save)
+		{
+			var args	=   {};
+			var meta	=   this.get('meta');
+			if(meta && meta.persona)
+			{
+				args.persona	=   meta.persona;
+			}
+			return this.parent.call(this, options);
+		}
+		else
+		{
+			options.table	=	'notes';
 
-            var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
-            if(!board)
-            {
-                options.error('Problem finding board for that note.');
-                return false;
-            }
+			var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
+			if(!board)
+			{
+				options.error('Problem finding board for that note.');
+				return false;
+			}
 
-            if(board.get('shared', false) && this.get('user_id') != turtl.user.id())
-            {
-                var persona		=	board.get_shared_persona();
-                args.persona	=	persona.id();
-            }
-        }
+			if(board.get('shared', false) && this.get('user_id') != turtl.user.id())
+			{
+				var persona		=	board.get_shared_persona();
+				args.persona	=	persona.id();
+			}
+		}
 
 		return this.parent.call(this, options);
 	},
@@ -198,10 +198,10 @@ var Notes = SyncCollection.extend({
 		});
 
 		this.batch_track	=	[];
-    },
+	},
 
-    process_local_sync: function(note_data, note)
-    {
+	process_local_sync: function(note_data, note)
+	{
 		if(note_data.deleted)
 		{
 			if(note) note.destroy({skip_remote_sync: true});
@@ -212,9 +212,9 @@ var Notes = SyncCollection.extend({
 		}
 		else
 		{
-			turtl.user.get('personas').upsert(new Persona(note_data));
+			this.upsert(new Note(note_data));
 		}
-    }
+	}
 });
 
 var NotesFilter = Composer.FilterCollection.extend({
