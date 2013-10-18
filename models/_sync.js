@@ -11,6 +11,9 @@ var SyncError	=	extend_error(Error, 'SyncError');
  *   b) the registered trackers' "type" field
  */
 var Sync = Composer.Model.extend({
+	// time, in ms, between POST /sync calls
+	sync_from_api_delay: 10000,
+
 	time_track: {
 		local: 0
 	},
@@ -163,41 +166,47 @@ var Sync = Composer.Model.extend({
 				return false;
 			}
 
-			if(turtl.do_sync)
-			{
-				turtl.api.post('/sync', {time: sync_time}, {
-					success: function(sync) {
-						// save our last sync time (graciously provided by the
-						// API)
-						this.set({sync_time: sync.time});
-						this.save();
+			// schedule another sync (even if syncing is disabled)
+			this.sync_from_api.delay(this.sync_from_api_delay, this);
 
-						// pipe our sync data off to the respective remote
-						// trackers
-						this.remote_trackers.each(function(track_obj) {
-							var type		=	track_obj.type;
-							var tracker		=	track_obj.tracker;
-							var syncdata	=	sync[type];
-							if(!syncdata) return false;
+			// if sync disabled, NEVERMIND
+			if(!turtl.do_sync) return false;
 
-							tracker.sync_from_api(turtl.db[tracker.local_table], syncdata);
-						});
-					}.bind(this),
-					error: function(e, xhr) {
-						if(xhr.status == 0)
-						{
-							barfr.barf('Error connecting with server. Your changes may note be saved.');
-						}
-						else
-						{
-							barfr.barf('Error syncing user profile with server: '+ e);
-						}
-						if(options.error) options.error(e);
+			turtl.api.post('/sync', {time: sync_time}, {
+				success: function(sync) {
+					// save our last sync time (graciously provided by the
+					// API)
+					this.set({sync_time: sync.time});
+					this.save();
+
+					// pipe our sync data off to the respective remote
+					// trackers
+					this.remote_trackers.each(function(track_obj) {
+						var type		=	track_obj.type;
+						var tracker		=	track_obj.tracker;
+						var syncdata	=	sync[type];
+						if(!syncdata) return false;
+
+						tracker.sync_from_api(turtl.db[tracker.local_table], syncdata);
+					});
+				}.bind(this),
+				error: function(e, xhr) {
+					if(xhr.status == 0)
+					{
+						barfr.barf('Error connecting with server. Your changes may note be saved.');
 					}
-				});
-			}
+					else
+					{
+						barfr.barf('Error syncing user profile with server: '+ e);
+					}
+					if(options.error) options.error(e);
+				}
+			});
 
-			this.sync_from_api.delay(10000, this);
+			// sync user's persona messages. not super related to the sync
+			// process since messages don't ever touch the main syncing
+			// system, but this is as good a place as any to sync messages
+			turtl.messages.sync();
 		}.bind(this);
 
 		// make sure we have a sync time before POST /sync
