@@ -7,12 +7,14 @@ var SyncError	=	extend_error(Error, 'SyncError');
 Composer.sync	=	function(method, model, options)
 {
 	options || (options = {});
+    /*
 	if(options.skip_sync && method == 'delete')
 	{
 		options.success();
 		return;
 	}
 	else if(options.skip_sync) return;
+    */
 
 	var table	=	options.table || model.get_url().replace(/^\/(.*?)(\/|$).*/, '$1');
 	if(!turtl.db[table])
@@ -31,10 +33,14 @@ Composer.sync	=	function(method, model, options)
 	};
 	var error	=	options.error || function() {};
 
-	var modeldata		=	model.toJSON();
-	modeldata.last_mod	=	new Date().getTime();
-	if(!options.skip_local_sync) modeldata.local_change = true;
-    if(options.args) modeldata.meta = options.args;
+    if(method != 'read')
+    {
+        // serialize our model, and add in any extra data needed
+        var modeldata		=	model.toJSON();
+        modeldata.last_mod	=	new Date().getTime();
+        if(!options.skip_remote_sync) modeldata.local_change = 1;
+        if(options.args) modeldata.meta = options.args;
+    }
 
 	// any k/v data that doesn't go by the "id" field should have it's key field
 	// filled in here.
@@ -58,11 +64,19 @@ Composer.sync	=	function(method, model, options)
 		modeldata.id	=	model.cid();
 		turtl.db[table].add(modeldata).then(success, error);
 		break;
-	case 'update':
-		turtl.db[table].update(modeldata).then(success, error);
-		break;
 	case 'delete':
-		turtl.db[table].remove(model.id()).then(success, error);
+        // delete flows through to update (after marking the item deleted). we
+        // don't actually delete the item here because then the sync processes
+        // would never know it changed.
+        //
+        // the remote sync (bless its heart) will check for "deleted" records
+        // and remove them accordingly, once they have had sufficient time to
+        // propagate to all local threads and have successfully been synced to
+        // the server
+        modeldata.deleted   =   1;
+	case 'update':
+        console.log('update (from local): ', JSON.encode(modeldata));
+		turtl.db[table].update(modeldata).then(success, error);
 		break;
 	default:
 		throw new SyncError('Bad method passed to Composer.sync: '+ method);
@@ -76,12 +90,7 @@ Composer.sync	=	function(method, model, options)
 var api_sync	=	function(method, model, options)
 {
 	options || (options = {});
-	if(options.skip_sync && method == 'delete')
-	{
-		options.success();
-		return;
-	}
-	else if(options.skip_sync) return;
+
 	switch(method)
 	{
 	case 'create':
@@ -93,7 +102,7 @@ var api_sync	=	function(method, model, options)
 	case 'delete':
 		var method	=	'_delete'; break;
 	default:
-		console.log('Bad method passed to Composer.sync: '+ method);
+		throw new SyncError('Bad method passed to Composer.sync: '+ method);
 		return false;
 	}
 

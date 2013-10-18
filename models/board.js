@@ -118,7 +118,7 @@ var Board = Composer.RelationalModel.extend({
 				if(!persona)
 				{
 					barfr.barf('The board "'+ this.get('title') + '" is no longer shared with you.');
-					this.destroy({skip_sync: true});
+					this.destroy({skip_remote_sync: true});
 				}
 			}
 			else
@@ -242,7 +242,7 @@ var Board = Composer.RelationalModel.extend({
 				}.bind(this), 'profile:track_sync:board:'+this.id());
 
 				// destroy our local copy
-				this.destroy({skip_sync: true});
+				this.destroy({skip_remote_sync: true});
 
 				if(options.success) options.success();
 			}.bind(this),
@@ -291,9 +291,9 @@ var Board = Composer.RelationalModel.extend({
 		var tags = this.get('tags');
 		var cats = this.get('categories');
 
-		notes.each(function(n) { n.destroy({skip_local_sync: true}); n.unbind(); });
-		tags.each(function(t) { t.destroy({skip_local_sync: true}); t.unbind(); });
-		cats.each(function(c) { c.destroy({skip_local_sync: true}); c.unbind(); });
+		notes.each(function(n) { n.destroy({skip_remote_sync: true}); n.unbind(); });
+		tags.each(function(t) { t.destroy({skip_remote_sync: true}); t.unbind(); });
+		cats.each(function(c) { c.destroy({skip_remote_sync: true}); c.unbind(); });
 		notes.clear();
 		tags.clear();
 		cats.clear();
@@ -346,8 +346,9 @@ var Board = Composer.RelationalModel.extend({
 	}
 }, Protected);
 
-var Boards = Composer.Collection.extend({
+var Boards = SyncCollection.extend({
 	model: Board,
+	local_table: 'boards',
 
 	sortfn: function(a, b)
 	{
@@ -372,5 +373,43 @@ var Boards = Composer.Collection.extend({
 			board.clear(options);
 		});
 		return this.parent.apply(this, arguments);
+	},
+
+	process_local_sync: function(board_data, board)
+	{
+		if(board_data.deleted)
+		{
+			if(board) board.destroy({skip_remote_sync: true});
+		}
+		else if(board)
+		{
+			if(board_data.user_id && board_data.user_id != turtl.user.id())
+			{
+				board_data.shared	=	true;
+			}
+			board.set(board_data);
+		}
+		else
+		{
+			// make sure this isn't a rogue/shared board sync. sometimes a
+			// shared board will sync AFTER it's deleted, bringing us here.
+			// luckily, we can detect it via board.shared == true, and
+			// board.privs.does_not_contain(any_of_my_personas).
+			if(board_data.shared)
+			{
+				var persona_ids		=	turtl.user.get('personas').map(function(p) { return p.id(); });
+				var has_my_persona	=	false;
+				Object.keys(board_data.privs).each(function(pid) {
+					if(persona_ids.contains(pid)) has_my_persona = true;
+				});
+
+				// board is shared, and I'm not on the guest list. not sure
+				// why I got an invite telling me to join a board I'm not
+				// actually invited to, but let's save ourselves the heart-
+				// break and skip out on this one
+				if(!has_my_persona) return false;
+			}
+			this.upsert(new Board(board_data));
+		}
 	}
 });

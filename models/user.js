@@ -1,4 +1,4 @@
-var User	=	Composer.RelationalModel.extend({
+var User	=	Protected.extend({
 	base_url: '/users',
 
 	relations: {
@@ -178,7 +178,7 @@ var User	=	Composer.RelationalModel.extend({
 		// clear user data
 		this.get('personas').each(function(p) {
 			p.unbind();
-			p.destroy({silent: true, skip_sync: true});
+			p.destroy({silent: true, skip_remote_sync: true});
 		});
 		this.get('personas').unbind().clear();
 		this.get('settings').unbind().clear();
@@ -280,10 +280,51 @@ var User	=	Composer.RelationalModel.extend({
 	// -------------------------------------------------------------------------
 	// Sync section
 	// -------------------------------------------------------------------------
-	sync_from_db: function(last_sync)
+	sync_from_db: function(last_mod)
 	{
-		var userdata	=	turtl.db.user.get('user').done(function(userdata) {
-		});
+		turtl.db.user.query('last_mod')
+			.lowerBound(last_mod)
+			.execute()
+			.done(function(userdata) {
+				if(userdata.length == 0) return false;
+				var userdata	=	userdata[0];
+
+				if(userdata.last_mod < last_mod) return false;
+				this.set(userdata);
+			}.bind(this))
+			.fail(function(e) {
+				barfr.barf('Problem syncing user record locally: '+ e);
+				console.log('user.sync_from_db: error: ', e);
+			});
+	},
+
+	sync_to_api: function()
+	{
+		turtl.db.user.query('local_change')
+			.only(1)
+			.modify({local_change: 0})
+			.execute()
+			.done(function(userdata) {
+				if(userdata.length == 0) return false;
+				userdata	=	userdata[0];
+
+				// "borrow" some code from the SyncCollection
+				var collection	=	new SyncCollection([], {
+					model: User,
+					local_table: 'user'
+				});
+				collection.sync_record_to_api(userdata);
+			}.bind(this))
+			.fail(function(e) {
+				barfr.barf('Problem syncing user record remotely: '+ e);
+				console.log('user.sync_to_api: error: ', e);
+			});
+	},
+
+	sync_from_api: function(table, syncdata)
+	{
+		syncdata.key	=	'user';
+		table.update(syncdata);
 	}
-}, Protected);
+});
 

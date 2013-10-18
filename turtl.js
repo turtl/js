@@ -211,7 +211,7 @@ var turtl	=	{
 			//
 			// "local_change" lets the remote sync processes (local db -> API)
 			// know that something has been changed locally and needs to be
-			// synced to the API.
+			// synced to the API. It must be 1 or 0.
 			//
 			// "last_mod" lets the local sync process(es) know that something
 			// has been changed (either by a remote sync call or by another
@@ -244,7 +244,8 @@ var turtl	=	{
 					key: { keyPath: 'id', autoIncrement: false },
 					indexes: {
 						local_change: {},
-						last_mod: {}
+						last_mod: {},
+						deleted: {}
 					}
 				},
 				boards: {
@@ -252,7 +253,8 @@ var turtl	=	{
 					indexes: {
 						user_id: {},
 						local_change: {},
-						last_mod: {}
+						last_mod: {},
+						deleted: {}
 					}
 				},
 				notes: {
@@ -261,7 +263,8 @@ var turtl	=	{
 						user_id: {},
 						board_id: {},
 						local_change: {},
-						last_mod: {}
+						last_mod: {},
+						deleted: {}
 					}
 				},
 				files: {
@@ -270,7 +273,8 @@ var turtl	=	{
 						hash: {},
 						synced: {},
 						local_change: {},
-						last_mod: {}
+						last_mod: {},
+						deleted: {}
 					}
 				}
 			}
@@ -321,11 +325,20 @@ var turtl	=	{
 
 	setup_syncing: function()
 	{
-		turtl.profile.get_sync_time();
+		// register our tracking for local syncing (db => in-mem)
+		//
+		// NOTE: order matters here! since the user model holds keys in its
+		// data, it's important that it runs before everything else, or you may
+		// wind up with data that doesn't get decrypted properly. next is the
+		// personas, followed by boards, and lastly notes.
+		turtl.sync.register_local_tracker('user', turtl.user);
+		turtl.sync.register_local_tracker('personas', turtl.profile.get('personas'));
+		turtl.sync.register_local_tracker('boards', turtl.profile.get('boards'));
+		turtl.sync.register_local_tracker('notes', turtl.profile.get('notes'));
 
-
-		// always do local sync
+		// always sync from local db => in-mem models.
 		turtl.sync.sync_from_db();
+
 		if(turtl.sync && (!window._in_ext || window._in_background) && !window._in_app)
 		{
 			// only sync against the remote DB if we're in the standalone app

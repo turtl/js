@@ -45,6 +45,9 @@ var Profile = Composer.RelationalModel.extend({
 				this.set_current_board(board);
 			}
 		}.bind(this));
+
+		// TODO: remove this profile mod stuff once local DB syncing is all
+		// figured out
 		var profile_mod_timer	=	new Timer(100);
 		profile_mod_timer.end	=	function()
 		{
@@ -79,20 +82,20 @@ var Profile = Composer.RelationalModel.extend({
 		var finished	=	function()
 		{
 			this.profile_data	=	true;
+			var profile_data	=	{};
 
 			var num_items	=	0;
 			var num_synced	=	0;
-
-			var data		=	{};
 
 			// called each time we get data from the local DB. 
 			var finished	=	function()
 			{
 				num_synced++;
+				// only continue when all local DB grabs are done
 				if(num_synced < num_items) return false;
 
 				// once we have all our data, populate the profile with it
-				this.load_from_data(data, options);
+				this.load_from_data(profile_data, options);
 			}.bind(this);
 
 			// populate the user data separately
@@ -104,7 +107,11 @@ var Profile = Composer.RelationalModel.extend({
 			['personas', 'boards', 'notes'].each(function(itemname) {
 				num_items++;
 				turtl.db[itemname].query().filter().execute().done(function(res) {
-					data[itemname]	=	res;
+					// filter out deleted entries
+					res	=	res.filter(function(item) {
+						return item.deleted !== 1;
+					});
+					profile_data[itemname]	=	res;
 					finished();
 				});
 			});
@@ -214,7 +221,8 @@ var Profile = Composer.RelationalModel.extend({
 				if(num_added < num_items) return false;
 
 				// only set the sync time once all data has been saved
-				set_key('sync', 'sync_time', {time: profile.time}, {});
+				turtl.sync.set({sync_time: profile.time});
+				turtl.sync.save();
 
 				// continue
 				if(options.complete) options.complete();
@@ -508,20 +516,6 @@ var Profile = Composer.RelationalModel.extend({
 
 		// let the world know syncing is done
 		this.trigger('sync-post');
-	},
-
-	get_sync_time: function()
-	{
-		if(this.get('sync_time', false)) return;
-
-		turtl.api.get('/sync', {}, {
-			success: function(time) {
-				this.set({sync_time: time});
-			}.bind(this),
-			error: function(e) {
-				barfr.barf('Error syncing user profile with server: '+ e);
-			}.bind(this)
-		});
 	},
 
 	// TODO: rename me to toJSONAsync

@@ -77,45 +77,35 @@ var Note = Composer.RelationalModel.extend({
 
 	save: function(options)
 	{
-		options.table	=	'notes';
+        if(options.api_save)
+        {
+            var args    =   {};
+            var meta    =   this.get('meta');
+            if(meta && meta.persona)
+            {
+                args.persona    =   meta.persona;
+            }
+            return this.parent.call(this, options);
+        }
+        else
+        {
+            options.table	=	'notes';
 
-		var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
-		if(!board)
-		{
-			options.error('Problem finding board for that note.');
-			return false;
-		}
+            var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
+            if(!board)
+            {
+                options.error('Problem finding board for that note.');
+                return false;
+            }
 
-		if(board.get('shared', false) && this.get('user_id') != turtl.user.id())
-		{
-			var persona		=	board.get_shared_persona();
-			args.persona	=	persona.id();
-		}
+            if(board.get('shared', false) && this.get('user_id') != turtl.user.id())
+            {
+                var persona		=	board.get_shared_persona();
+                args.persona	=	persona.id();
+            }
+        }
 
 		return this.parent.call(this, options);
-	},
-
-	sync_to_api: function()
-	{
-        var args    =   {};
-        var meta    =   this.get('meta');
-        if(meta && meta.persona)
-        {
-
-        }
-		// TODO: !!!REMEMBER!!!
-		//       need to send persona_id if note is not owned by user and in
-		//       shared board!
-		options || (options = {});
-		var args	=	{};
-		var do_save	=	function()
-		{
-			options.table	=	'notes';
-            options.args    =   args;
-			var parentfn	=	get_parent(this).apply(this, [options]);
-		}.bind(this);
-
-		do_save();
 	},
 
 	destroy: function(options)
@@ -141,7 +131,7 @@ var Note = Composer.RelationalModel.extend({
 			return false;
 		}
 
-		if(board.get('shared', false) && !options.skip_sync)
+		if(board.get('shared', false) && !options.skip_remote_sync)
 		{
 			var persona		=	board.get_shared_persona();
 			args.persona	=	persona.id();
@@ -169,8 +159,10 @@ var Note = Composer.RelationalModel.extend({
 	}
 }, Protected);
 
-var Notes = Composer.Collection.extend({
+var Notes = SyncCollection.extend({
 	model: Note,
+	local_table: 'notes',
+
 	sortfn: function(a, b) { return a.id().localeCompare(b.id()); },
 
 	// used for tracking batch note saves
@@ -206,7 +198,23 @@ var Notes = Composer.Collection.extend({
 		});
 
 		this.batch_track	=	[];
-	}
+    },
+
+    process_local_sync: function(note_data, note)
+    {
+		if(note_data.deleted)
+		{
+			if(note) note.destroy({skip_remote_sync: true});
+		}
+		else if(note)
+		{
+			note.set(note_data);
+		}
+		else
+		{
+			turtl.user.get('personas').upsert(new Persona(note_data));
+		}
+    }
 });
 
 var NotesFilter = Composer.FilterCollection.extend({
