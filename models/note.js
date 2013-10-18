@@ -78,21 +78,6 @@ var Note = Composer.RelationalModel.extend({
 	save: function(options)
 	{
 		options.table	=	'notes';
-		return this.parent.call(this, options);
-	},
-
-	sync_to_api: function()
-	{
-		// TODO: !!!REMEMBER!!!
-		//       need to send persona_id if note is not owned by user and in
-		//       shared board!
-		options || (options = {});
-		var args	=	{};
-		var do_save	=	function()
-		{
-			options.table	=	'notes';
-			var parentfn	=	get_parent(this).apply(this, [options]);
-		}.bind(this);
 
 		var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
 		if(!board)
@@ -101,13 +86,35 @@ var Note = Composer.RelationalModel.extend({
 			return false;
 		}
 
-		this.parent.apply(this, options);
-
 		if(board.get('shared', false) && this.get('user_id') != turtl.user.id())
 		{
 			var persona		=	board.get_shared_persona();
 			args.persona	=	persona.id();
 		}
+
+		return this.parent.call(this, options);
+	},
+
+	sync_to_api: function()
+	{
+        var args    =   {};
+        var meta    =   this.get('meta');
+        if(meta && meta.persona)
+        {
+
+        }
+		// TODO: !!!REMEMBER!!!
+		//       need to send persona_id if note is not owned by user and in
+		//       shared board!
+		options || (options = {});
+		var args	=	{};
+		var do_save	=	function()
+		{
+			options.table	=	'notes';
+            options.args    =   args;
+			var parentfn	=	get_parent(this).apply(this, [options]);
+		}.bind(this);
+
 		do_save();
 	},
 

@@ -31,9 +31,10 @@ Composer.sync	=	function(method, model, options)
 	};
 	var error	=	options.error || function() {};
 
-	var modeldata			=	model.toJSON();
-	modeldata.last_change	=	new Date().getTime();
+	var modeldata		=	model.toJSON();
+	modeldata.last_mod	=	new Date().getTime();
 	if(!options.skip_local_sync) modeldata.local_change = true;
+    if(options.args) modeldata.meta = options.args;
 
 	// any k/v data that doesn't go by the "id" field should have it's key field
 	// filled in here.

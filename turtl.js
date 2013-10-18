@@ -204,10 +204,19 @@ var turtl	=	{
 		db.open({
 			// DB has user id in it...client might have multiple users
 			server: 'turtl.'+turtl.user.id(),
-			version: 2,
+			version: 3,
 			// NOTE: all tables that are sync between the client and the API
-			// *must* have "local_change", "remote_change", "last_change"
-			// indexex. or else. or else what?? 
+			// *must* have "local_change" and "last_mod" indexex. or else. or
+			// else what?? or else it won't work.
+			//
+			// "local_change" lets the remote sync processes (local db -> API)
+			// know that something has been changed locally and needs to be
+			// synced to the API.
+			//
+			// "last_mod" lets the local sync process(es) know that something
+			// has been changed (either by a remote sync call or by another
+			// app "thread" in an addon) and should be synced to the in-memory
+			// models.
 			schema: {
 				// -------------------------------------------------------------
 				// k/v tables - always has "key" field as primary key
@@ -224,8 +233,7 @@ var turtl	=	{
 					key: { keyPath: 'key', autoIncrement: false },
 					indexes: {
 						local_change: {},
-						remote_change: {},
-						last_change: {}
+						last_mod: {}
 					}
 				},
 
@@ -235,10 +243,8 @@ var turtl	=	{
 				personas: {
 					key: { keyPath: 'id', autoIncrement: false },
 					indexes: {
-						user_id: {},
 						local_change: {},
-						remote_change: {},
-						last_change: {}
+						last_mod: {}
 					}
 				},
 				boards: {
@@ -246,8 +252,7 @@ var turtl	=	{
 					indexes: {
 						user_id: {},
 						local_change: {},
-						remote_change: {},
-						last_change: {}
+						last_mod: {}
 					}
 				},
 				notes: {
@@ -256,8 +261,7 @@ var turtl	=	{
 						user_id: {},
 						board_id: {},
 						local_change: {},
-						remote_change: {},
-						last_change: {}
+						last_mod: {}
 					}
 				},
 				files: {
@@ -266,8 +270,7 @@ var turtl	=	{
 						hash: {},
 						synced: {},
 						local_change: {},
-						remote_change: {},
-						last_change: {}
+						last_mod: {}
 					}
 				}
 			}

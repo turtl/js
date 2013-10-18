@@ -11,8 +11,9 @@ var SyncError	=	extend_error(Error, 'SyncError');
  *   b) the registered trackers' "type" field
  */
 var Sync = Composer.Model.extend({
-	last_sync_local: 0,
-	last_sync_remote: 0,
+	time_track: {
+		local: 0
+	},
 
 	// holds collections/models that monitor their respective local db table for
 	// remote changes and sync those changes to in-memory models. note that
@@ -25,6 +26,12 @@ var Sync = Composer.Model.extend({
 	// holds collections/models that monitor their respective local db table for
 	// local changes and sync those changes to the API
 	remote_trackers: {},
+
+	init: function()
+	{
+		// initialize our time tracker(s)
+		this.time_track.local	=	new Date().getTime();
+	},
 
 	/**
 	 * Registers a collection/model that will keep in-memory models up-to-date
@@ -75,8 +82,12 @@ var Sync = Composer.Model.extend({
 	{
 		if(!turtl.do_sync) return false;
 
+		// store last local sync time, update local sync time
+		var last_local_sync	=	this.time_track.local;
+		this.time_track.local	=	new Date().getTime();
+
 		Object.each(this.local_trackers, function(tracker) {
-			tracker.sync_from_db();
+			tracker.sync_from_db(last_local_sync);
 		}.bind(this));
 
 		turtl.db.sync.update({key: 'sync_time_local', time: new Date().getTime()}).fail(function(e) {
@@ -131,3 +142,89 @@ var Sync = Composer.Model.extend({
 	}
 });
 
+var SyncCollection	=	Composer.Collection.extend({
+	local_table: 'overrideme',
+
+	sync_from_db: function(last_mod)
+	{
+		// find all records in our owned table that were modified after the last
+		// time we synced db -> mem and sync them to our in-memory models
+		turtl.db[this.local_table].query('last_mod')
+			.lowerBound(last_mod)
+			.execute()
+			.done(function(results) {
+				results.each(function(result) {
+					var model	=	this.find_by_id(result.id);
+					if(!model) return false;
+
+					// if we have a model, update it with the new data
+					model.set(result);
+				}.bind(this));
+			}.bind(this))
+			.error(function(e) {
+				barfr.barf('Problem syncing '+ this.local_table +' records locally:' + e);
+				console.log('sync_from_db: error: ', e);
+			});
+	},
+
+	sync_to_api: function()
+	{
+		// grab objects that have been modified locally, atomically set their
+		// modified flag to false, and sync them out to the API.
+		var table	=	turtl.db[this.local_table];
+		table.query('local_change')
+			.only(true)
+			.modify({local_change: false})
+			.execute()
+			.done(function(results) {
+				results.each(function(result) {
+					// create a new instance of our collection's model
+					var model	=	new this.model();
+
+					// raw_data disables encryption/decryption (only the in-mem
+					// models are going to need this, so we just stupidly pass
+					// around encrypted payloads when syncing to/from the API).
+					model.raw_data	=	true;
+
+					// set our model to use the API sync function (instead of
+					// Composer.sync)
+					model.sync	=	api_sync;
+					model.set(result);
+					var options	=	{
+						success: function(model, res) {
+							
+						},
+						error: function(err) {
+							barfr.barf('Error syncing model to API: '+ err);
+							// set the record as local_modified again so we can
+							// try again next run
+							table.get(result.id)
+								.done(function(obj) {
+									obj.local_change	=	true;
+									table.update(obj);
+								})
+								.error(function(e) {
+									console.log('Error marking object '+ this.local_table +'.'result.id +' as local_change = true: ', e);
+								});
+						}.bind(this)
+					};
+					if(model.sync_to_api && model.sync_to_api instanceof Function)
+					{
+						model.sync_to_api(options)
+					}
+					else
+					{
+						model.save(options);
+					}
+				}.bind(this));
+			}.bind(this))
+			.error(function(e) {
+				barfr.barf('Problem syncing '+ this.local_table +' records remotely:' + e);
+				console.log('sync_to_api: error: ', e);
+			});
+	},
+
+	sync_from_api: function()
+	{
+	}
+});

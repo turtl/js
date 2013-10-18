@@ -176,7 +176,7 @@ var Profile = Composer.RelationalModel.extend({
 
 			// update our mod time
 			collection	=	collection.map(function(item) {
-				item.last_change	=	new Date().getTime();
+				item.last_mod	=	new Date().getTime();
 				return item;
 			});
 

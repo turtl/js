@@ -28,6 +28,10 @@ var Protected = Composer.RelationalModel.extend({
 		}
 	},
 
+	// if true, will tream all model set/toJSON calls as-is (no serialization or
+	// deserialization of crypto data)
+	raw_data: false,
+
 	// when serializing/deserializing the encrypted payload for the private
 	// fields will be stored under this key in the resulting object
 	body_key: 'body',
@@ -157,20 +161,18 @@ var Protected = Composer.RelationalModel.extend({
 	 */
 	set: function(obj, options)
 	{
+		// if we're doing raw_data, then just call Model.set without any of the
+		// Protected deserialization jazz
+		if(this.raw_data) return this.parent.apply(this, arguments);
+
 		// NOTE: don't use `arguments` here since we need to explicitely pass in
 		// our obj to the parent function
 		options || (options = {});
-		if(!options.ignore_body)
-		{
-			var _body	=	obj[this.body_key];
-			delete obj[this.body_key];
-		}
+		var _body	=	obj[this.body_key];
+		delete obj[this.body_key];
 		var ret		=	this.parent.apply(this, [obj, options]);
-		if(!options.ignore_body)
-		{
-			if(_body != undefined) obj[this.body_key] = _body;
-			this.process_body(obj, options);
-		}
+		if(_body != undefined) obj[this.body_key] = _body;
+		if(!options.ignore_body) this.process_body(obj, options);
 		return ret;
 	},
 
@@ -245,12 +247,11 @@ var Protected = Composer.RelationalModel.extend({
 			}
 		}.bind(this));
 
-		// if we don't have a key and we DO have already-serialized body data
-		// and we specifically ask to disable serialization, just return with
-		// the pre-serialized body
-		if(!this.key && this.get(this.body_key, false) && options.disable_serialize)
+		// if we're dealing with raw data, just return the public fields plus
+		// the encrypted body
+		if(this.raw_data)
 		{
-			newdata[this.body_key]	=	this.get(this.body_key);
+			newdata[this.body_key]	=	this.get(this.body_key, false);
 			return newdata;
 		}
 

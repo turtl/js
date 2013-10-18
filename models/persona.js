@@ -208,7 +208,7 @@ var Persona = Protected.extend({
 	}
 });
 
-var Personas = Composer.Collection.extend({
+var Personas = SyncCollection.extend({
 	model: Persona
 });
 
