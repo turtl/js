@@ -212,7 +212,9 @@ var Notes = SyncCollection.extend({
 		}
 		else
 		{
-			this.upsert(new Note(note_data));
+			var note	=	new Note(note_data);
+			if(note_data.cid) note._cid	=	note_data.cid;
+			this.upsert(note);
 		}
 	}
 });

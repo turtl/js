@@ -1,5 +1,6 @@
 var User	=	Protected.extend({
 	base_url: '/users',
+	local_table: 'user',
 
 	relations: {
 		personas: {
@@ -35,24 +36,12 @@ var User	=	Protected.extend({
 	key: null,
 	auth: null,
 
-	settings_timer: null,
-
 	init: function()
 	{
 		this.logged_in		=	false;
 
-		// used to throttle user settings saves
-		this.settings_timer		=	new Timer(10, 10);
-		this.settings_timer.end	=	this.save_settings.bind(this);
-
 		// whenever the user settings change, automatically save them (encrypted).
-		// however, sometimes many settings will change at once, and instead of
-		// stupidly doing a save for each successive change, we have a timer that
-		// waits a set time before saving. if any more settings change happen in
-		// that time, the timer is reset.
-		this.bind_relational('settings', ['change'], function() {
-			this.settings_timer.reset();
-		}.bind(this), 'user:save_settings');
+		this.bind_relational('settings', ['change'], this.save_settings.bind(this), 'user:save_settings');
 	},
 
 	login: function(data, remember, silent)
@@ -195,7 +184,6 @@ var User	=	Protected.extend({
 				barfr.barf('There was an error saving your user settings:'+ err);
 			}.bind(this)
 		});
-		//turtl.profile.persist({now: true});
 	},
 
 	get_key: function()
@@ -291,6 +279,7 @@ var User	=	Protected.extend({
 
 				if(userdata.last_mod < last_mod) return false;
 				this.set(userdata);
+				console.log('sync: user: ', JSON.stringify(this.get('settings').get_by_key('keys').value()));
 			}.bind(this))
 			.fail(function(e) {
 				barfr.barf('Problem syncing user record locally: '+ e);
@@ -307,6 +296,7 @@ var User	=	Protected.extend({
 			.done(function(userdata) {
 				if(userdata.length == 0) return false;
 				userdata	=	userdata[0];
+				console.log('sync: user -> api');
 
 				// "borrow" some code from the SyncCollection
 				var collection	=	new SyncCollection([], {
@@ -323,7 +313,8 @@ var User	=	Protected.extend({
 
 	sync_from_api: function(table, syncdata)
 	{
-		syncdata.key	=	'user';
+		syncdata.key		=	'user';
+		syncdata.last_mod	=	new Date().getTime();
 		table.update(syncdata);
 	}
 });

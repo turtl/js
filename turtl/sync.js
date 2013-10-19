@@ -17,6 +17,7 @@ Composer.sync	=	function(method, model, options)
 	*/
 
 	var table	=	options.table || model.get_url().replace(/^\/(.*?)(\/|$).*/, '$1');
+	if(table == 'users') table = 'user';
 	if(!turtl.db[table])
 	{
 		throw new SyncError('Bad db.js table: '+ table);
@@ -44,7 +45,7 @@ Composer.sync	=	function(method, model, options)
 
 	// any k/v data that doesn't go by the "id" field should have it's key field
 	// filled in here.
-	if(table == 'users')
+	if(table == 'user')
 	{
 		modeldata.key	=	'user';
 	}
@@ -61,7 +62,9 @@ Composer.sync	=	function(method, model, options)
 		// added to the API but the response (with the ID) doesn't update in the
 		// local db (becuase of the client being closed, for instance, or the
 		// server handling the request crashing after the record is added)
+		model._cid		=	model.cid() + '.' + (new Date().getTime());
 		modeldata.id	=	model.cid();
+
 		turtl.db[table].add(modeldata).then(success, error);
 		break;
 	case 'delete':
@@ -111,6 +114,7 @@ var api_sync	=	function(method, model, options)
 	if(method != 'get' && method != '_delete')
 	{
 		var data	=	model.toJSON();
+		data.cid	=	model.cid();
 		if(data.keys && data.keys.length == 0)
 		{
 			// empty string gets converted to empty array by the API for the keys

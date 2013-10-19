@@ -224,7 +224,9 @@ var Personas = SyncCollection.extend({
 		}
 		else
 		{
-			turtl.user.get('personas').upsert(new Persona(persona_data));
+			var persona	=	new Persona(persona_data);
+			if(persona_data.cid) persona._cid = persona_data.cid;
+			turtl.user.get('personas').upsert(persona);
 		}
 	}
 });

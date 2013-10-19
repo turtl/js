@@ -193,7 +193,7 @@ var Sync = Composer.Model.extend({
 				error: function(e, xhr) {
 					if(xhr.status == 0)
 					{
-						barfr.barf('Error connecting with server. Your changes may note be saved.');
+						barfr.barf('Error connecting with server. Your changes may not be saved.');
 					}
 					else
 					{
@@ -284,6 +284,7 @@ var SyncCollection	=	Composer.Collection.extend({
 						// process_local_sync neglects to
 						if(model) model.set({id: result.id}, {silent: true});
 					}
+					//console.log(this.local_table + '.sync_from_db: process: ', result, model);
 					this.process_local_sync(result, model);
 				}.bind(this));
 			}.bind(this))
@@ -306,7 +307,7 @@ var SyncCollection	=	Composer.Collection.extend({
 		// Well, well...Indian Jones. we got ourselves a CID. don't want to send
 		// this to the save() function in the `id` field or it'll get mistaken
 		// as an update (note an add).
-		if(record.id.match(/^c[0-9]+$/))
+		if(record.id.match(/^c[0-9]+(\.[0-9]+)?$/))
 		{
 			record.cid	=	record.id;
 			delete record.id;
@@ -323,6 +324,11 @@ var SyncCollection	=	Composer.Collection.extend({
 		// set our model to use the API sync function (instead of
 		// Composer.sync)
 		model.sync	=	api_sync;
+
+		// match the model's CID to the records. this is a bit of a Composer
+		// hack because two Composer objects should never share the same CID,
+		// but who's going to stop me??
+		if(record.cid) model._cid = record.cid;
 
 		// save the record into the model
 		model.set(record);
@@ -345,13 +351,18 @@ var SyncCollection	=	Composer.Collection.extend({
 				var modeldata		=	model.toJSON();
 				modeldata.last_mod	=	new Date().getTime();
 
+				// make sure synced k/v items have their primary key (aka the
+				// User model)
+				if(record.key) modeldata.key = record.key;
+
 				// saves the model into the database
 				var run_update		=	function()
 				{
+					//console.log(this.local_table + '.sync_record_to_api: got: ', modeldata);
 					table.update(modeldata).fail(function(e) {
 						console.log(this.local_table + '.sync_model_to_api: error setting last_mod on '+ this.local_table +'.'+ model.id() +' (local -> API): ', e);
-					});
-				};
+					}.bind(this));
+				}.bind(this);
 
 				if(is_create)
 				{
@@ -379,7 +390,7 @@ var SyncCollection	=	Composer.Collection.extend({
 				{
 					run_update();
 				}
-			},
+			}.bind(this),
 			error: function(_, err) {
 				barfr.barf('Error syncing model to API: '+ err);
 				// set the record as local_modified again so we can

@@ -377,6 +377,19 @@ var Boards = SyncCollection.extend({
 
 	process_local_sync: function(board_data, board)
 	{
+		// process some user/board key stuff. when the user first adds a board,
+		// its key is saved in the user's data with the board's CID. it stays
+		// this way until the board is posted to the API and gets a real ID. we
+		// need to sniff out this situation and flip the cid to an id for the
+		// board key (if detected)
+		var key	=	turtl.user.find_user_key(board_data.cid);
+		console.log('sync: board: have board/key: ', board_data.cid, key);
+		if(key && board_data.id)
+		{
+			turtl.user.remove_user_key(board_data.cid);
+			turtl.user.add_user_key(board_data.id);
+		}
+
 		if(board_data.deleted)
 		{
 			if(board) board.destroy({skip_remote_sync: true});
@@ -409,7 +422,9 @@ var Boards = SyncCollection.extend({
 				// break and skip out on this one
 				if(!has_my_persona) return false;
 			}
-			this.upsert(new Board(board_data));
+			var board	=	new Board(board_data);
+			if(board_data.cid) board._cid = board_data.cid;
+			this.upsert(board);
 		}
 	}
 });
