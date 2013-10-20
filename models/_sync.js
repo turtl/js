@@ -278,7 +278,6 @@ var Sync = Composer.Model.extend({
 					{
 						barfr.barf('Error syncing user profile with server: '+ e);
 					}
-					if(options.error) options.error(e);
 				}
 			});
 
