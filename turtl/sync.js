@@ -16,14 +16,16 @@ Composer.sync	=	function(method, model, options)
 	else if(options.skip_sync) return;
 	*/
 
+   // derive the table name from the model's base_url field.
 	var table	=	options.table || model.get_url().replace(/^\/(.*?)(\/|$).*/, '$1');
-	if(table == 'users') table = 'user';
+	if(table == 'users') table = 'user';	// kind of a hack. oh well.
+
 	if(!turtl.db[table])
 	{
 		throw new SyncError('Bad db.js table: '+ table);
-		return false;
 	}
 
+	// define some callbacks for our indexeddb queries
 	var success	=	function(res)
 	{
 		if(res instanceof Array && res.length == 1)
@@ -83,6 +85,18 @@ Composer.sync	=	function(method, model, options)
 	default:
 		throw new SyncError('Bad method passed to Composer.sync: '+ method);
 		return false;
+	}
+
+	// try not to double-sync (mem -> db -> mem). by tracking this model, we can
+	// avoid it being synced from DB on the next local sync
+	turtl.sync.ignore_on_next_sync(model.id(), {type: 'local'});
+
+	// avoid double-sync issues with remote syncing. however, because we need
+	// the model's ID from the API on create, we DO allow create records to sync
+	// back through to memory
+	if(method != 'create')
+	{
+		turtl.sync.ignore_on_next_sync(model.id(), {type: 'remote'});
 	}
 };
 

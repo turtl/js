@@ -176,12 +176,13 @@ var User	=	Protected.extend({
 
 	save_settings: function()
 	{
+		console.log('save: user:  mem -> db', Object.getLength(turtl.user.get('settings').get_by_key('keys').value()));
 		this.save({
 			success: function(res) {
 				this.trigger('saved', res);
 			}.bind(this),
 			error: function(model, err) {
-				barfr.barf('There was an error saving your user settings:'+ err);
+				barfr.barf('There was an error saving your user settings: '+ err);
 			}.bind(this)
 		});
 	},
@@ -268,22 +269,33 @@ var User	=	Protected.extend({
 	// -------------------------------------------------------------------------
 	// Sync section
 	// -------------------------------------------------------------------------
-	sync_from_db: function(last_mod)
+	sync_from_db: function(last_local_sync, options)
 	{
 		turtl.db.user.query('last_mod')
-			.lowerBound(last_mod)
+			.lowerBound(last_local_sync)
 			.execute()
 			.done(function(userdata) {
-				if(userdata.length == 0) return false;
+				var continuefn	=	function()
+				{
+					if(options.success) options.success();
+					return false;
+				};
+
+				if(userdata.length == 0) return continuefn();
 				var userdata	=	userdata[0];
 
-				if(userdata.last_mod < last_mod) return false;
+				if(turtl.sync.should_ignore([userdata.id])) return continuefn();
+
+				if(userdata.last_mod < last_local_sync) return continuefn();
 				this.set(userdata);
-				console.log('sync: user: ', JSON.stringify(this.get('settings').get_by_key('keys').value()));
+				console.log('sync: user:  db -> mem', Object.getLength(turtl.user.get('settings').get_by_key('keys').value()));
+
+				continuefn();
 			}.bind(this))
 			.fail(function(e) {
 				barfr.barf('Problem syncing user record locally: '+ e);
 				console.log('user.sync_from_db: error: ', e);
+				if(options.error) options.error();
 			});
 	},
 
@@ -296,13 +308,13 @@ var User	=	Protected.extend({
 			.done(function(userdata) {
 				if(userdata.length == 0) return false;
 				userdata	=	userdata[0];
-				console.log('sync: user -> api');
 
 				// "borrow" some code from the SyncCollection
 				var collection	=	new SyncCollection([], {
 					model: User,
 					local_table: 'user'
 				});
+				console.log('sync: user:  db -> api');
 				collection.sync_record_to_api(userdata);
 			}.bind(this))
 			.fail(function(e) {
@@ -313,8 +325,11 @@ var User	=	Protected.extend({
 
 	sync_from_api: function(table, syncdata)
 	{
+		// check that we aren't ignoring user on remote sync
+		if(turtl.sync.should_ignore([syncdata.id, syncdata.cid], {type: 'remote'})) return false;
 		syncdata.key		=	'user';
 		syncdata.last_mod	=	new Date().getTime();
+		console.log('sync: user:  api -> db');
 		table.update(syncdata);
 	}
 });

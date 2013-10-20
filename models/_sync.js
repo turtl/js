@@ -18,6 +18,12 @@ var Sync = Composer.Model.extend({
 		local: 0
 	},
 
+	// local model ID tracking (for preventing double syncs)
+	sync_ignore: {
+		local: [],
+		remote: []
+	},
+
 	// holds collections/models that monitor their respective local db table for
 	// remote changes and sync those changes to in-memory models. note that
 	// local trackers also listen for changes that are made locally because this
@@ -76,6 +82,43 @@ var Sync = Composer.Model.extend({
 		this.remote_trackers.push({type: type, tracker: collection_or_model});
 	},
 
+	/**
+	 * When a model saves itself into the DB, it sets its last_mod. this makes
+	 * it so the data in the DB will be synced back into the model on the next
+	 * DB -> mem sync, which is a) stupid and b) harmful (if the model has
+	 * change between the last save and the sync).
+	 *
+	 * This function (mainly called by Composer.sync) tells the sync system to
+	 * ignore a model on the next DB -> local sync. There is a slight chance
+	 * that this will ignore remote data coming in, but that's a problem that
+	 * can't be solved here and needs to be handled when saving.
+	 */
+	ignore_on_next_sync: function(id, options)
+	{
+		options || (options = {});
+		if(!options.type) options.type = 'local';
+		this.sync_ignore[options.type].push(id);
+	},
+
+	/**
+	 * See ignore_on_next_sync() ...this is the function the sync processes use
+	 * to determine if an item should be ignored.
+	 */
+	should_ignore: function(ids, options)
+	{
+		options || (options = {});
+		if(!options.type) options.type = 'local';
+		if(!(ids instanceof Array)) ids = [ids];
+		var ignores	=	this.sync_ignore[options.type];
+		for(var i = 0; i < ids.length; i++)
+		{
+			var id	=	ids[i];
+			if(!id) continue;
+			if(ignores.contains(id)) return true;
+		}
+		return false;
+	},
+
 	save: function()
 	{
 		var sync_time	=	this.get('sync_time');
@@ -99,12 +142,33 @@ var Sync = Composer.Model.extend({
 		var last_local_sync	=	this.time_track.local;
 		this.time_track.local	=	new Date().getTime();
 
-		// run the local trackers individually
-		this.local_trackers.each(function(track_obj) {
-			track_obj.tracker.sync_from_db(last_local_sync);
-		});
+		// called when all trackers complete
+		var done	=	function()
+		{
+			this.sync_ignore.local.empty();
+			this.sync_from_db.delay(1000, this);
+		}.bind(this);
 
-		this.sync_from_db.delay(1000, this);
+		// run the local trackers individually, making sure that one fully
+		// completes its run before calling the next (due to the async nature of
+		// indexeddb, this must be enforced explicitely here, we can't just run
+		// them in order and hope for the best).
+		var i	=	0;
+		var next_tracker	=	function()
+		{
+			var track_obj	=	this.local_trackers[i];
+			if(!track_obj) return done();
+			i++;
+			track_obj.tracker.sync_from_db(last_local_sync, {
+				success: function() {
+					next_tracker();
+				},
+				error: function() {
+					next_tracker();
+				}
+			});
+		}.bind(this);
+		next_tracker();
 	},
 
 	/**
@@ -178,6 +242,21 @@ var Sync = Composer.Model.extend({
 					// API)
 					this.set({sync_time: sync.time});
 					this.save();
+
+					if(	(sync.personas && sync.personas.length > 0) ||
+						(sync.boards && sync.boards.length > 0) ||
+						(sync.notes && sync.notes.length > 0) ||
+						sync.user
+					)
+					{
+						var sync_clone	=	{};
+						if(sync.user) sync_clone.user = sync.user.body.length;
+						if(sync.personas && sync.personas.length > 0) sync_clone.personas = sync.personas.length;
+						if(sync.boards && sync.boards.length > 0) sync_clone.boards = sync.boards.length;
+						if(sync.notes && sync.notes.length > 0) sync_clone.notes = sync.notes.length;
+						console.log('sync: ', JSON.encode(sync_clone));
+					}
+
 
 					// pipe our sync data off to the respective remote
 					// trackers
@@ -267,8 +346,10 @@ var SyncCollection	=	Composer.Collection.extend({
 	 * the CID by trying to pull out the model by CID (if we don't find it by
 	 * the given ID).
 	 */
-	sync_from_db: function(last_local_sync)
+	sync_from_db: function(last_local_sync, options)
 	{
+		options || (options = {});
+
 		// find all records in our owned table that were modified after the last
 		// time we synced db -> mem and sync them to our in-memory models
 		turtl.db[this.local_table].query('last_mod')
@@ -276,6 +357,10 @@ var SyncCollection	=	Composer.Collection.extend({
 			.execute()
 			.done(function(results) {
 				results.each(function(result) {
+					// check if we're ignoring this item
+					if(turtl.sync.should_ignore([result.id, result.cid], {type: 'local'})) return false;
+
+					// try to find the model locally (using both the ID and CID)
 					var model	=	this.find_by_id(result.id, {strict: true});
 					if(!model && result.cid)
 					{
@@ -287,11 +372,13 @@ var SyncCollection	=	Composer.Collection.extend({
 					//console.log(this.local_table + '.sync_from_db: process: ', result, model);
 					this.process_local_sync(result, model);
 				}.bind(this));
+				if(options.success) options.success();
 			}.bind(this))
 			.fail(function(e) {
 				barfr.barf('Problem syncing '+ this.local_table +' records locally:' + e);
 				console.log(this.local_table + '.sync_from_db: error: ', e);
-			});
+				if(options.error) options.error();
+			}.bind(this));
 	},
 
 	/**
@@ -359,6 +446,11 @@ var SyncCollection	=	Composer.Collection.extend({
 				var run_update		=	function()
 				{
 					//console.log(this.local_table + '.sync_record_to_api: got: ', modeldata);
+					if(['user', 'boards'].contains(this.local_table))
+					{
+						var tmptable	=	this.local_table == 'user' ? 'user: ' : 'board:';
+						console.log('save: '+ tmptable +' api -> db');
+					}
 					table.update(modeldata).fail(function(e) {
 						console.log(this.local_table + '.sync_model_to_api: error setting last_mod on '+ this.local_table +'.'+ model.id() +' (local -> API): ', e);
 					}.bind(this));
@@ -477,6 +569,9 @@ var SyncCollection	=	Composer.Collection.extend({
 		// and perform any standard data transformations before saving to the
 		// local DB. update is the only operation we need.
 		syncdata.each(function(item) {
+			// check that we aren't ignoring item on remote sync
+			if(turtl.sync.should_ignore([item.id, item.cid], {type: 'remote'})) return false;
+
 			// POST /sync returns deleted === true, but we need it to be an int
 			// value, so we either set it to 1 or just delete it.
 			if(item.deleted)
