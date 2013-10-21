@@ -70,7 +70,7 @@ var Invite = Composer.Model.extend({
 				// keychain
 				if(item_key && item_id)
 				{
-					turtl.user.add_user_key(item_id, item_key);
+					turtl.profile.get('keychain').add_key(item_id, 'board', item_key);
 				}
 
 				switch(this.get('type'))

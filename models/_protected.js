@@ -77,8 +77,12 @@ var Protected = Composer.RelationalModel.extend({
 		}
 		catch(e)
 		{
-			console.log('item ('+ (this.id(true) || parentobj.id) +'): ', e.message);
-			return false;
+			if(e instanceof SyncError)
+			{
+				console.log('item ('+ (this.id(true) || parentobj.id) +'): ', e.message);
+				return false;
+			}
+			throw e;
 		}
 
 		try
@@ -365,7 +369,7 @@ var Protected = Composer.RelationalModel.extend({
 		// if we didn't find our key, check the user's data
 		if(!key)
 		{
-			key	=	turtl.user.find_user_key(this.id());
+			key	=	turtl.profile.get('keychain').find_key(this.id());
 		}
 
 		return key;

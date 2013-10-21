@@ -33,7 +33,6 @@ var User	=	Protected.extend({
 
 	logged_in: false,
 
-	key: null,
 	auth: null,
 
 	init: function()
@@ -241,6 +240,9 @@ var User	=	Protected.extend({
 		turtl.api.clear_auth();
 	},
 
+	/**
+	 * AL - these are deprecated in favor of the keychain (turtl.profile.get('keychain'))
+	 *
 	add_user_key: function(item_id, key)
 	{
 		if(!item_id || !key) return false;
@@ -265,6 +267,7 @@ var User	=	Protected.extend({
 		if(!key) return false;
 		return tcrypt.key_to_bin(key);
 	},
+	*/
 
 	// -------------------------------------------------------------------------
 	// Sync section

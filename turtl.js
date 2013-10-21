@@ -135,6 +135,7 @@ var turtl	=	{
 					// database is setup, populate the profile
 					turtl.profile.populate({
 						complete: function() {
+							// move keys from the user's settings into the keychain
 							turtl.show_loading_screen(false);
 							turtl.controllers.pages.release_current();
 							turtl.last_url = '';
@@ -208,7 +209,7 @@ var turtl	=	{
 		db.open({
 			// DB has user id in it...client might have multiple users
 			server: 'turtl.'+turtl.user.id(),
-			version: 3,
+			version: 4,
 			// NOTE: all tables that are sync between the client and the API
 			// *must* have "local_change" and "last_mod" indexex. or else. or
 			// else what?? or else it won't work.
@@ -244,6 +245,15 @@ var turtl	=	{
 				// -------------------------------------------------------------
 				// regular tables (uses "id" as pk, id is always unique)
 				// -------------------------------------------------------------
+				keychain: {
+					key: { keyPath: 'id', autoIncrement: false },
+					indexes: {
+						local_change: {},
+						last_mod: {},
+						deleted: {},
+						item_id: {}
+					}
+				},
 				personas: {
 					key: { keyPath: 'id', autoIncrement: false },
 					indexes: {
@@ -294,6 +304,7 @@ var turtl	=	{
 
 	wipe_local_db: function()
 	{
+		turtl.do_sync	=	false;
 		if(turtl.db) turtl.db.close();
 		window.indexedDB.deleteDatabase('turtl.'+turtl.user.id());
 		turtl.setup_local_db();
@@ -336,6 +347,7 @@ var turtl	=	{
 		// wind up with data that doesn't get decrypted properly. next is the
 		// personas, followed by boards, and lastly notes.
 		turtl.sync.register_local_tracker('user', turtl.user);
+		turtl.sync.register_local_tracker('keychain', turtl.profile.get('keychain'));
 		turtl.sync.register_local_tracker('personas', turtl.profile.get('personas'));
 		turtl.sync.register_local_tracker('boards', turtl.profile.get('boards'));
 		turtl.sync.register_local_tracker('notes', turtl.profile.get('notes'));

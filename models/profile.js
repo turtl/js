@@ -1,14 +1,18 @@
 var Profile = Composer.RelationalModel.extend({
 	relations: {
+		keychain: {
+			type: Composer.HasMany,
+			collection: 'Keychain'
+		},
 		boards: {
 			type: Composer.HasMany,
 			collection: 'Boards',
-			forward_events: true
+			//forward_events: true
 		},
 		notes: {
 			type: Composer.HasMany,
 			collection: 'Notes',
-			forward_events: true
+			//forward_events: true
 		},
 		personas: {
 			type: Composer.HasMany,
@@ -48,6 +52,7 @@ var Profile = Composer.RelationalModel.extend({
 
 		// TODO: remove this profile mod stuff once local DB syncing is all
 		// figured out
+		return;
 		var profile_mod_timer	=	new Timer(100);
 		profile_mod_timer.end	=	function()
 		{
@@ -108,12 +113,14 @@ var Profile = Composer.RelationalModel.extend({
 			}.bind(this);
 
 			// populate the user data separately
+			num_items++;
 			turtl.db.user.get('user').done(function(userdata) {
 				turtl.user.set(userdata);
+				finished();
 			});
 
 			// load the profile from local db, collection by collection
-			['personas', 'boards', 'notes'].each(function(itemname) {
+			['keychain', 'personas', 'boards', 'notes'].each(function(itemname) {
 				num_items++;
 				turtl.db[itemname].query().filter().execute().done(function(res) {
 					// filter out deleted entries
@@ -239,10 +246,11 @@ var Profile = Composer.RelationalModel.extend({
 		};
 
 		// run the actual data persists
+		set_key('user', 'user', profile.user, {complete: complete_fn('user')});
+		populate('keychain', profile.keychain, {complete: complete_fn('keychain')});
+		populate('personas', profile.personas, {complete: complete_fn('personas')});
 		populate('boards', profile.boards, {complete: complete_fn('boards')});
 		populate('notes', profile.notes, {complete: complete_fn('notes')});
-		populate('personas', profile.personas, {complete: complete_fn('personas')});
-		set_key('user', 'user', profile.user, {complete: complete_fn('user')});
 	},
 
 	/**
@@ -256,9 +264,10 @@ var Profile = Composer.RelationalModel.extend({
 	{
 		options || (options = {});
 
+		var keychain	=	this.get('keychain');
+		var personas	=	this.get('personas');
 		var boards		=	this.get('boards');
 		var notes		=	this.get('notes');
-		var personas	=	this.get('personas');
 
 		var tally		=	0;
 		var total		=	0;
@@ -287,21 +296,27 @@ var Profile = Composer.RelationalModel.extend({
 			if(options.complete) options.complete();
 		}.bind(this);
 
-		// reset the boards first
-		boards.reset_async(data.boards, {
+		// import the keychain first, since decrypting just about anything
+		// requires it.
+		keychain.reset_async(data.keychain, {
 			complete: function() {
-				// save some performance here by not tracking tags while updating
-				boards.each(function(b) { b.track_tags(false); });
-				total++;
-				notes.reset_async(data.notes, {
+				// reset the boards next
+				boards.reset_async(data.boards, {
 					complete: function() {
-						done();
-					}
-				});
-				total++;
-				personas.reset_async(data.personas, {
-					complete: function() {
-						done();
+						// save some performance here by not tracking tags while updating
+						boards.each(function(b) { b.track_tags(false); });
+						total++;
+						notes.reset_async(data.notes, {
+							complete: function() {
+								done();
+							}
+						});
+						total++;
+						personas.reset_async(data.personas, {
+							complete: function() {
+								done();
+							}
+						});
 					}
 				});
 			}

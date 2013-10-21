@@ -96,7 +96,7 @@ var Board = Composer.RelationalModel.extend({
 			// remove the board from the user's keys (only if it's the only
 			// instance of this board)
 			var others	=	turtl.profile.get('boards').select({id: this.id()});
-			if(others.length == 0) turtl.user.remove_user_key(this.id());
+			if(others.length == 0) turtl.profile.get('keychain').remove_key(this.id());
 
 			// remove the project's sort from the user data
 			var sort		=	Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
@@ -134,9 +134,9 @@ var Board = Composer.RelationalModel.extend({
 
 		// MIGRATE: move board user keys into user data. this code should exist
 		// as long as the database has ANY records with board.keys.u
-		if(!turtl.user.find_user_key(this.id(true)) && !this.is_new() && this.key)
+		if(!turtl.profile.get('keychain').find_key(this.id(true)) && !this.is_new() && this.key)
 		{
-			turtl.user.add_user_key(this.id(true), this.key);
+			turtl.profile.get('keychain').add_key(this.id(true), 'board', this.key);
 			var keys	=	this.get('keys').toJSON();
 			keys		=	keys.filter(function(k) {
 				return k.u != turtl.user.id();
@@ -199,7 +199,7 @@ var Board = Composer.RelationalModel.extend({
 				}
 
 				// save the board key into the user's data
-				turtl.user.add_user_key(this.id(), this.key);
+				turtl.profile.get('keychain').add_key(this.id(), 'board', this.key);
 				var _notes = board.notes;
 				delete board.notes;
 				board.shared	=	true;
@@ -375,12 +375,6 @@ var Boards = SyncCollection.extend({
 		return this.parent.apply(this, arguments);
 	},
 
-	save: function()
-	{
-		console.log('save: board: mem -> db');
-		return this.parent.apply(this, arguments);
-	},
-
 	sync_record_to_api: function()
 	{
 		console.log('sync: board: db -> api');
@@ -400,12 +394,13 @@ var Boards = SyncCollection.extend({
 		// this way until the board is posted to the API and gets a real ID. we
 		// need to sniff out this situation and flip the cid to an id for the
 		// board key (if detected)
-		var key	=	turtl.user.find_user_key(board_data.cid);
+		var keychain	=	turtl.profile.get('keychain');
+		var key			=	keychain.find_key(board_data.cid);
 		if(key && board_data.id && !board_data.deleted)
 		{
 			console.log('board: got key, write settings');
-			turtl.user.remove_user_key(board_data.cid);
-			turtl.user.add_user_key(board_data.id, key);
+			keychain.remove_key(board_data.cid);
+			keychain.add_key(board_data.id, 'board', key);
 		}
 
 		if(board_data.deleted)

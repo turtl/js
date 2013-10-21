@@ -176,12 +176,14 @@ var Sync = Composer.Model.extend({
 	 */
 	setup_remote_trackers: function()
 	{
+		var user		=	new User();
+		var keychain	=	new Keychain();
 		var personas	=	new Personas();
 		var boards		=	new Boards();
 		var notes		=	new Notes();
-		var user		=	new User();
 
 		this.register_remote_tracker('user', user);
+		this.register_remote_tracker('keychain', keychain);
 		this.register_remote_tracker('personas', personas);
 		this.register_remote_tracker('boards', boards);
 		this.register_remote_tracker('notes', notes);
