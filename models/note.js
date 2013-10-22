@@ -85,7 +85,7 @@ var Note = Composer.RelationalModel.extend({
 			{
 				args.persona	=   meta.persona;
 			}
-			return this.parent.call(this, options);
+			options.args	=	args;
 		}
 		else
 		{
@@ -103,8 +103,8 @@ var Note = Composer.RelationalModel.extend({
 				var persona		=	board.get_shared_persona();
 				args.persona	=	persona.id();
 			}
+			options.args	=	args;
 		}
-
 		return this.parent.call(this, options);
 	},
 
@@ -113,30 +113,35 @@ var Note = Composer.RelationalModel.extend({
 		options || (options = {});
 		var args		=	{};
 
-		// some hacky shit that allows us to ref Model.destroy async
-		var name		=	this.$caller.$name;
-		var parent		=	this.$caller.$owner.parent;
-		var previous	=	(parent) ? parent.prototype[name] : null;
-
-		var do_destroy	=	function()
+		if(options.api_save)
 		{
+			var args	=	{};
+			var meta	=	this.get('meta');
+			if(meta && meta.persona)
+			{
+				args.persona	=	meta.persona;
+			}
 			options.args	=	args;
-			previous.apply(this, [options]);
-		}.bind(this);
-
-		var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
-		if(!board)
-		{
-			if(options.error) options.error('Problem finding board for that note.');
-			return false;
 		}
-
-		if(board.get('shared', false) && !options.skip_remote_sync)
+		else
 		{
-			var persona		=	board.get_shared_persona();
-			args.persona	=	persona.id();
+			options.table	=	'notes';
+
+			var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
+			if(!board)
+			{
+				options.error('Problem finding board for that note.');
+				return false;
+			}
+
+			if(board.get('shared', false) && this.get('user_id') != turtl.user.id())
+			{
+				var persona		=	board.get_shared_persona();
+				args.persona	=	persona.id();
+			}
+			options.args	=	args;
 		}
-		do_destroy();
+		return this.parent.call(this, options);
 	},
 
 	find_key: function(keys, search, options)
