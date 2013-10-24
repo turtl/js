@@ -137,9 +137,18 @@ var Profile = Composer.RelationalModel.extend({
 		// grabbing the last sync time. if present, then yes, syncing has
 		// already been setup on this client, otherwise we load the profile into
 		// the db, set the sync time record, and continue loading.
-		turtl.db.sync.get('sync_time').then(
+		turtl.db.sync.get('sync_id').then(
 			function(res) {
-				if(res) return finished();
+				if(res)
+				{
+					var sync_id		=	res.value;
+					var timestamp	=	parseInt(sync_id.substr(0, 8), 16);
+					var month		=	(new Date().getTime() / 1000) - 2592000;
+					if(timestamp > month)
+					{
+						return finished();
+					}
+				}
 
 				turtl.api.get('/profiles/users/'+turtl.user.id(), {}, {
 					success: function(profile) {
@@ -237,7 +246,7 @@ var Profile = Composer.RelationalModel.extend({
 				if(num_added < num_items) return false;
 
 				// only set the sync time once all data has been saved
-				turtl.sync.set({sync_time: profile.time});
+				turtl.sync.set({sync_id: profile.sync_id});
 				turtl.sync.save();
 
 				// continue

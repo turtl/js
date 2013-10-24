@@ -121,9 +121,9 @@ var Sync = Composer.Model.extend({
 
 	save: function()
 	{
-		var sync_time	=	this.get('sync_time');
+		var sync_id	=	this.get('sync_id');
 		turtl.db.sync.update(
-			{key: 'sync_time', value: sync_time}
+			{key: 'sync_id', value: sync_id}
 		).fail(function(e) {
 			console.log('Sync.save: problem persisting sync record: ', e);
 		});
@@ -225,10 +225,10 @@ var Sync = Composer.Model.extend({
 
 		var do_sync	=	function()
 		{
-			var sync_time	=	this.get('sync_time', false);
-			if(!sync_time)
+			var sync_id	=	this.get('sync_id', false);
+			if(!sync_id)
 			{
-				console.log('Sync.sync_from_api: error starting API sync (bad sync time)');
+				console.log('Sync.sync_from_api: error starting API sync (bad initial sync ID)');
 				return false;
 			}
 
@@ -238,21 +238,22 @@ var Sync = Composer.Model.extend({
 			// if sync disabled, NEVERMIND
 			if(!turtl.do_sync) return false;
 
-			turtl.api.post('/sync', {time: sync_time}, {
+			turtl.api.post('/sync', {sync_id: sync_id}, {
 				success: function(sync) {
-					// save our last sync time (graciously provided by the
-					// API)
-					this.set({sync_time: sync.time});
+					// save our last sync id (graciously provided by the API)
+					if(sync.sync_id) this.set({sync_id: sync.sync_id});
 					this.save();
 
-					if(	(sync.personas && sync.personas.length > 0) ||
+					if(	(sync.keychain && sync.keychain.length > 0) ||
+						(sync.personas && sync.personas.length > 0) ||
 						(sync.boards && sync.boards.length > 0) ||
 						(sync.notes && sync.notes.length > 0) ||
-						sync.user
+						(sync.user && sync.user.length > 0)
 					)
 					{
 						var sync_clone	=	{};
-						if(sync.user) sync_clone.user = sync.user.body.length;
+						if(sync.user && sync.user.length > 0) sync_clone.user = sync.user.length;
+						if(sync.keychain && sync.keychain.length > 0) sync_clone.keychain = sync.keychain.length;
 						if(sync.personas && sync.personas.length > 0) sync_clone.personas = sync.personas.length;
 						if(sync.boards && sync.boards.length > 0) sync_clone.boards = sync.boards.length;
 						if(sync.notes && sync.notes.length > 0) sync_clone.notes = sync.notes.length;
@@ -290,8 +291,8 @@ var Sync = Composer.Model.extend({
 		}.bind(this);
 
 		// make sure we have a sync time before POST /sync
-		var sync_time	=	this.get('sync_time', false);
-		if(sync_time)
+		var sync_id	=	this.get('sync_id', false);
+		if(sync_id)
 		{
 			do_sync();
 		}
@@ -299,13 +300,13 @@ var Sync = Composer.Model.extend({
 		{
 			// hmmmmmmmmmmmmmmMMmmMmMm we don't have a sync time. see if we can
 			// grab it from the local db
-			turtl.db.sync.get('sync_time')
+			turtl.db.sync.get('sync_id')
 				.done(function(timerec) {
-					this.set({sync_time: timerec.value});
+					this.set({sync_id: timerec.value});
 					do_sync();
 				}.bind(this))
 				.fail(function(e) {
-					barfr.barf('Error starting syncing: can\'t grab sync time: '+ e);
+					barfr.barf('Error starting syncing: can\'t grab sync id: '+ e);
 					console.log('Sync.sync_from_api: ', e);
 				}.bind(this))
 		}
@@ -447,7 +448,7 @@ var SyncCollection	=	Composer.Collection.extend({
 				var run_update		=	function()
 				{
 					//console.log(this.local_table + '.sync_record_to_api: got: ', modeldata);
-					if(['user', 'boards'].contains(this.local_table))
+					if(['boards', 'keychain'].contains(this.local_table))
 					{
 						var tmptable	=	this.local_table == 'user' ? 'user: ' : 'board:';
 						console.log('save: '+ tmptable +' api -> db');
@@ -492,8 +493,8 @@ var SyncCollection	=	Composer.Collection.extend({
 					var errorfn	=	function(e)
 					{
 						console.log(this.local_table + '.sync_model_to_api: error marking object '+ this.local_table +'.'+ model.id() +' as local_change = true: ', e);
-					};
-					if(!obj) return errorfn();
+					}.bind(this);
+					if(!obj) return errorfn('missing obj');
 					obj.local_change	=	1;
 					table.update(obj).fail(errorfn);
 				});
@@ -570,22 +571,30 @@ var SyncCollection	=	Composer.Collection.extend({
 		// and perform any standard data transformations before saving to the
 		// local DB. update is the only operation we need.
 		syncdata.each(function(item) {
-			// check that we aren't ignoring item on remote sync
-			if(turtl.sync.should_ignore([item.id, item.cid], {type: 'remote'})) return false;
+			// check if this item has an ignored sync_id (if yes, this sync
+			// record is from something just did, and we don't need to re-apply
+			// changes we already made...in fact, doing so can cause problems
+			// such as race conditions).
+			if(turtl.sync.should_ignore(item._sync.id, {type: 'remote'})) return false;
 
 			// POST /sync returns deleted === true, but we need it to be an int
-			// value, so we either set it to 1 or just delete it.
-			if(item.deleted)
-			{
-				item.deleted	=	1;
-			}
-			else
-			{
-				delete item.deleted;
-			}
+			// value (IDB don't like filtering bools), so we either set it to 1
+			// or just delete it.
+			if(item.deleted) item.deleted = 1;
+			else delete item.deleted;
 
 			// make sure the local "threads" know this data changed
 			item.last_mod	=	new Date().getTime();
+
+			// if we have sync data (we definitely should), move some of the
+			// data into the actual item object we save, then obliterate the
+			// _sync key so it never touches the local db
+			if(item._sync)
+			{
+				// move the CID into the item if we have it.
+				if(item._sync.cid) item.cid = item._sync.cid;
+				delete item._sync;
+			}
 
 			// run the actual local DB update
 			table.update(item);

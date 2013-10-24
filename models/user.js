@@ -47,7 +47,7 @@ var User	=	Protected.extend({
 	{
 		(remember === true) || (remember = false);
 		(silent === true) || (silent = false);
-		this.set(data);
+		this.set(data, {ignore_body: this.key ? false : true});
 		this.get_auth();
 		this.unset('username');
 		this.unset('password');
@@ -175,7 +175,6 @@ var User	=	Protected.extend({
 
 	save_settings: function()
 	{
-		console.log('save: user:  mem -> db', Object.getLength(turtl.user.get('settings').get_by_key('keys').value()));
 		this.save({
 			success: function(res) {
 				this.trigger('saved', res);
@@ -291,7 +290,6 @@ var User	=	Protected.extend({
 
 				if(userdata.last_mod < last_local_sync) return continuefn();
 				this.set(userdata);
-				console.log('sync: user:  db -> mem', Object.getLength(turtl.user.get('settings').get_by_key('keys').value()));
 
 				continuefn();
 			}.bind(this))
@@ -317,7 +315,6 @@ var User	=	Protected.extend({
 					model: User,
 					local_table: 'user'
 				});
-				console.log('sync: user:  db -> api');
 				collection.sync_record_to_api(userdata);
 			}.bind(this))
 			.fail(function(e) {
@@ -328,12 +325,13 @@ var User	=	Protected.extend({
 
 	sync_from_api: function(table, syncdata)
 	{
-		// check that we aren't ignoring user on remote sync
-		if(turtl.sync.should_ignore([syncdata.id, syncdata.cid], {type: 'remote'})) return false;
-		syncdata.key		=	'user';
-		syncdata.last_mod	=	new Date().getTime();
-		console.log('sync: user:  api -> db');
-		table.update(syncdata);
+		syncdata.each(function(user) {
+			// check that we aren't ignoring user on remote sync
+			if(turtl.sync.should_ignore([user.id, user.cid], {type: 'remote'})) return false;
+			user.key		=	'user';
+			user.last_mod	=	new Date().getTime();
+			table.update(user);
+		});
 	}
 });
 

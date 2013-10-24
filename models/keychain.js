@@ -87,7 +87,7 @@ var Keychain	=	SyncCollection.extend({
 		// search the user data, and run a migration from user settings into the
 		// keychain if an entry is found.
 		var user_keys	=	turtl.user.get('settings').get_by_key('keys').value();
-		if(!user_keys[item_id]) return false;
+		if(!user_keys || !user_keys[item_id]) return false;
 		var key		=	tcrypt.key_to_bin(user_keys[item_id]);
 		var model	=	this.add_key(item_id, 'board', key, {force_add: true})
 		if(options.return_model) return model;

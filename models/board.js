@@ -151,14 +151,6 @@ var Board = Composer.RelationalModel.extend({
 		this._track_tags = yesno;
 	},
 
-	get_url: function()
-	{
-		var url	=	this.id(true) ?
-			'/boards/'+this.id() :
-			'/boards/users/'+turtl.user.id();
-		return url;
-	},
-
 	share_with: function(from_persona, to_persona, permissions, options)
 	{
 		options || (options = {});

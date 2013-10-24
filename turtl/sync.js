@@ -90,14 +90,6 @@ Composer.sync	=	function(method, model, options)
 	// try not to double-sync (mem -> db -> mem). by tracking this model, we can
 	// avoid it being synced from DB on the next local sync
 	turtl.sync.ignore_on_next_sync(model.id(), {type: 'local'});
-
-	// avoid double-sync issues with remote syncing. however, because we need
-	// the model's ID from the API on create, we DO allow create records to sync
-	// back through to memory
-	if(method != 'create')
-	{
-		turtl.sync.ignore_on_next_sync(model.id(), {type: 'remote'});
-	}
 };
 
 /**
@@ -149,8 +141,29 @@ var api_sync	=	function(method, model, options)
 		args.data = data;
 	}
 	turtl.api[method](model.get_url(), args, {
-		success: options.success,
-		error: options.error
+		success: function(res) {
+			// if we got sync_ids back, set them into our remote sync's ignore.
+			// this ensures that although we'll get back the sync record(s) for
+			// the changes we just made, we can ignore them when they come in.
+			if(res.sync_ids && res.sync_ids.length > 0)
+			{
+				res.sync_ids.each(function(sync_id) {
+					turtl.sync.ignore_on_next_sync(sync_id, {type: 'remote'});
+				});
+			}
+			// carry on
+			if(options.success) options.success.apply(this, arguments);
+		},
+		error: function(err, xhr) {
+			if(method == '_delete' && xhr.status == 404)
+			{
+				// ok, we tried to delete it and it's not there. success? yes,
+				// great success.
+				if(options.success) options.success.apply(this, arguments);
+				return;
+			}
+			if(options.error) options.error.apply(this, arguments);
+		}
 	});
 };
 
