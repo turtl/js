@@ -139,6 +139,26 @@ var Profile = Composer.RelationalModel.extend({
 		// the db, set the sync time record, and continue loading.
 		turtl.db.sync.get('sync_id').then(
 			function(res) {
+				var make_the_call	=	function()
+				{
+					turtl.api.get('/profiles/users/'+turtl.user.id(), {}, {
+						success: function(profile) {
+							// send all profile data to the local db
+							this.persist_profile_to_db(profile, {
+								complete: function() {
+									// profile is downloaded, and all records are in
+									// our local db. continue.
+									finished();
+								}.bind(this)
+							});
+						}.bind(this),
+						error: function(err) {
+							barfr.barf('Error loading user profile from server: '+ err);
+							if(options.error) options.error(e);
+						}
+					});
+				}.bind(this);
+
 				if(res)
 				{
 					var sync_id		=	res.value;
@@ -148,24 +168,15 @@ var Profile = Composer.RelationalModel.extend({
 					{
 						return finished();
 					}
-				}
+					else
+					{
+						// clear tables in local DB, when finished call
+						// make_the_call
 
-				turtl.api.get('/profiles/users/'+turtl.user.id(), {}, {
-					success: function(profile) {
-						// send all profile data to the local db
-						this.persist_profile_to_db(profile, {
-							complete: function() {
-								// profile is downloaded, and all records are in
-								// our local db. continue.
-								finished();
-							}.bind(this)
-						});
-					}.bind(this),
-					error: function(err) {
-						barfr.barf('Error loading user profile from server: '+ err);
-						if(options.error) options.error(e);
+						return;
 					}
-				});
+				}
+				make_the_call();
 			}.bind(this),
 			function(err) {
 				barfr.barf('There was a problem with the initial load of your profile: '+ err);
@@ -278,12 +289,8 @@ var Profile = Composer.RelationalModel.extend({
 		var boards		=	this.get('boards');
 		var notes		=	this.get('notes');
 
-		var tally		=	0;
-		var total		=	0;
 		var done		=	function()
 		{
-			tally++;
-			if(tally != total) return;
 			this.loaded	=	true;
 			// turn tag tracking back on
 			boards.each(function(b) {
@@ -314,16 +321,13 @@ var Profile = Composer.RelationalModel.extend({
 					complete: function() {
 						// save some performance here by not tracking tags while updating
 						boards.each(function(b) { b.track_tags(false); });
-						total++;
-						notes.reset_async(data.notes, {
-							complete: function() {
-								done();
-							}
-						});
-						total++;
 						personas.reset_async(data.personas, {
 							complete: function() {
-								done();
+								notes.reset_async(data.notes, {
+									complete: function() {
+										done();
+									}
+								});
 							}
 						});
 					}
