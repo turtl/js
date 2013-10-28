@@ -238,6 +238,7 @@ var Sync = Composer.Model.extend({
 			// if sync disabled, NEVERMIND
 			if(!turtl.do_sync) return false;
 
+			console.log('POST /sync');
 			turtl.api.post('/sync', {sync_id: sync_id}, {
 				success: function(sync) {
 					// save our last sync id (graciously provided by the API)
@@ -263,11 +264,12 @@ var Sync = Composer.Model.extend({
 
 					// pipe our sync data off to the respective remote
 					// trackers
+					console.log('sync: ', sync);
 					this.remote_trackers.each(function(track_obj) {
 						var type		=	track_obj.type;
 						var tracker		=	track_obj.tracker;
 						var syncdata	=	sync[type];
-						if(!syncdata) return false;
+						if(!syncdata || syncdata.length == 0) return false;
 
 						tracker.sync_from_api(turtl.db[tracker.local_table], syncdata);
 					});
@@ -575,7 +577,15 @@ var SyncCollection	=	Composer.Collection.extend({
 			// record is from something just did, and we don't need to re-apply
 			// changes we already made...in fact, doing so can cause problems
 			// such as race conditions).
-			if(turtl.sync.should_ignore(item._sync.id, {type: 'remote'})) return false;
+			try
+			{
+				if(turtl.sync.should_ignore(item._sync.id, {type: 'remote'})) return false;
+			}
+			catch(e)
+			{
+				turtl.do_sync=false;
+				throw e;
+			}
 
 			// POST /sync returns deleted === true, but we need it to be an int
 			// value (IDB don't like filtering bools), so we either set it to 1
