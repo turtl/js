@@ -196,10 +196,10 @@ var NoteEditController = Composer.Controller.extend({
 		turtl.loading(true);
 		this.note_copy.save({
 			args: args,
-			success: function(note_data) {
+			success: function() {
 				turtl.loading(false);
 				this.note.key = this.note_copy.key;
-				this.note.set(note_data);
+				this.note.set(this.note_copy.toJSON());
 				if(note_data.file_id && this.file)
 				{
 					this.file.key	=	this.note.key;

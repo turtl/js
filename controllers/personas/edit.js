@@ -108,7 +108,7 @@ var PersonaEditController = Composer.Controller.extend({
 		{
 			this.model.save({
 				args: args,
-				success: function(res) {
+				success: function() {
 					turtl.loading(false);
 					if(is_new)
 					{

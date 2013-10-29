@@ -22,8 +22,8 @@
 	 */
 	Composer.sync	=	function(method, model, options) { return options.success(); };
 
-    // an option to suppress those annoying warnings when overriding initialize and extend methods
-    Composer.suppress_warnings = false;
+	// an option to suppress those annoying warnings when overriding initialize and extend methods
+	Composer.suppress_warnings = false;
 
 	// a closure that returns incrementing integers. these will be unique across
 	// the entire app since only one counter is instantiated

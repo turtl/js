@@ -96,7 +96,7 @@ var Board = Composer.RelationalModel.extend({
 			// remove the board from the user's keys (only if it's the only
 			// instance of this board)
 			var others	=	turtl.profile.get('boards').select({id: this.id()});
-			if(others.length == 0) turtl.user.remove_user_key(this.id());
+			if(others.length == 0) turtl.profile.get('keychain').remove_key(this.id());
 
 			// remove the project's sort from the user data
 			var sort		=	Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
@@ -118,7 +118,7 @@ var Board = Composer.RelationalModel.extend({
 				if(!persona)
 				{
 					barfr.barf('The board "'+ this.get('title') + '" is no longer shared with you.');
-					this.destroy({skip_sync: true});
+					this.destroy({skip_remote_sync: true});
 				}
 			}
 			else
@@ -134,72 +134,21 @@ var Board = Composer.RelationalModel.extend({
 
 		// MIGRATE: move board user keys into user data. this code should exist
 		// as long as the database has ANY records with board.keys.u
-		if(!turtl.user.find_user_key(this.id(true)) && !this.is_new() && this.key)
+		if(!turtl.profile.get('keychain').find_key(this.id(true)) && !this.is_new() && this.key)
 		{
-			turtl.user.add_user_key(this.id(true), this.key);
+			turtl.profile.get('keychain').add_key(this.id(true), 'board', this.key);
 			var keys	=	this.get('keys').toJSON();
 			keys		=	keys.filter(function(k) {
 				return k.u != turtl.user.id();
 			});
 			this.set({keys: keys});
-			this.save_keys();
+			this.save();
 		}
 	},
 
 	track_tags: function(yesno)
 	{
 		this._track_tags = yesno;
-	},
-
-	save: function(options)
-	{
-		options || (options = {});
-		var url	=	this.id(true) ?
-			'/boards/'+this.id() :
-			'/boards/users/'+turtl.user.id();
-		var fn		=	(this.id(true) ? turtl.api.put : turtl.api.post).bind(turtl.api);
-		var data	=	this.toJSON();
-		if(!data.keys || (data.keys.length == 0))
-		{
-			// empty string gets converted to enpty array by the API for the keys
-			// type (this is the only way to serialize an empty array via 
-			// mootools' Request AJAX class)
-			data.keys	=	'';
-		}
-		fn(url, {data: data}, {
-			success: function(data) {
-				this.set(data);
-				if(options.success) options.success(data);
-			}.bind(this),
-			error: function(e) {
-				if(options.error) options.error(e);
-			}
-		});
-	},
-
-	save_keys: function(options)
-	{
-		options || (options = {});
-		var data	=	{};
-		data.keys	=	this.toJSON().keys;
-		if(!data.keys || data.keys.length == 0)
-		{
-			// empty string gets converted to enpty array by the API for the keys
-			// type (this is the only way to serialize an empty array via 
-			// mootools' Request AJAX class)
-			data.keys	=	'';
-		}
-
-		turtl.api.put('/boards/'+this.id(), {data: data}, {
-			success: function(data) {
-				this.set(data);
-				if(options.success) options.success(data);
-			}.bind(this),
-			error: function(e) {
-				barfr.barf('Error saving board: '+ e);
-				if(options.error) options.error(e);
-			}
-		});
 	},
 
 	share_with: function(from_persona, to_persona, permissions, options)
@@ -242,7 +191,7 @@ var Board = Composer.RelationalModel.extend({
 				}
 
 				// save the board key into the user's data
-				turtl.user.add_user_key(this.id(), this.key);
+				turtl.profile.get('keychain').add_key(this.id(), 'board', this.key);
 				var _notes = board.notes;
 				delete board.notes;
 				board.shared	=	true;
@@ -285,7 +234,7 @@ var Board = Composer.RelationalModel.extend({
 				}.bind(this), 'profile:track_sync:board:'+this.id());
 
 				// destroy our local copy
-				this.destroy({skip_sync: true});
+				this.destroy({skip_remote_sync: true});
 
 				if(options.success) options.success();
 			}.bind(this),
@@ -334,9 +283,9 @@ var Board = Composer.RelationalModel.extend({
 		var tags = this.get('tags');
 		var cats = this.get('categories');
 
-		notes.each(function(n) { n.destroy({skip_sync: true}); n.unbind(); });
-		tags.each(function(t) { t.destroy({skip_sync: true}); t.unbind(); });
-		cats.each(function(c) { c.destroy({skip_sync: true}); c.unbind(); });
+		notes.each(function(n) { n.destroy({skip_remote_sync: true}); n.unbind(); });
+		tags.each(function(t) { t.destroy({skip_remote_sync: true}); t.unbind(); });
+		cats.each(function(c) { c.destroy({skip_remote_sync: true}); c.unbind(); });
 		notes.clear();
 		tags.clear();
 		cats.clear();
@@ -389,8 +338,9 @@ var Board = Composer.RelationalModel.extend({
 	}
 }, Protected);
 
-var Boards = Composer.Collection.extend({
+var Boards = SyncCollection.extend({
 	model: Board,
+	local_table: 'boards',
 
 	sortfn: function(a, b)
 	{
@@ -415,5 +365,60 @@ var Boards = Composer.Collection.extend({
 			board.clear(options);
 		});
 		return this.parent.apply(this, arguments);
+	},
+
+	process_local_sync: function(board_data, board)
+	{
+		console.log('sync: board: db -> mem ('+ (board_data.deleted ? 'delete' : 'add/edit') +')');
+		// process some user/board key stuff. when the user first adds a board,
+		// its key is saved in the user's data with the board's CID. it stays
+		// this way until the board is posted to the API and gets a real ID. we
+		// need to sniff out this situation and flip the cid to an id for the
+		// board key (if detected)
+		var keychain	=	turtl.profile.get('keychain');
+		var key			=	keychain.find_key(board_data.cid);
+		if(key && board_data.id && !board_data.deleted)
+		{
+			console.log('board: got CID key, adding ID key (and removing CID key)');
+			keychain.add_key(board_data.id, 'board', key);
+			keychain.remove_key(board_data.cid);
+		}
+
+		if(board_data.deleted)
+		{
+			if(board) board.destroy({skip_local_sync: true, skip_remote_sync: true});
+		}
+		else if(board)
+		{
+			if(board_data.user_id && board_data.user_id != turtl.user.id())
+			{
+				board_data.shared	=	true;
+			}
+			board.set(board_data);
+		}
+		else
+		{
+			// make sure this isn't a rogue/shared board sync. sometimes a
+			// shared board will sync AFTER it's deleted, bringing us here.
+			// luckily, we can detect it via board.shared == true, and
+			// board.privs.does_not_contain(any_of_my_personas).
+			if(board_data.shared)
+			{
+				var persona_ids		=	turtl.user.get('personas').map(function(p) { return p.id(); });
+				var has_my_persona	=	false;
+				Object.keys(board_data.privs).each(function(pid) {
+					if(persona_ids.contains(pid)) has_my_persona = true;
+				});
+
+				// board is shared, and I'm not on the guest list. not sure
+				// why I got an invite telling me to join a board I'm not
+				// actually invited to, but let's save ourselves the heart-
+				// break and skip out on this one
+				if(!has_my_persona) return false;
+			}
+			var board	=	new Board(board_data);
+			if(board_data.cid) board._cid = board_data.cid;
+			this.upsert(board);
+		}
 	}
 });

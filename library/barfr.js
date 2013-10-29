@@ -148,15 +148,16 @@ var Barfr	=	new Class({
 
 		var li 			= new Element('li');
 		li.innerHTML	= msg + '<a href="#" class="close"></a>';
+		var self		= this;
 		li.addEvent('click', function(e) {
-			this.close_barf(id);
+			self.close_barf(id);
 			li.removeEvent('click', arguments.callee);
-		}.bind(this));
-		li.addEvent('click:relay(a)', function(e) {
+		});
+		li.addEvent('click:relay(a.close)', function(e) {
 			if(e) e.stop();
-			this.close_barf(id);
-			li.removeEvent('click:relay(a)', arguments.callee);
-		}.bind(this));
+			self.close_barf(id);
+			li.removeEvent('click:relay(a.close)', arguments.callee);
+		});
 
 		li.inject(this.objects.list, 'top');
 		this.objects.list.style.display = 'block';

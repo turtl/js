@@ -28,6 +28,10 @@ var Protected = Composer.RelationalModel.extend({
 		}
 	},
 
+	// if true, will tream all model set/toJSON calls as-is (no serialization or
+	// deserialization of crypto data)
+	raw_data: false,
+
 	// when serializing/deserializing the encrypted payload for the private
 	// fields will be stored under this key in the resulting object
 	body_key: 'body',
@@ -73,8 +77,12 @@ var Protected = Composer.RelationalModel.extend({
 		}
 		catch(e)
 		{
-			console.log('item ('+ (this.id(true) || parentobj.id) +'): ', e.message);
-			return false;
+			if(e instanceof SyncError)
+			{
+				console.log('item ('+ (this.id(true) || parentobj.id) +'): ', e.message);
+				return false;
+			}
+			throw e;
 		}
 
 		try
@@ -85,7 +93,6 @@ var Protected = Composer.RelationalModel.extend({
 		{
 			console.log('err: protected: error deserializing: ', e);
 			console.log('err: this id: ', this.id());
-			console.log('err: key: ', this.key.length, this.key);
 			//console.trace();
 		}
 		return obj;
@@ -157,6 +164,10 @@ var Protected = Composer.RelationalModel.extend({
 	 */
 	set: function(obj, options)
 	{
+		// if we're doing raw_data, then just call Model.set without any of the
+		// Protected deserialization jazz
+		if(this.raw_data) return this.parent.apply(this, arguments);
+
 		// NOTE: don't use `arguments` here since we need to explicitely pass in
 		// our obj to the parent function
 		options || (options = {});
@@ -238,6 +249,14 @@ var Protected = Composer.RelationalModel.extend({
 				_body[k]	=	v;
 			}
 		}.bind(this));
+
+		// if we're dealing with raw data, just return the public fields plus
+		// the encrypted body
+		if(this.raw_data)
+		{
+			newdata[this.body_key]	=	this.get(this.body_key, false);
+			return newdata;
+		}
 
 		// serialize the body (encrypted)
 		var encbody	=	this.serialize(_body, newdata, options);
@@ -350,7 +369,7 @@ var Protected = Composer.RelationalModel.extend({
 		// if we didn't find our key, check the user's data
 		if(!key)
 		{
-			key	=	turtl.user.find_user_key(this.id());
+			key	=	turtl.profile.get('keychain').find_key(this.id());
 		}
 
 		return key;

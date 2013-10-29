@@ -66,6 +66,8 @@ var BoardEditController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		var title = this.inp_title.get('value');
+		if(title.clean() == '') return false;
+
 		var success = null;
 		if(this.board.is_new())
 		{
@@ -74,7 +76,7 @@ var BoardEditController = Composer.Controller.extend({
 			this.board.generate_subkeys();
 			success = function() {
 				// make sure the project key gets saved with the user's data
-				turtl.user.add_user_key(this.board.id(), this.board.key);
+				turtl.profile.get('keychain').add_key(this.board.id(), 'board', this.board.key);
 
 				var boards = this.profile.get('boards');
 				if(boards) boards.add(this.board);

@@ -68,40 +68,45 @@ var Note = Composer.RelationalModel.extend({
 		});
 	},
 
+	get_url: function()
+	{
+		var url	=	this.id(true) ?
+						'/notes/'+this.id() :
+						'/boards/'+this.get('board_id')+'/notes';
+		return url;
+	},
+
 	save: function(options)
 	{
-		options || (options = {});
-		var args	=	options.args || {};
-		var do_save	=	function()
+		if(options.api_save)
 		{
-			var url		=	this.id(true) ? '/notes/'+this.id() : '/boards/'+this.get('board_id')+'/notes';
-			var fn		=	(this.id(true) ? turtl.api.put : turtl.api.post).bind(turtl.api);
-			args.data	=	this.toJSON();
-			fn(url, args, {
-				success: function(note_data) {
-					this.set(note_data);
-					if(options.success) options.success(note_data);
-				}.bind(this),
-				error: function (e) {
-					barfr.barf('There was a problem saving your note: '+ e);
-					if(options.error) options.error(e);
-				}.bind(this)
-			});
-		}.bind(this);
-
-		var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
-		if(!board)
-		{
-			options.error('Problem finding board for that note.');
-			return false;
+			var args	=   {};
+			var meta	=   this.get('meta');
+			if(meta && meta.persona)
+			{
+				args.persona	=   meta.persona;
+			}
+			options.args	=	args;
 		}
-
-		if(board.get('shared', false) && this.get('user_id') != turtl.user.id())
+		else
 		{
-			var persona		=	board.get_shared_persona();
-			args.persona	=	persona.id();
+			options.table	=	'notes';
+
+			var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
+			if(!board)
+			{
+				options.error('Problem finding board for that note.');
+				return false;
+			}
+
+			if(board.get('shared', false) && this.get('user_id') != turtl.user.id())
+			{
+				var persona		=	board.get_shared_persona();
+				args.persona	=	persona.id();
+			}
+			options.args	=	args;
 		}
-		do_save();
+		return this.parent.call(this, options);
 	},
 
 	destroy: function(options)
@@ -109,30 +114,35 @@ var Note = Composer.RelationalModel.extend({
 		options || (options = {});
 		var args		=	{};
 
-		// some hacky shit that allows us to ref Model.destroy async
-		var name		=	this.$caller.$name;
-		var parent		=	this.$caller.$owner.parent;
-		var previous	=	(parent) ? parent.prototype[name] : null;
-
-		var do_destroy	=	function()
+		if(options.api_save)
 		{
+			var args	=	{};
+			var meta	=	this.get('meta');
+			if(meta && meta.persona)
+			{
+				args.persona	=	meta.persona;
+			}
 			options.args	=	args;
-			previous.apply(this, [options]);
-		}.bind(this);
-
-		var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
-		if(!board)
-		{
-			if(options.error) options.error('Problem finding board for that note.');
-			return false;
 		}
-
-		if(board.get('shared', false) && !options.skip_sync)
+		else
 		{
-			var persona		=	board.get_shared_persona();
-			args.persona	=	persona.id();
+			options.table	=	'notes';
+
+			var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
+			if(!board)
+			{
+				if(options.error) options.error('Problem finding board for that note.');
+				return false;
+			}
+
+			if(board.get('shared', false) && this.get('user_id') != turtl.user.id())
+			{
+				var persona		=	board.get_shared_persona();
+				args.persona	=	persona.id();
+			}
+			options.args	=	args;
 		}
-		do_destroy();
+		return this.parent.call(this, options);
 	},
 
 	find_key: function(keys, search, options)
@@ -155,8 +165,10 @@ var Note = Composer.RelationalModel.extend({
 	}
 }, Protected);
 
-var Notes = Composer.Collection.extend({
+var Notes = SyncCollection.extend({
 	model: Note,
+	local_table: 'notes',
+
 	sortfn: function(a, b) { return a.id().localeCompare(b.id()); },
 
 	// used for tracking batch note saves
@@ -192,6 +204,24 @@ var Notes = Composer.Collection.extend({
 		});
 
 		this.batch_track	=	[];
+	},
+
+	process_local_sync: function(note_data, note)
+	{
+		if(note_data.deleted)
+		{
+			if(note) note.destroy({skip_local_sync: true, skip_remote_sync: true});
+		}
+		else if(note)
+		{
+			note.set(note_data);
+		}
+		else
+		{
+			var note	=	new Note(note_data);
+			if(note_data.cid) note._cid	=	note_data.cid;
+			this.upsert(note);
+		}
 	}
 });
 

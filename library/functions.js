@@ -7,8 +7,32 @@ function toJSON(object)
 }
 
 /**
+ * Allow javascript's Error class to be extended
+ */
+var extend_error	=	function(extend, errname)
+{
+	var err						=	function() {
+		var tmp	=	extend.apply(this, arguments);
+		tmp.name = this.name = errname;
+
+		this.stack		=	tmp.stack
+		this.message	=	tmp.message
+
+		return this;
+	};
+	err.prototype	=	Object.create(extend.prototype, { constructor: { value: err } });
+	return err;
+}
+
+/**
  * HACK: Mootools internals!
  * Allows using this.parent() async
+ *
+ * before:
+ *   this.parent.apply(this, arguments);
+ *
+ * after:
+ *   get_parent(this).apply(this, arguments);
  */
 function get_parent(obj)
 {
@@ -72,15 +96,15 @@ function get_data_from_querystring(url)
 }
 
 Array.prototype.unique = function() {
-    var a = this.concat();
-    for(var i=0; i<a.length; ++i) {
-        for(var j=i+1; j<a.length; ++j) {
-            if(a[i] === a[j])
-                a.splice(j, 1);
-        }
-    }
+	var a = this.concat();
+	for(var i=0; i<a.length; ++i) {
+		for(var j=i+1; j<a.length; ++j) {
+			if(a[i] === a[j])
+				a.splice(j, 1);
+		}
+	}
 
-    return a;
+	return a;
 };
 
 String.implement({
