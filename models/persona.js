@@ -216,7 +216,7 @@ var Personas = SyncCollection.extend({
 	{
 		if(persona_data.deleted)
 		{
-			if(persona) persona.destroy_persona({skip_remote_sync: true});
+			if(persona) persona.destroy_persona({skip_local_sync: true, skip_remote_sync: true});
 		}
 		else if(persona)
 		{

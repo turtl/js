@@ -367,20 +367,9 @@ var Boards = SyncCollection.extend({
 		return this.parent.apply(this, arguments);
 	},
 
-	sync_record_to_api: function()
-	{
-		console.log('sync: board: db -> api');
-		return this.parent.apply(this, arguments);
-	},
-	sync_from_api: function(_, data)
-	{
-		if(data && data.length > 0) console.log('sync: board: api -> db');
-		return this.parent.apply(this, arguments);
-	},
-
 	process_local_sync: function(board_data, board)
 	{
-		console.log('sync: board: db -> mem', board_data.id, board_data.cid);
+		console.log('sync: board: db -> mem ('+ (board_data.deleted ? 'delete' : 'add/edit') +')');
 		// process some user/board key stuff. when the user first adds a board,
 		// its key is saved in the user's data with the board's CID. it stays
 		// this way until the board is posted to the API and gets a real ID. we
@@ -390,14 +379,14 @@ var Boards = SyncCollection.extend({
 		var key			=	keychain.find_key(board_data.cid);
 		if(key && board_data.id && !board_data.deleted)
 		{
-			console.log('board: got key, write settings');
-			keychain.remove_key(board_data.cid);
+			console.log('board: got CID key, adding ID key (and removing CID key)');
 			keychain.add_key(board_data.id, 'board', key);
+			keychain.remove_key(board_data.cid);
 		}
 
 		if(board_data.deleted)
 		{
-			if(board) board.destroy({skip_remote_sync: true});
+			if(board) board.destroy({skip_local_sync: true, skip_remote_sync: true});
 		}
 		else if(board)
 		{

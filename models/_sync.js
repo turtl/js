@@ -238,13 +238,13 @@ var Sync = Composer.Model.extend({
 			// if sync disabled, NEVERMIND
 			if(!turtl.do_sync) return false;
 
-			console.log('POST /sync');
 			turtl.api.post('/sync', {sync_id: sync_id}, {
 				success: function(sync) {
 					// save our last sync id (graciously provided by the API)
 					if(sync.sync_id) this.set({sync_id: sync.sync_id});
 					this.save();
 
+					// some nice debugging
 					if(	(sync.keychain && sync.keychain.length > 0) ||
 						(sync.personas && sync.personas.length > 0) ||
 						(sync.boards && sync.boards.length > 0) ||
@@ -264,7 +264,6 @@ var Sync = Composer.Model.extend({
 
 					// pipe our sync data off to the respective remote
 					// trackers
-					console.log('sync: ', sync);
 					this.remote_trackers.each(function(track_obj) {
 						var type		=	track_obj.type;
 						var tracker		=	track_obj.tracker;
@@ -362,7 +361,7 @@ var SyncCollection	=	Composer.Collection.extend({
 			.done(function(results) {
 				results.each(function(result) {
 					// check if we're ignoring this item
-					if(turtl.sync.should_ignore([result.id, result.cid], {type: 'local'})) return false;
+					if(turtl.sync.should_ignore([result.id], {type: 'local'})) return false;
 
 					// try to find the model locally (using both the ID and CID)
 					var model	=	this.find_by_id(result.id, {strict: true});
@@ -430,6 +429,12 @@ var SyncCollection	=	Composer.Collection.extend({
 		// also store if we're adding a new model
 		var is_create	=	model.is_new();
 
+		if(['boards','keychain'].contains(this.local_table))
+		{
+			var action	=	is_delete ? 'delete' : (is_create ? 'add' : 'edit');
+			console.log('sync: '+ this.local_table +': db -> api ('+action+') (new: '+model.is_new()+')');
+		}
+
 		var table	=	turtl.db[this.local_table];
 		var options	=	{
 			api_save: true,
@@ -452,8 +457,7 @@ var SyncCollection	=	Composer.Collection.extend({
 					//console.log(this.local_table + '.sync_record_to_api: got: ', modeldata);
 					if(['boards', 'keychain'].contains(this.local_table))
 					{
-						var tmptable	=	this.local_table == 'user' ? 'user: ' : 'board:';
-						console.log('save: '+ tmptable +' api -> db');
+						console.log('save: '+ this.local_table +': api -> db');
 					}
 					table.update(modeldata).fail(function(e) {
 						console.log(this.local_table + '.sync_model_to_api: error setting last_mod on '+ this.local_table +'.'+ model.id() +' (local -> API): ', e);
@@ -587,6 +591,11 @@ var SyncCollection	=	Composer.Collection.extend({
 				throw e;
 			}
 
+			if(['boards', 'keychain'].contains(this.local_table))
+			{
+				console.log('sync: '+ this.local_table +': api -> db ('+ item._sync.action +')');
+			}
+
 			// POST /sync returns deleted === true, but we need it to be an int
 			// value (IDB don't like filtering bools), so we either set it to 1
 			// or just delete it.
@@ -608,6 +617,6 @@ var SyncCollection	=	Composer.Collection.extend({
 
 			// run the actual local DB update
 			table.update(item);
-		});
+		}.bind(this));
 	}
 });

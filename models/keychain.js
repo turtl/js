@@ -16,12 +16,6 @@ var KeychainEntry	=	Protected.extend({
 		// copy key from user
 		if(!this.key) this.key = turtl.user.get_key();
 		return this.parent.apply(this, arguments);
-	},
-
-	save: function()
-	{
-		console.log('save: keyentry: mem -> db');
-		return this.parent.apply(this, arguments);
 	}
 });
 
@@ -112,23 +106,12 @@ var Keychain	=	SyncCollection.extend({
 		});
 	},
 
-	sync_record_to_api: function()
-	{
-		console.log('sync: keyentry: db -> api');
-		return this.parent.apply(this, arguments);
-	},
-	sync_from_api: function(_, data)
-	{
-		if(data && data.length > 0) console.log('sync: keyentry: api -> db');
-		return this.parent.apply(this, arguments);
-	},
-
 	process_local_sync: function(keychain_data, model)
 	{
-		console.log('sync: keyentry: db -> mem')
+		console.log('sync: keychain: db -> mem ('+ (keychain_data.deleted ? 'delete' : 'add/edit') +')');
 		if(keychain_data.deleted)
 		{
-			if(model) model.destroy({skip_remote_sync: true});
+			if(model) model.destroy({skip_local_sync: true, skip_remote_sync: true});
 		}
 		else if(model)
 		{

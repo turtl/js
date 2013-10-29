@@ -209,7 +209,7 @@ var Notes = SyncCollection.extend({
 	{
 		if(note_data.deleted)
 		{
-			if(note) note.destroy({skip_remote_sync: true});
+			if(note) note.destroy({skip_local_sync: true, skip_remote_sync: true});
 		}
 		else if(note)
 		{

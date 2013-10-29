@@ -7,18 +7,21 @@ var SyncError	=	extend_error(Error, 'SyncError');
 Composer.sync	=	function(method, model, options)
 {
 	options || (options = {});
-	/*
-	if(options.skip_sync && method == 'delete')
+	if(options.skip_local_sync && method == 'delete')
 	{
-		options.success();
+		if(options.success) options.success();
 		return;
 	}
-	else if(options.skip_sync) return;
-	*/
 
    // derive the table name from the model's base_url field.
 	var table	=	options.table || model.get_url().replace(/^\/(.*?)(\/|$).*/, '$1');
 	if(table == 'users') table = 'user';	// kind of a hack. oh well.
+
+	if(['boards','keychain'].contains(table))
+	{
+		var action = method == 'delete' ? 'delete' : (method == 'create' ? 'add' : 'edit');
+		console.log('save: '+ table +': mem -> db ('+ action +')');
+	}
 
 	if(!turtl.db[table])
 	{
@@ -40,7 +43,7 @@ Composer.sync	=	function(method, model, options)
 	{
 		// serialize our model, and add in any extra data needed
 		var modeldata		=	model.toJSON();
-		modeldata.last_mod	=	new Date().getTime();
+		if(!options.skip_local_sync) modeldata.last_mod = new Date().getTime();
 		if(!options.skip_remote_sync) modeldata.local_change = 1;
 		if(options.args) modeldata.meta = options.args;
 	}
@@ -111,8 +114,9 @@ var api_sync	=	function(method, model, options)
 		var method	=	'_delete'; break;
 	default:
 		throw new SyncError('Bad method passed to Composer.sync: '+ method);
-		return false;
 	}
+
+	console.log('API: '+ method.toUpperCase().replace(/_/g, '') +' '+ model.base_url);
 
 	// don't want to send all data over a GET or DELETE
 	var args	=	options.args;
