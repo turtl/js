@@ -66,6 +66,8 @@ var BoardEditController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		var title = this.inp_title.get('value');
+		if(title.clean() == '') return false;
+
 		var success = null;
 		if(this.board.is_new())
 		{
