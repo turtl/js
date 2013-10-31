@@ -200,12 +200,9 @@ var NoteEditController = Composer.Controller.extend({
 				turtl.loading(false);
 				this.note.key = this.note_copy.key;
 				this.note.set(this.note_copy.toJSON());
-				if(note_data.file_id && this.file)
-				{
-					this.file.key	=	this.note.key;
-					this.file.set({id: note_data.file_id});
-					this.file.do_save();
-				}
+
+				// TODO: save file, reap rewards, blah blah blah
+
 				if(isnew) this.board.get('notes').add(this.note);
 				// make sure the current filter applies to the edited note
 				this.board.get('tags').trigger('change:selected');
