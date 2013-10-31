@@ -93,11 +93,6 @@ var Board = Composer.RelationalModel.extend({
 		}.bind(this));
 
 		this.bind('destroy', function() {
-			// remove the board from the user's keys (only if it's the only
-			// instance of this board)
-			var others	=	turtl.profile.get('boards').select({id: this.id()});
-			if(others.length == 0) turtl.profile.get('keychain').remove_key(this.id());
-
 			// remove the project's sort from the user data
 			var sort		=	Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
 			sort[this.id()]	=	99999;
