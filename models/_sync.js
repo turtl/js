@@ -573,32 +573,75 @@ var SyncCollection	=	Composer.Collection.extend({
 				throw e;
 			}
 
-			if(['boards', 'keychain'].contains(this.local_table))
+			var do_sync	=	function()
 			{
-				console.log('sync: '+ this.local_table +': api -> db ('+ item._sync.action +')');
-			}
+				if(['boards', 'keychain'].contains(this.local_table))
+				{
+					console.log('sync: '+ this.local_table +': api -> db ('+ item._sync.action +')');
+				}
 
-			// POST /sync returns deleted === true, but we need it to be an int
-			// value (IDB don't like filtering bools), so we either set it to 1
-			// or just delete it.
-			if(item.deleted) item.deleted = 1;
-			else delete item.deleted;
+				// POST /sync returns deleted === true, but we need it to be an int
+				// value (IDB don't like filtering bools), so we either set it to 1
+				// or just delete it.
+				if(item.deleted) item.deleted = 1;
+				else delete item.deleted;
 
-			// make sure the local "threads" know this data changed
-			item.last_mod	=	new Date().getTime();
+				// make sure the local "threads" know this data changed
+				item.last_mod	=	new Date().getTime();
 
-			// if we have sync data (we definitely should), move some of the
-			// data into the actual item object we save, then obliterate the
-			// _sync key so it never touches the local db
-			if(item._sync)
+				// if we have sync data (we definitely should), move some of the
+				// data into the actual item object we save, then obliterate the
+				// _sync key so it never touches the local db
+				if(item._sync)
+				{
+					// move the CID into the item if we have it.
+					if(item._sync.cid) item.cid = item._sync.cid;
+					delete item._sync;
+				}
+
+				// run the actual local DB update
+				table.update(item);
+			}.bind(this);
+
+			if(item._sync && item._sync.cid)
 			{
-				// move the CID into the item if we have it.
-				if(item._sync.cid) item.cid = item._sync.cid;
-				delete item._sync;
+				// we have a CID. check our table for a record with an ID
+				// matching the CID. if found, delete the record and recreate it
+				// with the actual id (replacing the CID)
+				table.get(item._sync.cid)
+					.done(function(record) {
+						if(!record)
+						{
+							do_sync();
+						}
+						else
+						{
+							table.remove(record.id)
+								.done(function() {
+									// ok, item removed, now update the synced
+									// item's cid and save it back into the
+									// table
+									item.cid	=	item._sync.cid;
+									do_sync();
+								})
+								.fail(function(e) {
+									console.log('sync: '+ this.local_table +': api -> db: error updating CID -> ID (remove '+ item._sync.cid +')');
+									// keep going anyway
+									do_sync();
+								})
+						}
+					})
+					.fail(function(e) {
+						console.log('sync: '+ this.local_table +': api -> db: error updating CID -> ID (get '+ item._sync.cid +')');
+						// keep going anyway
+						do_sync();
+					});
 			}
-
-			// run the actual local DB update
-			table.update(item);
+			else
+			{
+				// no cid, run the sync normally
+				do_sync();
+			}
 		}.bind(this));
 	}
 });
