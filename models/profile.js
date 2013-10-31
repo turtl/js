@@ -4,19 +4,21 @@ var Profile = Composer.RelationalModel.extend({
 			type: Composer.HasMany,
 			collection: 'Keychain'
 		},
-		boards: {
-			type: Composer.HasMany,
-			collection: 'Boards',
-			//forward_events: true
-		},
-		notes: {
-			type: Composer.HasMany,
-			collection: 'Notes',
-			//forward_events: true
-		},
 		personas: {
 			type: Composer.HasMany,
 			collection: 'Personas'
+		},
+		boards: {
+			type: Composer.HasMany,
+			collection: 'Boards'
+		},
+		notes: {
+			type: Composer.HasMany,
+			collection: 'Notes'
+		},
+		files: {
+			type: Composer.HasMany,
+			collection: 'Files'
 		}
 	},
 
