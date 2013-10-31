@@ -1,4 +1,6 @@
 var FileData = ProtectedThreaded.extend({
+	base_url: '/files',
+
 	public_fields: [
 		'id',
 		'hash'
@@ -61,10 +63,25 @@ var FileData = ProtectedThreaded.extend({
 	}
 });
 
-var Files = Composer.Collection.extend({
-	model: 'FileData',
+var Files = SyncCollection.extend({
+	model: FileData,
+	local_table: 'files',
 
-	init: function()
+	process_local_sync: function(file_data, file)
 	{
+		if(file_data.deleted)
+		{
+			if(file) file.destroy({skip_local_sync: true, skip_remote_sync: true});
+		}
+		else if(file)
+		{
+			file.set(file_data);
+		}
+		else
+		{
+			var file	=	new FileData(file_data);
+			if(file_data.cid) file._cid	=	file_data.cid;
+			this.upsert(file);
+		}
 	}
 });
