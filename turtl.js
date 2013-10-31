@@ -213,7 +213,7 @@ var turtl	=	{
 		db.open({
 			// DB has user id in it...client might have multiple users
 			server: 'turtl.'+turtl.user.id(),
-			version: 4,
+			version: 5,
 			// NOTE: all tables that are sync between the client and the API
 			// *must* have "local_change" and "last_mod" indexex. or else. or
 			// else what?? or else it won't work.
@@ -355,15 +355,26 @@ var turtl	=	{
 		turtl.sync.register_local_tracker('personas', turtl.profile.get('personas'));
 		turtl.sync.register_local_tracker('boards', turtl.profile.get('boards'));
 		turtl.sync.register_local_tracker('notes', turtl.profile.get('notes'));
+		turtl.sync.register_local_tracker('files', turtl.profile.get('files'));
 
 		// always sync from local db => in-mem models.
 		turtl.sync.sync_from_db();
 
+		// only sync against the remote DB if we're in the standalone app
+		// OR if we're in the background thread of an addon
 		if(turtl.sync && (!window._in_ext || window._in_background) && !window._in_app)
 		{
-			// only sync against the remote DB if we're in the standalone app
-			// OR if we're in the background thread of an addon
-			turtl.sync.setup_remote_trackers();
+			// Set up all the remote trackers we'll need.
+			// NOTE: as above with the local trackers, orda iz well important,
+			// innit.
+			turtl.sync.register_remote_tracker('user', new User());
+			turtl.sync.register_remote_tracker('keychain', new Keychain());
+			turtl.sync.register_remote_tracker('personas', new Personas());
+			turtl.sync.register_remote_tracker('boards', new Boards());
+			turtl.sync.register_remote_tracker('notes', new Notes());
+			turtl.sync.register_remote_tracker('files', new Files());
+
+			// start remote sync processes
 			turtl.sync.sync_to_api();
 			turtl.sync.sync_from_api();
 		}
@@ -622,3 +633,4 @@ window.addEvent('domready', function() {
 window.addEvent('beforeunload', function() {
 	if(window.port) window.port.send('tab-unload');
 });
+
