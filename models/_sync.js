@@ -172,24 +172,6 @@ var Sync = Composer.Model.extend({
 	},
 
 	/**
-	 * Set up all the remote trackers we'll need.
-	 */
-	setup_remote_trackers: function()
-	{
-		var user		=	new User();
-		var keychain	=	new Keychain();
-		var personas	=	new Personas();
-		var boards		=	new Boards();
-		var notes		=	new Notes();
-
-		this.register_remote_tracker('user', user);
-		this.register_remote_tracker('keychain', keychain);
-		this.register_remote_tracker('personas', personas);
-		this.register_remote_tracker('boards', boards);
-		this.register_remote_tracker('notes', notes);
-	},
-
-	/**
 	 * Start remote syncing. This looks for data that has change in the local DB
 	 * and syncs the changes out to the API. Also, it 
 	 *

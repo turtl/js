@@ -205,101 +205,16 @@ var turtl	=	{
 	{
 		options || (options = {});
 
-		// initialize our backing local storage.
-		db.open({
-			// DB has user id in it...client might have multiple users
-			server: 'turtl.'+turtl.user.id(),
-			version: 4,
-			// NOTE: all tables that are sync between the client and the API
-			// *must* have "local_change" and "last_mod" indexex. or else. or
-			// else what?? or else it won't work.
-			//
-			// "local_change" lets the remote sync processes (local db -> API)
-			// know that something has been changed locally and needs to be
-			// synced to the API. It must be 1 or 0.
-			//
-			// "last_mod" lets the local sync process(es) know that something
-			// has been changed (either by a remote sync call or by another
-			// app "thread" in an addon) and should be synced to the in-memory
-			// models.
-			schema: {
-				// -------------------------------------------------------------
-				// k/v tables - always has "key" field as primary key
-				// -------------------------------------------------------------
-				// holds metadata about the sync process ("sync_time", etc)
-				sync: {
-					key: { keyPath: 'key', autoIncrement: false },
-					indexes: {
-					}
-				},
-				// holds one record (key="user") that stores the user's data/
-				// settings
-				user: {
-					key: { keyPath: 'key', autoIncrement: false },
-					indexes: {
-						local_change: {},
-						last_mod: {}
-					}
-				},
-
-				// -------------------------------------------------------------
-				// regular tables (uses "id" as pk, id is always unique)
-				// -------------------------------------------------------------
-				keychain: {
-					key: { keyPath: 'id', autoIncrement: false },
-					indexes: {
-						local_change: {},
-						last_mod: {},
-						deleted: {},
-						item_id: {}
-					}
-				},
-				personas: {
-					key: { keyPath: 'id', autoIncrement: false },
-					indexes: {
-						local_change: {},
-						last_mod: {},
-						deleted: {}
-					}
-				},
-				boards: {
-					key: { keyPath: 'id', autoIncrement: false },
-					indexes: {
-						user_id: {},
-						local_change: {},
-						last_mod: {},
-						deleted: {}
-					}
-				},
-				notes: {
-					key: { keyPath: 'id', autoIncrement: false },
-					indexes: {
-						user_id: {},
-						board_id: {},
-						local_change: {},
-						last_mod: {},
-						deleted: {}
-					}
-				},
-				files: {
-					key: { keyPath: 'id', autoIncrement: false },
-					indexes: {
-						hash: {},
-						synced: {},
-						local_change: {},
-						last_mod: {},
-						deleted: {}
-					}
-				}
-			}
-		}).done(function(server) {
+		// hijack the complete function to set our shiny new database into the
+		// turtl scope.
+		var complete		=	options.complete;
+		options.complete	=	function(server)
+		{
 			turtl.db	=	server;
-			if(options.complete) options.complete();
-		}).fail(function(e) {
-			var idburl	=	__site_url + '/help/indexeddb';
-			barfr.barf('Error opening local database.<br><a href="'+idburl+'" target="_blank">Is IndexedDB enabled in your browser?</a>', {message_persist: 'persist'});
-			console.log('turtl.setup_local_db: ', e);
-		});
+			if(complete) complete(server);
+		};
+
+		return database.setup(options);
 	},
 
 	wipe_local_db: function()
@@ -342,9 +257,9 @@ var turtl	=	{
 	{
 		// register our tracking for local syncing (db => in-mem)
 		//
-		// NOTE: order matters here! since the user model holds keys in its
-		// data, it's important that it runs before everything else, or you may
-		// wind up with data that doesn't get decrypted properly. next is the
+		// NOTE: order matters here! since the keychain holds keys in its data,
+		// it's important that it runs before everything else, or you may wind
+		// up with data that doesn't get decrypted properly. next is the
 		// personas, followed by boards, and lastly notes.
 		turtl.sync.register_local_tracker('user', turtl.user);
 		turtl.sync.register_local_tracker('keychain', turtl.profile.get('keychain'));
@@ -352,43 +267,39 @@ var turtl	=	{
 		turtl.sync.register_local_tracker('boards', turtl.profile.get('boards'));
 		turtl.sync.register_local_tracker('notes', turtl.profile.get('notes'));
 
-		// always sync from local db => in-mem models.
+		// always sync from local db => in-mem models, even if syncing is
+		// disabled. this not only keeps memory synchronized with what's being
+		// stored, it allows us to sync changes between pieces of turtl client-
+		// side. for instance, we can save data in an app tab, and a second
+		// later it will be synced to our background process.
 		turtl.sync.sync_from_db();
 
-		if(turtl.sync && (!window._in_ext || window._in_background) && !window._in_app)
+		// only sync against the remote DB if we're in the standalone app OR if
+		// we're in the background thread of an addon
+		if(turtl.do_sync && (!window._in_ext || window._in_background) && !window._in_app)
 		{
-			// only sync against the remote DB if we're in the standalone app
-			// OR if we're in the background thread of an addon
-			turtl.sync.setup_remote_trackers();
-			turtl.sync.sync_to_api();
-			turtl.sync.sync_from_api();
-		}
+			// note that our remote trackers use brand new instances of the
+			// models/collections we'll be tracking. this enforces a nice
+			// separation between remote syncing and local syncing (and
+			// encourages all data changes to flow through the local db).
+			turtl.sync.register_remote_tracker('user', new User());
+			turtl.sync.register_remote_tracker('keychain', new Keychain());
+			turtl.sync.register_remote_tracker('personas', new Personas());
+			turtl.sync.register_remote_tracker('boards', new Boards());
+			turtl.sync.register_remote_tracker('notes', new Notes());
 
-		// listen for syncing from addon/background
-		if(window.port && !window._in_background)
-		{
-			window.port.bind('profile-sync', function(sync) {
-				if(!sync) return false;
-				if(!turtl.user || !turtl.user.logged_in) return false;
-				//console.log('bg: sync: ', sync);
-				turtl.profile.process_sync(data_from_addon(sync));
-			});
+			// start API -> local db sync process. calls POST /sync, which grabs
+			// all the latest changes for our profile, which are then applied to
+			// our local db.
+			turtl.sync.sync_from_api();
+
+			// start the local db -> API sync process.
+			turtl.sync.sync_to_api();
 		}
 
 		// set up manual syncing, and listen for persona key assignments
 		if(window.port && window._in_background)
 		{
-			var manual_sync_ok	=	true;
-			var do_sync_timer	=	new Timer(5000);
-			do_sync_timer.end	=	function() { manual_sync_ok = true; };
-			window.port.bind('do-sync', function() {
-				if(!manual_sync_ok) return false;
-				this.sync_timer.reset();
-				turtl.profile.sync();
-				manual_sync_ok	=	false;
-				do_sync_timer.start();
-			}.bind(this));
-
 			window.port.bind('persona-attach-key', function(key, persona_data) {
 				var persona	=	turtl.user.get('personas').find_by_id(persona_data.id);
 				if(!persona || persona.has_rsa())
