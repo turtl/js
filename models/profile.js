@@ -51,24 +51,6 @@ var Profile = Composer.RelationalModel.extend({
 				this.set_current_board(board);
 			}
 		}.bind(this));
-
-		// TODO: remove this profile mod stuff once local DB syncing is all
-		// figured out
-		return;
-		var profile_mod_timer	=	new Timer(100);
-		profile_mod_timer.end	=	function()
-		{
-			if(window.port) window.port.send('profile-mod');
-		}.bind(this);
-		this.bind_relational('boards', ['add', 'remove', 'reset', 'change', 'note_change'], function() {
-			// we're probably responding to a profile sync, don't send out the
-			// "profile modified!1" event, which generally triggers another sync
-			// (if in the addon)
-			if(this.in_sync) return false;
-			profile_mod_timer.start();
-		}.bind(this));
-		this.persist_timer		=	new Timer(200);
-		this.persist_timer.end	=	false;
 	},
 
 	/**
