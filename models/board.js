@@ -20,7 +20,8 @@ var Board = Composer.RelationalModel.extend({
 				filter: function(model, notesfilter) {
 					return model.get('board_id') == notesfilter.get_parent().id();
 				},
-				forward_all_events: true
+				forward_all_events: true,
+				refresh_on_change: false
 			},
 			forward_events: true
 		},

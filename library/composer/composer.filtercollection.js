@@ -139,7 +139,7 @@
 			options || (options = {});
 
 			// see if this model even belongs to this collection
-			if(model && !this.filter(model, this)) return false;
+			if(model && !this.models().contains(model) && !this.filter(model, this)) return false;
 
 			// track the current number of items and reloda the data
 			var num_items	=	this._models.length;
@@ -244,10 +244,55 @@
 				}
 			}
 			
-			// add this model into the master (if it's not already in it)
-			var add = this.master.upsert(model, options);
+			// if this model exists in the master already, we call our special
+			// _do_add method, which manually adds, sorts, and limits for us.
+			// otherwise, we just call master.add() and the model will be added
+			// here via our wonderful events
+			if(this.master.index_of(model))
+			{
+				this._do_add(model, options);
+			}
+			else
+			{
+				this.master.add(model, options);
+				if(this.limit) this._models.splice(this.limit);
+			}
+			return model;
+		},
+
+		/**
+		 * Manually add a model to this collection. Sorts and limits as well.
+		 */
+		_do_add: function(model, options)
+		{
+			// master already has item, so we don't need to add it to
+			// master (it will just fire "upsert"). what we need is to
+			// add the model to this collection's models, sorted, and
+			// apply the limit.
+			this._models.push(model);
+			var old_idx	=	this._models.indexOf(model);
+			this.sort({silent: true});
+			var new_idx	=	this._models.indexOf(model);
 			if(this.limit) this._models.splice(this.limit);
-			return add;
+			// after sort/limit, model may not actually be in the FC, so
+			// check before wildly firing add/sort events
+			if(this.index_of(model))
+			{
+				// model was actually added, fire "add" event
+				this.fire_event('add', options, model, this, options);
+				if(old_idx != new_idx)
+				{
+					// sort changed! fire appropriate event
+					if(this.sort_event)
+					{
+						this.fire_event('sort', options);
+					}
+					else
+					{
+						this.fire_event('reset', options);
+					}
+				}
+			}
 		},
 
 		remove: function(model, options)

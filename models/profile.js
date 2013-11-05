@@ -12,7 +12,10 @@ var Profile = Composer.RelationalModel.extend({
 		notes: {
 			type: Composer.HasMany,
 			collection: 'Notes',
-			//forward_events: true
+			options: {
+				forward_all_events: true,
+				refresh_on_change: false
+			}
 		},
 		personas: {
 			type: Composer.HasMany,
