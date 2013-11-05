@@ -473,7 +473,7 @@ var SyncCollection	=	Composer.Collection.extend({
 					run_update();
 				}
 			}.bind(this),
-			error: function(_, err) {
+			error: function(xhr, err) {
 				barfr.barf('Error syncing model to API: '+ err);
 				// set the record as local_modified again so we can
 				// try again next run
@@ -483,8 +483,19 @@ var SyncCollection	=	Composer.Collection.extend({
 						console.log(this.local_table + '.sync_model_to_api: error marking object '+ this.local_table +'.'+ model.id() +' as local_change = true: ', e);
 					}.bind(this);
 					if(!obj) return errorfn('missing obj');
-					obj.local_change	=	1;
-					table.update(obj).fail(errorfn);
+					if(xhr.status >= 500)
+					{
+						// internal server error. just try again in a bit.
+						(function() {
+							obj.local_change	=	1;
+							table.update(obj).fail(errorfn);
+						}).delay(30000, this);
+					}
+					else
+					{
+						// TODO: possibly delete local object??
+						console.log('sync_record_to_api: either remote object doesn\'t exist or we don\'t have access. giving up!'); 
+					}
 				});
 			}.bind(this)
 		};
