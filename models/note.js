@@ -77,6 +77,8 @@ var Note = Composer.RelationalModel.extend({
 
 	save: function(options)
 	{
+		options || (options = {});
+
 		if(options.api_save)
 		{
 			var args	=   {};
@@ -94,7 +96,7 @@ var Note = Composer.RelationalModel.extend({
 			var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
 			if(!board)
 			{
-				options.error('Problem finding board for that note.');
+				if(options.error) options.error('Problem finding board for that note.');
 				return false;
 			}
 
