@@ -82,7 +82,8 @@ var Protected = Composer.RelationalModel.extend({
 				console.log('item ('+ (this.id(true) || parentobj.id) +'): ', e.message);
 				return false;
 			}
-			throw e;
+			console.error('Protected: deserialize error: ', e);
+			//throw e;
 		}
 
 		try
