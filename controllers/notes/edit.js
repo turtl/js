@@ -88,10 +88,6 @@ var NoteEditController = Composer.Controller.extend({
 			board: this.board
 		});
 		this.select_tab(this.note_copy.get('type'));
-		this.markdown_tutorial.monitorOutsideClick(function() {
-			this.markdown_tutorial.setStyle('display', 'block');
-			this.open_markdown_tutorial();
-		}.bind(this));
 	},
 
 	save_form_to_copy: function(e, options)
@@ -251,6 +247,7 @@ var NoteEditController = Composer.Controller.extend({
 		{
 			this.markdown_tutorial.setStyle('display', 'block');
 		}
+		if(window.port) window.port.send('resize');
 	},
 
 	click_markdown: function(e)
