@@ -5,6 +5,8 @@ var NoteEditController = Composer.Controller.extend({
 		'input[name=title]': 'inp_title',
 		'input[name=url]': 'inp_url',
 		'textarea[name=text]': 'inp_text',
+		'.do-edit': 'editor',
+		'.preview': 'preview',
 		'div.markdown-tutorial': 'markdown_tutorial'
 	},
 
@@ -16,8 +18,8 @@ var NoteEditController = Composer.Controller.extend({
 		'keyup .note-edit form textarea': 'save_form_to_copy',
 		'change .note-edit form select': 'save_form_to_copy',
 		'click ul.type li': 'switch_type',
-		'click .preview-wrap .edit a[href=#preview]': 'preview_text',
-		'click .preview-wrap .preview a[href=#edit]': 'edit_text',
+		'click .do-edit > a[href=#preview]': 'preview_note',
+		'click .preview > input[name=edit]': 'edit_note',
 		'click a.markdown-tutorial': 'open_markdown_tutorial',
 		'click div.markdown-tutorial': 'click_markdown'
 	},
@@ -96,7 +98,10 @@ var NoteEditController = Composer.Controller.extend({
 	{
 		options || (options = {});
 
-		if(this.note_copy.get('type') == 'quick')
+		var note	=	options.note;
+		if(!note) note = this.note_copy;
+
+		if(note.get('type') == 'quick')
 		{
 			// do some basic guessing/intelligence stuff
 			var val = this.inp_quick.get('value');
@@ -106,7 +111,7 @@ var NoteEditController = Composer.Controller.extend({
 				if(val.match(/\.(jpg|jpeg|gif|png|tiff|bmp)([\w?&=#]+)?$/i))
 				{
 					// it's an image
-					this.note_copy.set({
+					note.set({
 						type: 'image',
 						url: val
 					});
@@ -114,7 +119,7 @@ var NoteEditController = Composer.Controller.extend({
 				else
 				{
 					// just a stupid link
-					this.note_copy.set({
+					note.set({
 						type: 'link',
 						url: val
 					});
@@ -123,26 +128,26 @@ var NoteEditController = Composer.Controller.extend({
 			else
 			{
 				// only other option is text for now
-				this.note_copy.set({
+				note.set({
 					type: 'text',
 					text: val,
 				});
 			}
-			if(!options.set_type) this.note_copy.set({type: 'quick'});
+			if(!options.set_type) note.set({type: 'quick'});
 		}
 		else
 		{
-			switch(this.note_copy.get('type'))
+			switch(note.get('type'))
 			{
 			case 'link':
-				this.note_copy.set({
+				note.set({
 					url: this.inp_url.get('value'),
 					title: this.inp_title.get('value'),
 					text: this.inp_text.get('value')
 				});
 				break;
 			case 'image':
-				this.note_copy.set({
+				note.set({
 					url: this.inp_url.get('value'),
 					title: this.inp_title.get('value'),
 					text: this.inp_text.get('value')
@@ -150,7 +155,7 @@ var NoteEditController = Composer.Controller.extend({
 				break;
 			case 'text':
 			default:
-				this.note_copy.set({
+				note.set({
 					text: this.inp_text.get('value')
 				});
 				break;
@@ -160,7 +165,7 @@ var NoteEditController = Composer.Controller.extend({
 		var inp_color = this.el.getElement('input[name=color]:checked');
 		var color = null;
 		if(inp_color) color = parseInt(inp_color.get('value'));
-		if(color) this.note_copy.set({color: color});
+		if(color) note.set({color: color});
 	},
 
 	edit_note: function(e)
@@ -204,11 +209,11 @@ var NoteEditController = Composer.Controller.extend({
 
 	select_tab: function(typename)
 	{
-		var types = this.el.getElements('.note-edit > form > div.type');
+		var types = this.el.getElements('.note-edit > form > .do-edit > div.type');
 		types.each(function(el) { el.removeClass('sel'); });
 		var enable = this.type_fields[typename];
 		enable.each(function(type) {
-			var type = this.el.getElement('.note-edit > form > div.type.'+ type);
+			var type = this.el.getElement('.note-edit > form > .do-edit > div.type.'+ type);
 			if(type) type.addClass('sel');
 		}.bind(this));
 
@@ -236,42 +241,38 @@ var NoteEditController = Composer.Controller.extend({
 		var li = next_tag_up('li', e.target);
 		var typename = li.get('html').clean().toLowerCase();
 		this.select_tab(typename);
+		if(this.preview.getStyle('display') == 'block')
+		{
+			this.preview_note();
+		}
 	},
 
-	preview_text: function(e)
+	preview_note: function(e)
 	{
-		if(!e) return false;
-		e.stop();
+		if(e) e.stop();
+		this.preview.setStyle('display', 'block');
+		this.editor.setStyle('display', 'none');
+		var html_el	=	this.preview.getElement('.html');
 
-		var wrap	=	next_tag_up('a', e.target).getParent().getParent();
-		var edit	=	wrap.getElement('div.edit');
-		var preview	=	wrap.getElement('div.preview');
-		var text	=	wrap.getElement('textarea');
-		var html	=	wrap.getElement('div.html');
-
-		var md		=	text.get('value');
-		var parsed	=	markdown.toHTML(md);
-		preview.setStyles({
-			display: 'block',
-			minHeight: text.getCoordinates().height
+		// create a temp note and populate it woth our form data
+		var preview_note	=	new Note({type: this.note_copy.get('type')});
+		preview_note.generate_key();
+		this.save_form_to_copy(null, {
+			note: preview_note,
+			set_type: true
 		});
-		edit.setStyle('display', 'none');
-		html.set('html', parsed);
+		var html	=	Template.render('notes/view/index', {
+			note: toJSON(preview_note)
+		});
+		html_el.set('html', html);
+		html_el.getElement('.actions').dispose();
 	},
 
-	edit_text: function(e)
+	edit_note: function(e)
 	{
-		if(!e) return false;
-		e.stop();
-
-		var wrap	=	next_tag_up('a', e.target).getParent().getParent();
-		var edit	=	wrap.getElement('div.edit');
-		var preview	=	wrap.getElement('div.preview');
-		var text	=	wrap.getElement('textarea');
-		var html	=	wrap.getElement('div.html');
-
-		edit.setStyle('display', '');
-		preview.setStyle('display', '');
+		if(e) e.stop();
+		this.preview.setStyle('display', '');
+		this.editor.setStyle('display', '');
 	},
 
 	open_markdown_tutorial: function(e)
