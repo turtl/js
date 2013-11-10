@@ -20,8 +20,7 @@ var NoteEditController = Composer.Controller.extend({
 		'click ul.type li': 'switch_type',
 		'click .do-edit > input[name=preview]': 'preview_note',
 		'click .preview > input[name=edit]': 'edit_note',
-		'click a.markdown-tutorial': 'open_markdown_tutorial',
-		'click div.markdown-tutorial': 'click_markdown'
+		'click a.markdown-tutorial': 'open_markdown_tutorial'
 	},
 
 	type_fields: {
@@ -297,12 +296,6 @@ var NoteEditController = Composer.Controller.extend({
 			this.markdown_tutorial.setStyle('display', 'block');
 		}
 		if(window.port) window.port.send('resize');
-	},
-
-	click_markdown: function(e)
-	{
-		e.stopPropagation();
-		return false;
 	}
 });
 
