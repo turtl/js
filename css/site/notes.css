@@ -105,6 +105,17 @@ ul.note_list .note.image .color {margin: 0;}*/
 
 .note-edit div.submit {padding: 16px 0 0 0; margin: 16px 0 0 0; border-top: 1px solid #ddd;}
 
+.note-edit div.markdown-tutorial {display: none; position: absolute; bottom: -245px; width: 570px; height: 300px; overflow: auto; margin: 0; padding: 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px;}
+.note-edit div.markdown-tutorial table {width: 100%; margin: 0 0 16px 0;}
+.note-edit div.markdown-tutorial tr {border-bottom: 1px solid #ddd;}
+.note-edit div.markdown-tutorial td {padding: 6px 6px; vertical-align: middle;}
+.note-edit div.markdown-tutorial td h1 {color: #444;}
+.note-edit div.markdown-tutorial td ul,
+.note-edit div.markdown-tutorial td ol {margin-bottom: 0;}
+.note-edit div.markdown-tutorial td blockquote {margin-bottom: 0;}
+.note-edit div.markdown-tutorial td pre {}
+.note-edit div.markdown-tutorial span.markdown-link {float: right;}
+
 /* note listing */
 ul.note_list {list-style: none; -webkit-transform: translateZ(0); margin-left: 16px;}
 ul.note_list > li {position: relative;}

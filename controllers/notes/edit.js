@@ -4,7 +4,8 @@ var NoteEditController = Composer.Controller.extend({
 		'textarea[name=quick]': 'inp_quick',
 		'input[name=title]': 'inp_title',
 		'input[name=url]': 'inp_url',
-		'textarea[name=text]': 'inp_text'
+		'textarea[name=text]': 'inp_text',
+		'div.markdown-tutorial': 'markdown_tutorial'
 	},
 
 	events: {
@@ -14,7 +15,9 @@ var NoteEditController = Composer.Controller.extend({
 		'keyup .note-edit form input': 'save_form_to_copy',
 		'keyup .note-edit form textarea': 'save_form_to_copy',
 		'change .note-edit form select': 'save_form_to_copy',
-		'click ul.type li': 'switch_type'
+		'click ul.type li': 'switch_type',
+		'click a.markdown-tutorial': 'open_markdown_tutorial',
+		'click div.markdown-tutorial': 'click_markdown'
 	},
 
 	type_fields: {
@@ -85,6 +88,10 @@ var NoteEditController = Composer.Controller.extend({
 			board: this.board
 		});
 		this.select_tab(this.note_copy.get('type'));
+		this.markdown_tutorial.monitorOutsideClick(function() {
+			this.markdown_tutorial.setStyle('display', 'block');
+			this.open_markdown_tutorial();
+		}.bind(this));
 	},
 
 	save_form_to_copy: function(e, options)
@@ -231,6 +238,25 @@ var NoteEditController = Composer.Controller.extend({
 		var li = next_tag_up('li', e.target);
 		var typename = li.get('html').clean().toLowerCase();
 		this.select_tab(typename);
+	},
+
+	open_markdown_tutorial: function(e)
+	{
+		if(e) e.stop();
+		if(this.markdown_tutorial.getStyle('display') == 'block')
+		{
+			this.markdown_tutorial.setStyle('display', '');
+		}
+		else
+		{
+			this.markdown_tutorial.setStyle('display', 'block');
+		}
+	},
+
+	click_markdown: function(e)
+	{
+		e.stopPropagation();
+		return false;
 	}
 });
 
