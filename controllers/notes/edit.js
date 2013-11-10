@@ -18,7 +18,7 @@ var NoteEditController = Composer.Controller.extend({
 		'keyup .note-edit form textarea': 'save_form_to_copy',
 		'change .note-edit form select': 'save_form_to_copy',
 		'click ul.type li': 'switch_type',
-		'click .do-edit > a[href=#preview]': 'preview_note',
+		'click .do-edit > input[name=preview]': 'preview_note',
 		'click .preview > input[name=edit]': 'edit_note',
 		'click a.markdown-tutorial': 'open_markdown_tutorial',
 		'click div.markdown-tutorial': 'click_markdown'

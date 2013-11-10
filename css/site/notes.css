@@ -101,10 +101,11 @@ ul.note_list .note.image .color {margin: 0;}*/
 .note-edit > form > .do-edit > div.type.sel {display: block;}
 
 .note-edit .do-edit {position: relative;}
-.note-edit .do-edit > a:first-child {position: absolute; top: 2px; right: 12px;}
 .note-edit .preview {display: none; position: relative; float: left; width: 60%;}
-.note-edit .preview > input[name=edit] {position: absolute; top: 2px; right: 12px;}
 .note-edit .preview .html.note-view {position: static; padding: 0;}
+
+.note-edit .do-edit > input[name=preview],
+.note-edit .preview > input[name=edit] {position: absolute; top: 3px; right: 12px; font-size: 11px; opacity: .7;}
 
 .note-edit div.tags {float: right; width: 36%; padding-left: 2.2%; border-left: 1px solid #ddd;}
 .note-edit div.tags input[type=text] {width: 162px; height: auto; margin-right: 2px;}
