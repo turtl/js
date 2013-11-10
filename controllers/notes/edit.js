@@ -250,7 +250,15 @@ var NoteEditController = Composer.Controller.extend({
 	preview_note: function(e)
 	{
 		if(e) e.stop();
-		this.preview.setStyle('display', 'block');
+
+		// height is used to keep jarring visuals down (by setting it into the
+		// preview window)
+		var height	=	this.editor.getCoordinates().height;
+
+		this.preview.setStyles({
+			display: 'block',
+			minHeight: height
+		});
 		this.editor.setStyle('display', 'none');
 		var html_el	=	this.preview.getElement('.html');
 
@@ -266,6 +274,7 @@ var NoteEditController = Composer.Controller.extend({
 		});
 		html_el.set('html', html);
 		html_el.getElement('.actions').dispose();
+		if(window.port) window.port.send('resize');
 	},
 
 	edit_note: function(e)
@@ -273,6 +282,7 @@ var NoteEditController = Composer.Controller.extend({
 		if(e) e.stop();
 		this.preview.setStyle('display', '');
 		this.editor.setStyle('display', '');
+		if(window.port) window.port.send('resize');
 	},
 
 	open_markdown_tutorial: function(e)
