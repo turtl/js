@@ -105,6 +105,14 @@ ul.note_list .note.image .color {margin: 0;}*/
 
 .note-edit div.submit {padding: 16px 0 0 0; margin: 16px 0 0 0; border-top: 1px solid #ddd;}
 
+.note-edit .preview-wrap {position: relative;}
+.note-edit .preview-wrap .edit > a,
+.note-edit .preview-wrap .preview > a {position: absolute; top: 1px; right: 12px; opacity: .7;}
+.note-edit .preview-wrap .edit > a:hover,
+.note-edit .preview-wrap .preview > a:hover {opacity: 1;}
+.note-edit .preview-wrap .preview {display: none;}
+.note-edit .preview-wrap .preview .html.note-view {position: static; padding: 0;}
+
 .note-edit div.markdown-tutorial {display: none; /*position: absolute; bottom: -245px; width: 570px; height: 300px; overflow: auto;*/ margin: 10px 0 0 0; padding: 10px; background: #fafafa; border: 1px solid #eee; border-radius: 4px;}
 .note-edit div.markdown-tutorial table {width: 100%; margin: 0 0 16px 0;}
 .note-edit div.markdown-tutorial tr {border-bottom: 1px solid #eee;}

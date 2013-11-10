@@ -16,6 +16,8 @@ var NoteEditController = Composer.Controller.extend({
 		'keyup .note-edit form textarea': 'save_form_to_copy',
 		'change .note-edit form select': 'save_form_to_copy',
 		'click ul.type li': 'switch_type',
+		'click .preview-wrap .edit a[href=#preview]': 'preview_text',
+		'click .preview-wrap .preview a[href=#edit]': 'edit_text',
 		'click a.markdown-tutorial': 'open_markdown_tutorial',
 		'click div.markdown-tutorial': 'click_markdown'
 	},
@@ -234,6 +236,42 @@ var NoteEditController = Composer.Controller.extend({
 		var li = next_tag_up('li', e.target);
 		var typename = li.get('html').clean().toLowerCase();
 		this.select_tab(typename);
+	},
+
+	preview_text: function(e)
+	{
+		if(!e) return false;
+		e.stop();
+
+		var wrap	=	next_tag_up('a', e.target).getParent().getParent();
+		var edit	=	wrap.getElement('div.edit');
+		var preview	=	wrap.getElement('div.preview');
+		var text	=	wrap.getElement('textarea');
+		var html	=	wrap.getElement('div.html');
+
+		var md		=	text.get('value');
+		var parsed	=	markdown.toHTML(md);
+		preview.setStyles({
+			display: 'block',
+			minHeight: text.getCoordinates().height
+		});
+		edit.setStyle('display', 'none');
+		html.set('html', parsed);
+	},
+
+	edit_text: function(e)
+	{
+		if(!e) return false;
+		e.stop();
+
+		var wrap	=	next_tag_up('a', e.target).getParent().getParent();
+		var edit	=	wrap.getElement('div.edit');
+		var preview	=	wrap.getElement('div.preview');
+		var text	=	wrap.getElement('textarea');
+		var html	=	wrap.getElement('div.html');
+
+		edit.setStyle('display', '');
+		preview.setStyle('display', '');
 	},
 
 	open_markdown_tutorial: function(e)
