@@ -101,7 +101,7 @@ var database = {
 		}).done(function(server) {
 			if(options.complete) options.complete(server);
 		}).fail(function(e) {
-			var idburl	=	__site_url + '/help/indexeddb';
+			var idburl	=	__site_url + '/docs/clients/app/indexeddb';
 			barfr.barf('Error opening local database.<br><a href="'+idburl+'" target="_blank">Is IndexedDB enabled in your browser?</a>', {message_persist: 'persist'});
 			console.log('database.setup: ', e);
 		});
