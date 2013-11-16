@@ -18,8 +18,8 @@ var NoteEditController = Composer.Controller.extend({
 		'keyup .note-edit form textarea': 'save_form_to_copy',
 		'change .note-edit form select': 'save_form_to_copy',
 		'click ul.type li': 'switch_type',
-		'click .do-edit > input[name=preview]': 'preview_note',
-		'click .preview > input[name=edit]': 'edit_note',
+		'click .do-edit > input[name=preview]': 'open_preview',
+		'click .preview > input[name=edit]': 'open_edit',
 		'click a.markdown-tutorial': 'open_markdown_tutorial'
 	},
 
@@ -175,7 +175,9 @@ var NoteEditController = Composer.Controller.extend({
 
 		var isnew	=	this.note_copy.is_new();
 		if(!this.note_copy.get('board_id'))
+		{
 			this.note_copy.set({board_id: this.board.id()});
+		}
 
 		if(isnew)
 		{
@@ -246,7 +248,7 @@ var NoteEditController = Composer.Controller.extend({
 		}
 	},
 
-	preview_note: function(e)
+	open_preview: function(e)
 	{
 		if(e) e.stop();
 
@@ -276,7 +278,7 @@ var NoteEditController = Composer.Controller.extend({
 		if(window.port) window.port.send('resize');
 	},
 
-	edit_note: function(e)
+	open_edit: function(e)
 	{
 		if(e) e.stop();
 		this.preview.setStyle('display', '');
