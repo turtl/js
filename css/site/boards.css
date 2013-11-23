@@ -16,10 +16,10 @@
 .board-manage > ul > li > h3 {float: left;}
 .board-manage > ul > li > h3 small {font-size: 13px; color: #aaa; margin-left: 10px;}
 .board-manage > ul > li > ul.actions {float: right; list-style: none;}
-.board-manage > ul > li > ul.actions li {opacity: .3;}
+.board-manage > ul > li > ul.actions li a {opacity: .3;}
 .board-manage > ul > li > ul.actions li.highlight {opacity: .6;}
-.board-manage > ul > li:hover > ul.actions li {opacity: 1;}
-.board-manage > ul > li > ul.actions li {display: inline-block; margin: 0 0 0 3px;}
+.board-manage > ul > li > ul.actions li a:hover {opacity: 1;}
+.board-manage > ul > li > ul.actions li {display: inline-block; margin: 0 0 0 0;}
 
 .board-edit input[type=submit] {float: right;}
 .board-edit.bare {width: 200px;}
