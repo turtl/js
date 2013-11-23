@@ -534,7 +534,7 @@ var SyncCollection	=	Composer.Collection.extend({
 				results.each(this.sync_record_to_api.bind(this));
 			}.bind(this))
 			.fail(function(e) {
-				barfr.barf('Problem syncing '+ this.local_table +' records remotely:' + e);
+				barfr.barf('Problem syncing '+ this.local_table +' records remotely:' + e.target.error.name +': '+ e.target.error.message);
 				console.log(this.local_table + '.sync_to_api: error: ', e);
 			});
 

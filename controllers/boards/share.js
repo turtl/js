@@ -1,13 +1,11 @@
 var BoardShareController = Composer.Controller.extend({
 	elements: {
 		'div.share-to': 'share_container',
-		'div.share-to .select': 'selector',
-		'div.share-to input[type=submit]': 'inp_submit'
+		'div.share-to .select': 'selector'
 	},
 
 	events: {
 		'click .button.share': 'open_share',
-		'submit form': 'share',
 		'click a[href=#back]': 'open_manage',
 		'click a[href=#remove]': 'remove_user',
 		'click a[href=#cancel]': 'cancel_invite'
@@ -16,7 +14,7 @@ var BoardShareController = Composer.Controller.extend({
 	board: null,
 	from_persona: null,
 	to_persona: null,
-	persona_selector: null,
+	sharer: null,
 	invite: false,
 
 	init: function()
@@ -49,7 +47,7 @@ var BoardShareController = Composer.Controller.extend({
 		this.board.unbind_relational('personas', ['add', 'remove', 'reset', 'change'], 'board:share:monitor_personas');
 		this.board.unbind('change:privs', 'board:share:monitor_privs');
 		if(modal.is_open) modal.close();
-		if(this.persona_selector) this.persona_selector.release();
+		if(this.sharer) this.sharer.release();
 		turtl.keyboard.attach(); // re-enable shortcuts
 		this.parent.apply(this, arguments);
 	},
@@ -87,42 +85,13 @@ var BoardShareController = Composer.Controller.extend({
 		});
 		this.html(content);
 
-		if(this.persona_selector) this.persona_selector.release();
-		this.persona_selector = new PersonaSelector({
+		if(this.sharer) this.sharer.release();
+		this.sharer = new ShareController({
 			inject: this.selector,
-			persona: this.to_persona,
+			controller: InviteBoardController,
 			model: this.board,
 			tabindex: 1
 		});
-		this.persona_selector.bind('selected', function(persona) {
-			this.to_persona	=	persona;
-			this.inp_submit.disabled	=	false;
-		}.bind(this));
-		this.persona_selector.bind('change-persona', function() {
-			this.to_persona	=	false;
-			this.inp_submit.disabled	=	true;
-			this.invite	=	false;
-		}.bind(this));
-		this.persona_selector.bind('show-personas', function() {
-			this.invite	=	false;
-			if(this.to_persona)
-			{
-				this.inp_submit.disabled	=	false;
-			}
-			else
-			{
-				this.inp_submit.disabled	=	true;
-			}
-		}.bind(this));
-		this.persona_selector.bind('show-invite', function() {
-			this.inp_submit.disabled	=	false;
-			this.invite	=	true;
-			this.persona_selector.persona_list.bind('sent', function() {
-				// close the share container and re-render
-				this.share_container.addClass('open');
-				this.open_share();
-			}.bind(this));
-		}.bind(this));
 	},
 
 	open_share: function(e)
@@ -138,77 +107,6 @@ var BoardShareController = Composer.Controller.extend({
 			var search = this.el.getElement('.search input[type=text]');
 			if(search) search.focus();
 		}
-	},
-
-	share: function(e)
-	{
-		if(e) e.stop();
-
-		if(this.invite)
-		{
-			this.persona_selector.persona_list.trigger('submit');
-			return;
-		}
-
-		if(!this.to_persona || this.to_persona.is_new())
-		{
-			barfr.barf('Please pick a recipient for this message.')
-			if(this.persona_selector && this.persona_selector.inp_email)
-			{
-				this.persona_selector.inp_email.focus();
-			}
-			return false;
-		}
-
-		if(this.board.get('personas').find_by_id(this.to_persona.id()))
-		{
-			barfr.barf('This board is already shared with that person.');
-			return false;
-		}
-
-		var message	=	new Message({
-			from: this.from_persona.id(),
-			to: this.to_persona.id(),
-			notification: true,
-			subject: this.from_persona.get('email') + ' wants to share the board "'+ this.board.get('title') + '" with you.',
-			body: {
-				type: 'share_board',
-				board_id: this.board.id(),
-				board_key: tcrypt.key_to_string(this.board.key)
-			}
-		});
-
-		// make sure we generate keys for this recipient
-		//message.add_recipient(this.from_persona);
-		message.add_recipient(this.to_persona);
-
-		turtl.loading(true);
-		var perms	=	2;
-		this.board.share_with(this.from_persona, this.to_persona, perms, {
-			success: function() {
-				this.from_persona.send_message(message, {
-					success: function() {
-						turtl.loading(false);
-						barfr.barf('Invite sent.');
-						this.share_container.removeClass('open');
-
-						this.persona_selector.persona	=	new Persona();
-						this.persona_selector.render();
-
-						this.to_persona	=	null;
-						this.render();
-					}.bind(this),
-					error: function() {
-						turtl.loading(false);
-						barfr.barf('There was a problem sending your invite: '+ err);
-					}.bind(this)
-				});
-			}.bind(this),
-			error: function(err) {
-				turtl.loading(false);
-				barfr.barf('There was a problem sharing this board: '+ err);
-			}.bind(this)
-		});
 	},
 
 	open_manage: function(e)
