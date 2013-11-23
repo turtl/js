@@ -30,6 +30,10 @@ body.bare footer {display: none;}
 
 a { text-decoration: none; }
 
+/* custom icon font(s) */
+@font-face { font-family: 'Entypo'; font-weight: 400; src: url(../images/font/entypo.ttf); }
+@font-face { font-family: 'EntypoSocial'; font-weight: 400; src: url(../images/font/entypo-social.ttf); }
+
 #wrap > .sidebar-bg {position: fixed; z-index: -1; top: 0; left: 0; width: 20%; padding-right: 9px; height: 100%; background: #e3e3e3; border-right: 1px solid #ddd;}
 body.bare #wrap > .sidebar-bg {display: none;}
 

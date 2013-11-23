@@ -19,6 +19,9 @@ form textarea {width: 60%; margin: 0 0 16px 0; padding: 3px 5px; border-radius: 
 
 img.loading {visibility: hidden;}
 
+icon {display: inline-block; margin: 0; padding: 0; font-family: Entypo; font-size: 2.0em; line-height: 12px; vertical-align: text-top;}
+icon.sc {font-family: EntypoSocial;}
+
 .content {line-height: 1.4em; text-align: left;}
 .content h2 {font-size: 17px;}
 .content h3 {font-size: 14px;}
@@ -59,8 +62,10 @@ div.button {
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#444444', endColorstr='#222222',GradientType=0 ); /* IE6-9 */
 	border-right: 1px solid #111;
 }
-div.button span {display: inline-block; padding: 8px 5px 7px 5px; color: #ddd; text-transform: uppercase; font-weight: bold; font-size: 11px;}
-div.button.add span {padding-left: 25px; background: url(../images/site/icons/add_16x16.png) 4px center no-repeat;}
+div.button icon {float: left; margin: -9px 4px 0 0; font-size: 2.6em; font-weight: 400; color: #fff;}
+div.button span {display: inline-block; padding: 8px 8px 8px 8px; color: #ddd; text-transform: uppercase; font-weight: bold; font-size: 11px;}
+div.button.add icon {color: #72b865;}
+div.button.share icon {color: #f761c7;}
 
 /* modal styles */
 .modalcontent {background: #fff url(../images/site/modal/header.png) 0 0 repeat-x !important;}
