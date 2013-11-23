@@ -41,11 +41,6 @@ var BoardShareController = Composer.Controller.extend({
 		}.bind(this);
 		modal.addEvent('close', close_fn);
 
-		if(this.board.get('personas').models().length == 0 && Object.getLength(this.board.get('privs', {})) == 0)
-		{
-			this.open_share();
-		}
-
 		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
 	},
 

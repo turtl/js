@@ -19,8 +19,8 @@ div.personas-list > ul > li h3 small {font-size: 14px; color: #383;}
 div.personas-list > ul > li > small {display: inline-block; margin: 0 0 0 12px; font-size: 12px; color: #888;}
 div.personas-list > ul > li > small.success {color: #5a3;}
 div.personas-list > ul > li > ul {float: right; list-style: none; opacity: .3;}
-div.personas-list > ul > li:hover > ul {opacity: 1;}
 div.personas-list > ul > li > ul li {display: inline-block; margin: 0 0 0 3px;}
+div.personas-list > ul > li > ul li:hover {opacity: 1;}
 div.personas-list > ul > li .email-settings {display: none; margin: 4px 0 0 0; padding: 12px; background: #f4f4f4;}
 div.personas-list > ul > li .email-settings h4 {margin: 0 0 2px 0; font-size: 14px; font-weight: normal;}
 div.personas-list > ul > li .email-settings table {min-width: 40%;}
