@@ -5,7 +5,8 @@ var NotesController = TrackController.extend({
 	},
 
 	events: {
-		'click div.button.add.note': 'open_add_note',
+		'click div.button.note.add': 'open_add_note',
+		'click div.button.note.share': 'share_board',
 		'click ul.list-type a': 'change_list_type',
 	},
 
@@ -171,6 +172,17 @@ var NotesController = TrackController.extend({
 		new NoteEditController({
 			board: this.board
 		});
+	},
+
+	share_board: function(e)
+	{
+		if(e) e.stop();
+		if(!this.board) return;
+		new BoardShareController({ board: this.board });
+		if(turtl.user.get('personas').models().length == 0)
+		{
+			new PersonaEditController();
+		}
 	},
 
 	get_selected_note_controller: function()
