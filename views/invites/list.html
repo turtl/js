@@ -33,9 +33,12 @@
 							<strong><?=inv.code?></strong>
 						<? } ?>
 						<? if(inv.data.used_secret) { ?>
-							&nbsp;&nbsp;(locked invite, <a href="#unlock">enter secret to unlock</a>)
+							&nbsp;&nbsp;(locked invite, <a href="#unlock">answer the question to unlock</a>)
 							<form class="secret">
-								<input type="text" name="secret" placeholder="Enter this invite's shared secret to unlock and accept">
+								<p class="question">
+									<strong>Question:</strong> <?=inv.data.question?>
+								</p>
+								<input type="text" name="secret" placeholder="Answer the question to unlock the invite">
 								<input type="submit" value="Unlock">
 							</form>
 						<? } ?>

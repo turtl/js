@@ -147,6 +147,7 @@ var InvitesListController	=	Composer.Controller.extend({
 		invite.accept(this.persona, {
 			success: function() {
 				this.collection.remove(invite);
+				console.log('FUCK', this.collection, this.invite);
 			}.bind(this),
 			error: function(err) {
 				barfr.barf('Error accepting invite: '+ err);
