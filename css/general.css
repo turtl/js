@@ -64,7 +64,9 @@ div.button {
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#444444', endColorstr='#222222',GradientType=0 ); /* IE6-9 */
 	border-right: 1px solid #111;
 }
+div.button.muted {opacity: .85;}
 div.button:hover {
+	opacity: 1;
 	background: #222; /* Old browsers */
 	border-right: 1px solid #111;
 }
