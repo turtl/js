@@ -101,7 +101,7 @@ var database = {
 		}).done(function(server) {
 			if(options.complete) options.complete(server);
 		}).fail(function(e) {
-			var idburl	=	__site_url + '/docs/clients/core/indexeddb';
+			var idburl	=	'https://turtl.it/docs/clients/core/indexeddb';
 			barfr.barf('Error opening local database.<br><a href="'+idburl+'" target="_blank">Is IndexedDB enabled in your browser?</a> Note that due to a bug in Firefox 25.* (and under), IndexedDB does not work in Private Browsing mode.', {message_persist: 'persist'});
 			console.log('database.setup: ', e);
 		});
