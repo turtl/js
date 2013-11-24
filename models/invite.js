@@ -9,7 +9,7 @@ var Invite = Composer.Model.extend({
 			secret	=	secret.clean();
 			// remember, this is insecure already, so making the secret actually
 			// easy to enter is more of a priority
-			if(options.normalize) secret = secret.toLowerCase();
+			if(options.normalize) secret = secret.toLowerCase().clean();
 			if(secret == '') secret = false;
 		}
 
@@ -114,7 +114,7 @@ var InviteKey = Protected.extend({
 });
 
 var BoardInvite = Invite.extend({
-	send: function(from_persona, board, secret, options)
+	send: function(from_persona, board, question, secret, options)
 	{
 		secret || (secret = false);
 		options || (options = {});
@@ -132,6 +132,7 @@ var BoardInvite = Invite.extend({
 			to: this.get('email'),
 			key: encrypting_pass,
 			board_key: encrypted_key,
+			question: question,
 			used_secret: used_secret ? 1 : 0
 		}, {
 			success: function(invite) {

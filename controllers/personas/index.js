@@ -9,6 +9,7 @@ var PersonasController = Composer.Controller.extend({
 		'click a[href=#edit]': 'edit_persona',
 		'click a[href=#delete]': 'delete_persona',
 		'click a[href=#email]': 'toggle_email_settings',
+		'click a[href=#generate]': 'make_rsa_key',
 		'change .email-settings input[type=checkbox]': 'update_email_setting'
 	},
 
@@ -144,5 +145,20 @@ var PersonasController = Composer.Controller.extend({
 		persona.save({silent: true});
 		// make sure the next sync ignores this persona
 		turtl.profile.track_sync_changes(persona.id());
+	},
+
+	make_rsa_key: function(e)
+	{
+		if(e) e.stop();
+
+		var pid		=	next_tag_up('li', e.target).className.replace(/^.*persona_([0-9a-f-]+).*?$/, '$1');
+		var persona	=	this.collection.find_by_id(pid);
+		if(!persona) return false;
+
+		persona.generate_rsa_key({
+			error: function(err) {
+				barfr.barf('Problem generating key for persona: '+ err);
+			}
+		});
 	}
 });

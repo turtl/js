@@ -38,6 +38,35 @@ var Persona = Protected.extend({
 		}.bind(this), 'persona:user:cleanup');
 	},
 
+	generate_rsa_key: function(options)
+	{
+		options || (options = {});
+
+		if(this.has_rsa({check_private: true}))
+		{
+			if(options.success) options.success();
+			return;
+		}
+
+		if(window.port) window.port.send('rsa-keygen-start', this.id());
+		this.set({generating_key: true});
+		tcrypt.generate_rsa_keypair({
+			success: function(rsakey) {
+				this.unset('generating_key');
+				this.set_rsa(rsakey);
+				this.save();
+				if(window.port) window.port.send('rsa-keygen-finish', this.id());
+				if(options.success) options.success();
+			}.bind(this),
+			error: function(err) {
+				this.unset('generating_key');
+				if(window.port) window.port.send('rsa-keygen-error', err, this.id());
+				if(options.error) options.error(err);
+			}.bind(this)
+		});
+
+	},
+
 	set_rsa: function(rsakey, options)
 	{
 		options || (options = {});

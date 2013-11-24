@@ -23,6 +23,12 @@ var Message = ProtectedShared.extend({
 		'body'
 	],
 
+	initialize: function()
+	{
+		this.sync	=	api_sync;
+		return this.parent.apply(this, arguments);
+	},
+
 	init: function()
 	{
 		// keep the "created" timestamp updated (not that the ID changes, but w/e)

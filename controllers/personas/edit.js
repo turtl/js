@@ -3,7 +3,8 @@ var PersonaEditController = Composer.Controller.extend({
 		'input[name=email]': 'inp_email',
 		'input[name=name]': 'inp_name',
 		'img.load': 'email_loading',
-		'p.taken': 'email_note'
+		'p.taken': 'email_note',
+		'input[type=submit]': 'inp_submit'
 	},
 
 	events: {
@@ -79,8 +80,8 @@ var PersonaEditController = Composer.Controller.extend({
 		// TODO: if you add to these, remove them from the model below
 		var email = this.inp_email.get('value').clean();
 		var name = this.inp_name.get('value').clean();
+		this.inp_submit.disabled	=	true;
 
-		this.model.unset('email');
 		this.model.unset('name');
 		this.model.unset('email');
 
@@ -92,8 +93,10 @@ var PersonaEditController = Composer.Controller.extend({
 			return false;
 		}
 
-		var set		=	{email: email};
-		var args	=	{};
+		var set		=	{
+			user_id: turtl.user.id(),
+			email: email
+		};
 		if(name != '') set.name = name;
 		if(email != '') set.email = email;
 		var is_new = this.model.is_new();
@@ -104,34 +107,34 @@ var PersonaEditController = Composer.Controller.extend({
 		}
 		this.model.set(set);
 		turtl.loading(true);
-		var do_save = function()
-		{
-			this.model.save({
-				args: args,
-				success: function() {
-					turtl.loading(false);
-					if(is_new)
-					{
-						this.collection.add(this.model);
-						if(window.port) window.port.send('persona-created', this.model.toJSON());
-					}
-					this.model.trigger('saved');
-					if(this.join)
-					{
-						this.do_close();
-					}
-					else
-					{
-						this.open_personas();
-					}
-				}.bind(this),
-				error: function(model, err) {
-					turtl.loading(false);
-					barfr.barf('There was a problem '+ (is_new ? 'adding' : 'updating') +' your persona: '+ err);
-				}.bind(this)
-			});
-		}.bind(this);
-		do_save();
+		this.model.save({
+			success: function() {
+				turtl.loading(false);
+				if(is_new)
+				{
+					this.collection.add(this.model);
+					this.model.generate_rsa_key({
+						error: function(err) {
+							barfr.barf('Problem generating key for persona: '+ err);
+						}
+					});
+				}
+				this.model.trigger('saved');
+				if(this.join)
+				{
+					this.do_close();
+				}
+				else
+				{
+					this.open_personas();
+				}
+			}.bind(this),
+			error: function(model, err) {
+				turtl.loading(false);
+				barfr.barf('There was a problem '+ (is_new ? 'adding' : 'updating') +' your persona: '+ err);
+				this.inp_submit.disabled	=	false;
+			}.bind(this)
+		});
 	},
 
 	get_email: function()

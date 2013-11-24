@@ -4,8 +4,10 @@
 		<small><?=p.name?></small>
 		<? if(p.has_key) { ?>
 			<small class="success">(RSA 3072)</small>
-		<? } else { ?>
+		<? } else if(p.generating_key) { ?>
 			<small>(generating RSA key)</small>
+		<? } else if(show_edit) { ?>
+			<small><a href="#generate">Generate RSA key</a></small>
 		<? } ?>
 		<? if(show_edit) { ?>
 			<ul>
