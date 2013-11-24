@@ -14,7 +14,9 @@ var Note = Composer.RelationalModel.extend({
 		'board_id',
 		'keys',
 		'body',
-		'meta'
+		'meta',
+		'sort',
+		'mod'
 	],
 
 	private_fields: [
@@ -25,7 +27,6 @@ var Note = Composer.RelationalModel.extend({
 		'text',
 		'embed',
 		'color',
-		'sort'
 	],
 
 	init: function()

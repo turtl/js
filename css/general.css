@@ -20,7 +20,7 @@ form textarea {width: 60%; margin: 0 0 16px 0; padding: 3px 5px; border-radius: 
 
 img.loading {visibility: hidden;}
 
-icon {display: inline-block; margin: -10px 0 0 0; padding: 0; font-family: Entypo; font-weight: 400; font-size: 37px; line-height: 12px; vertical-align: text-top;}
+icon {display: inline-block; margin: -10px 0 0 0; padding: 0; font-family: Entypo; font-weight: 400; font-size: 36px; line-height: 12px; vertical-align: text-top;}
 a icon {color: #222;}
 icon.sc {font-family: EntypoSocial;}
 

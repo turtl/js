@@ -7,6 +7,7 @@ var NotesController = TrackController.extend({
 	events: {
 		'click div.button.note.add': 'open_add_note',
 		'click div.button.note.share': 'share_board',
+		'click .sort a': 'change_sort',
 		'click ul.list-type a': 'change_list_type',
 	},
 
@@ -29,6 +30,43 @@ var NotesController = TrackController.extend({
 
 		this.render();
 
+		// direction: 0 is ASC, 1 is DESC
+		var create_sort	=	function(field, direction)
+		{
+			var def		=	99999999999;
+			var type	=	'int';
+			if(field == 'id')
+			{
+				def		=	'zzzzzzzzzzzzzzz';
+				type	=	'str';
+			}
+
+			var do_sort	=	function(a, b)
+			{
+				var sort_a	=	a.get(field, def);
+				var sort_b	=	b.get(field, def);
+				if(type == 'int')
+				{
+					var sort	=	sort_a - sort_b;
+				}
+				else
+				{
+					var sort	=	sort_a.localeCompare(sort_b);
+				}
+
+				if(sort != 0) return sort;
+				return a.id().localeCompare(b.id());
+			};
+			if(direction === 0)
+			{
+				return function(a, b) { return do_sort(a, b); };
+			}
+			else
+			{
+				return function(a, b) { return do_sort(b, a); };
+			}
+		};
+
 		var board_id	=	this.board.id();
 		this.filter_list	=	new NotesFilter(this.board.get('notes'), {
 			sort_event: true,
@@ -40,20 +78,7 @@ var NotesController = TrackController.extend({
 				return false;
 			}.bind(this),
 
-			sortfn: function(a, b)
-			{
-				var sort_a	=	a.get('sort', 99999);
-				var sort_b	=	b.get('sort', 99999);
-				var sort	=	sort_a - sort_b;
-				if(sort != 0)
-				{
-					return sort;
-				}
-				else
-				{
-					return a.id().localeCompare(b.id());
-				}
-			}
+			sortfn: create_sort('id', 0)
 		});
 
 		// we don't want to use forward_events:true on our filter collection
@@ -95,7 +120,7 @@ var NotesController = TrackController.extend({
 
 			//console.log('note filter time: ', performance.now() - start);
 			this.setup_masonry();
-			this.setup_sort();
+			//this.setup_sort();
 		}.bind(this), 'notes:listing:track_filters');
 
 		this.board.bind('change:display_type', this.update_display_type.bind(this), 'notes:listing:display_type');
@@ -104,7 +129,7 @@ var NotesController = TrackController.extend({
 		}.bind(this), 'notes:listing:display_type');
 		this.filter_list.bind(['add', 'remove', 'change'], function() {
 			this.update_display_type();
-			this.setup_sort();
+			//this.setup_sort();
 		}.bind(this), 'notes:listing:update_display');
 
 		this.board.get('notes').bind(['add', 'remove', 'reset', 'clear', 'misc'], function() {
@@ -118,6 +143,12 @@ var NotesController = TrackController.extend({
 			}
 		}.bind(this), 'notes:listing:show_display_buttons');
 
+		this.bind('sort-change', function(field, direction) {
+			this.filter_list.sortfn	=	create_sort(field, direction);
+			this.filter_list.trigger('sort');
+			this.update_display_type();
+		}.bind(this));
+
 		// track all changes to our sub-controllers
 		this.setup_tracking(this.filter_list);
 
@@ -127,8 +158,9 @@ var NotesController = TrackController.extend({
 		turtl.keyboard.bind('m', this.sub_move_note.bind(this), 'notes:shortcut:move_note');
 		turtl.keyboard.bind('delete', this.sub_delete_note.bind(this), 'notes:shortcut:delete_note');
 
+		// TODO: enable both to allow sorting again.
 		this.update_display_type();
-		this.setup_sort();
+		//this.setup_sort();
 	},
 
 	release: function()
@@ -236,6 +268,44 @@ var NotesController = TrackController.extend({
 		});
 	},
 
+	change_sort: function(e)
+	{
+		if(!e) return false;
+		e.stop();
+
+		var a		=	next_tag_up('a', e.target);
+		var sort	=	a.href.replace(/.*#note-sort-/, '');
+		if(a.hasClass('sel'))
+		{
+			if(a.hasClass('asc'))
+			{
+				a.removeClass('asc').addClass('desc');
+			}
+			else
+			{
+				a.removeClass('desc').addClass('asc');
+			}
+		}
+		else
+		{
+			$ES('.note-actions .sort a', this.el).each(function(atag) {
+				atag.removeClass('sel').removeClass('asc').removeClass('desc');
+			});
+
+			// some things (like "mod") should be sorted DESC by default
+			if(['mod'].indexOf(sort) > -1)
+			{
+				a.addClass('sel').addClass('desc');
+			}
+			else
+			{
+				a.addClass('sel').addClass('asc');
+			}
+		}
+		var direction	=	a.className.match(/\basc\b/) ? 0 : 1;
+		this.trigger('sort-change', sort, direction);
+	},
+
 	change_list_type: function(e)
 	{
 		if(!e) return;
@@ -273,7 +343,7 @@ var NotesController = TrackController.extend({
 				});
 			});
 		}
-		this.setup_sort();
+		//this.setup_sort();
 	},
 
 	setup_masonry: function()
