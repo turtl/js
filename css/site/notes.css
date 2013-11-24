@@ -10,7 +10,7 @@
 .notes div.note-actions .sort a.sel.asc icon.asc,
 .notes div.note-actions .sort a.sel.desc icon.desc {display: inline-block;}
 .notes div.note-actions ul {float: left; list-style: none; margin: -1px 0 0 32px;}
-.notes div.note-actions ul.hidden {display: none;}
+.notes div.note-actions .hidden {display: none;}
 .notes div.note-actions ul li {float: left; margin: 0 0 0 0;}
 .notes div.note-actions ul li a {width: 24px; height: 24px; padding: 4px 0 0 4px; border: 1px solid #ccc; border-left: 0;}
 .notes div.note-actions ul li:first-child a {border-left: 1px solid #ccc;}

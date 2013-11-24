@@ -1,6 +1,7 @@
 var NotesController = TrackController.extend({
 	elements: {
 		'ul.note_list': 'note_list',
+		'div.sort': 'sort_actions',
 		'ul.list-type': 'display_actions'
 	},
 
@@ -136,10 +137,12 @@ var NotesController = TrackController.extend({
 			if(this.board.get('notes').models().length == 0)
 			{
 				this.display_actions.addClass('hidden');
+				this.sort_actions.addClass('hidden');
 			}
 			else
 			{
 				this.display_actions.removeClass('hidden');
+				this.sort_actions.removeClass('hidden');
 			}
 		}.bind(this), 'notes:listing:show_display_buttons');
 
