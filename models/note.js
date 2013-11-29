@@ -80,9 +80,9 @@ var Note = Composer.RelationalModel.extend({
 	{
 		options || (options = {});
 
+		var args	=   {};
 		if(options.api_save)
 		{
-			var args	=   {};
 			var meta	=   this.get('meta');
 			if(meta && meta.persona)
 			{
