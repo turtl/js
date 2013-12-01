@@ -115,9 +115,9 @@ var BoardShareController = Composer.Controller.extend({
 		modal.close();
 
 		// open management back up
-		new BoardManageController({
-			collection: turtl.profile.get('boards')
-		});
+		//new BoardManageController({
+		//	collection: turtl.profile.get('boards')
+		//});
 	},
 
 	remove_user: function(e)
