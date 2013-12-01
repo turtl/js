@@ -219,6 +219,7 @@ var Board = Composer.RelationalModel.extend({
 				delete board.notes;
 				board.shared	=	true;
 				this.set(board);
+				this.save({skip_remote_sync: true});
 
 				// add this project to the end of the user's list
 				var sort		=	Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
