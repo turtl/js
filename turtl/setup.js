@@ -38,28 +38,5 @@ if(window.chrome && window.chrome.extension)
 			auth: user.get_auth(),
 			key: tcrypt.key_to_string(user.get_key())
 		};
-
-		var setup_profile			=	turtl.setup_profile;
-		var setup_called			=	false;
-		turtl.setup_profile	=	function()
-		{
-			setup_called	=	arguments;
-		};
-		// grab the background page's profile data (async)
-		bg.turtl.profile.persist({
-			now: true,
-			complete: function(data) {
-				window._profile	=	data;
-
-				// replace the hijacked function
-				turtl.setup_profile	=	setup_profile;
-
-				// if setup_profile was called before the profile finished
-				// serializing, call it again after replacing it with its 
-				// original (and with its original args, stored in
-				// `setup_called`)
-				if(setup_called) turtl.setup_profile.apply(turtl, setup_called);
-			}.bind(window)
-		});
 	}
 }
