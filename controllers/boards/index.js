@@ -80,6 +80,17 @@ var BoardsController = Composer.Controller.extend({
 			var focus	=	function () { this.inp_filter.focus(); }.bind(this);
 			focus();
 			focus.delay(10, this);
+			this.dropdown.setStyle('height', '');
+			(function() { 
+				var dcoord	=	this.dropdown.getCoordinates();
+				var wcoord	=	window.getCoordinates();
+				var wscroll	=	window.getScroll().y;
+				console.log('dcoord: ', dcoord, dcoord.height - ((dcoord.bottom - wcoord.bottom) + 50) );
+				if(dcoord.bottom > wcoord.bottom)
+				{
+					this.dropdown.setStyles({ height: dcoord.height - ((dcoord.bottom - wcoord.bottom) + 50) });
+				}
+			}).delay(0, this);
 		}
 	},
 
@@ -87,6 +98,7 @@ var BoardsController = Composer.Controller.extend({
 	{
 		turtl.keyboard.attach();
 		this.dropdown.removeClass('open');
+		this.dropdown.setStyle('height', '');
 		this.board_list.removeClass('open');
 	},
 
