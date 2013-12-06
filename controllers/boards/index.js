@@ -2,6 +2,8 @@ var BoardsController = Composer.Controller.extend({
 	elements: {
 		'.board-list': 'board_list',
 		'.dropdown': 'dropdown',
+		'.dropdown .header': 'header',
+		'.dropdown .add-board': 'add_container',
 		'input[name=filter]': 'inp_filter'
 	},
 
@@ -85,10 +87,11 @@ var BoardsController = Composer.Controller.extend({
 				var dcoord	=	this.dropdown.getCoordinates();
 				var wcoord	=	window.getCoordinates();
 				var wscroll	=	window.getScroll().y;
-				console.log('dcoord: ', dcoord, dcoord.height - ((dcoord.bottom - wcoord.bottom) + 50) );
+				var height	=	dcoord.height - ((dcoord.bottom - (wcoord.bottom + wscroll)) + 50);
+				console.log('dcoord: ', dcoord, height);
 				if(dcoord.bottom > wcoord.bottom)
 				{
-					this.dropdown.setStyles({ height: dcoord.height - ((dcoord.bottom - wcoord.bottom) + 50) });
+					this.dropdown.setStyles({ height: height });
 				}
 			}).delay(0, this);
 		}
@@ -109,8 +112,19 @@ var BoardsController = Composer.Controller.extend({
 
 		var parent	=	this.el.getParent();
 		var edit	=	new BoardEditController({
-			profile: this.profile
+			profile: this.profile,
+			inject: this.add_container,
+			bare: true
 		});
+
+		this.header.setStyle('display', 'none');
+		this.add_container.setStyle('display', 'block');
+
+		edit.bind('release', function() {
+			edit.unbind('release', 'board:edit:release');
+			this.header.setStyle('display', '');
+			this.add_container.setStyle('display', '');
+		}.bind(this), 'board:edit:release');
 	},
 
 	change_board: function(e)

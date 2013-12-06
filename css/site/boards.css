@@ -15,10 +15,13 @@
 .board-list a.main:hover icon {color: #333;}
 .board-list .dropdown {display: none; position: absolute; z-index: 5; overflow: auto; width: 270px; margin: 6px 0 0 0; padding: 10px; background: #f5f5f5; border: 1px solid #aaa; box-shadow: 0 0 8px 0 #000;}
 .board-list .dropdown.open {display: block;}
-.board-list .dropdown h3 {font-size: 16px; margin: 0 0 10px 0; padding: 0 0 5px 0; text-align: center; color: #777; border-bottom: 1px solid #eee;}
-.board-list .dropdown .actions {margin: 0 0 10px 0; padding: 0 0 5px 0; color: #666;}
-.board-list .dropdown .actions .button.add {float: right;}
-.board-list .dropdown .actions input[type=text] {width: 69%; font-size: 16px;}
+.board-list .dropdown .header,
+.board-list .dropdown .add-board {margin: 0 0 16px 0; padding: 5px 0 12px 0; border-bottom: 1px solid #ddd;}
+.board-list .dropdown .add-board {display: none; height: 16px;}
+.board-list .dropdown .button.add {float: right; margin: -8px 0 0 0;}
+.board-list .dropdown h3 {font-size: 16px; margin: 0; padding: 0; font-weight: bold; text-align: left; color: #999;}
+.board-list .dropdown .actions {margin: 0 0 6px 0; padding: 0 0 5px 0; color: #666;}
+.board-list .dropdown .actions input[type=text] {width: 98%; font-size: 16px;}
 .board-list .dropdown ul {list-style: none;}
 .board-list .dropdown ul li ul {float: right;}
 .board-list .dropdown ul li ul li {display: inline-block;}
@@ -44,9 +47,10 @@
 .board-manage > ul > li > ul.actions li {display: inline-block; margin: 0 0 0 0;}
 
 .board-edit input[type=submit] {float: right;}
-.board-edit.bare {width: 200px;}
-.board-edit.bare input[type=text] {float: left; width: 70%; height: 20px; margin-right: 6px; padding: 1px 3px 0 3px;}
-.board-edit.bare a img {display: inline-block; margin-top: 4px;}
+.board-edit.bare {position: relative;}
+.board-edit.bare input[type=text] {float: left; width: 55%; margin: -5px 6px 0 0; padding: 1px 3px 0 3px; font-size: 16px;}
+.board-edit.bare .actions {float: right; margin: -5px 6px 0 0; padding: 0;}
+.board-edit.bare .actions input[type=submit] {float: none; margin: 0 2px 0 4px;}
 
 .board-share .button.share {float: right; margin: -7px 0 8px 0;}
 .board-share .share-to {margin-bottom: 16px; padding: 10px; background: #f0f0f0;}

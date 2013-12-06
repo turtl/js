@@ -17,8 +17,12 @@ var action	=	(board.id ? 'Edit' : 'Add');
 	<form>
 		<? if(bare) { ?>
 			<input type="text" name="name" value="<?=board.title?>" placeholder="Board name">
-			<a href="#submit"><img src="<?=img('/images/site/icons/check_16x16.png')?>" width="16" height="16" alt="submit"></a>
-			<a href="#cancel"><img src="<?=img('/images/site/icons/x_16x16.png')?>" width="16" height="16" alt="cancel"></a>
+			<div class="actions">
+				<!--<a href="#submit"><icon>&#10003;</icon></a>-->
+				<!--<a href="#cancel"><icon>&#10060;</icon></a>-->
+				<input type="submit" class="add" value="<?=action?>">
+				<a href="#cancel">Cancel</a>
+			</div>
 		<? } else { ?>
 			<input type="submit" value="<?=action?> board">
 			<input type="text" name="name" value="<?=board.title?>" placeholder="Board name">

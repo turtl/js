@@ -5,11 +5,14 @@
 			<?=current.title?>
 		</a>
 		<div class="dropdown <? if(is_open) { ?>open<? } ?>">
-			<h3>Your boards</h3>
-			<div class="actions">
+			<div class="header">
 				<div class="button add" title="Add a new board">
-					<span><icon>&oplus;</icon> New</span>
+					<span><icon>&oplus;</icon> New board</span>
 				</div>
+				<h3>Your boards</h3>
+			</div>
+			<div class="add-board"></div>
+			<div class="actions">
 				<input type="text" name="filter" value="<?=filter_text?>" placeholder="Search your boards">
 			</div>
 			<ul>
