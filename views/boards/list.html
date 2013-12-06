@@ -18,7 +18,7 @@
 			<ul>
 				<? boards.each(function(b) { ?>
 					<?
-					var active_share	=	Object.keys(b.privs).length > 0;
+					var active_share	=	b.privs && Object.keys(b.privs).length > 0;
 					?>
 					<li>
 						<ul class="<?=b.id?>">
