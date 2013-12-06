@@ -15,7 +15,7 @@
 .board-list a.main:hover icon {color: #333;}
 .board-list .dropdown {display: none; position: absolute; z-index: 5; overflow: auto; width: 290px; margin: 6px 0 0 0; padding: 10px; background: #f5f5f5; border: 1px solid #aaa; box-shadow: 0 0 8px 0 #000;}
 .board-list .dropdown.open {display: block;}
-.board-list .dropdown .header {margin: 0 0 16px 0; padding: 5px 0 12px 0; border-bottom: 1px solid #ddd;}
+.board-list .dropdown .header {margin: 0 0 16px 0; padding: 5px 0 12px 0; border-bottom: 1px solid #e2e2e2;}
 .board-list .dropdown .add-board {padding: 5px 0 14px 0;}
 .board-list .dropdown .button.add {float: right; margin: -8px 0 0 0;}
 .board-list .dropdown h3 {font-size: 16px; margin: 0; padding: 0; font-weight: bold; text-align: left; color: #999;}
@@ -47,7 +47,7 @@
 .board-manage > ul > li > ul.actions li {display: inline-block; margin: 0 0 0 0;}
 
 .board-edit input[type=submit] {float: right;}
-.board-edit.bare {position: relative;}
+.board-edit.bare {padding: 0 0 14px 0; border-bottom: 1px solid #e2e2e2;}
 .board-edit.bare input[type=text] {float: left; width: 55%; margin: -5px 6px 0 0; padding: 1px 3px 0 3px; font-size: 16px;}
 .board-edit.bare .actions {float: right; margin: -5px 6px 0 0; padding: 0;}
 .board-edit.bare .actions input[type=submit] {float: none; margin: 0 2px 0 4px;}

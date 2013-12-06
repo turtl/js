@@ -126,7 +126,11 @@ var BoardsController = Composer.Controller.extend({
 		if(e) e.stop();
 
 		var parent	=	this.el.getParent();
-		if(this.add_controller) this.add_controller.release();
+		if(this.add_controller)
+		{
+			this.add_controller.inp_title.focus();
+			return false;
+		}
 		this.add_controller	=	new BoardEditController({
 			profile: this.profile,
 			inject: this.add_container,
@@ -139,6 +143,7 @@ var BoardsController = Composer.Controller.extend({
 
 		this.add_controller.bind('release', function() {
 			this.add_controller.unbind('release', 'board:edit:release');
+			this.add_controller	=	null;
 			this.add_container.slide('out');
 		}.bind(this), 'board:edit:release');
 	},
