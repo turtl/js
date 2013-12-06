@@ -23,6 +23,8 @@ var BoardsController = Composer.Controller.extend({
 	collection: null,
 	filter_text: null,
 
+	add_controller: null,
+
 	init: function()
 	{
 		this.render();
@@ -37,6 +39,7 @@ var BoardsController = Composer.Controller.extend({
 		this.unbind('change-board');
 		this.profile.unbind_relational('boards', ['add', 'remove', 'reset', 'change:title'], 'boards:change');
 		this.profile.unbind('change:current_board', 'boards:track_current');
+		if(this.add_controller) this.add_controller.release();
 		turtl.keyboard.unbind('b', 'boards:shortcut:add_board');
 		this.parent.apply(this, arguments);
 	},
@@ -44,7 +47,16 @@ var BoardsController = Composer.Controller.extend({
 	render: function()
 	{
 		var current	=	this.profile.get_current_board();
-		var boards	=	toJSON(this.profile.get('boards'));
+		// this is much faster than doing toJSON (since the board has notes and
+		// shit we would have to iterate over)
+		var boards	=	this.profile.get('boards').map(function(board) {
+			return {
+				id: board.id(),
+				title: board.get('title'),
+				privs: board.get('privs'),
+				shared: board.get('shared')
+			};
+		});
 		var is_open	=	this.dropdown && this.dropdown.hasClass('open');
 		var filter	=	this.filter_text;
 		if(this.filter_text)
@@ -65,6 +77,9 @@ var BoardsController = Composer.Controller.extend({
 		if(this.dropdown) this.dropdown.monitorOutsideClick(function() {
 			this.close_boards();
 		}.bind(this));
+
+		this.add_container.set('slide', {duration: 'short'});
+		this.add_container.get('slide').hide();
 	},
 
 	open_boards: function(e)
@@ -88,7 +103,6 @@ var BoardsController = Composer.Controller.extend({
 				var wcoord	=	window.getCoordinates();
 				var wscroll	=	window.getScroll().y;
 				var height	=	dcoord.height - ((dcoord.bottom - (wcoord.bottom + wscroll)) + 50);
-				console.log('dcoord: ', dcoord, height);
 				if(dcoord.bottom > wcoord.bottom)
 				{
 					this.dropdown.setStyles({ height: height });
@@ -100,6 +114,7 @@ var BoardsController = Composer.Controller.extend({
 	close_boards: function(e)
 	{
 		turtl.keyboard.attach();
+		if(this.add_controller) this.add_controller.release();
 		this.dropdown.removeClass('open');
 		this.dropdown.setStyle('height', '');
 		this.board_list.removeClass('open');
@@ -111,19 +126,20 @@ var BoardsController = Composer.Controller.extend({
 		if(e) e.stop();
 
 		var parent	=	this.el.getParent();
-		var edit	=	new BoardEditController({
+		if(this.add_controller) this.add_controller.release();
+		this.add_controller	=	new BoardEditController({
 			profile: this.profile,
 			inject: this.add_container,
 			bare: true
 		});
 
-		this.header.setStyle('display', 'none');
-		this.add_container.setStyle('display', 'block');
+		(function() {
+			this.add_container.slide('in');
+		}).delay(10, this);
 
-		edit.bind('release', function() {
-			edit.unbind('release', 'board:edit:release');
-			this.header.setStyle('display', '');
-			this.add_container.setStyle('display', '');
+		this.add_controller.bind('release', function() {
+			this.add_controller.unbind('release', 'board:edit:release');
+			this.add_container.slide('out');
 		}.bind(this), 'board:edit:release');
 	},
 

@@ -18,7 +18,7 @@ Composer.sync	=	function(method, model, options)
 	if(table == 'users') table = 'user';	// kind of a hack. oh well.
 
 	// some debugging, can make tracking down sync issues easier
-	if(['boards', 'notes'].contains(table))
+	if(['keychain', 'boards', 'notes'].contains(table))
 	{
 		var action = method == 'delete' ? 'delete' : (method == 'create' ? 'add' : 'edit');
 		console.log('save: '+ table +': mem -> db ('+ action +')');

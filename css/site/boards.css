@@ -13,11 +13,10 @@
 .board-list a.main {display: block; padding: 8px 8px; color: #555; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 .board-list a.main icon {float: right; margin-top: -8px; color: #777;}
 .board-list a.main:hover icon {color: #333;}
-.board-list .dropdown {display: none; position: absolute; z-index: 5; overflow: auto; width: 270px; margin: 6px 0 0 0; padding: 10px; background: #f5f5f5; border: 1px solid #aaa; box-shadow: 0 0 8px 0 #000;}
+.board-list .dropdown {display: none; position: absolute; z-index: 5; overflow: auto; width: 290px; margin: 6px 0 0 0; padding: 10px; background: #f5f5f5; border: 1px solid #aaa; box-shadow: 0 0 8px 0 #000;}
 .board-list .dropdown.open {display: block;}
-.board-list .dropdown .header,
-.board-list .dropdown .add-board {margin: 0 0 16px 0; padding: 5px 0 12px 0; border-bottom: 1px solid #ddd;}
-.board-list .dropdown .add-board {display: none; height: 16px;}
+.board-list .dropdown .header {margin: 0 0 16px 0; padding: 5px 0 12px 0; border-bottom: 1px solid #ddd;}
+.board-list .dropdown .add-board {padding: 5px 0 14px 0;}
 .board-list .dropdown .button.add {float: right; margin: -8px 0 0 0;}
 .board-list .dropdown h3 {font-size: 16px; margin: 0; padding: 0; font-weight: bold; text-align: left; color: #999;}
 .board-list .dropdown .actions {margin: 0 0 6px 0; padding: 0 0 5px 0; color: #666;}
@@ -25,9 +24,10 @@
 .board-list .dropdown ul {list-style: none;}
 .board-list .dropdown ul li ul {float: right;}
 .board-list .dropdown ul li ul li {display: inline-block;}
-.board-list .dropdown ul li ul li icon {opacity: .1; margin-top: 0;}
+.board-list .dropdown ul li ul li icon {opacity: .16; margin-top: 0;}
+.board-list .dropdown ul li ul li.active icon {opacity: .4; margin-top: 0; color: #060;}
 .board-list .dropdown ul li ul li:hover icon {opacity: 1;}
-.board-list .dropdown ul li a.board {display: block; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #eee;}
+.board-list .dropdown ul li a.board {display: block; padding: 8px 0; font-weight: bold; font-size: 14px; border-bottom: 1px solid #eee;}
 .board-list .dropdown ul li a.board:hover {text-decoration: underline;}
 .board-list .dropdown ul li a.board.current {font-weight: bold; color: #555;}
 .board-list .add.first {font-weight: bold;}
