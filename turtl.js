@@ -219,6 +219,12 @@ var turtl	=	{
 
 	wipe_local_db: function()
 	{
+		if(!turtl.user.logged_in)
+		{
+			console.log('wipe_local_db only works when logged in. if you know the users ID, you can wipe via:');
+			console.log('window.indexedDB.deleteDatabase("turtl.<userid>")');
+			return false;
+		}
 		turtl.do_sync	=	false;
 		if(turtl.db) turtl.db.close();
 		window.indexedDB.deleteDatabase('turtl.'+turtl.user.id());
