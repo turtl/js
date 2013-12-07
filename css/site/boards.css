@@ -32,6 +32,7 @@
 .board-list .dropdown ul li a.board.current {font-weight: bold; color: #555;}
 .board-list .add.first {font-weight: bold;}
 
+/*
 .board-manage .button {float: right; margin-top: -7px;}
 .board-manage h2 {margin: 0 0 8px 0; font-size: 16px; font-weight: normal; text-transform: uppercase; color: #999;}
 .board-manage > ul {list-style: none; padding-top: 6px;}
@@ -45,8 +46,10 @@
 .board-manage > ul > li > ul.actions li.highlight {opacity: .6;}
 .board-manage > ul > li > ul.actions li a:hover {opacity: 1;}
 .board-manage > ul > li > ul.actions li {display: inline-block; margin: 0 0 0 0;}
+*/
 
 .board-edit input[type=submit] {float: right;}
+.board-edit .settings {padding: 10px 0 0 0; border-top: 1px solid #ddd;}
 .board-edit.bare {padding: 0 0 14px 0; border-bottom: 1px solid #e2e2e2;}
 .board-edit.bare input[type=text] {float: left; width: 55%; margin: -5px 6px 0 0; padding: 1px 3px 0 3px; font-size: 16px;}
 .board-edit.bare .actions {float: right; margin: -5px 6px 0 0; padding: 0;}

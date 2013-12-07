@@ -4,11 +4,11 @@ var BoardEditController = Composer.Controller.extend({
 	},
 
 	events: {
-		'click a[href=#manage]': 'open_manager',
 		'submit form': 'edit_board',
 		'keyup input[type=text]': 'test_key',
 		'click a[href=#submit]': 'edit_board',
-		'click a[href=#cancel]': 'cancel'
+		'click a[href=#cancel]': 'cancel',
+		'click .settings a[href=#delete]': 'delete_board'
 	},
 
 	board: null,
@@ -17,11 +17,9 @@ var BoardEditController = Composer.Controller.extend({
 	// if true, brings up an inline-editing interface
 	bare: false,
 	edit_in_modal: true,
+	show_settings: false,
 
 	title: false,
-
-	// if true, opens management modal after successful update
-	return_to_manage: false,
 
 	init: function()
 	{
@@ -46,6 +44,8 @@ var BoardEditController = Composer.Controller.extend({
 
 	release: function()
 	{
+		console.log('hai');
+		if(modal.is_open && this.edit_in_modal) modal.close();
 		turtl.keyboard.attach(); // re-enable shortcuts
 		this.parent.apply(this, arguments);
 	},
@@ -53,10 +53,10 @@ var BoardEditController = Composer.Controller.extend({
 	render: function()
 	{
 		var content = Template.render('boards/edit', {
-			return_to_manage: this.return_to_manage,
 			board: toJSON(this.board),
 			bare: this.bare,
-			title: this.title
+			title: this.title,
+			show_settings: this.show_settings
 		});
 		this.html(content);
 		(function() { this.inp_title.focus(); }).delay(10, this);
@@ -80,12 +80,7 @@ var BoardEditController = Composer.Controller.extend({
 
 				var boards = this.profile.get('boards');
 				if(boards) boards.add(this.board);
-				if(!this.return_to_manage)
-				{
-					// only set the new board as current if we are NOT going
-					// back to the manage modal.
-					this.profile.set_current_board(this.board);
-				}
+				this.profile.set_current_board(this.board);
 			}.bind(this);
 		}
 		else
@@ -97,17 +92,7 @@ var BoardEditController = Composer.Controller.extend({
 			success: function() {
 				turtl.loading(false);
 				if(success) success();
-				if(this.edit_in_modal && modal.is_open) modal.close();
-				else this.release();
-
-				if(this.return_to_manage)
-				{
-					this.open_manager();
-				}
-				else
-				{
-					this.release();
-				}
+				this.release();
 			}.bind(this),
 			error: function(err) {
 				turtl.loading(false);
@@ -116,15 +101,26 @@ var BoardEditController = Composer.Controller.extend({
 		});
 	},
 
-	open_manager: function(e)
+	delete_board: function(e)
 	{
-		if(e) e.stop();
-		if(this.edit_in_modal) modal.close();
-		else this.release();
+		if(!e) return;
+		e.stop();
+		if(!this.board) return;
+		if(!confirm('Really delete this board, and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
 
-		// open management back up
-		new BoardManageController({
-			collection: this.profile.get('boards')
+		this.close_boards();
+		turtl.loading(true);
+		this.board.destroy({
+			success: function() {
+				turtl.loading(false);
+
+				var next = this.collection.first() || false;
+				turtl.profile.set_current_board(next);
+				this.release();
+			}.bind(this),
+			error: function() {
+				turtl.loading(false);
+			}
 		});
 	},
 

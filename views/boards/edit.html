@@ -8,9 +8,6 @@ var action	=	(board.id ? 'Edit' : 'Add');
 		<? } else { ?>
 			<?=action?> board
 		<? } ?>
-		<? if(return_to_manage) { ?>
-			<small><a href="#manage">&laquo; Back to board manager</a></small>
-		<? } ?>
 	</h1>
 <? } ?>
 <div class="board-edit clear <? if(bare) { ?>bare<? } ?>">
@@ -26,6 +23,11 @@ var action	=	(board.id ? 'Edit' : 'Add');
 		<? } else { ?>
 			<input type="submit" value="<?=action?> board">
 			<input type="text" name="name" value="<?=board.title?>" placeholder="Board name">
+			<? if(show_settings) { ?>
+				<div class="settings">
+					<a href="#delete">Delete this board</a>
+				</div>
+			<? } ?>
 		<? } ?>
 	</form>
 </div>

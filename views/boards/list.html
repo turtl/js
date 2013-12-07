@@ -1,47 +1,23 @@
-<? if(boards.length > 0) { ?>
-	<div class="board-list <? if(is_open) { ?>open<? } ?>">
-		<a class="main" href="#open">
-			<icon>&#59228;</icon>
-			<?=current.title?>
-		</a>
-		<div class="dropdown <? if(is_open) { ?>open<? } ?>">
-			<div class="header">
-				<div class="button add" title="Add a new board">
-					<span><icon>&oplus;</icon> New board</span>
-				</div>
-				<h3>Your boards</h3>
-			</div>
-			<div class="add-board"></div>
-			<div class="actions">
-				<input type="text" name="filter" value="<?=filter_text?>" placeholder="Search your boards">
-			</div>
-			<ul>
-				<? boards.each(function(b) { ?>
-					<?
-					var active_share	=	b.privs && Object.keys(b.privs).length > 0;
-					?>
-					<li>
-						<ul class="<?=b.id?>">
-							<? if(b.shared) { ?>
-								<li><a href="#leave" title="Leave this board"><icon>&#59201;</icon></a></li>
-							<? } else { ?>
-								<li <? if(active_share) { ?>class="active"<? } ?>><a href="#share" title="Share this board"><icon>&#59196;</icon></a></li>
-								<li><a href="#edit" title="Board settings"><icon>&#9881;</icon></a></li>
-								<li><a href="#delete" title="Delete this board"><icon>&#59177;</icon></a></li>
-							<? } ?>
-						</ul>
-						<a class="board <? if(current.id == b.id) { ?>current<? } ?>" href="#board-<?=b.id?>">
-							<?=b.title?>
-						</a>
-					</li>
-				<? }); ?>
-			</ul>
-		</div>
-	</div>
-<? } else { ?>
-	<div class="button add">
-		<span><icon>&oplus;</icon> Add your first board</span>
-	</div>
-<? } ?>
-<?/* little trick i learned in nam */?>
-<span style="clear:left;display:block;"></span>
+<ul>
+	<? boards.each(function(b) { ?>
+		<?
+		var active_share	=	b.privs && Object.keys(b.privs).length > 0;
+		?>
+		<li>
+			<? if(show_actions) { ?>
+				<ul class="<?=b.id?>">
+					<? if(b.shared) { ?>
+						<li><a href="#leave" title="Leave this board"><icon>&#59201;</icon></a></li>
+					<? } else { ?>
+						<li <? if(active_share) { ?>class="active"<? } ?>><a href="#share" title="Share this board"><icon>&#59196;</icon></a></li>
+						<li><a href="#edit" title="Board settings"><icon>&#9881;</icon></a></li>
+						<!--<li><a href="#delete" title="Delete this board"><icon>&#59177;</icon></a></li>-->
+					<? } ?>
+				</ul>
+			<? } ?>
+			<a class="board <? if(current.id == b.id) { ?>current<? } ?>" href="#board-<?=b.id?>">
+				<?=b.title?>
+			</a>
+		</li>
+	<? }); ?>
+</ul>
