@@ -44,7 +44,6 @@ var BoardEditController = Composer.Controller.extend({
 
 	release: function()
 	{
-		console.log('hai');
 		if(modal.is_open && this.edit_in_modal) modal.close();
 		turtl.keyboard.attach(); // re-enable shortcuts
 		this.parent.apply(this, arguments);
@@ -108,14 +107,10 @@ var BoardEditController = Composer.Controller.extend({
 		if(!this.board) return;
 		if(!confirm('Really delete this board, and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
 
-		this.close_boards();
 		turtl.loading(true);
 		this.board.destroy({
 			success: function() {
 				turtl.loading(false);
-
-				var next = this.collection.first() || false;
-				turtl.profile.set_current_board(next);
 				this.release();
 			}.bind(this),
 			error: function() {
