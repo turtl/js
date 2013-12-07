@@ -50,7 +50,7 @@ var BoardListController = Composer.Controller.extend({
 		if(this.filter_text)
 		{
 			this.filtered_boards	=	this.filtered_boards.filter(function(board) {
-				return board.title.contains(this.filter_text);
+				return board.title.toLowerCase().contains(this.filter_text.toLowerCase());
 			}.bind(this));
 		}
 		var current	=	this.profile.get_current_board();
