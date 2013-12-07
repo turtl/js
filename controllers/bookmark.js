@@ -100,7 +100,8 @@ var BookmarkController = Composer.Controller.extend({
 			this.board_controller = new BoardsController({
 				inject: this.board_container,
 				profile: this.profile,
-				add_bare: true
+				add_bare: true,
+				show_actions: false
 			});
 
 			this.edit_controller.bind('release', function() {

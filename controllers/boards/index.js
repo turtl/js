@@ -11,6 +11,7 @@ var BoardsController = Composer.Controller.extend({
 	events: {
 		'click a.main': 'open_boards',
 		'click .button.add': 'add_board',
+		'keydown input[name=filter]': 'filter_boards_pre',
 		'keyup input[name=filter]': 'filter_boards',
 		'click .dropdown a[href=#add-persona]': 'open_personas',
 	},
@@ -27,14 +28,16 @@ var BoardsController = Composer.Controller.extend({
 	init: function()
 	{
 		this.render();
-		turtl.keyboard.bind('b', this.open_boards.bind(this), 'boards:shortcut:add_board');
+		turtl.profile.bind('change:current_board', this.render.bind(this), 'boards:change:render');
+		turtl.keyboard.bind('b', this.open_boards.bind(this), 'boards:shortcut:open_boards');
 	},
 
 	release: function()
 	{
 		this.unbind('change-board');
+		turtl.profile.unbind('change:current_board', 'boards:change:render');
 		if(this.add_controller) this.add_controller.release();
-		turtl.keyboard.unbind('b', 'boards:shortcut:add_board');
+		turtl.keyboard.unbind('b', 'boards:shortcut:open_boards');
 		this.parent.apply(this, arguments);
 	},
 
@@ -139,18 +142,28 @@ var BoardsController = Composer.Controller.extend({
 		}.bind(this), 'board:edit:release');
 	},
 
+	/**
+	 * exists to fix some really annoying firefox glitches having to do with
+	 * an input field not being cleared completely when pressing esc
+	 */
+	filter_boards_pre: function(e)
+	{
+		if(e && e.key == 'esc') e.stop();
+	},
+
 	filter_boards: function(e)
 	{
 		if(!this.list_controller) return false;
 
 		if(e.key == 'esc')
 		{
+			if(this.inp_filter.value == '') this.close_boards();
 			this.list_controller.filter(null);
 			this.inp_filter.value	=	'';
 			return false;
 		}
 
-		if(e.key == 'enter')
+		if(e.key == 'enter' && this.inp_filter.value != '')
 		{
 			this.list_controller.select_first_board();
 			this.list_controller.filter(null);
@@ -158,8 +171,7 @@ var BoardsController = Composer.Controller.extend({
 			return;
 		}
 
-		var txt	=	this.inp_filter.value;
-		this.list_controller.filter(txt);
+		this.list_controller.filter(this.inp_filter.value);
 	},
 
 	open_personas: function(e)
