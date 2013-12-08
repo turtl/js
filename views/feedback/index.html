@@ -5,10 +5,12 @@
 		Let us know and we'll get back to you!
 	</p>
 	<form class="standard-form">
-		<input type="text" name="email" value="<?=email?>" placeholder="Your email (optional for comments/suggestions)">
+		<? if(email && email.match(/.*@.*/)) { ?>
+			<input type="hidden" name="email" value="<?=email?>">
+		<? } else { ?>
+			<input type="text" name="email" value="" placeholder="Your email (optional for comments/suggestions)">
+		<? } ?>
 		<textarea rows="10" cols="30" name="body" placeholder="Your comments, questions, suggestions"></textarea>
-		<div class="button-row">
-			<input type="submit" value="Send">
-		</div>
+		<input type="submit" value="Send">
 	</form>
 </div>
