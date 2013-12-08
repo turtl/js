@@ -103,6 +103,8 @@ header div.actions ul.menu a img {float: right; margin: 7px 7px 0 0; opacity: .7
 header div.actions ul.menu a:hover img {opacity: .9;}
 header div.actions ul.menu a span {padding: 9px 8px;}
 
+#feedback {z-index: 3; position: fixed; right: -7px; top: 50%; margin-top: -63px;}
+#feedback img {border-radius: 6px;}
 #main {min-height: 500px; padding: 0 10px;}
 
 footer {display: block; margin: 32px 0 0 0; padding: 16px; font-size: 10px; color: #777; text-align: right;}
