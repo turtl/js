@@ -1,0 +1,16 @@
+<h1>Give us feedback</h1>
+<div class="feedback content">
+	<p>
+		Have a problem? A question? Want a new feature?
+		Let us know and we'll get back to you!
+	</p>
+	<form class="standard-form">
+		<? if(email && email.match(/.*@.*/)) { ?>
+			<input type="hidden" name="email" value="<?=email?>">
+		<? } else { ?>
+			<input type="text" name="email" value="" placeholder="Your email (optional for comments/suggestions)">
+		<? } ?>
+		<textarea rows="10" cols="30" name="body" placeholder="Your comments, questions, suggestions"></textarea>
+		<input type="submit" value="Send">
+	</form>
+</div>
