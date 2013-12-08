@@ -17,7 +17,8 @@ Composer.sync	=	function(method, model, options)
 	var table	=	options.table || model.get_url().replace(/^\/(.*?)(\/|$).*/, '$1');
 	if(table == 'users') table = 'user';	// kind of a hack. oh well.
 
-	if(['boards','keychain'].contains(table))
+	// some debugging, can make tracking down sync issues easier
+	if(['boards', 'notes'].contains(table))
 	{
 		var action = method == 'delete' ? 'delete' : (method == 'create' ? 'add' : 'edit');
 		console.log('save: '+ table +': mem -> db ('+ action +')');

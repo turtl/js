@@ -118,6 +118,9 @@ var turtl	=	{
 
 		// update the user_profiles collection on login
 		this.user.bind('login', function() {
+			// init our feedback
+			this.load_controller('feedback', FeedbackButtonController);
+
 			// if the user is logged in, we'll put their auth info into the api object
 			if(!window._in_ext && !window._disable_cookie)
 			{
@@ -177,6 +180,10 @@ var turtl	=	{
 			}, 'turtl:personas:counter');
 		}.bind(turtl));
 		turtl.user.bind('logout', function() {
+			// remove feedback button
+			this.controllers.feedback.release();
+			delete this.controllers.feedback;
+
 			turtl.controllers.pages.release_current();
 			turtl.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
 			turtl.messages.unbind(['add', 'remove', 'reset', 'change'], 'turtl:messages:counter');
@@ -223,6 +230,12 @@ var turtl	=	{
 
 	wipe_local_db: function()
 	{
+		if(!turtl.user.logged_in)
+		{
+			console.log('wipe_local_db only works when logged in. if you know the users ID, you can wipe via:');
+			console.log('window.indexedDB.deleteDatabase("turtl.<userid>")');
+			return false;
+		}
 		turtl.do_sync	=	false;
 		if(turtl.db) turtl.db.close();
 		window.indexedDB.deleteDatabase('turtl.'+turtl.user.id());

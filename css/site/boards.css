@@ -16,10 +16,10 @@
 .board-manage > ul > li > h3 {float: left;}
 .board-manage > ul > li > h3 small {font-size: 13px; color: #aaa; margin-left: 10px;}
 .board-manage > ul > li > ul.actions {float: right; list-style: none;}
-.board-manage > ul > li > ul.actions li {opacity: .3;}
+.board-manage > ul > li > ul.actions li a {opacity: .3;}
 .board-manage > ul > li > ul.actions li.highlight {opacity: .6;}
-.board-manage > ul > li:hover > ul.actions li {opacity: 1;}
-.board-manage > ul > li > ul.actions li {display: inline-block; margin: 0 0 0 3px;}
+.board-manage > ul > li > ul.actions li a:hover {opacity: 1;}
+.board-manage > ul > li > ul.actions li {display: inline-block; margin: 0 0 0 0;}
 
 .board-edit input[type=submit] {float: right;}
 .board-edit.bare {width: 200px;}
@@ -27,7 +27,7 @@
 .board-edit.bare a img {display: inline-block; margin-top: 4px;}
 
 .board-share .button.share {float: right; margin: -7px 0 8px 0;}
-.board-share .share-to {display: none; margin-bottom: 16px; padding: 10px; background: #f0f0f0;}
+.board-share .share-to {margin-bottom: 16px; padding: 10px; background: #f0f0f0;}
 .board-share .share-to.open {display: block;}
 .board-share .share-to .personas li {cursor: pointer;}
 .board-share .share-to input[type=submit] {margin-right: 20px;}

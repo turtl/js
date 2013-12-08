@@ -20,7 +20,8 @@ var Board = Composer.RelationalModel.extend({
 				filter: function(model, notesfilter) {
 					return model.get('board_id') == notesfilter.get_parent().id();
 				},
-				forward_all_events: true
+				forward_all_events: true,
+				refresh_on_change: false
 			},
 			forward_events: true
 		},
@@ -146,6 +147,28 @@ var Board = Composer.RelationalModel.extend({
 		this._track_tags = yesno;
 	},
 
+	/**
+	 * Given a set of note data, reset this board's notes, async, with said
+	 * data.
+	 */
+	update_notes: function(note_data, options)
+	{
+		options || (options = {});
+		this.get('notes').clear();
+		this.track_tags(false);
+		this.get('notes').reset_async(note_data, {
+			silent: true,
+			complete: function() {
+				this.get('notes').trigger('reset');
+				this.track_tags(true);
+				this.get('tags').refresh_from_notes(this.get('notes'), {silent: true});
+				this.get('tags').trigger('reset');
+				this.trigger('notes_updated');
+				if(options.complete) options.complete();
+			}.bind(this)
+		})
+	},
+
 	share_with: function(from_persona, to_persona, permissions, options)
 	{
 		options || (options = {});
@@ -191,6 +214,7 @@ var Board = Composer.RelationalModel.extend({
 				delete board.notes;
 				board.shared	=	true;
 				this.set(board);
+				this.save({skip_remote_sync: true});
 
 				// add this project to the end of the user's list
 				var sort		=	Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
@@ -199,12 +223,6 @@ var Board = Composer.RelationalModel.extend({
 
 				turtl.profile.get('boards').add(this);
 				this.update_notes(_notes);
-				// sync the new board as if it came through in a /sync POST
-				if(window.port) window.port.send('profile-sync', {
-					user: turtl.user.toJSON(),
-					boards: [board],
-					notes: _notes
-				});
 				if(options.success) options.success();
 			}.bind(this),
 			error: options.error

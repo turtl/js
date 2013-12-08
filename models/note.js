@@ -15,7 +15,9 @@ var Note = Composer.RelationalModel.extend({
 		'file_id',
 		'keys',
 		'body',
-		'meta'
+		'meta',
+		'sort',
+		'mod'
 	],
 
 	private_fields: [
@@ -26,7 +28,6 @@ var Note = Composer.RelationalModel.extend({
 		'text',
 		'embed',
 		'color',
-		'sort'
 	],
 
 	init: function()
@@ -78,9 +79,11 @@ var Note = Composer.RelationalModel.extend({
 
 	save: function(options)
 	{
+		options || (options = {});
+
+		var args	=   {};
 		if(options.api_save)
 		{
-			var args	=   {};
 			var meta	=   this.get('meta');
 			if(meta && meta.persona)
 			{
@@ -95,7 +98,7 @@ var Note = Composer.RelationalModel.extend({
 			var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
 			if(!board)
 			{
-				options.error('Problem finding board for that note.');
+				if(options.error) options.error('Problem finding board for that note.');
 				return false;
 			}
 

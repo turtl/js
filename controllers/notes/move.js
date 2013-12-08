@@ -66,12 +66,9 @@ var NoteMoveController = Composer.Controller.extend({
 
 		turtl.loading(true);
 		this.note.save({
-			success: function(note_data) {
-				modal.close();
+			success: function(note) {
 				turtl.loading(false);
-				this.note.set(note_data);
-				boardfrom.get('notes').remove(this.note);
-				boardto.get('notes').add(this.note);
+				modal.close();
 			}.bind(this),
 			error: function(e) {
 				barfr.barf('There was a problem moving your note: '+ e);

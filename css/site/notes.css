@@ -2,9 +2,15 @@
 .notes div.note-actions a {display: block;}
 .notes div.note-actions a span {display: block;}
 .notes div.note-actions {margin-left: 15px;}
-.notes div.note-actions div.button.add.note {float: left; margin: -1px 0 0 0; padding: 1px 4px; border-radius: 3px;}
+/*.notes div.note-actions div.button.add.note {float: left; margin: -1px 0 0 0; padding: 1px 4px; border-radius: 3px;}*/
+.notes div.note-actions div.button {margin: 0 6px 0 0;}
+.notes div.note-actions .sort {display: inline-block; margin-left: 16px; color: #999; white-space: nowrap;}
+.notes div.note-actions .sort a {display: inline;}
+.notes div.note-actions .sort a icon {display: none; margin-top: -7px;}
+.notes div.note-actions .sort a.sel.asc icon.asc,
+.notes div.note-actions .sort a.sel.desc icon.desc {display: inline-block;}
 .notes div.note-actions ul {float: left; list-style: none; margin: -1px 0 0 32px;}
-.notes div.note-actions ul.hidden {display: none;}
+.notes div.note-actions .hidden {display: none;}
 .notes div.note-actions ul li {float: left; margin: 0 0 0 0;}
 .notes div.note-actions ul li a {width: 24px; height: 24px; padding: 4px 0 0 4px; border: 1px solid #ccc; border-left: 0;}
 .notes div.note-actions ul li:first-child a {border-left: 1px solid #ccc;}
@@ -29,9 +35,10 @@
 .notes div.actions {display: none; z-index: 2; position: absolute; top: 0; right: 0; height: 24px; padding: 0 0 0 4px; opacity: .95; background: #222; border: 1px solid #333;}
 .notes div.actions a {opacity: .6;}
 .notes div.actions a:hover {opacity: 1;}
+.notes div.actions a icon {margin-top: -15px; font-size: 38px; color: #fff;}
 .notes div.actions > a.sort {display: inline-block; width: 16px; height: 24px; background: url(../../images/site/icons/sort_handle_white_12x16.png) center center no-repeat;}
 .notes div.actions > a.sort > span {display: block; width: 19px; height: 24px; cursor: move;}
-.notes div.actions > a.open {display: inline-block; width: 16px; height: 24px; padding-left: 3px; background: url(../../images/site/icons/view_16x16.png) center right no-repeat;}
+.notes div.actions > a.open {display: inline-block; width: 16px; height: 24px; padding-left: 3px;}
 .notes div.actions > a.menu {display: inline-block; width: 21px; height: 24px; margin: 0 0 0 3px; padding: 0 4px 0 6px; background: url(../../images/site/icons/menu_19x16.png) 6px center no-repeat; border-left: 1px solid #2b2b2b;}
 .notes div.actions > a span {display: none;}
 .notes div.actions ul.dropdown {display: none; position: absolute; top: 25px; right: -1px; list-style: none; width: 36px; background: #222;}
@@ -97,8 +104,16 @@ ul.note_list .note.image .color {margin: 0;}*/
 .note-edit ul.type {list-style: none; position: absolute; top: 32px; left: 200px;}
 .note-edit ul.type li {float: left; display: inline-block; margin: 0 6px -1px 0; padding: 5px 10px; font-size: 12px; color: #73b8d1; text-transform: uppercase; cursor: pointer; border-radius: 4px;}
 .note-edit ul.type li.sel {padding-top: 4px; color: #73b8d1; color: #111; border-top: 1px solid #ddd; background: #fff;}
-.note-edit > form > div.type {display: none; float: left; width: 60%;}
-.note-edit > form > div.type.sel {display: block;}
+.note-edit > form > .do-edit {float: left; width: 60%;}
+.note-edit > form > .do-edit > div.type {display: none;}
+.note-edit > form > .do-edit > div.type.sel {display: block;}
+
+.note-edit .do-edit {position: relative;}
+.note-edit .preview {display: none; position: relative; float: left; width: 60%;}
+.note-edit .preview .html.note-view {position: static; padding: 0;}
+
+.note-edit .do-edit > input[name=preview],
+.note-edit .preview > input[name=edit] {position: absolute; top: 3px; right: 12px; font-size: 11px; opacity: .7;}
 
 .note-edit div.tags {float: right; width: 36%; padding-left: 2.2%; border-left: 1px solid #ddd;}
 .note-edit div.tags input[type=text] {width: 162px; height: auto; margin-right: 2px;}
@@ -112,7 +127,22 @@ ul.note_list .note.image .color {margin: 0;}*/
 
 .note-edit div.submit {padding: 16px 0 0 0; margin: 16px 0 0 0; border-top: 1px solid #ddd;}
 
+.note-edit a.markdown-tutorial {}
+.note-edit div.markdown-tutorial {display: none; /*position: absolute; bottom: -245px; width: 570px; height: 300px; overflow: auto;*/ margin: 10px 0 0 0; padding: 10px; background: #fafafa; border: 1px solid #eee; border-radius: 4px;}
+.note-edit div.markdown-tutorial table {width: 100%; margin: 0 0 16px 0;}
+.note-edit div.markdown-tutorial tr {border-bottom: 1px solid #eee;}
+.note-edit div.markdown-tutorial tr:last-child {border-bottom: 0;}
+.note-edit div.markdown-tutorial td {padding: 8px 6px; vertical-align: middle;}
+.note-edit div.markdown-tutorial td h1 {color: #444;}
+.note-edit div.markdown-tutorial td ul,
+.note-edit div.markdown-tutorial td ol {margin-bottom: 0;}
+.note-edit div.markdown-tutorial td blockquote {margin-bottom: 0;}
+.note-edit div.markdown-tutorial td pre {}
+.note-edit div.markdown-tutorial span.markdown-link {float: right;}
+
 /* note listing */
+ul.list-type {display: none;}
+
 ul.note_list {list-style: none; -webkit-transform: translateZ(0); margin-left: 16px;}
 ul.note_list > li {position: relative;}
 ul.note_list > li:hover > div.actions {display: inline-block;}
