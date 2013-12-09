@@ -7,7 +7,7 @@ var NoteEditController = Composer.Controller.extend({
 		'textarea[name=text]': 'inp_text',
 		'input[name=file]': 'inp_file',
 		'.upload a.remove': 'upload_remove',
-		'.upload .preview': 'upload_preview',
+		'.upload .upload-preview': 'upload_preview',
 		'.do-edit': 'editor',
 		'.preview': 'preview',
 		'div.markdown-tutorial': 'markdown_tutorial'
@@ -331,6 +331,7 @@ var NoteEditController = Composer.Controller.extend({
 				type: file.type,
 				data: binary
 			});
+			window._file	=	file;
 
 			// update the preview window (if image)
 			this.upload_remove.setStyle('display', 'inline');
@@ -338,7 +339,8 @@ var NoteEditController = Composer.Controller.extend({
 			if(file.type.match(/^image\//))
 			{
 				var img	=	new Image();
-				img.src	=	'data:'+file.type+';base64,'+btoa(binary);
+				img.src	=	URL.createObjectURL(file);
+				console.log('img: ', img, this.upload_preview);
 				this.upload_preview.adopt(img);
 			}
 		}.bind(this);

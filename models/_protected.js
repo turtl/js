@@ -494,7 +494,7 @@ var ProtectedThreaded = Protected.extend({
 			key: this.key,
 			data: JSON.encode(data),
 			options: {
-				// can't use window.crypto, so generate an IV here
+				// can't use window.crypto (for random IV), so generate IV here
 				iv: tcrypt.iv()
 			}
 		});

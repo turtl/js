@@ -48,6 +48,16 @@ var action = note.id ? 'Edit' : 'Add';
 				<textarea tabindex="1" name="text" rows="8" cols="40" placeholder="Describe this note"><?=note.text?></textarea>
 			</div>
 
+			<div class="type upload">
+				<? if(note.file && note.file.id) { ?>
+					...file deetz...
+				<? } else { ?>
+					Attach a file: <input type="file" name="file" placeholder="Attach a file">
+				<? } ?>
+				<div class="upload-preview"></div>
+				<a href="#remove-attachment" class="remove">Remove attachment</a>
+			</div>
+
 			<a href="#" class="markdown-tutorial">Formatting help &raquo;</a>
 		</div>
 
@@ -106,16 +116,6 @@ var action = note.id ? 'Edit' : 'Add';
 
 			<span class="markdown-link form-note">Read more about <a href="http://support.mashery.com/docs/customizing_your_portal/Markdown_Cheat_Sheet" target="_blank">markdown</a>.</span>
 			<br><br>
-		</div>
-
-		<div class="type upload">
-			<? if(note.file && note.file.id) { ?>
-				...file deetz...
-			<? } else { ?>
-				Attach a file: <input type="file" name="file" placeholder="Attach a file">
-			<? } ?>
-			<div class="preview"></div>
-			<a href="#remove-attachment" class="remove">Remove attachment</a>
 		</div>
 
 		<span class="clearMe"></span>
