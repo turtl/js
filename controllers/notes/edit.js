@@ -199,7 +199,7 @@ var NoteEditController = Composer.Controller.extend({
 		var args	=	{};
 		if(this.file)
 		{
-			args.file	=	1;
+			args.file_type	=	this.file.get('type');
 		}
 
 		// save the note copy, and on success, set the resulting data back into
@@ -218,6 +218,11 @@ var NoteEditController = Composer.Controller.extend({
 				this.board.get('tags').trigger('change:selected');
 				if(this.edit_in_modal) modal.close();
 				else this.trigger('saved');
+
+				if(this.file)
+				{
+					//this.file.save();
+				}
 			}.bind(this),
 			error: function(e) {
 				barfr.barf('There was a problem saving your note: '+ e);
@@ -331,7 +336,6 @@ var NoteEditController = Composer.Controller.extend({
 				type: file.type,
 				data: binary
 			});
-			window._file	=	file;
 
 			// update the preview window (if image)
 			this.upload_remove.setStyle('display', 'inline');
@@ -340,7 +344,6 @@ var NoteEditController = Composer.Controller.extend({
 			{
 				var img	=	new Image();
 				img.src	=	URL.createObjectURL(file);
-				console.log('img: ', img, this.upload_preview);
 				this.upload_preview.adopt(img);
 			}
 		}.bind(this);
