@@ -201,7 +201,7 @@ var NoteEditController = Composer.Controller.extend({
 		turtl.loading(true);
 		this.note_copy.save({
 			// make sure we pass if we have a file or not
-			file: !!this.file,
+			//file: this.file.get('type'),
 			success: function() {
 				turtl.loading(false);
 				this.note.key = this.note_copy.key;
@@ -213,6 +213,11 @@ var NoteEditController = Composer.Controller.extend({
 				this.board.get('tags').trigger('change:selected');
 				if(this.edit_in_modal) modal.close();
 				else this.trigger('saved');
+
+				if(this.file)
+				{
+					//this.file.save();
+				}
 			}.bind(this),
 			error: function(e) {
 				barfr.barf('There was a problem saving your note: '+ e);
