@@ -123,7 +123,7 @@ ul.note_list .note.image .color {margin: 0;}*/
 .note-edit .upload input[type=file] {}
 .note-edit .upload a.remove {display: none; margin: 0 0 0 5px;}
 .note-edit .upload .upload-preview {padding: 10px;}
-.note-edit .upload .upload-preview * {max-width: 100%; max-height: 300px;}
+.note-edit .upload .upload-preview * {max-width: 100%; max-height: 360px;}
 
 .note-edit div.submit {padding: 16px 0 0 0; margin: 16px 0 0 0; border-top: 1px solid #ddd;}
 

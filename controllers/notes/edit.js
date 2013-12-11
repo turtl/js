@@ -340,7 +340,6 @@ var NoteEditController = Composer.Controller.extend({
 			{
 				var img	=	new Image();
 				img.src	=	URL.createObjectURL(file);
-				console.log('img: ', img, this.upload_preview);
 				this.upload_preview.adopt(img);
 			}
 		}.bind(this);
