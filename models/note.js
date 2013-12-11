@@ -94,6 +94,7 @@ var Note = Composer.RelationalModel.extend({
 		else
 		{
 			options.table	=	'notes';
+			if(options.file) args.file = true;
 
 			var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
 			if(!board)

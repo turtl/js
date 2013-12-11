@@ -196,17 +196,12 @@ var NoteEditController = Composer.Controller.extend({
 			]);
 		}
 
-		var args	=	{};
-		if(this.file)
-		{
-			args.file	=	1;
-		}
-
 		// save the note copy, and on success, set the resulting data back into
 		// the original note (not the copy)
 		turtl.loading(true);
 		this.note_copy.save({
-			args: args,
+			// make sure we pass if we have a file or not
+			file: !!this.file,
 			success: function() {
 				turtl.loading(false);
 				this.note.key = this.note_copy.key;
@@ -331,7 +326,6 @@ var NoteEditController = Composer.Controller.extend({
 				type: file.type,
 				data: binary
 			});
-			window._file	=	file;
 
 			// update the preview window (if image)
 			this.upload_remove.setStyle('display', 'inline');

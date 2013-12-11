@@ -13,12 +13,12 @@ Composer.sync	=	function(method, model, options)
 		return;
 	}
 
-   // derive the table name from the model's base_url field.
+	// derive the table name from the model's base_url field.
 	var table	=	options.table || model.get_url().replace(/^\/(.*?)(\/|$).*/, '$1');
 	if(table == 'users') table = 'user';	// kind of a hack. oh well.
 
 	// some debugging, can make tracking down sync issues easier
-	if(['boards', 'notes'].contains(table))
+	if(['boards', 'notes', 'files'].contains(table))
 	{
 		var action = method == 'delete' ? 'delete' : (method == 'create' ? 'add' : 'edit');
 		console.log('save: '+ table +': mem -> db ('+ action +')');
