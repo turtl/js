@@ -43,9 +43,6 @@ var turtl	=	{
 	// holds persona/board/note data for the user (ie, the user's profile)
 	profile: null,
 
-	// holds all files
-	files: null,
-
 	// holds the search model
 	search: null,
 
@@ -131,7 +128,6 @@ var turtl	=	{
 			turtl.sync		=	new Sync();
 			turtl.messages	=	new Messages();
 			turtl.profile	=	new Profile();
-			turtl.files		=	new Files();
 			turtl.search	=	new Search();
 
 			turtl.show_loading_screen(true);

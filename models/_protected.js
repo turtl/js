@@ -426,6 +426,17 @@ var Protected = Composer.RelationalModel.extend({
 });
 
 var ProtectedThreaded = Protected.extend({
+	// when we call toJSONAsync() on a threaded model, it will save the results
+	// (serialized JSON object) into this property. this allows toJSON() to
+	// return the correct result for the serialization, where normally it would
+	// get a blank for the body because it's all async/threaded.
+	//
+	// this is very useful if you need to call save() on a ProtectedThreaded
+	// model: you just call toJSONAsync() and once it's done serializing, you
+	// call Model.save() (which in turn calls toJSON() and pulls out the cached
+	// serialized data).
+	_cached_serialization: false,
+
 	// holds all running background workers
 	workers: [],
 
@@ -518,6 +529,9 @@ var ProtectedThreaded = Protected.extend({
 		}.bind(this));
 	},
 
+	/**
+	 * TODO: remove? we can just use the hmac hash from the encrypted payload
+	 *
 	hash: function(data, options)
 	{
 		options || (options = {});
@@ -546,6 +560,7 @@ var ProtectedThreaded = Protected.extend({
 			this.workers	=	this.workers.erase(worker);
 		}.bind(this));
 	},
+	*/
 
 	/**
 	 * Like its sync parent, but expects deserialization to be async.
@@ -587,6 +602,16 @@ var ProtectedThreaded = Protected.extend({
 			finish_fn(_body);
 		}
 	},
+
+	toJSON: function(options)
+	{
+		// allows us to call toJSONAsync() to generate a result, then pull it
+		// out via toJSON(). makes calling save() on models a lot less messy
+		if(this._cached_serialization) return this._cached_serialization;
+
+		// nvm, carry on
+		return this.parent.apply(this, arguments);
+	},
 	
 	/**
 	 * Wraps Protected.toJSON(), serializing the model async (in a thread) and
@@ -600,9 +625,10 @@ var ProtectedThreaded = Protected.extend({
 		{
 			data[this.body_key]	=	encrypted;
 			finish_cb(data);
+			// cache
+			this._cached_serialization	=	data;
 		}.bind(this);
 		data	=	this.toJSON(Object.merge({}, options, {complete: do_finish}));
-		return false;
 	}
 });
 

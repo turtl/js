@@ -176,8 +176,10 @@ var tcrypt = {
 	 * - IV is the initial vector of the payload, in binary form
 	 * - payload data is our actual data, encrypted.
 	 */
-	deserialize: function(enc)
+	deserialize: function(enc, options)
 	{
+		options || (options = {});
+
 		// if the first character is not 0, either Turtl has come a really long
 		// way (and had over 255 serialization versions) or we're at the very
 		// first version, which just uses Base64.
@@ -196,6 +198,9 @@ var tcrypt = {
 
 		// grab HMAC for auth
 		var hmac		=	enc.substr(2, 32);
+
+		// allow returning JUST the HMAC hash. can be very useful.
+		if(options.hmac_only) return hmac;
 
 		// grab the payload description and decode it
 		var desc_length	=	enc.charCodeAt(34);

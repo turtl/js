@@ -145,8 +145,14 @@ var api_sync	=	function(method, model, options)
 		}
 		args.data = data;
 	}
-	turtl.api[method](model.get_url(), args, {
-		success: function(res) {
+
+	// define our callback functions in a way that lets third parties use them.
+	// this way we can essentially replace the API call in an extending method
+	// without sacrificing the reuse of the success/error callbacks
+	this.success_fn	=	function(options)
+	{
+		return function(res)
+		{
 			// if we got sync_ids back, set them into our remote sync's ignore.
 			// this ensures that although we'll get back the sync record(s) for
 			// the changes we just made, we can ignore them when they come in.
@@ -158,8 +164,12 @@ var api_sync	=	function(method, model, options)
 			}
 			// carry on
 			if(options.success) options.success.apply(this, arguments);
-		},
-		error: function(err, xhr) {
+		};
+	};
+	this.error_fn	=	function(options)
+	{
+		return function(err, xhr)
+		{
 			if(method == '_delete' && xhr.status == 404)
 			{
 				// ok, we tried to delete it and it's not there. success? yes,
@@ -168,7 +178,13 @@ var api_sync	=	function(method, model, options)
 				return;
 			}
 			if(options.error) options.error.apply(this, arguments);
-		}
+		};
+	}
+
+	// call the API!
+	turtl.api[method](model.get_url(), args, {
+		success: this.success_fn(options),
+		error: this.error_fn(options)
 	});
 };
 

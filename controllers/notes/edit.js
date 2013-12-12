@@ -216,7 +216,16 @@ var NoteEditController = Composer.Controller.extend({
 
 				if(this.file)
 				{
-					//this.file.save();
+					// the file always has the same key as the note
+					this.file.key	=	note.key;
+					if(this.file.is_new())
+					{
+						this.file.attach_to_note(this.note);
+					}
+					else
+					{
+						this.file.do_save();
+					}
 				}
 			}.bind(this),
 			error: function(e) {
@@ -326,11 +335,28 @@ var NoteEditController = Composer.Controller.extend({
 		{
 			// create a new file record with the binary file data
 			var binary	=	e.target.result;
-			this.file	=	new FileData({
-				name: file.name,
-				type: file.type,
-				data: binary
-			});
+
+			// if the current note has an existing file, we're going to
+			// overwrite it, otherwise create a new one
+			if(this.note.get('file_id'))
+			{
+				this.file	=	new FileData({
+					id: this.note.get('file_id'),
+					name: file.name,
+					type: file.type,
+					data: binary
+				});
+			}
+			else
+			{
+				this.file	=	new FileData({
+					name: file.name,
+					type: file.type,
+					data: binary
+				});
+			}
+			// TODO: remove when done testing
+			window._file = this.file;
 
 			// update the preview window (if image)
 			this.upload_remove.setStyle('display', 'inline');

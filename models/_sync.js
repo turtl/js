@@ -411,7 +411,7 @@ var SyncCollection	=	Composer.Collection.extend({
 		// also store if we're adding a new model
 		var is_create	=	model.is_new();
 
-		if(['boards','keychain'].contains(this.local_table))
+		if(['boards','notes','files'].contains(this.local_table))
 		{
 			var action	=	is_delete ? 'delete' : (is_create ? 'add' : 'edit');
 			console.log('sync: '+ this.local_table +': db -> api ('+action+') (new: '+model.is_new()+')');
