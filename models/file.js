@@ -3,7 +3,8 @@ var FileData = ProtectedThreaded.extend({
 
 	public_fields: [
 		'id',
-		'hash'
+		'hash',
+		'upload_id
 	],
 
 	private_fields: [
