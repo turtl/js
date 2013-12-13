@@ -605,9 +605,14 @@ var ProtectedThreaded = Protected.extend({
 
 	toJSON: function(options)
 	{
+		options || (options = {});
+
 		// allows us to call toJSONAsync() to generate a result, then pull it
 		// out via toJSON(). makes calling save() on models a lot less messy
-		if(this._cached_serialization) return this._cached_serialization;
+		if(this._cached_serialization && !options.skip_cache)
+		{
+			return this._cached_serialization;
+		}
 
 		// nvm, carry on
 		return this.parent.apply(this, arguments);
@@ -624,11 +629,11 @@ var ProtectedThreaded = Protected.extend({
 		var do_finish	=	function(encrypted)
 		{
 			data[this.body_key]	=	encrypted;
-			finish_cb(data);
-			// cache
+			// cache (before we call the finish cb)
 			this._cached_serialization	=	data;
+			finish_cb(data);
 		}.bind(this);
-		data	=	this.toJSON(Object.merge({}, options, {complete: do_finish}));
+		data	=	this.toJSON(Object.merge({}, options, {skip_cache: true, complete: do_finish}));
 	}
 });
 

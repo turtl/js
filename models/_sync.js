@@ -1,4 +1,5 @@
-var SyncError	=	extend_error(Error, 'SyncError');
+var SyncError			=	extend_error(Error, 'SyncError');
+var _sync_debug_list	=	['boards', 'notes', 'files'];
 
 /**
  * Sync model, handles (almost) all syncing between the in-memory models, the
@@ -218,7 +219,7 @@ var Sync = Composer.Model.extend({
 			this.sync_from_api.delay(this.sync_from_api_delay, this);
 
 			// if sync disabled, NEVERMIND
-			if(!turtl.do_sync) return false;
+			if(!turtl.do_sync || !turtl.do_remote_sync) return false;
 
 			turtl.api.post('/sync', {sync_id: sync_id}, {
 				success: function(sync) {
@@ -411,16 +412,17 @@ var SyncCollection	=	Composer.Collection.extend({
 		// also store if we're adding a new model
 		var is_create	=	model.is_new();
 
-		if(['boards','notes','files'].contains(this.local_table))
+		if(_sync_debug_list.contains(this.local_table))
 		{
 			var action	=	is_delete ? 'delete' : (is_create ? 'add' : 'edit');
 			console.log('sync: '+ this.local_table +': db -> api ('+action+') (new: '+model.is_new()+')');
 		}
 
 		var table	=	turtl.db[this.local_table];
+		var _model = model;
 		var options	=	{
 			api_save: true,
-			success: function(model) {
+			success: function(model, res, finish_fn) {
 				// don't save the model back into the db if it's a delete
 				if(is_delete) return;
 
@@ -434,16 +436,18 @@ var SyncCollection	=	Composer.Collection.extend({
 				if(record.key) modeldata.key = record.key;
 
 				// saves the model into the database
-				var run_update		=	function()
+				var run_update	=	function()
 				{
 					//console.log(this.local_table + '.sync_record_to_api: got: ', modeldata);
-					if(['boards', 'keychain'].contains(this.local_table))
+					if(_sync_debug_list.contains(this.local_table))
 					{
-						console.log('save: '+ this.local_table +': api -> db');
+						console.log('save: '+ this.local_table +': api -> db ', modeldata);
 					}
-					table.update(modeldata).fail(function(e) {
-						console.log(this.local_table + '.sync_model_to_api: error setting last_mod on '+ this.local_table +'.'+ model.id() +' (local -> API): ', e);
-					}.bind(this));
+					table.update(modeldata)
+						.done(function() { if(finish_fn) finish_fn(); })
+						.fail(function(e) {
+							console.log(this.local_table + '.sync_model_to_api: error setting last_mod on '+ this.local_table +'.'+ model.id() +' (local -> API): ', e);
+						}.bind(this));
 				}.bind(this);
 
 				if(is_create)
@@ -483,7 +487,7 @@ var SyncCollection	=	Composer.Collection.extend({
 						console.log(this.local_table + '.sync_model_to_api: error marking object '+ this.local_table +'.'+ model.id() +' as local_change = true: ', e);
 					}.bind(this);
 					if(!obj) return errorfn('missing obj');
-					if(xhr.status >= 500)
+					if(xhr && xhr.status >= 500)
 					{
 						// internal server error. just try again in a bit.
 						(function() {
@@ -586,7 +590,7 @@ var SyncCollection	=	Composer.Collection.extend({
 
 			var do_sync	=	function()
 			{
-				if(['boards', 'keychain'].contains(this.local_table))
+				if(_sync_debug_list.contains(this.local_table))
 				{
 					console.log('sync: '+ this.local_table +': api -> db ('+ item._sync.action +')');
 				}

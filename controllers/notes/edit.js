@@ -217,7 +217,19 @@ var NoteEditController = Composer.Controller.extend({
 				if(this.file)
 				{
 					// the file always has the same key as the note
-					this.file.key	=	note.key;
+					this.file.key	=	this.note.key;
+					var options		=	{
+						success: function() {
+							// track the file locally
+							turtl.profile.get('files').upsert(this);
+						},
+						error: function(err) {
+							barfr.barf('There was a problem attaching the file to the note: ' + err);
+						},
+						progress: function() {
+							// TODO: build me
+						}
+					};
 					if(this.file.is_new())
 					{
 						this.file.attach_to_note(this.note);

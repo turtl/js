@@ -41,7 +41,6 @@ var Note = Composer.RelationalModel.extend({
 			}).delay(0, this);
 		}.bind(this);
 		this.bind('change:tags', save_old);
-		this.bind('change', this.track_sync.bind(this));
 		save_old();
 	},
 
@@ -94,7 +93,6 @@ var Note = Composer.RelationalModel.extend({
 		else
 		{
 			options.table	=	'notes';
-			if(options.file) args.file = true;
 
 			var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
 			if(!board)
@@ -161,11 +159,6 @@ var Note = Composer.RelationalModel.extend({
 		}
 		var ret = this.parent(keys, search, options);
 		return ret;
-	},
-
-	track_sync: function()
-	{
-		turtl.profile.track_sync_changes(this.id());
 	}
 }, Protected);
 

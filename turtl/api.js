@@ -186,6 +186,13 @@ var Api	=	new Class({
 			evalResponse: false
 		};
 
+		if(params.raw)
+		{
+			request.urlEncoded	=	false;
+			request.encoding	=	false;
+			request.processData	=	false;
+		}
+
 		if(this.user && send_auth)
 		{
 			request.headers['X-Auth-Api-Key']	=	this.api_key;

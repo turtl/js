@@ -16,23 +16,35 @@ var FileData = ProtectedThreaded.extend({
 	{
 	},
 
-	attach_to_note: function(note)
+	attach_to_note: function(note, options)
 	{
-		var have_id	=	false;
+		this.bind('change:id', function() {
+			this.unbind('change:id', 'file:monitor-id-change');
+			if(note.is_new())
+			{
+				note.bind('change:id', function() {
+					note.unbind('change:id', 'file:monitor-id-change');
+					note.set({file_id: this.id()});
+					note.save();
+				}.bind(this), 'note:monitor-id-change');
+			}
+			else
+			{
+				note.save();
+			}
+		}.bind(this), 'file:monitor-id-change');
+		this.do_save(options);
 	},
 
 	do_save: function(options)
 	{
 		options || (options = {});
 
-		// track the file locally
-		turtl.profile.get('files').upsert(this);
-
 		// encrypt the file (toJSOMAsync() will cache the results so save() can
 		// access them), add in the hash, then save
 		this.toJSONAsync(function(data) {
 			// we now have the payload hash (thanks, hmac)
-			var hash	=	tcrypt.deserialize(data.body, {hmac_only: true});
+			var hash	=	convert.binstring_to_hex(tcrypt.deserialize(data.body, {hmac_only: true}));
 			this.set({hash: hash});
 
 			// note we can modify data here and it will modify the cached object
@@ -42,7 +54,7 @@ var FileData = ProtectedThreaded.extend({
 
 			// you made me use me last tissue. me ain't got anova one now.
 			this.save(options);
-		});
+		}.bind(this));
 	},
 
 	save: function(options)
@@ -56,16 +68,17 @@ var FileData = ProtectedThreaded.extend({
 			delete data.id;
 			delete data.body;
 
-			var success	=	options.success;
+			var success		=	options.success;
 			options.success	=	function(res)
 			{
-				turtl.db.files.query().only(this.id()).execute().done(function(res) {
-					var file	=	res[0];
-					file.synced	=	true;
-					turtl.db.files.update(file);
+				if(success) success(this, res, function() {
+					turtl.db.files.query().only(this.id()).execute().done(function(res) {
+						var file	=	res[0];
+						file.synced	=	true;
+						turtl.db.files.update(file);
+					}.bind(this));
 				}.bind(this));
-				if(success) success.apply(this, arguments);
-			};
+			}.bind(this);
 
 			if(this.is_new())
 			{
@@ -77,15 +90,20 @@ var FileData = ProtectedThreaded.extend({
 				var method	=	'put';
 				var url		=	'/files/'+this.id();
 			}
-			var method	=	this.is_new() ? 'post' : 'put';
 
-			// here we send everything but the encrypted body as GET parameters,
-			// then pass the raw body string as a POST. this allows chunking it
-			// straight to the storage platform
-			turtl.api[method](url+'?'+Object.toQueryString(data), body, {
-				success: api_sync.success_fn(options),
-				error: api_sync.error_fn(options)
-			});
+			// convert body to Uint8Array
+			// TODO: always store file body as Uint8Array in local db...
+			var raw	=	new Uint8Array(body.length);
+			for(var i = 0, n = body.length; i < n; i++)
+			{
+				raw[i]	=	body.charCodeAt(i);
+			}
+
+			// mark the save as raw and fire it off
+			options.raw		=	true;
+			options.data	=	raw;
+			options.args	=	data;
+			return this.parent.apply(this, arguments);
 		}
 		else
 		{

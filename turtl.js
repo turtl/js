@@ -30,6 +30,7 @@ var turtl	=	{
 
 	// whether or not to sync data w/ server
 	do_sync: true,
+	do_remote_sync: false,
 
 	// if true, tells the app to mirror data to local storage
 	mirror: false,

@@ -18,7 +18,7 @@ Composer.sync	=	function(method, model, options)
 	if(table == 'users') table = 'user';	// kind of a hack. oh well.
 
 	// some debugging, can make tracking down sync issues easier
-	if(['boards', 'notes', 'files'].contains(table))
+	if(_sync_debug_list.contains(table))
 	{
 		var action = method == 'delete' ? 'delete' : (method == 'create' ? 'add' : 'edit');
 		console.log('save: '+ table +': mem -> db ('+ action +')');
@@ -119,40 +119,53 @@ var api_sync	=	function(method, model, options)
 
 	console.log('API: '+ method.toUpperCase().replace(/_/g, '') +' '+ model.base_url);
 
-	// don't want to send all data over a GET or DELETE
+	var headers	=	{};
 	var args	=	options.args;
+	var url		=	model.get_url();
 	args || (args = {});
-	if(method != 'get' && method != '_delete')
+	if(options.raw)
 	{
-		var data	=	model.toJSON();
-		data.cid	=	model.cid();
-		if(data.keys && data.keys.length == 0)
+		// we're sending raw/binary data.
+		args.cid	=	model.cid();
+		url			=	url + '?' + Object.toQueryString(args);
+		args		=	options.data;
+		headers['Content-Type']	=	'application/octet-stream';
+	}
+	else
+	{
+		// don't want to send all data over a GET or DELETE
+		if(method != 'get' && method != '_delete')
 		{
-			// empty string gets converted to empty array by the API for the keys
-			// type (this is the only way to serialize an empty array via 
-			// mootools' Request AJAX class)
-			data.keys	=	'';
-		}
-		if(options.subset)
-		{
-			var newdata	=	{};
-			for(x in data)
+			var data	=	model.toJSON();
+			data.cid	=	model.cid();
+			if(data.keys && data.keys.length == 0)
 			{
-				if(!options.subset.contains(x)) continue;
-				newdata[x]	=	data[x];
+				// empty string gets converted to empty array by the API for the keys
+				// type (this is the only way to serialize an empty array via 
+				// mootools' Request AJAX class)
+				data.keys	=	'';
 			}
-			data	=	newdata;
+			/*
+			if(options.subset)
+			{
+				var newdata	=	{};
+				for(x in data)
+				{
+					if(!options.subset.contains(x)) continue;
+					newdata[x]	=	data[x];
+				}
+				data	=	newdata;
+			}
+			*/
+			args.data = data;
 		}
-		args.data = data;
 	}
 
-	// define our callback functions in a way that lets third parties use them.
-	// this way we can essentially replace the API call in an extending method
-	// without sacrificing the reuse of the success/error callbacks
-	this.success_fn	=	function(options)
-	{
-		return function(res)
-		{
+	// call the API!
+	turtl.api[method](url, args, {
+		raw: options.raw,
+		headers: headers,
+		success: function(res) {
 			// if we got sync_ids back, set them into our remote sync's ignore.
 			// this ensures that although we'll get back the sync record(s) for
 			// the changes we just made, we can ignore them when they come in.
@@ -164,12 +177,8 @@ var api_sync	=	function(method, model, options)
 			}
 			// carry on
 			if(options.success) options.success.apply(this, arguments);
-		};
-	};
-	this.error_fn	=	function(options)
-	{
-		return function(err, xhr)
-		{
+		},
+		error: function(err, xhr) {
 			if(method == '_delete' && xhr.status == 404)
 			{
 				// ok, we tried to delete it and it's not there. success? yes,
@@ -178,13 +187,7 @@ var api_sync	=	function(method, model, options)
 				return;
 			}
 			if(options.error) options.error.apply(this, arguments);
-		};
-	}
-
-	// call the API!
-	turtl.api[method](model.get_url(), args, {
-		success: this.success_fn(options),
-		error: this.error_fn(options)
+		}
 	});
 };
 
