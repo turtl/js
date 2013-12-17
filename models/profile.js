@@ -19,10 +19,6 @@ var Profile = Composer.RelationalModel.extend({
 				forward_all_events: true,
 				refresh_on_change: false
 			}
-		},
-		files: {
-			type: Composer.HasMany,
-			collection: 'Files'
 		}
 	},
 

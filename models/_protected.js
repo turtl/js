@@ -479,7 +479,18 @@ var ProtectedThreaded = Protected.extend({
 			}
 			else
 			{
-				var dec	=	res.data;
+				// if we only have one private field, assume that field was
+				// encrypted *without* JSON serialization (and shove it into a
+				// new object)
+				if(this.private_fields.length == 1)
+				{
+					var dec	=	{};
+					dec[this.private_fields[0]]	=	res.data;
+				}
+				else
+				{
+					var dec	=	JSON.parse(res.data);
+				}
 			}
 			this.trigger('deserialize', dec);
 			if(options.complete) options.complete(dec);
@@ -500,10 +511,22 @@ var ProtectedThreaded = Protected.extend({
 
 		var worker	=	new Worker(window._base_url + '/library/tcrypt.thread.js');
 		this.workers.push(worker);
+
+		// if we only have 1 (one) private field, forgo JSON serialization and
+		// instead just encrypt that field directly.
+		if(this.private_fields.length == 1)
+		{
+			var enc_data	=	data[this.private_fields[0]];
+		}
+		else
+		{
+			var enc_data	=	JSON.stringify(data);
+		}
+
 		worker.postMessage({
 			cmd: 'encrypt',
 			key: this.key,
-			data: JSON.encode(data),
+			data: enc_data,
 			options: {
 				// can't use window.crypto (for random IV), so generate IV here
 				iv: tcrypt.iv()

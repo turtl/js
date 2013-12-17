@@ -280,7 +280,6 @@ var turtl	=	{
 		turtl.sync.register_local_tracker('personas', turtl.profile.get('personas'));
 		turtl.sync.register_local_tracker('boards', turtl.profile.get('boards'));
 		turtl.sync.register_local_tracker('notes', turtl.profile.get('notes'));
-		turtl.sync.register_local_tracker('files', turtl.profile.get('files'));
 
 		// always sync from local db => in-mem models, even if syncing is
 		// disabled. this not only keeps memory synchronized with what's being

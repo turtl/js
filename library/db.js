@@ -233,6 +233,35 @@
             return deferred.promise();
         };
 
+		this.removeOnIndex = function ( table, index, key ) {
+            if ( closed ) {
+                throw 'Database has been closed';
+            }
+            var transaction = db.transaction( table , transactionModes.readwrite ),
+                store = transaction.objectStore( table ),
+                deferred = Deferred();
+            
+			var idx = store.index( index );
+			var req = idx.openKeyCursor(IDBKeyRange.only(key));
+			var keys = [];
+			req.onsuccess = function() {
+				var cursor = req.result;
+				if(cursor) {
+					store.delete(cursor.primaryKey);
+					keys.push(cursor.primaryKey);
+					deferred.notify();
+					cursor.continue();
+				}
+			};
+            transaction.oncomplete = function () {
+                deferred.resolve( keys );
+            };
+            transaction.onerror = function ( e ) {
+                deferred.reject( e );
+            };
+            return deferred.promise();
+		};
+
         this.clear = function ( table ) {
             if ( closed ) {
                 throw 'Database has been closed';

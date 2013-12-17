@@ -15,7 +15,7 @@ var database = {
 		db.open({
 			// DB has user id in it...client might have multiple users
 			server: 'turtl.'+turtl.user.id(),
-			version: 4,
+			version: 5,
 			// NOTE: all tables that are sync between the client and the API
 			// *must* have "local_change" and "last_mod" indexex. or else. or
 			// else what?? or else it won't work.
@@ -35,8 +35,7 @@ var database = {
 				// holds metadata about the sync process ("sync_time", etc)
 				sync: {
 					key: { keyPath: 'key', autoIncrement: false },
-					indexes: {
-					}
+					indexes: { }
 				},
 				// holds one record (key="user") that stores the user's data/
 				// settings
@@ -87,9 +86,13 @@ var database = {
 						deleted: {}
 					}
 				},
+				// note that the files table holds raw/encrypted file data for
+				// note attachments. the 'id' field is the HMAC hash from the
+				// payload.
 				files: {
 					key: { keyPath: 'id', autoIncrement: false },
 					indexes: {
+						note_id: {},
 						hash: {},
 						synced: {},
 						local_change: {},

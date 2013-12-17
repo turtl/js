@@ -5,6 +5,10 @@ var Note = Composer.RelationalModel.extend({
 		tags: {
 			type: Composer.HasMany,
 			collection: 'Tags'
+		},
+		file: {
+			type: Composer.HasOne,
+			model: 'NoteFile'
 		}
 	},
 
@@ -12,7 +16,7 @@ var Note = Composer.RelationalModel.extend({
 		'id',
 		'user_id',
 		'board_id',
-		'file_id',
+		'file',
 		'keys',
 		'body',
 		'meta',
@@ -42,6 +46,13 @@ var Note = Composer.RelationalModel.extend({
 		}.bind(this);
 		this.bind('change:tags', save_old);
 		save_old();
+	},
+
+	generate_key: function()
+	{
+		var key					=	this.parent.apply(this, arguments);
+		this.get('file').key	=	key;
+		return key;
 	},
 
 	add_tag: function(tag)
@@ -143,8 +154,23 @@ var Note = Composer.RelationalModel.extend({
 				args.persona	=	persona.id();
 			}
 			options.args	=	args;
+
+			if(this.get('file').get('hash'))
+			{
+				this.clear_files();
+			}
 		}
 		return this.parent.call(this, options);
+	},
+
+	// remove all file records attached to this note
+	clear_files: function(options)
+	{
+		options || (options = {});
+
+		turtl.db.files.removeOnIndex('note_id', this.id())
+			.done(options.success || function() {})
+			.fail(options.error || function() {});
 	},
 
 	find_key: function(keys, search, options)
@@ -159,6 +185,25 @@ var Note = Composer.RelationalModel.extend({
 		}
 		var ret = this.parent(keys, search, options);
 		return ret;
+	},
+
+	// a hook function, called on a remote model when we get a server-generated
+	// ID.
+	sync_post_create: function()
+	{
+		var hash	=	this.get('file').get('hash');
+		console.log('note created, file hash ', hash);
+		if(!hash) return;
+
+		// if the file exists, update it to have local_change = 1 so it'll be
+		// synced.
+		turtl.db.files.query()
+			.only(hash)
+			.modify({local_change: 1, note_id: this.id()})
+			.execute()
+			.fail(function(e) {
+				console.error('Error uploading file.', hash, e);
+			});
 	}
 }, Protected);
 

@@ -322,6 +322,87 @@ var SyncCollection	=	Composer.Collection.extend({
 	},
 
 	/**
+	 * Abstraction to create and set up a model with the sole purpose of using
+	 * it API-sync-side (ie, not in-memory).
+	 *
+	 * This model will use raw data (no encryption/decryption...just stores what
+	 * it's given and passes it out verbatim) and will use the api_sync function
+	 * for remote syncing insteam of Composer.sync (see turtl/sync.js).
+	 */
+	create_remote_model: function(modeldata, options)
+	{
+		options || (options = {});
+
+		if(options.destructive)
+		{
+			// we actually desire destructive changes to modeldata.
+			var record	=	modeldata;
+		}
+		else
+		{
+			// clone the data so we don't destroy it.
+			var record	=	Object.clone(modeldata);
+		}
+
+		// Well, well...Indiana Jones. we got ourselves a CID. don't want to
+		// send this to the save() function in the `id` field or it'll get
+		// mistaken as an update (not an add).
+		if(record.id.match(/^c[0-9]+(\.[0-9]+)?$/))
+		{
+			record.cid	=	record.id;
+			delete record.id;
+		}
+
+		// create a new instance of our collection's model
+		var model	=	new this.model();
+
+		// raw_data disables encryption/decryption (only the in-mem
+		// models are going to need this, so we just stupidly pass
+		// around encrypted payloads when syncing to/from the API).
+		model.raw_data	=	true;
+
+		// set our model to use the API sync function (instead of
+		// Composer.sync)
+		model.sync	=	api_sync;
+
+		// match the model's CID to the records. this is a bit of a Composer
+		// hack because two Composer objects should never share the same CID,
+		// but who's going to stop me??
+		if(record.cid) model._cid = record.cid;
+
+		// save the record into the model
+		model.set(record);
+
+		return model;
+	},
+
+	/**
+	 * This is called whenever an API update comes back that gives us a server-
+	 * generated ID and we need to update that ID in the local DB to replace a
+	 * CID. This generally happens after creating an object.
+	 *
+	 * Since we can't change an ID in indexedDB, we have to remove the record,
+	 * then run whatever update contains the new ID.
+	 *
+	 * This function destructively modifies `modeldata` in order to set the
+	 * `cid` key into it.
+	 */
+	cid_to_id_rename: function(modeldata, cid, options)
+	{
+		options || (options = {});
+
+		var table	=	turtl.db[this.local_table];
+		table.remove(cid)
+			.done(function() {
+				modeldata.cid	=	cid;
+				var model		=	this.create_remote_model(modeldata);
+				if(model.sync_post_create) model.sync_post_create();
+				if(options.success) options.success();
+			}.bind(this))
+			.fail(options.error ? options.error : function() {});
+	},
+
+	/**
 	 * Looks for data modified in the local DB (last_mod > last_local_sync) for
 	 * this collection's table and syncs any changed data to in-memory models
 	 * via `process_local_sync`.
@@ -377,34 +458,8 @@ var SyncCollection	=	Composer.Collection.extend({
 	{
 		options || (options = {});
 
-		// Well, well...Indian Jones. we got ourselves a CID. don't want to send
-		// this to the save() function in the `id` field or it'll get mistaken
-		// as an update (note an add).
-		if(record.id.match(/^c[0-9]+(\.[0-9]+)?$/))
-		{
-			record.cid	=	record.id;
-			delete record.id;
-		}
-
-		// create a new instance of our collection's model
-		var model	=	new this.model();
-
-		// raw_data disables encryption/decryption (only the in-mem
-		// models are going to need this, so we just stupidly pass
-		// around encrypted payloads when syncing to/from the API).
-		model.raw_data	=	true;
-
-		// set our model to use the API sync function (instead of
-		// Composer.sync)
-		model.sync	=	api_sync;
-
-		// match the model's CID to the records. this is a bit of a Composer
-		// hack because two Composer objects should never share the same CID,
-		// but who's going to stop me??
-		if(record.cid) model._cid = record.cid;
-
-		// save the record into the model
-		model.set(record);
+		// create a model suited for DB <--> API tasks
+		var model	=	this.create_remote_model(record, {destructive: true});
 
 		// store whether or not we're deleting this model
 		var is_delete	=	record.deleted == 1;
@@ -461,16 +516,22 @@ var SyncCollection	=	Composer.Collection.extend({
 					// when the local sync process finds the record, it will
 					// check not only the id, but the cid when trying to match
 					// it to a model.
-					table.remove(record.cid)
+					this.cid_to_id_rename(modeldata, record.cid, {
+						success: function() {
+							run_update();
+						},
+						error: function(e) {
+							barfr.barf('Error removing stubbed record: '+this.local_table+'.'+model.id()+': '+ e)
+							console.log(this.local_table +'.sync_model_to_api: error removing stubbed record: ', model.id(), e);
+						}.bind(this)
+					});
+					/*table.remove(record.cid)
 						.done(function() {
 							// save our cid
 							modeldata.cid	=	record.cid;
-							run_update();
 						})
 						.fail(function(e) {
-							barfr.barf('Error removing stubbed record: '+this.local_table+'.'+model.id()+': '+ e)
-							console.log(this.local_table +'.sync_model_to_api: error removing stubbed record: ', model.id(), e);
-						});
+						});*/
 				}
 				else
 				{
@@ -631,19 +692,16 @@ var SyncCollection	=	Composer.Collection.extend({
 						}
 						else
 						{
-							table.remove(record.id)
-								.done(function() {
-									// ok, item removed, now update the synced
-									// item's cid and save it back into the
-									// table
-									item.cid	=	item._sync.cid;
+							this.cid_to_id_rename(item, item._sync.cid, {
+								success: function() {
 									do_sync();
-								})
-								.fail(function(e) {
+								},
+								error: function(e) {
 									console.log('sync: '+ this.local_table +': api -> db: error updating CID -> ID (remove '+ item._sync.cid +')');
 									// keep going anyway
 									do_sync();
-								})
+								}.bind(this)
+							});
 						}
 					})
 					.fail(function(e) {

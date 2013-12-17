@@ -41,7 +41,6 @@ var NoteEditController = Composer.Controller.extend({
 	board: null,
 	note: null,
 	note_copy: null,
-	file: null,			// holds any upload data
 	tag_controller: null,
 	tips: null,
 
@@ -196,55 +195,110 @@ var NoteEditController = Composer.Controller.extend({
 			]);
 		}
 
-		// save the note copy, and on success, set the resulting data back into
-		// the original note (not the copy)
 		turtl.loading(true);
-		this.note_copy.save({
-			// make sure we pass if we have a file or not
-			//file: this.file.get('type'),
-			success: function() {
-				turtl.loading(false);
-				this.note.key = this.note_copy.key;
-				var copy_json	=	this.note_copy.toJSON();
-				copy_json.mod	=	Math.round(new Date().getTime() / 1000);
-				this.note.set(copy_json);
-				if(isnew) this.board.get('notes').add(this.note);
-				// make sure the current filter applies to the edited note
-				this.board.get('tags').trigger('change:selected');
-				if(this.edit_in_modal) modal.close();
-				else this.trigger('saved');
 
-				if(this.file)
-				{
-					// the file always has the same key as the note
-					this.file.key	=	this.note.key;
-					var options		=	{
-						success: function() {
-							// track the file locally
-							turtl.profile.get('files').upsert(this);
-						},
-						error: function(err) {
-							barfr.barf('There was a problem attaching the file to the note: ' + err);
-						},
-						progress: function() {
-							// TODO: build me
-						}
-					};
-					if(this.file.is_new())
+		var do_close	=	function()
+		{
+			turtl.loading(false);
+			if(this.edit_in_modal) modal.close();
+			else this.trigger('saved');
+		}.bind(this);
+
+		var note_copy				=	new Note();
+		note_copy.key				=	this.note_copy.key;
+		note_copy.data				=	this.note_copy.data;
+		note_copy.relation_data		=	this.note_copy.relation_data;
+		note_copy.get('file').key	=	this.note_copy.key;
+		var do_note_save	=	function(options)
+		{
+			options || (options = {});
+
+			// save the note copy, and on success, set the resulting data back into
+			// the original note (not the copy)
+			note_copy.save({
+				// make sure we pass if we have a file or not
+				success: function() {
+					this.note.key	=	note_copy.key;
+					var copy_json	=	note_copy.toJSON();
+					copy_json.mod	=	Math.round(new Date().getTime() / 1000);
+					this.note.set(copy_json);
+					if(isnew) this.board.get('notes').add(this.note);
+					// make sure the current filter applies to the edited note
+					this.board.get('tags').trigger('change:selected');
+					if(!options.no_close)
 					{
-						this.file.attach_to_note(this.note);
+						do_close();
 					}
-					else
-					{
-						this.file.do_save();
-					}
+				}.bind(this),
+				error: function(e) {
+					barfr.barf('There was a problem saving your note: '+ e);
+					turtl.loading(false);
 				}
-			}.bind(this),
-			error: function(e) {
-				barfr.barf('There was a problem saving your note: '+ e);
-				turtl.loading(false);
-			}
-		});
+			});
+		}.bind(this);
+
+		// grab the binary file data (and clear out the ref in the NoteFile)
+		var file_bin	=	this.note_copy.get('file').get('data');
+		note_copy.get('file').unset('data');
+
+		console.log('note: ' , note_copy.toJSON());
+		var file	=	note_copy.get('file');
+		if(file.get('set'))
+		{
+			// we are uploading a new file! JOY!
+			// we're going to actually serialize the file (encrypt it, dumbell)
+			// BEFORE saving the note so we'll have the full file contents,
+			// ready to post when we save the note. this saves us a lot of
+			// heartache when actually running our syncing.
+			file.unset('set');
+			note_copy.clear_files();
+			var filedata	=	new FileData({data: file_bin});
+			filedata.key	=	note_copy.key;
+			filedata.toJSONAsync(function(res) {
+				// we now have the payload hash (thanks, hmac), set it as the
+				// ID. note we're not setting it directly into filedata here,
+				// instead we're setting it into the res object. this res object
+				// is actually cached internally so that when filedata.toJSON()
+				// is called, it will pull out this object instead of running
+				// the serialization. this is so filedata.save() doesn't come up
+				// empty when it calls toJSON().
+				//
+				// setting id here is a roundabout way of modifying the cache,
+				// but it works great.
+				hash		=	convert.binstring_to_hex(tcrypt.deserialize(res.body, {hmac_only: true}));
+				res.id		=	hash;
+				res.synced	=	false;
+				if(!note_copy.is_new())
+				{
+					res.note_id	=	note_copy.id();
+					filedata.set({note_id: res.note_id});
+				}
+				filedata.set({id: hash});		// set the id for good measure
+
+				// give the note's file object a ref to the file's id
+				file.set({hash: hash});
+
+				// save the file contents into local db then save the note
+				filedata.save({
+					// we don't want to upload the file until the note we're
+					// attaching to has a real ID
+					skip_remote_sync: note_copy.is_new(),
+					success: function() {
+						do_note_save({no_close: true});
+					}.bind(this),
+					error: function(e) {
+						barfr.barf('There was a problem saving the attached file: '+ e);
+						turtl.loading(false);
+					}
+				});
+			});
+			do_close();
+		}
+		else
+		{
+			// no file upload, I WANT THIS BY THE BOOK.
+			do_note_save();
+		}
 	},
 
 	select_tab: function(typename)
@@ -350,25 +404,15 @@ var NoteEditController = Composer.Controller.extend({
 
 			// if the current note has an existing file, we're going to
 			// overwrite it, otherwise create a new one
-			if(this.note.get('file_id'))
-			{
-				this.file	=	new FileData({
-					id: this.note.get('file_id'),
-					name: file.name,
-					type: file.type,
-					data: binary
-				});
-			}
-			else
-			{
-				this.file	=	new FileData({
-					name: file.name,
-					type: file.type,
-					data: binary
-				});
-			}
+			this.note_copy.get('file').set({
+				set: true,
+				hash: false,
+				name: file.name,
+				type: file.type,
+				data: binary
+			});
 			// TODO: remove when done testing
-			window._file = this.file;
+			window._file = this.note_copy.get('file');
 
 			// update the preview window (if image)
 			this.upload_remove.setStyle('display', 'inline');
@@ -390,8 +434,7 @@ var NoteEditController = Composer.Controller.extend({
 		this.inp_file.value	=	'';
 		this.upload_remove.setStyle('display', '');
 		this.upload_preview.set('html', '');
-		this.file.clear();
-		this.file	=	null;
+		this.note_copy.get('file').clear();
 	}
 });
 
