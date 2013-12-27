@@ -1,13 +1,11 @@
 var NoteEditController = Composer.Controller.extend({
 	elements: {
 		'.note-edit form div.tags': 'tags',
+		'.type.upload': 'uploader',
 		'textarea[name=quick]': 'inp_quick',
 		'input[name=title]': 'inp_title',
 		'input[name=url]': 'inp_url',
 		'textarea[name=text]': 'inp_text',
-		'input[name=file]': 'inp_file',
-		'.upload a.remove': 'upload_remove',
-		'.upload .upload-preview': 'upload_preview',
 		'.do-edit': 'editor',
 		'.preview': 'preview',
 		'div.markdown-tutorial': 'markdown_tutorial'
@@ -21,8 +19,6 @@ var NoteEditController = Composer.Controller.extend({
 		'keyup .note-edit form textarea': 'save_form_to_copy',
 		'change .note-edit form select': 'save_form_to_copy',
 		'click ul.type li': 'switch_type',
-		'change input[name=file]': 'set_attachment',
-		'click a[href=#remove-attachment]': 'clear_attachment',
 		'click .do-edit > input[name=preview]': 'open_preview',
 		'click .preview > input[name=edit]': 'open_edit',
 		'click a.markdown-tutorial': 'open_markdown_tutorial'
@@ -83,12 +79,20 @@ var NoteEditController = Composer.Controller.extend({
 
 	render: function()
 	{
+		console.log('note file: ', toJSON(this.note_copy).file);
 		var content = Template.render('notes/edit', {
 			note: toJSON(this.note_copy),
 			board: toJSON(this.board),
 			show_tabs: this.show_tabs
 		});
 		this.html(content);
+
+		if(this.upload_controller) this.upload_controller.release();
+		this.upload_controller	=	new NoteEditFileController({
+			inject: this.uploader,
+			model: this.note_copy
+		});
+
 		if(this.tips) this.tips.detach();
 		this.tips = new TurtlTips(this.el.getElements('.tooltip'), {
 			className: 'tip-container'
@@ -391,50 +395,6 @@ var NoteEditController = Composer.Controller.extend({
 			this.markdown_tutorial.setStyle('display', 'block');
 		}
 		if(window.port) window.port.send('resize');
-	},
-
-	set_attachment: function(e)
-	{
-		var file	=	e.target.files[0];
-		var reader	=	new FileReader();
-		reader.onload	=	function(e)
-		{
-			// create a new file record with the binary file data
-			var binary	=	e.target.result;
-
-			// if the current note has an existing file, we're going to
-			// overwrite it, otherwise create a new one
-			this.note_copy.get('file').set({
-				set: true,
-				hash: false,
-				name: file.name,
-				type: file.type,
-				data: binary
-			});
-			// TODO: remove when done testing
-			window._file = this.note_copy.get('file');
-
-			// update the preview window (if image)
-			this.upload_remove.setStyle('display', 'inline');
-			this.upload_preview.set('html', '');
-			if(file.type.match(/^image\//))
-			{
-				var img	=	new Image();
-				img.src	=	URL.createObjectURL(file);
-				this.upload_preview.adopt(img);
-			}
-		}.bind(this);
-		reader.readAsBinaryString(file);
-		this.upload_preview.set('html', 'Reading file...');
-	},
-
-	clear_attachment: function(e)
-	{
-		if(e) e.stop();
-		this.inp_file.value	=	'';
-		this.upload_remove.setStyle('display', '');
-		this.upload_preview.set('html', '');
-		this.note_copy.get('file').clear();
 	}
 });
 
