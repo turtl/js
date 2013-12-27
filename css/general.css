@@ -71,7 +71,7 @@ div.button:hover {
 	border-right: 1px solid #111;
 }
 div.button icon {float: left; margin: -10px 5px 0 0; color: #fff;}
-div.button span {display: inline-block; padding: 8px 8px 8px 8px; color: #ddd; text-transform: uppercase; font-weight: bold; font-size: 11px;}
+div.button span {display: inline-block; padding: 8px 8px 8px 6px; color: #ddd; text-transform: uppercase; font-weight: bold; font-size: 11px;}
 div.button.add icon {color: #72b865;}
 div.button.share icon {color: #f761c7;}
 
