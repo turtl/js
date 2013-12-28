@@ -449,6 +449,61 @@ var SyncCollection	=	Composer.Collection.extend({
 	},
 
 	/**
+	 * Wrapper around the internal section of sync_record_to_api which allows us
+	 * to override the save behavior on a per-remote-model basis. For instance,
+	 * the FileData model syncs with the API directly, but doesn't save its
+	 * results into the "files" table, it just updates the note record it's
+	 * attached to. This function allows custom behavior like this.
+	 *
+	 * Called by sync_record_to_api
+	 */
+	update_record_from_api_save: function(modeldata, record, options)
+	{
+		var table		=	turtl.db[this.local_table];
+		var is_create	=	options.is_create;
+		var is_delete	=	options.is_delete;
+
+		// saves the model into the database
+		var run_update	=	function()
+		{
+			//console.log(this.local_table + '.sync_record_to_api: got: ', modeldata);
+			if(_sync_debug_list.contains(this.local_table))
+			{
+				console.log('save: '+ this.local_table +': api -> db ', modeldata);
+			}
+			table.update(modeldata)
+				.done(function() { if(options.success) options.success(); })
+				.fail(function(e) { if(options.error) options.error(e); });
+		}.bind(this);
+
+		if(is_create)
+		{
+			// if the record was just added, we have a new ID for it
+			// from the API, however we can't change the id of our
+			// current record, so we have to delete it, mark the new
+			// model data with the original cid, and then add the new
+			// record into the db.
+			//
+			// when the local sync process finds the record, it will
+			// check not only the id, but the cid when trying to match
+			// it to a model.
+			this.cid_to_id_rename(modeldata, record.cid, {
+				success: function() {
+					run_update();
+				},
+				error: function(e) {
+					barfr.barf('Error removing stubbed record: '+this.local_table+'.'+model.id()+': '+ e)
+					console.log(this.local_table +'.sync_model_to_api: error removing stubbed record: ', model.id(), e);
+				}.bind(this)
+			});
+		}
+		else
+		{
+			run_update();
+		}
+	},
+
+	/**
 	 * Given an individual local DB record object, creates a model from the
 	 * record and syncs that model to the API.
 	 *
@@ -477,7 +532,7 @@ var SyncCollection	=	Composer.Collection.extend({
 		var _model = model;
 		var options	=	{
 			api_save: true,
-			success: function(model, res, finish_fn) {
+			success: function(model, res) {
 				// don't save the model back into the db if it's a delete
 				if(is_delete) return;
 
@@ -490,53 +545,15 @@ var SyncCollection	=	Composer.Collection.extend({
 				// User model)
 				if(record.key) modeldata.key = record.key;
 
-				// saves the model into the database
-				var run_update	=	function()
-				{
-					//console.log(this.local_table + '.sync_record_to_api: got: ', modeldata);
-					if(_sync_debug_list.contains(this.local_table))
-					{
-						console.log('save: '+ this.local_table +': api -> db ', modeldata);
+				this.update_record_from_api_save(modeldata, record, {
+					is_create: is_create,
+					is_delete: is_delete,
+					success: function() {},
+					error: function(e) {
+						console.log(this.local_table + '.sync_model_to_api: error saving model in '+ this.local_table +'.'+ model.id() +' (local -> API): ', e);
 					}
-					table.update(modeldata)
-						.done(function() { if(finish_fn) finish_fn(); })
-						.fail(function(e) {
-							console.log(this.local_table + '.sync_model_to_api: error setting last_mod on '+ this.local_table +'.'+ model.id() +' (local -> API): ', e);
-						}.bind(this));
-				}.bind(this);
+				});
 
-				if(is_create)
-				{
-					// if the record was just added, we have a new ID for it
-					// from the API, however we can't change the id of our
-					// current record, so we have to delete it, mark the new
-					// model data with the original cid, and then add the new
-					// record into the db.
-					//
-					// when the local sync process finds the record, it will
-					// check not only the id, but the cid when trying to match
-					// it to a model.
-					this.cid_to_id_rename(modeldata, record.cid, {
-						success: function() {
-							run_update();
-						},
-						error: function(e) {
-							barfr.barf('Error removing stubbed record: '+this.local_table+'.'+model.id()+': '+ e)
-							console.log(this.local_table +'.sync_model_to_api: error removing stubbed record: ', model.id(), e);
-						}.bind(this)
-					});
-					/*table.remove(record.cid)
-						.done(function() {
-							// save our cid
-							modeldata.cid	=	record.cid;
-						})
-						.fail(function(e) {
-						});*/
-				}
-				else
-				{
-					run_update();
-				}
 			}.bind(this),
 			error: function(xhr, err) {
 				barfr.barf('Error syncing model to API: '+ err);

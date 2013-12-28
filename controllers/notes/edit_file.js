@@ -29,7 +29,8 @@ var NoteEditFileController = Composer.Controller.extend({
 	render: function()
 	{
 		var content	=	Template.render('notes/edit_file', {
-			file: toJSON(this.model.get('file'))
+			file: toJSON(this.model.get('file')),
+			blob: null
 		});
 		this.html(content);
 	},
@@ -46,7 +47,7 @@ var NoteEditFileController = Composer.Controller.extend({
 			// if the current note has an existing file, we're going to
 			// overwrite it, otherwise create a new one
 			this.model.get('file').set({
-				set: true,
+				set: true,		// lets us know we did change the file
 				hash: false,
 				name: file.name,
 				type: file.type,

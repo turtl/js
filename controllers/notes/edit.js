@@ -79,7 +79,6 @@ var NoteEditController = Composer.Controller.extend({
 
 	render: function()
 	{
-		console.log('note file: ', toJSON(this.note_copy).file);
 		var content = Template.render('notes/edit', {
 			note: toJSON(this.note_copy),
 			board: toJSON(this.board),

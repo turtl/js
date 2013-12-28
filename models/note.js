@@ -87,6 +87,13 @@ var Note = Composer.RelationalModel.extend({
 		return url;
 	},
 
+	toJSON: function()
+	{
+		var data	=	this.parent.apply(this, arguments);
+		if(!this.get('file') || !this.get('file').get('hash')) delete data.file;
+		return data;
+	},
+
 	save: function(options)
 	{
 		options || (options = {});

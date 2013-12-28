@@ -45,18 +45,6 @@ var FileData = ProtectedThreaded.extend({
 				cid: this.cid()
 			};
 
-			var success		=	options.success;
-			options.success	=	function(res)
-			{
-				if(success) success(this, res, function() {
-					turtl.db.files.query().only(this.id()).execute().done(function(res) {
-						var file	=	res[0];
-						file.synced	=	true;
-						turtl.db.files.update(file);
-					}.bind(this));
-				}.bind(this));
-			}.bind(this);
-
 			// convert body to Uint8Array
 			// TODO: always store file body as Uint8Array in local db...
 			var raw	=	new Uint8Array(body.length);
@@ -81,5 +69,46 @@ var FileData = ProtectedThreaded.extend({
 
 var Files = SyncCollection.extend({
 	model: FileData,
-	local_table: 'files'
+	local_table: 'files',
+
+	update_record_from_api_save: function(modeldata, record, options)
+	{
+		options || (options = {});
+
+		if(_sync_debug_list.contains(this.local_table))
+		{
+			console.log('save: '+ this.local_table +': api -> db ', modeldata);
+		}
+
+		// note that we don't need all the cid renaming heeby jeeby here since
+		// we already have an id (the hash) AND the object we're attaching to
+		// (teh note) must always have an id before uploading. so instead, we're
+		// going to update the model data into the note's [file] object.
+		var note_id	=	modeldata.note_id;
+		var hash	=	modeldata.id;
+		turtl.db.files
+			.query()
+			.filter('id', hash)
+			.modify({synced: true})
+			.execute()
+			.done(function() {
+				turtl.db.notes
+					.query()
+					.filter('id', note_id)
+					.modify({last_mod: new Date().getTime()})
+					.execute()
+					.done(function() {
+						if(options.success) options.success();
+					})
+					.fail(function(e) {
+						console.error('file: error setting note.last_mod', e);
+						if(options.error) options.error(e);
+					});
+			})
+			.fail(function(e) {
+				console.error('file: error setting file.synced = true', e);
+				if(options.error) options.error(e);
+			});
+
+	}
 });
