@@ -45,9 +45,8 @@ var NoteEditController = Composer.Controller.extend({
 		if(!this.board) return false;
 		if(!this.note) this.note = new Note({type: 'quick'});
 		// clone the note so any changes to it pre-save don't show up in the listings.
-		this.note_copy = this.note.clone();
-		// give the new note a key (if it hasn't got one)
-		if(this.note_copy.is_new()) this.note_copy.generate_key();
+		this.note_copy		=	new Note(toJSON(this.note));
+		this.note_copy.key	=	this.note.key;
 
 		this.render();
 		if(this.edit_in_modal)
@@ -244,7 +243,6 @@ var NoteEditController = Composer.Controller.extend({
 		var file_bin	=	this.note_copy.get('file').get('data');
 		note_copy.get('file').unset('data');
 
-		console.log('note: ' , note_copy.toJSON());
 		var file	=	note_copy.get('file');
 		if(file.get('set'))
 		{

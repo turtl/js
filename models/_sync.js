@@ -360,6 +360,10 @@ var SyncCollection	=	Composer.Collection.extend({
 		// models are going to need this, so we just stupidly pass
 		// around encrypted payloads when syncing to/from the API).
 		model.raw_data	=	true;
+		Object.each(model.relations, function(v, k) {
+			// set raw data for each of the model's sub-objects
+			model.get(k).raw_data	=	true;
+		});
 
 		// set our model to use the API sync function (instead of
 		// Composer.sync)

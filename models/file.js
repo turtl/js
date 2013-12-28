@@ -12,10 +12,14 @@ var NoteFile = Protected.extend({
 		'type'
 	],
 
-	ensure_key_exists: function()
+	find_key: function()
 	{
 		var note	=	this && this.get_parent && this.get_parent();
-		if(note) return note.key;
+		if(note)
+		{
+			this.key	=	note.key;
+			return this.key;
+		}
 		return this.parent.apply(this, arguments);
 	}
 });

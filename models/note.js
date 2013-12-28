@@ -1,4 +1,4 @@
-var Note = Composer.RelationalModel.extend({
+var Note = Protected.extend({
 	base_url: '/notes',
 
 	relations: {
@@ -34,6 +34,12 @@ var Note = Composer.RelationalModel.extend({
 		'color',
 	],
 
+	// bad hack to fix annoying problem: when note data is set, the NoteFile sub
+	// object doesn't have the note's key. by the time the key is set, the file
+	// data has already came and left, leaving a false body in its wake. this
+	// variable stores the file data until a key is available
+	_tmp_file_data: false,
+
 	init: function()
 	{
 		var save_old = function() {
@@ -48,11 +54,35 @@ var Note = Composer.RelationalModel.extend({
 		save_old();
 	},
 
+	ensure_key_exists: function()
+	{
+		var key	=	this.parent.apply(this, arguments);
+		if(key)
+		{
+			this.get('file').key	=	key;
+			if(this._tmp_file_data)
+			{
+				this.set({file: this._tmp_file_data});
+				this._tmp_file_data	=	false;
+			}
+		}
+		return key;
+	},
+
 	generate_key: function()
 	{
 		var key					=	this.parent.apply(this, arguments);
 		this.get('file').key	=	key;
 		return key;
+	},
+
+	set: function(data)
+	{
+		if(data.file && !this.key)
+		{
+			this._tmp_file_data	=	data.file;
+		}
+		return this.parent.apply(this, arguments);
 	},
 
 	add_tag: function(tag)
@@ -212,7 +242,7 @@ var Note = Composer.RelationalModel.extend({
 				console.error('Error uploading file.', hash, e);
 			});
 	}
-}, Protected);
+});
 
 var Notes = SyncCollection.extend({
 	model: Note,
@@ -223,6 +253,7 @@ var Notes = SyncCollection.extend({
 	// used for tracking batch note saves
 	batch_track: null,
 
+	/*
 	start_batch_save: function()
 	{
 		this.batch_track	=	[];
@@ -254,6 +285,7 @@ var Notes = SyncCollection.extend({
 
 		this.batch_track	=	[];
 	},
+	*/
 
 	process_local_sync: function(note_data, note)
 	{
