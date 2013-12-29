@@ -361,9 +361,13 @@ var tcrypt = {
 		// blindly encoding. we also prepend a byte to the beginning of the data
 		// that lets us know whether or not we ecoded the data. it would be a
 		// giveaway to just use 0 or 1, so instead we pick a random byte. if the
-		// data is not utf8 encoded, the byte is betwee 0 and 127, if it is
+		// data is not utf8 encoded, the byte is between 0 and 127, if it is
 		// encoded, it's betwene 128 and 255. this lets us detect the encoding
 		// on decrypt without leaking any information in the ciphertext.
+		//
+		// NOTE: the first byte currently contains one useful bit and seven
+		// random bits. these random bits could be used to describe the pre-
+		// encrypted payload in other ways. for now, just the first bit is used.
 		if(version >= 4)
 		{
 			var utf8_random	=	options.utf8_random || tcrypt.random_number();
@@ -495,22 +499,24 @@ var tcrypt = {
 		var cipher	=	this.get_cipher(desc.cipher);
 		var de		=	new cipher(opts).decrypt(params.ciphertext);
 
-		var utf8byte	=	de.charCodeAt(0);
-		de				=	de.substr(1);
 		var decode		=	de;
 		try
 		{
 			// detect if our decrypted data is utf8 encoded or not based on the
-			// value of the first byte.
+			// value of the first bit.
 			if(version >= 4)
 			{
-				var is_utf8	=	utf8byte > 127;
+				// we're 4 or above, check actual encoding.
+				var utf8byte	=	de.charCodeAt(0);
+				decode			=	decode.substr(1);
+				var is_utf8		=	utf8byte >= 128;
 			}
 			else
 			{
+				// version 3 or below, always assume utf8
 				var is_utf8	=	true;
 			}
-			if(is_utf8) decode = convert.utf8.decode(de);
+			if(is_utf8) decode = convert.utf8.decode(decode);
 		}
 		catch(e) {}
 
