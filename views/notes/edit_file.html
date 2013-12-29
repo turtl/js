@@ -2,7 +2,7 @@ Attach a file: <input type="file" name="file" placeholder="Attach a file">
 <a href="#remove-attachment" class="remove">Remove attachment</a>
 <div class="upload-preview">
 	<? if(file.hash || file.name) { ?>
-		<? if(file.type.match(/^image/)) { ?>
+		<? if(file.type && file.type.match(/^image/)) { ?>
 			<? if(blob_url) { ?>
 				<img src="<?=blob_url?>">
 			<? } else { ?>
