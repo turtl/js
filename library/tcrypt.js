@@ -46,7 +46,7 @@ var tcrypt = {
 	],
 	// -------------------------------------------------------------------------
 
-	current_version: 3,		// current serialization version
+	current_version: 4,		// current serialization version
 
 	// serialization options (array index values for the tcrypt.*_index arrays)
 	default_cipher: 0,
@@ -353,9 +353,36 @@ var tcrypt = {
 		// auto-generate an initial vector if needed
 		if(!opts.iv) opts.iv = tcrypt.iv();
 
-		// make sure to UTF8 encode data (turns multi-byte characters into
-		// single-byte characters so the crypto doesn't lose data).
-		data	=	convert.utf8.encode(data);
+		// utf8 encoding section. up til version 4, all encrypted strings were
+		// utf8 encoded. this is the easy option, but sometimes doubles the size
+		// of the ciphertext for binary data. not cool.
+		//
+		// version 4 and up, we detect if the string has utf8 bytes *before*
+		// blindly encoding. we also prepend a byte to the beginning of the data
+		// that lets us know whether or not we ecoded the data. it would be a
+		// giveaway to just use 0 or 1, so instead we pick a random byte. if the
+		// data is not utf8 encoded, the byte is betwee 0 and 127, if it is
+		// encoded, it's betwene 128 and 255. this lets us detect the encoding
+		// on decrypt without leaking any information in the ciphertext.
+		if(version >= 4)
+		{
+			var utf8_random	=	options.utf8_random || tcrypt.random_number();
+
+			if(convert.utf8.is_utf8_string(data))
+			{
+				var utf8byte	=	String.fromCharCode(Math.floor(utf8_random * (256 - 128)) + 128);
+				data			=	utf8byte + convert.utf8.encode(data);
+			}
+			else
+			{
+				var utf8byte	=	String.fromCharCode(Math.floor(utf8_random * (256 - 128)));
+				data			=	utf8byte + data;
+			}
+		}
+		else
+		{
+			data	=	convert.utf8.encode(data);
+		}
 
 		var cipherclass	=	tcrypt.get_cipher(cipher);
 		var ciphertext	=	new cipherclass(opts).encrypt(data);
@@ -468,14 +495,24 @@ var tcrypt = {
 		var cipher	=	this.get_cipher(desc.cipher);
 		var de		=	new cipher(opts).decrypt(params.ciphertext);
 
+		var utf8byte	=	de.charCodeAt(0);
+		de				=	de.substr(1);
+		var decode		=	de;
 		try
 		{
-			var decode	=	convert.utf8.decode(de);
+			// detect if our decrypted data is utf8 encoded or not based on the
+			// value of the first byte.
+			if(version >= 4)
+			{
+				var is_utf8	=	utf8byte > 127;
+			}
+			else
+			{
+				var is_utf8	=	true;
+			}
+			if(is_utf8) decode = convert.utf8.decode(de);
 		}
-		catch(e)
-		{
-			var decode	=	de;
-		}
+		catch(e) {}
 
 		return decode;
 	},

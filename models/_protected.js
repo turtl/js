@@ -529,7 +529,8 @@ var ProtectedThreaded = Protected.extend({
 			data: enc_data,
 			options: {
 				// can't use window.crypto (for random IV), so generate IV here
-				iv: tcrypt.iv()
+				iv: tcrypt.iv(),
+				utf8_random: tcrypt.random_number()
 			}
 		});
 		worker.addEventListener('message', function(e) {
