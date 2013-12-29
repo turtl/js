@@ -609,6 +609,7 @@ var ProtectedThreaded = Protected.extend({
 					set[k]		=	v;
 					_body.set(set);
 				}.bind(this));
+				if(options.async_success) options.async_success(this);
 			}
 		}.bind(this);
 

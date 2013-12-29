@@ -47,6 +47,7 @@ var NoteEditController = Composer.Controller.extend({
 		// clone the note so any changes to it pre-save don't show up in the listings.
 		this.note_copy		=	new Note(toJSON(this.note));
 		this.note_copy.key	=	this.note.key;
+		this.note_copy.get('file').key	=	this.note.key;
 
 		this.render();
 		if(this.edit_in_modal)

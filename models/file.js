@@ -21,6 +21,46 @@ var NoteFile = Protected.extend({
 			return this.key;
 		}
 		return this.parent.apply(this, arguments);
+	},
+
+	to_array: function(options)
+	{
+		options || (options = {});
+
+		if(!this.get('hash')) return false;
+
+		turtl.db.files.get(this.get('hash'))
+			.done(function(filedata) {
+				var file	=	new FileData();
+				file.key	=	this.key;
+				file.set(filedata, {
+					async_success: function() {
+						var data	=	file.get('data');
+						var buffer	=	new ArrayBuffer(data.length);
+						var array	=	new Uint8Array(buffer);
+						for(var i = 0, n = data.length; i < n; i++)
+						{
+							array[i]	=	data.charCodeAt(i);
+						}
+						if(options.success) options.success(array);
+					}.bind(this)
+				});
+			}.bind(this))
+			.fail(function(e) {
+				if(options.error) options.error(e);
+			})
+	},
+
+	to_blob: function(options)
+	{
+		options || (options = {});
+
+		return this.to_array({
+			success: function(array) {
+				if(options.success) options.success(new Blob([array.buffer], {type: this.get('type')}))
+			}.bind(this),
+			error: options.error
+		});
 	}
 });
 
