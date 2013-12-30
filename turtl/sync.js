@@ -178,6 +178,8 @@ var api_sync	=	function(method, model, options)
 			// carry on
 			if(options.success) options.success.apply(this, arguments);
 		},
+		progress: options.progress,
+		uploadprogress: options.uploadprogress,
 		error: function(err, xhr) {
 			if(method == '_delete' && xhr.status == 404)
 			{

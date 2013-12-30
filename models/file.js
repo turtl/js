@@ -31,6 +31,11 @@ var NoteFile = Protected.extend({
 
 		turtl.db.files.get(this.get('hash'))
 			.done(function(filedata) {
+				if(!filedata)
+				{
+					if(options.error) options.error(false);
+					return false;
+				}
 				var file	=	new FileData();
 				file.key	=	this.key;
 				file.set(filedata, {
@@ -102,6 +107,9 @@ var FileData = ProtectedThreaded.extend({
 			options.data	=	raw;
 			options.args	=	data;
 			this.url		=	'/notes/'+this.get('note_id')+'/file';
+			options.uploadprogress	=	function(ev) {
+				console.log('progress: ', ev);
+			};
 			return this.parent.apply(this, arguments);
 		}
 		else

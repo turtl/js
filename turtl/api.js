@@ -182,6 +182,16 @@ var Api	=	new Class({
 				var err	=	JSON.decode(xhr.responseText);
 				cb_fail(err, xhr);
 			},
+			onProgress: function(event, xhr)
+			{
+				var progress	=	{total: event.total, loaded: event.loaded};
+				if(params.progress) params.progress(progress, xhr);
+			},
+			onUploadprogress: function(event, xhr)
+			{
+				var progress	=	{total: event.total, loaded: event.loaded};
+				if(params.uploadprogress) params.uploadprogress(progress, xhr);
+			},
 			evalScripts: false,
 			evalResponse: false
 		};
