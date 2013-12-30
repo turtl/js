@@ -5213,6 +5213,7 @@ var Request = this.Request = new Class({
 		onRequest: function(){},
 		onLoadstart: function(event, xhr){},
 		onProgress: function(event, xhr){},
+		onUploadProgress: function(event, xhr){},
 		onComplete: function(){},
 		onCancel: function(){},
 		onSuccess: function(responseText, responseXML){},
@@ -5311,6 +5312,10 @@ var Request = this.Request = new Class({
 		this.fireEvent('progress', [event, this.xhr]);
 	},
 
+	uploadprogress: function(event){
+		this.fireEvent('uploadprogress', [event, this.xhr]);
+	},
+
 	timeout: function(){
 		this.fireEvent('timeout', this.xhr);
 	},
@@ -5388,6 +5393,7 @@ var Request = this.Request = new Class({
 		if (progressSupport){
 			xhr.onloadstart = this.loadstart.bind(this);
 			xhr.onprogress = this.progress.bind(this);
+			if(xhr.upload) xhr.upload.onprogress = this.uploadprogress.bind(this);
 		}
 
 		xhr.open(method.toUpperCase(), url, this.options.async, this.options.user, this.options.password);
