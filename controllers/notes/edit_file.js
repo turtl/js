@@ -24,7 +24,7 @@ var NoteEditFileController = Composer.Controller.extend({
 	{
 		this.model.unbind_relational('file', 'change', 'note:edit:file:change');
 		var blob_url	=	this.model.get('file').get('blob_url');
-		if(blob_url) URL.revokeObjectURL(blob_url);
+		//if(blob_url) URL.revokeObjectURL(blob_url);
 		this.parent.apply(this, arguments);
 	},
 
@@ -56,7 +56,7 @@ var NoteEditFileController = Composer.Controller.extend({
 			var binary	=	e.target.result;
 
 			var blob_url	=	this.model.get('file').get('blob_url');
-			if(blob_url) URL.revokeObjectURL(blob_url);
+			//if(blob_url) URL.revokeObjectURL(blob_url);
 
 			// if the current note has an existing file, we're going to
 			// overwrite it, otherwise create a new one
@@ -89,7 +89,7 @@ var NoteEditFileController = Composer.Controller.extend({
 		this.upload_remove.setStyle('display', '');
 		this.upload_preview.set('html', '');
 		var blob_url	=	this.model.get('file').get('blob_url');
-		if(blob_url) URL.revokeObjectURL(blob_url);
+		//if(blob_url) URL.revokeObjectURL(blob_url);
 		this.model.get('file').clear();
 	}
 });

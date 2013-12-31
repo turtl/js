@@ -48,6 +48,7 @@ var NoteEditController = Composer.Controller.extend({
 		this.note_copy		=	new Note(toJSON(this.note));
 		this.note_copy.key	=	this.note.key;
 		this.note_copy.get('file').key	=	this.note.key;
+		this.note_copy.get('file').set({blob_url: null});
 
 		this.render();
 		if(this.edit_in_modal)
@@ -225,6 +226,7 @@ var NoteEditController = Composer.Controller.extend({
 					var copy_json	=	note_copy.toJSON();
 					copy_json.mod	=	Math.round(new Date().getTime() / 1000);
 					this.note.set(copy_json);
+					this.note.get('file').trigger('change:hash');
 					if(isnew) this.board.get('notes').add(this.note);
 					// make sure the current filter applies to the edited note
 					this.board.get('tags').trigger('change:selected');

@@ -45,15 +45,22 @@ var NoteItemController = Composer.Controller.extend({
 
 	render: function()
 	{
+		var note_data	=	toJSON(this.model);
+		if(!note_data.text && !note_data.url && !note_data.embed && note_data.file && note_data.file.blob_url && note_data.file.type.match(/^image/))
+		{
+			note_data.type	=	'image';
+			note_data.url	=	note_data.file.blob_url;
+			note_data.file.blob_url	=	null;
+		}
 		var content = Template.render('notes/list/index', {
-			note: toJSON(this.model)
+			note: note_data
 		});
 
 		var title = '';
 
 		content = view.make_links(content);
 		this.html(content);
-		this.el.className = 'note ' + this.model.get('type');
+		this.el.className = 'note ' + note_data.type;
 		this.el.className += ' id_'+ this.model.id();
 	},
 

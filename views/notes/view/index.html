@@ -12,7 +12,10 @@ if(color) color = ['none','blue','red','green','purple','pink','brown','black'][
 		<li><a href="#delete" class="delete" title="Delete note (shortcut `delete`)"><span>Delete note</span></a></li>
 	</ul>
 </div>
-<? if(note.type != 'image') { ?><div class="content"><? } ?>
+<? if(note.type != 'image') { ?><div class="content clear"><? } ?>
+	<? if(note.file.blob_url && note.file.type.match(/^image/)) { ?>
+		<img src="<?=note.file.blob_url?>">
+	<? } ?>
 	<? var tags = Template.render('notes/view/tags', { tags: note.tags }); ?>
 	<?=Template.render('notes/view/'+note.type, {
 		note: note,

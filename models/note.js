@@ -52,6 +52,31 @@ var Note = Protected.extend({
 		}.bind(this);
 		this.bind('change:tags', save_old);
 		save_old();
+
+		this.bind_relational('file', 'change:hash', function() {
+			if(this.get('file').get('blob_url'))
+			{
+				//URL.revokeObjectURL(this.get('file').get('blob_url'));
+			}
+			if(this.get('file').get('type', '').match(/^image/))
+			{
+				this.get('file').to_blob({
+					success: function(blob) {
+						this.get('file').set({blob_url: URL.createObjectURL(blob)});
+						this.trigger('change', this);
+					}.bind(this)
+				});
+			}
+		}.bind(this));
+		this.get('file').trigger('change:hash');
+	},
+
+	destroy: function()
+	{
+		if(this.get('file').get('blob_url')) {
+			URL.revokeObjectURL(this.get('file').get('blob_url'));
+		}
+		return this.parent.apply(this, arguments);
 	},
 
 	ensure_key_exists: function()

@@ -17,6 +17,9 @@ if(color) color = ['none','blue','red','green','purple','pink','brown','black'][
 	</ul>
 </div>
 <div class="gutter content">
+	<? if(note.file.blob_url && note.file.type.match(/^image/)) { ?>
+		<img src="<?=note.file.blob_url?>">
+	<? } ?>
 	<?=Template.render('notes/list/'+note.type, {
 		note: note
 	})?>
