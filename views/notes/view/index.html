@@ -15,6 +15,10 @@ if(color) color = ['none','blue','red','green','purple','pink','brown','black'][
 <? if(note.type != 'image') { ?><div class="content clear"><? } ?>
 	<? if(note.file.blob_url && note.file.type.match(/^image/)) { ?>
 		<a href="<?=note.file.blob_url?>" target="_blank"><img src="<?=note.file.blob_url?>"></a>
+	<? } else if(note.type != 'image' && note.file.type.match(/^image/)) { ?>
+		<?=note.file.name?> (generating preview)
+	<? } else if(note.file && note.type != 'image') { ?>
+		<a href="#attachment" class="attachment" target="_blank"><?=note.file.name?></a>
 	<? } ?>
 	<? var tags = Template.render('notes/view/tags', { tags: note.tags }); ?>
 	<?=Template.render('notes/view/'+note.type, {

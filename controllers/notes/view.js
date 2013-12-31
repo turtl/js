@@ -11,7 +11,8 @@ var NoteViewController = Composer.Controller.extend({
 		'mouseenter ul.dropdown': 'cancel_close_menu',
 		'click ul.dropdown a.edit': 'open_edit',
 		'click ul.dropdown a.move': 'open_move',
-		'click ul.dropdown a.delete': 'delete_note'
+		'click ul.dropdown a.delete': 'delete_note',
+		'click a.attachment': 'download_attachment'
 	},
 
 	model: null,
@@ -125,5 +126,27 @@ var NoteViewController = Composer.Controller.extend({
 				}
 			});
 		}
+	},
+
+	download_attachment: function(e)
+	{
+		if(e) e.stop();
+		var win	=	window.open('about:blank');
+		this.model.get('file').to_blob({
+			success: function(blob) {
+				var url	=	URL.createObjectURL(blob);
+				win.location	=	url;
+				var monitor		=	function()
+				{
+					if(win.closed)
+					{
+						URL.revokeObjectURL(url);
+						return false;
+					}
+					monitor.delay(100, this);
+				};
+				monitor();
+			}
+		});
 	}
 });
