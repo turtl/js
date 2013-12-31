@@ -14,7 +14,7 @@ if(color) color = ['none','blue','red','green','purple','pink','brown','black'][
 </div>
 <? if(note.type != 'image') { ?><div class="content clear"><? } ?>
 	<? if(note.file.blob_url && note.file.type.match(/^image/)) { ?>
-		<img src="<?=note.file.blob_url?>">
+		<a href="<?=note.file.blob_url?>" target="_blank"><img src="<?=note.file.blob_url?>"></a>
 	<? } ?>
 	<? var tags = Template.render('notes/view/tags', { tags: note.tags }); ?>
 	<?=Template.render('notes/view/'+note.type, {
