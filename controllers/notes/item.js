@@ -153,7 +153,6 @@ var NoteItemController = Composer.Controller.extend({
 				{
 					if(win.closed)
 					{
-						console.log('REVOKE!!');
 						URL.revokeObjectURL(url);
 						return false;
 					}
