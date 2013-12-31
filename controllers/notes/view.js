@@ -131,7 +131,7 @@ var NoteViewController = Composer.Controller.extend({
 	download_attachment: function(e)
 	{
 		if(e) e.stop();
-		var win	=	window.open('about:blank');
+		var win	=	window.open('data:text/html;base64,'+convert.base64.encode('<center><br><br><strong>Decrypting file, please wait.</strong></center>'));
 		this.model.get('file').to_blob({
 			success: function(blob) {
 				var url	=	URL.createObjectURL(blob);
