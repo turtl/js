@@ -74,9 +74,17 @@ ul.note_list .note.image .color {margin: 0;}*/
 .color.black {color: #111; background: #111;}
 
 /* view note */
-.note-view {position: relative; padding: 20px; min-height: 100px;}
+.note-view {position: relative; padding: 0; min-height: 100px;}
+.note-view > .content {padding: 20px;}
 .note-view div.actions {padding-left: 0;}
+.note-view.image > div.note-file {display: none;}
 .note-view:hover div.actions {display: block;}
+.note-view .note-file {padding: 0;}
+.note-view .note-file .image {line-height: 0;}
+.note-view .note-file .attachment {display: block; margin: 0 0 0 0; padding: 12px 0; font-size: 16px; line-height: 1em; text-align: center; background: #fafafa; border-bottom: 1px dashed #e0e0e0;}
+.note-view.empty .content {display: none;}
+.note-view.empty .note-file .attachment {padding: 45px 0; border: 0;}
+.note-view .note-file .attachment img {margin: 0 3px -3px 0;}
 .modalcontent .note-view h1 {
 	/*width: 100%;*/
 	margin: 0 0 8px 0;
@@ -204,9 +212,8 @@ ul.note_list.list_masonry > li {
 	padding: 0;
 	background: #fff;
 }
-ul.note_list.list_masonry > li > .gutter {
-	padding: 16px;
-}
+ul.note_list.list_masonry > li > .gutter {padding: 16px;}
+ul.note_list.list_masonry > li.empty > .gutter {}
 ul.note_list.list_masonry > li.image {width: 232px; padding: 0;}
 ul.note_list.list_masonry > li.image > div.gutter {padding: 0;}
 ul.note_list.list_masonry > li.image > div.note-file {display: none;}
@@ -216,9 +223,12 @@ ul.note_list.list_masonry > li.image h2 {display: none; position: absolute; bott
 ul.note_list.list_masonry > li.image:hover h2 {display: block;}
 /* pretty impossible to sort masonry notes */
 ul.note_list.list_masonry > li div.actions a.sort {display: none;}
-ul.note_list.list_masonry .note .note-file {min-height: 26px; line-height: 0; background: #444;}
-ul.note_list.list_masonry .note .note-file .attachment {display: inline-block; margin: 12px 0 0 0;}
-ul.note_list.list_masonry .note .note-file .attachment img {float: left; margin: -8px 6px 0 3px;}
+ul.note_list.list_masonry .note .note-file {padding: 0;}
+ul.note_list.list_masonry .note .note-file .image {line-height: 0;}
+ul.note_list.list_masonry .note .note-file .attachment {display: block; margin: 0 0 0 0; padding: 12px 0; font-size: 16px; line-height: 1em; text-align: center; background: #fafafa; border-bottom: 1px dashed #e0e0e0;}
+ul.note_list.list_masonry li.note.empty .gutter {display: none;}
+ul.note_list.list_masonry li.note.empty .note-file .attachment {border: 0;}
+ul.note_list.list_masonry .note .note-file .attachment img {margin: 0 3px -3px 0;}
 ul.note_list.list_masonry .note h1 {margin-bottom: 6px;}
 ul.note_list.list_masonry .note ul {list-style: disc;}
 ul.note_list.list_masonry .note ul,
