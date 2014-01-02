@@ -97,7 +97,7 @@ ul.note_list .note.image .color {margin: 0;}*/
 .note-view ul.tags li:last-child {margin-right: 4px;} /* don't know why this doesn't line up, but here's the fix */
 .note-view ul.tags li span {color: #222;}
 .note-view.image {padding: 0; overflow: hidden; text-align: center; background: #000;}
-.note-view.image a.img {padding: 0; line-height: 1em; text-align: center; background: #000;}
+.note-view.image a.img {padding: 0; line-height: 0; text-align: center; background: #000;}
 .note-view.image .content {padding: 20px; margin-top: -2px; background: #fff;}
 
 /* add/edit */
@@ -167,6 +167,7 @@ ul.note_list .note h1 a {
 ul.note_list .note span.break {font-size: 1px;}
 
 /* grid */
+/*
 ul.note_list.list_grid {position: relative;}
 ul.note_list.list_grid > li {
 	float: left;
@@ -191,24 +192,33 @@ ul.note_list.list_grid .note p {padding: 0 0 16px 0;}
 ul.note_list.list_grid .note p:first-child {padding: 0 0 0 0; margin: 0;}
 ul.note_list.list_grid .note img {max-width: 100%; max-height: 100%;}
 ul.note_list.list_grid .note a.img {display: table-cell; width: 182px; max-width: 182px; height: 182px; vertical-align: middle; text-align: center; background: #000;}
+*/
 
 /* masonry */
 ul.note_list.list_masonry > li {
 	position: absolute;		/* makes masonry JS a bit faster */
 	float: left;
 	display: block;
-	width: 200px;
+	width: 232px;
 	margin: 0 16px 16px 0;
-	padding: 16px;
+	padding: 0;
 	background: #fff;
 }
+ul.note_list.list_masonry > li > .gutter {
+	padding: 16px;
+}
 ul.note_list.list_masonry > li.image {width: 232px; padding: 0;}
-ul.note_list.list_masonry > li > div.gutter {width: 100%; max-height: 500px; overflow: hidden;}
+ul.note_list.list_masonry > li.image > div.gutter {padding: 0;}
+ul.note_list.list_masonry > li.image > div.note-file {display: none;}
+ul.note_list.list_masonry > li > div.gutter {max-height: 500px; overflow: hidden;}
 ul.note_list.list_masonry > li.image > div.gutter {width: 100%; overflow: hidden;}
 ul.note_list.list_masonry > li.image h2 {display: none; position: absolute; bottom: 0; width: 96%; height: 26px; padding: 6px 2% 0 2%; line-height: 1em; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background: url(../../images/site/trans_000_50.png) 0 0;}
 ul.note_list.list_masonry > li.image:hover h2 {display: block;}
 /* pretty impossible to sort masonry notes */
 ul.note_list.list_masonry > li div.actions a.sort {display: none;}
+ul.note_list.list_masonry .note .note-file {min-height: 26px; line-height: 0; background: #444;}
+ul.note_list.list_masonry .note .note-file .attachment {display: inline-block; margin: 12px 0 0 0;}
+ul.note_list.list_masonry .note .note-file .attachment img {float: left; margin: -8px 6px 0 3px;}
 ul.note_list.list_masonry .note h1 {margin-bottom: 6px;}
 ul.note_list.list_masonry .note ul {list-style: disc;}
 ul.note_list.list_masonry .note ul,
