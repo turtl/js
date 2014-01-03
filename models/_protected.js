@@ -649,6 +649,7 @@ var ProtectedThreaded = Protected.extend({
 	 */
 	toJSONAsync: function(finish_cb, options)
 	{
+		options || (options = {});
 		var data		=	{};
 
 		var do_finish	=	function(encrypted)

@@ -123,7 +123,7 @@ var api_sync	=	function(method, model, options)
 	var args	=	options.args;
 	var url		=	model.get_url();
 	args || (args = {});
-	if(options.raw)
+	if(options.rawUpload)
 	{
 		// we're sending raw/binary data.
 		args.cid	=	model.cid();
@@ -163,7 +163,8 @@ var api_sync	=	function(method, model, options)
 
 	// call the API!
 	turtl.api[method](url, args, {
-		raw: options.raw,
+		rawUpload: options.rawUpload,
+		responseType: options.responseType,
 		headers: headers,
 		success: function(res) {
 			// if we got sync_ids back, set them into our remote sync's ignore.

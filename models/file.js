@@ -95,7 +95,6 @@ var FileData = ProtectedThreaded.extend({
 			};
 
 			// convert body to Uint8Array
-			// TODO: always store file body as Uint8Array in local db...
 			var raw	=	new Uint8Array(body.length);
 			for(var i = 0, n = body.length; i < n; i++)
 			{
@@ -103,10 +102,10 @@ var FileData = ProtectedThreaded.extend({
 			}
 
 			// mark the save as raw and fire it off
-			options.raw		=	true;
-			options.data	=	raw;
-			options.args	=	data;
-			this.url		=	'/notes/'+this.get('note_id')+'/file';
+			options.rawUpload	=	true;
+			options.data		=	raw;
+			options.args		=	data;
+			this.url			=	'/notes/'+this.get('note_id')+'/file';
 			options.uploadprogress	=	function(ev) {
 				console.log('progress: ', ev);
 			};
@@ -116,6 +115,49 @@ var FileData = ProtectedThreaded.extend({
 		{
 			return this.parent.apply(this, arguments);
 		}
+	},
+
+	download: function(options)
+	{
+		options || (options = {});
+
+		if(!this.get('note_id') || !this.get('id')) return false;
+		turtl.api.get('/notes/'+this.get('note_id')+'/file', {}, {
+			raw: true,
+			responseType: 'arraybuffer',
+			success: function(res) {
+				var body	=	'';
+				var arr		=	new Uint8Array(res);
+				for(var i = 0, n = arr.length; i < n; i++)
+				{
+					body	+=	String.fromCharCode(arr[i]);
+				}
+
+				var data	=	{
+					id: this.get('id'),
+					note_id: this.get('note_id'),
+					data: body,
+					last_mod: new Date().getTime()
+				};
+				this.set({data: body});
+				if(!options.skip_save)
+				{
+					turtl.db.files.update(data)
+						.done(function() {
+							if(options.success) options.success(this);
+						}.bind(this))
+						.fail(function(e) {
+							console.error('file: download: save error: ', e);
+							if(options.error) options.error(e);
+						});
+				}
+				else
+				{
+					if(options.success) options.success(this);
+				}
+			}.bind(this),
+			error: options.error
+		});
 	}
 });
 

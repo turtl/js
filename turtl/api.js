@@ -149,9 +149,6 @@ var Api	=	new Class({
 		data || (data = {});
 		params || (params = {});
 
-		var cb_success	=	typeof(params['success']) == 'undefined' ? function() {} : params['success'];
-		var cb_fail		=	typeof(params['error']) == 'undefined' ? function() {} : params['error'];
-
 		// should we auth to the server? we don't want to unless we have to
 		var send_auth	=	this.test_auth_needed(method, resource);
 
@@ -172,15 +169,16 @@ var Api	=	new Class({
 			emulation: false,
 			headers: params.headers || {},
 			data: data,
+			responseType: params.responseType,
 			onSuccess: function(res)
 			{
-				var data	=	JSON.parse(res);
-				cb_success(data);
+				if(!params.raw) res = JSON.parse(res);
+				if(params.success) params.success(res);
 			},
 			onFailure: function(xhr)
 			{
 				var err	=	JSON.parse(xhr.responseText);
-				cb_fail(err, xhr);
+				if(params.error) params.error(res);
 			},
 			onProgress: function(event, xhr)
 			{
@@ -196,7 +194,7 @@ var Api	=	new Class({
 			evalResponse: false
 		};
 
-		if(params.raw)
+		if(params.rawUpload)
 		{
 			request.urlEncoded	=	false;
 			request.encoding	=	false;
