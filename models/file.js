@@ -123,15 +123,9 @@ var FileData = ProtectedThreaded.extend({
 
 		if(!this.get('note_id') || !this.get('id')) return false;
 		turtl.api.get('/notes/'+this.get('note_id')+'/file', {}, {
-			raw: true,
 			responseType: 'arraybuffer',
 			success: function(res) {
-				var body	=	'';
-				var arr		=	new Uint8Array(res);
-				for(var i = 0, n = arr.length; i < n; i++)
-				{
-					body	+=	String.fromCharCode(arr[i]);
-				}
+				var body	=	uint8array_to_string(res);
 
 				var data	=	{
 					id: this.get('id'),

@@ -172,12 +172,13 @@ var Api	=	new Class({
 			responseType: params.responseType,
 			onSuccess: function(res)
 			{
-				if(!params.raw) res = JSON.parse(res);
+				if(!params.responseType) res = JSON.parse(res);
 				if(params.success) params.success(res);
 			},
 			onFailure: function(xhr)
 			{
-				var err	=	JSON.parse(xhr.responseText);
+				var res	=	xhr;
+				if(!params.responseType) res = JSON.parse(xhr.responseText);
 				if(params.error) params.error(res);
 			},
 			onProgress: function(event, xhr)

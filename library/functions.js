@@ -44,6 +44,19 @@ function get_parent(obj)
 }
 
 /**
+ * convert a Uint8Array to a binary string
+ */
+function uint8array_to_string(array)
+{
+	var str	=	'';
+	for(var i = 0, n = array.length; i < n; i++)
+	{
+		str	+=	String.fromCharCode(array[i]);
+	}
+	return str;
+}
+
+/**
  * takes raw (non-mootools) object from whatever addon is running and ensures
  * that it is recursively turned into a mootools object
  */
