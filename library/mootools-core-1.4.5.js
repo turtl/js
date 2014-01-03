@@ -5225,6 +5225,7 @@ var Request = this.Request = new Class({
 		url: '',
 		data: '',
 		processData: true,
+		responseType: null,
 		headers: {
 			'X-Requested-With': 'XMLHttpRequest',
 			'Accept': 'text/javascript, text/html, application/xml, text/xml, */*'
@@ -5267,9 +5268,9 @@ var Request = this.Request = new Class({
 		if (progressSupport) xhr.onprogress = xhr.onloadstart = empty;
 		clearTimeout(this.timer);
 
-		this.response = {text: this.xhr.responseText || '', xml: this.xhr.responseXML};
+		this.response = {text: (!this.options.responseType && this.xhr.responseText) || '', xml: (!this.options.responseType && this.xhr.responseXML)};
 		if (this.options.isSuccess.call(this, this.status))
-			this.success(this.response.text, this.response.xml);
+			this.success(this.options.responseType ? this.xhr.response : this.response.text, this.response.xml);
 		else
 			this.failure();
 	},
@@ -5284,6 +5285,7 @@ var Request = this.Request = new Class({
 	},
 
 	processScripts: function(text){
+		if (typeof text != 'string') return text;
 		if (this.options.evalResponse || (/(ecma|java)script/).test(this.getHeader('Content-type'))) return Browser.exec(text);
 		return text.stripScripts(this.options.evalScripts);
 	},
@@ -5408,6 +5410,10 @@ var Request = this.Request = new Class({
 				this.fireEvent('exception', [key, value]);
 			}
 		}, this);
+
+		if (this.options.responseType){
+			xhr.responseType = this.options.responseType.toLowerCase();
+		}
 
 		this.fireEvent('request');
 		xhr.send(data);
