@@ -174,12 +174,12 @@ var Api	=	new Class({
 			data: data,
 			onSuccess: function(res)
 			{
-				var data	=	JSON.decode(res);
+				var data	=	JSON.parse(res);
 				cb_success(data);
 			},
 			onFailure: function(xhr)
 			{
-				var err	=	JSON.decode(xhr.responseText);
+				var err	=	JSON.parse(xhr.responseText);
 				cb_fail(err, xhr);
 			},
 			onProgress: function(event, xhr)
