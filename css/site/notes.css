@@ -6,7 +6,7 @@
 .notes div.note-actions div.button {margin: 0 6px 0 0;}
 .notes div.note-actions .sort {display: inline-block; margin-left: 16px; color: #999; white-space: nowrap;}
 .notes div.note-actions .sort a {display: inline;}
-.notes div.note-actions .sort a icon {display: none; margin-top: -7px;}
+.notes div.note-actions .sort a icon {display: none;}
 .notes div.note-actions .sort a.sel.asc icon.asc,
 .notes div.note-actions .sort a.sel.desc icon.desc {display: inline-block;}
 .notes div.note-actions ul {float: left; list-style: none; margin: -1px 0 0 32px;}
@@ -33,9 +33,9 @@
 
 /* individual note actions */
 .notes div.actions {display: none; z-index: 2; position: absolute; top: 0; right: 0; height: 24px; padding: 0 0 0 4px; opacity: .95; background: #222; border: 1px solid #333;}
-.notes div.actions a {opacity: .6;}
+.notes div.actions a {float: left; opacity: .6;}
 .notes div.actions a:hover {opacity: 1;}
-.notes div.actions a icon {margin-top: -15px; font-size: 38px; color: #fff;}
+.notes div.actions a icon {margin-top: 6px; font-size: 1.4em; color: #fff;}
 .notes div.actions > a.sort {display: inline-block; width: 16px; height: 24px; background: url(../../images/site/icons/sort_handle_white_12x16.png) center center no-repeat;}
 .notes div.actions > a.sort > span {display: block; width: 19px; height: 24px; cursor: move;}
 .notes div.actions > a.open {display: inline-block; width: 16px; height: 24px; padding-left: 3px;}
