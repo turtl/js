@@ -554,39 +554,6 @@ var ProtectedThreaded = Protected.extend({
 	},
 
 	/**
-	 * TODO: remove? we can just use the hmac hash from the encrypted payload
-	 *
-	hash: function(data, options)
-	{
-		options || (options = {});
-
-		var worker	=	new Worker(window._base_url + '/library/tcrypt.thread.js');
-		this.workers.push(worker);
-		worker.postMessage({
-			cmd: 'hash',
-			data: data
-		});
-		worker.addEventListener('message', function(e) {
-			var res		=	e.data;
-			if(res.type != 'success')
-			{
-				var hash	=	false;
-				console.log('tcrypt.thread: err: ', res);
-			}
-			else
-			{
-				var hash	=	res.data;
-			}
-			if(options.complete) options.complete(hash);
-
-			// got a response, clean up
-			worker.terminate();
-			this.workers	=	this.workers.erase(worker);
-		}.bind(this));
-	},
-	*/
-
-	/**
 	 * Like its sync parent, but expects deserialization to be async.
 	 */
 	process_body: function(obj, options)

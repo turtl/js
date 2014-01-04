@@ -4,7 +4,8 @@ var NoteFile = Protected.extend({
 	public_fields: [
 		'hash',
 		'size',
-		'upload_id'
+		'upload_id',
+		'synced'
 	],
 
 	private_fields: [
@@ -34,6 +35,7 @@ var NoteFile = Protected.extend({
 				if(!filedata)
 				{
 					if(options.error) options.error(false);
+					this.set({synced: false});
 					return false;
 				}
 				var file	=	new FileData();
@@ -74,7 +76,9 @@ var FileData = ProtectedThreaded.extend({
 
 	public_fields: [
 		'id',
-		'note_id'
+		'note_id',
+		'has_data',
+		'synced'
 	],
 
 	private_fields: [
@@ -117,6 +121,10 @@ var FileData = ProtectedThreaded.extend({
 		}
 	},
 
+	/**
+	 * download a file's contents from the API and also notify the owning note
+	 * that the file contents are ready to go.
+	 */
 	download: function(options)
 	{
 		options || (options = {});
@@ -127,18 +135,41 @@ var FileData = ProtectedThreaded.extend({
 			success: function(res) {
 				var body	=	uint8array_to_string(res);
 
-				var data	=	{
-					id: this.get('id'),
-					note_id: this.get('note_id'),
-					data: body,
-					last_mod: new Date().getTime()
-				};
 				this.set({data: body});
+
+				var data	=	{
+					id: this.id(),
+					note_id: this.get('note_id'),
+					body: body,
+					synced: true,
+					has_data: true
+				};
+
+				// called when all finished
+				var done	=	function()
+				{
+					if(options.success) options.success(this);
+				}.bind(this);
+
 				if(!options.skip_save)
 				{
+					// save the file data into the db
 					turtl.db.files.update(data)
 						.done(function() {
-							if(options.success) options.success(this);
+							// now update the note so it knows it has file contents
+							turtl.db.notes
+								.query()
+								.filter('id', this.get('note_id'))
+								.modify({
+									file: function(n) { n.file.synced = true; return n.file; },
+									last_mod: new Date().getTime()
+								})
+								.execute()
+								.done(done)
+								.fail(function(e) {
+									console.error('file: download: save error: ', e);
+									if(options.error) options.error(e);
+								});
 						}.bind(this))
 						.fail(function(e) {
 							console.error('file: download: save error: ', e);
@@ -147,7 +178,7 @@ var FileData = ProtectedThreaded.extend({
 				}
 				else
 				{
-					if(options.success) options.success(this);
+					done();
 				}
 			}.bind(this),
 			error: options.error

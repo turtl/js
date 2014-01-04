@@ -53,7 +53,7 @@ var Note = Protected.extend({
 		this.bind('change:tags', save_old);
 		save_old();
 
-		this.bind_relational('file', 'change:hash', function() {
+		this.bind_relational('file', ['change:hash', 'change:synced'], function() {
 			if(this.get('file').get('blob_url'))
 			{
 				//URL.revokeObjectURL(this.get('file').get('blob_url'));
@@ -64,6 +64,10 @@ var Note = Protected.extend({
 					success: function(blob) {
 						this.get('file').set({blob_url: URL.createObjectURL(blob)});
 						this.trigger('change', this);
+					}.bind(this),
+					error: function(e) {
+						if(!e) return false;
+						console.error('note: file: problem converting to blob: ', e);
 					}.bind(this)
 				});
 			}

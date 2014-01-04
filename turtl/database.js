@@ -93,8 +93,8 @@ var database = {
 					key: { keyPath: 'id', autoIncrement: false },
 					indexes: {
 						note_id: {},
-						hash: {},
 						synced: {},
+						has_data: {},
 						local_change: {},
 						last_mod: {},
 						deleted: {}

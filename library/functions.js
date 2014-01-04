@@ -48,6 +48,11 @@ function get_parent(obj)
  */
 function uint8array_to_string(array)
 {
+	// be smart about converting array buffers to arrays
+	if(typeof ArrayBuffer != 'undefined' && array instanceof ArrayBuffer)
+	{
+		array	=	new Uint8Array(array);
+	}
 	var str	=	'';
 	for(var i = 0, n = array.length; i < n; i++)
 	{
