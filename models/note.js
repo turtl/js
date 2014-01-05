@@ -17,6 +17,7 @@ var Note = Protected.extend({
 		'user_id',
 		'board_id',
 		'file',
+		'has_file',
 		'keys',
 		'body',
 		'meta',
@@ -53,10 +54,15 @@ var Note = Protected.extend({
 		this.bind('change:tags', save_old);
 		save_old();
 
-		this.bind_relational('file', ['change:hash', 'change:synced'], function() {
+		this.bind_relational('file', ['change'], function() {
+			var has_file	=	this.get('file').get('hash') ? 1 : 0;
+			this.set({has_file: has_file});
+		}.bind(this));
+
+		this.bind_relational('file', ['change:hash', 'change:has_data'], function() {
 			if(this.get('file').get('blob_url'))
 			{
-				//URL.revokeObjectURL(this.get('file').get('blob_url'));
+				URL.revokeObjectURL(this.get('file').get('blob_url'));
 			}
 			if(this.get('file').get('type', '').match(/^image/))
 			{
@@ -258,7 +264,6 @@ var Note = Protected.extend({
 	sync_post_create: function()
 	{
 		var hash	=	this.get('file').get('hash');
-		console.log('note created, file hash ', hash);
 		if(!hash) return;
 
 		// if the file exists, update it to have local_change = 1 so it'll be
@@ -268,7 +273,7 @@ var Note = Protected.extend({
 			.modify({local_change: 1, note_id: this.id()})
 			.execute()
 			.fail(function(e) {
-				console.error('Error uploading file.', hash, e);
+				console.error('Error uploading file: ', hash, e);
 			});
 	}
 });
@@ -332,6 +337,34 @@ var Notes = SyncCollection.extend({
 			if(note_data.cid) note._cid	=	note_data.cid;
 			this.upsert(note);
 		}
+	},
+
+	sync_to_api: function()
+	{
+		turtl.db.notes
+			.query('has_file')
+			.only(1)
+			.execute()
+			.done(function(res) {
+				res.each(function(notedata) {
+					if(!notedata || !notedata.file || !notedata.file.hash) return false;
+
+					var filedata	=	{
+						id: notedata.file.hash,
+						note_id: notedata.id,
+						has_data: 0
+					};
+					turtl.db.files.get(filedata.id).done(function(file) {
+						if(file) return false;
+						// file record doesn't exist! add it.
+						turtl.db.files.update(filedata);
+					}.bind(this));
+				}.bind(this));
+			}.bind(this))
+			.fail(function(e) {
+				console.error('sync: '+ this.local_table +': add file records: ', e);
+			});
+		return this.parent.apply(this, arguments);
 	}
 });
 

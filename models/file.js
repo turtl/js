@@ -1,11 +1,15 @@
 var NoteFile = Protected.extend({
 	base_url: '/files',
 
+	defaults: {
+		synced: 0
+	},
+
 	public_fields: [
 		'hash',
 		'size',
 		'upload_id',
-		'synced'
+		'has_data'
 	],
 
 	private_fields: [
@@ -35,7 +39,7 @@ var NoteFile = Protected.extend({
 				if(!filedata)
 				{
 					if(options.error) options.error(false);
-					this.set({synced: false});
+					this.set({has_data: 0});
 					return false;
 				}
 				var file	=	new FileData();
@@ -77,8 +81,8 @@ var FileData = ProtectedThreaded.extend({
 	public_fields: [
 		'id',
 		'note_id',
-		'has_data',
-		'synced'
+		'synced',
+		'has_data'
 	],
 
 	private_fields: [
@@ -113,7 +117,9 @@ var FileData = ProtectedThreaded.extend({
 			options.uploadprogress	=	function(ev) {
 				console.log('progress: ', ev);
 			};
-			return this.parent.apply(this, arguments);
+			var save_fn	=	get_parent(this);
+			return turtl.files.upload(this, save_fn, options);
+			//return this.parent.apply(this, arguments);
 		}
 		else
 		{
@@ -141,45 +147,34 @@ var FileData = ProtectedThreaded.extend({
 					id: this.id(),
 					note_id: this.get('note_id'),
 					body: body,
-					synced: true,
-					has_data: true
+					synced: 1,
+					has_data: 1
 				};
 
-				// called when all finished
-				var done	=	function()
-				{
-					if(options.success) options.success(this);
-				}.bind(this);
-
-				if(!options.skip_save)
-				{
-					// save the file data into the db
-					turtl.db.files.update(data)
-						.done(function() {
-							// now update the note so it knows it has file contents
-							turtl.db.notes
-								.query()
-								.filter('id', this.get('note_id'))
-								.modify({
-									file: function(n) { n.file.synced = true; return n.file; },
-									last_mod: new Date().getTime()
-								})
-								.execute()
-								.done(done)
-								.fail(function(e) {
-									console.error('file: download: save error: ', e);
-									if(options.error) options.error(e);
-								});
-						}.bind(this))
-						.fail(function(e) {
-							console.error('file: download: save error: ', e);
-							if(options.error) options.error(e);
-						});
-				}
-				else
-				{
-					done();
-				}
+				// save the file data into the db
+				turtl.db.files.update(data)
+					.done(function() {
+						// now update the note so it knows it has file contents
+						turtl.db.notes
+							.query()
+							.only(this.get('note_id'))
+							.modify({
+								file: function(n) { n.file.has_data = 1; return n.file; },
+								last_mod: new Date().getTime()
+							})
+							.execute()
+							.done(function() {
+								if(options.success) options.success(this);
+							}.bind(this))
+							.fail(function(e) {
+								console.error('file: download: save error: ', e);
+								if(options.error) options.error(e);
+							});
+					}.bind(this))
+					.fail(function(e) {
+						console.error('file: download: save error: ', e);
+						if(options.error) options.error(e);
+					});
 			}.bind(this),
 			error: options.error
 		});
@@ -189,6 +184,11 @@ var FileData = ProtectedThreaded.extend({
 var Files = SyncCollection.extend({
 	model: FileData,
 	local_table: 'files',
+
+	// used to track which files are currently downloading to this client.
+	downloads: {},
+	// used to track which files are currently uploading from this client.
+	uploads: {},
 
 	update_record_from_api_save: function(modeldata, record, options)
 	{
@@ -207,8 +207,8 @@ var Files = SyncCollection.extend({
 		var hash	=	modeldata.id;
 		turtl.db.files
 			.query()
-			.filter('id', hash)
-			.modify({synced: true})
+			.only(hash)
+			.modify({synced: 1})
 			.execute()
 			.done(function() {
 				turtl.db.notes
@@ -229,5 +229,75 @@ var Files = SyncCollection.extend({
 				if(options.error) options.error(e);
 			});
 
+	},
+
+	sync_to_api: function()
+	{
+		// grab the files collection, used to track downloads
+		var files	=	turtl.files;
+		turtl.db.files
+			.query('has_data')
+			.only(0)
+			.execute()
+			.done(function(res) {
+				res.each(function(filedata) {
+					var model	=	this.create_remote_model(filedata);
+					files.download(model);
+				}.bind(this));
+			}.bind(this))
+			.fail(function(e) {
+				console.error('sync: '+ this.local_table +': download: ', e);
+			});
+		return this.parent.apply(this, arguments);
+	},
+
+	track_file: function(type, track_id, trigger_fn, options)
+	{
+		options || (options = {});
+
+		console.log('files: track: ', type, track_id, this[type][track_id]);
+		// download in progress? GTFO
+		if(this[type][track_id]) return false;
+
+		// track it
+		this[type][track_id]	=	true;
+
+		// hijack our completion functions so we can track the download
+		var success		=	options.success;
+		var progress	=	options.progress;
+		var error		=	options.error;
+		options.success	=	function()
+		{
+			delete this[type][track_id];
+			if(success) success.apply(this, arguments);
+			this.trigger(type+'-success', track_id);
+		}.bind(this);
+		options.progress	=	function(ev)
+		{
+			if(progress) progress.apply(this, arguments);
+			this.trigger(type+'-progress', track_id, ev);
+		}.bind(this);
+		options.error	=	function()
+		{
+			delete this[type][track_id];
+			if(error) error.apply(this, arguments);
+			this.trigger(type+'-error', track_id);
+		}.bind(this);
+
+		// run the actual download
+		return trigger_fn(options);
+	},
+
+	download: function(model, options)
+	{
+		options || (options = {});
+		return this.track_file('downloads', model.id(), model.download.bind(model), options);
+	},
+
+	upload: function(model, save_fn, options)
+	{
+		options || (options = {});
+		return this.track_file('uploads', model.id(), save_fn, options);
 	}
 });
+

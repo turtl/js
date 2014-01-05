@@ -217,6 +217,11 @@ var NoteEditController = Composer.Controller.extend({
 		{
 			options || (options = {});
 
+			if(note_copy.get('file').get('hash'))
+			{
+				note_copy.set({file_data_present: true});
+			}
+
 			// save the note copy, and on success, set the resulting data back into
 			// the original note (not the copy)
 			note_copy.save({
@@ -269,9 +274,10 @@ var NoteEditController = Composer.Controller.extend({
 				//
 				// setting id here is a roundabout way of modifying the cache,
 				// but it works great.
-				hash		=	convert.binstring_to_hex(tcrypt.deserialize(res.body, {hmac_only: true}));
-				res.id		=	hash;
-				res.synced	=	false;
+				hash			=	convert.binstring_to_hex(tcrypt.deserialize(res.body, {hmac_only: true}));
+				res.id			=	hash;
+				res.synced		=	0;
+				res.has_data	=	1;
 				if(!note_copy.is_new())
 				{
 					res.note_id	=	note_copy.id();

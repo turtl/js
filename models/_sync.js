@@ -174,7 +174,7 @@ var Sync = Composer.Model.extend({
 
 	/**
 	 * Start remote syncing. This looks for data that has change in the local DB
-	 * and syncs the changes out to the API. Also, it 
+	 * and syncs the changes out to the API.
 	 *
 	 * TODO: when proper cid/id matching is implemented, make sure a full sync
 	 * from API is completed *before* doing sync_to_api.
@@ -294,6 +294,20 @@ var Sync = Composer.Model.extend({
 					console.log('Sync.sync_from_api: ', e);
 				}.bind(this))
 		}
+	},
+
+	/**
+	 * any data that comes from a remote source must first come through here.
+	 * this function will run any needed updates on the data.
+	 */
+	process_data: function(data)
+	{
+		if(!data || !data.notes) return false;
+		data.notes.each(function(note) {
+			if(!note || !note.file || !note.file.hash) return
+			note.has_file	=	1;
+		});
+		return data;
 	}
 });
 
@@ -347,14 +361,26 @@ var SyncCollection	=	Composer.Collection.extend({
 		// Well, well...Indiana Jones. we got ourselves a CID. don't want to
 		// send this to the save() function in the `id` field or it'll get
 		// mistaken as an update (not an add).
-		if(record.id.match(/^c[0-9]+(\.[0-9]+)?$/))
+		if(record.id && record.id.match(/^c[0-9]+(\.[0-9]+)?$/))
 		{
 			record.cid	=	record.id;
 			delete record.id;
 		}
 
 		// create a new instance of our collection's model
-		var model	=	new this.model();
+		var modelclass	=	options.model ? options.model : this.model;
+		var model		=	new modelclass();
+
+		// create a parse function that runs the model's data through the
+		// standard sync parse function before applying into the model.
+		model.parse	=	function(data)
+		{
+			var key			=	this.local_table;
+			var process		=	{};
+			process[key]	=	[data];
+			process			=	turtl.sync.process_data(process);
+			return process[key][0];
+		}.bind(this);
 
 		// raw_data disables encryption/decryption (only the in-mem
 		// models are going to need this, so we just stupidly pass
@@ -652,6 +678,11 @@ var SyncCollection	=	Composer.Collection.extend({
 	 */
 	sync_from_api: function(table, syncdata)
 	{
+		// process the sync data
+		var process	=	{};
+		process[this.local_table]	=	syncdata;
+		syncdata	=	turtl.sync.process_data(process)[this.local_table];
+
 		// loop over each of the synced items (this is a collection, remember)
 		// and perform any standard data transformations before saving to the
 		// local DB. update is the only operation we need.

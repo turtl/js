@@ -54,6 +54,9 @@ var turtl	=	{
 	// this is our local storage DB "server" (right now an IndexedDB abstraction
 	// which stores files and notes locally).
 	db: null,
+
+	// Files collection, used to track file uploads/downloads
+	files: null,
 	// -------------------------------------------------------------------------
 
 	init: function()
@@ -130,6 +133,10 @@ var turtl	=	{
 			turtl.messages	=	new Messages();
 			turtl.profile	=	new Profile();
 			turtl.search	=	new Search();
+			turtl.files		=	new Files();
+
+			// init our sync interface (shows updates on syncing/uploads/downloads)
+			this.load_controller('sync', SyncController);
 
 			turtl.show_loading_screen(true);
 
@@ -204,6 +211,10 @@ var turtl	=	{
 			turtl.setup_header_bar();
 			turtl.profile.destroy();
 			turtl.profile	=	null;
+			turtl.search.destroy();
+			turtl.search	=	false;
+			turtl.files.destroy();
+			turtl.files	=	false;
 
 			if(window.port) window.port.send('logout');
 		}.bind(turtl));

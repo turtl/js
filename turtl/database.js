@@ -15,7 +15,7 @@ var database = {
 		db.open({
 			// DB has user id in it...client might have multiple users
 			server: 'turtl.'+turtl.user.id(),
-			version: 5,
+			version: 6,
 			// NOTE: all tables that are sync between the client and the API
 			// *must* have "local_change" and "last_mod" indexex. or else. or
 			// else what?? or else it won't work.
@@ -81,6 +81,7 @@ var database = {
 					indexes: {
 						user_id: {},
 						board_id: {},
+						has_file: {},
 						local_change: {},
 						last_mod: {},
 						deleted: {}
@@ -88,7 +89,10 @@ var database = {
 				},
 				// note that the files table holds raw/encrypted file data for
 				// note attachments. the 'id' field is the HMAC hash from the
-				// payload.
+				// payload. also, there isn't a 1 to 1 mapping between records
+				// in the files table and in-memory models, mainly because files
+				// are decrypted on-demand and aren't always going to be loaded
+				// in memory.
 				files: {
 					key: { keyPath: 'id', autoIncrement: false },
 					indexes: {

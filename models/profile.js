@@ -127,6 +127,9 @@ var Profile = Composer.RelationalModel.extend({
 				{
 					turtl.api.get('/profiles/users/'+turtl.user.id(), {}, {
 						success: function(profile) {
+							// process the data through the sync system
+							profile	=	turtl.sync.process_data(profile);
+
 							// send all profile data to the local db
 							this.persist_profile_to_db(profile, {
 								complete: function() {
