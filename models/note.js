@@ -298,8 +298,6 @@ var Note = Protected.extend({
 		var hash	=	this.get('file').get('hash');
 		if(!hash) return;
 
-		console.log('note id: ', this.id());
-
 		// if the file exists, update it to have local_change = 1 so it'll be
 		// synced.
 		turtl.db.files.query()
@@ -357,7 +355,6 @@ var Notes = SyncCollection.extend({
 
 	process_local_sync: function(note_data, note)
 	{
-		console.log('note: sync: ', note_data);
 		if(note_data.deleted)
 		{
 			if(note) note.destroy({skip_local_sync: true, skip_remote_sync: true});
