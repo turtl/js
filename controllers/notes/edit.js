@@ -49,6 +49,7 @@ var NoteEditController = Composer.Controller.extend({
 		this.note_copy.key	=	this.note.key;
 		this.note_copy.get('file').key	=	this.note.key;
 		this.note_copy.get('file').set({blob_url: null});
+		this.note_copy.disable_file_monitoring	=	true;
 
 		this.render();
 		if(this.edit_in_modal)
@@ -217,11 +218,6 @@ var NoteEditController = Composer.Controller.extend({
 		{
 			options || (options = {});
 
-			if(note_copy.get('file').get('hash'))
-			{
-				note_copy.set({file_data_present: true});
-			}
-
 			// save the note copy, and on success, set the resulting data back into
 			// the original note (not the copy)
 			note_copy.save({
@@ -231,7 +227,6 @@ var NoteEditController = Composer.Controller.extend({
 					var copy_json	=	note_copy.toJSON();
 					copy_json.mod	=	Math.round(new Date().getTime() / 1000);
 					this.note.set(copy_json);
-					this.note.get('file').trigger('change:hash');
 					if(isnew) this.board.get('notes').add(this.note);
 					// make sure the current filter applies to the edited note
 					this.board.get('tags').trigger('change:selected');
@@ -276,6 +271,8 @@ var NoteEditController = Composer.Controller.extend({
 				// but it works great.
 				hash			=	convert.binstring_to_hex(tcrypt.deserialize(res.body, {hmac_only: true}));
 				res.id			=	hash;
+				// we don't want to upload the file until the note we're
+				// attaching to has a real ID (synced = -1)
 				res.synced		=	0;
 				res.has_data	=	1;
 				if(!note_copy.is_new())
@@ -290,8 +287,6 @@ var NoteEditController = Composer.Controller.extend({
 
 				// save the file contents into local db then save the note
 				filedata.save({
-					// we don't want to upload the file until the note we're
-					// attaching to has a real ID
 					skip_remote_sync: note_copy.is_new(),
 					success: function() {
 						do_note_save({no_close: true});

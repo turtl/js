@@ -41,6 +41,9 @@ var Note = Protected.extend({
 	// variable stores the file data until a key is available
 	_tmp_file_data: false,
 
+	// lets us disable monitoring of file events
+	disable_file_monitoring: false,
+
 	init: function()
 	{
 		var save_old = function() {
@@ -54,16 +57,38 @@ var Note = Protected.extend({
 		this.bind('change:tags', save_old);
 		save_old();
 
-		this.bind_relational('file', ['change'], function() {
+		this.bind_relational('file', ['change:hash'], function() {
+			if(this.is_new() || this.disable_file_monitoring) return false;
+
+			if(this.get('file').get('blob_url'))
+			{
+				//URL.revokeObjectURL(this.get('file').get('blob_url'));
+			}
+
 			var has_file	=	this.get('file').get('hash') ? 1 : 0;
 			this.set({has_file: has_file});
+			if(!this.raw_data)
+			{
+				// make sure we update the note record to reflect our has_file
+				// value in the db
+				//
+				// NOTE: we do *NOT* do note.save() here because if another save
+				// is in progress, it will be interfered with, causing some
+				// very weird problems. just run the update manually...
+				turtl.db.notes
+					.query()
+					.only(this.id())
+					.modify({has_file: has_file})
+					.execute()
+					.fail(function(e) {
+						console.error('note: set has_file: ', e)
+					});
+			}
 		}.bind(this));
 
 		this.bind_relational('file', ['change:hash', 'change:has_data'], function() {
-			if(this.get('file').get('blob_url'))
-			{
-				URL.revokeObjectURL(this.get('file').get('blob_url'));
-			}
+			if(this.disable_file_monitoring) return false;
+
 			if(this.get('file').get('type', '').match(/^image/))
 			{
 				this.get('file').to_blob({
@@ -78,12 +103,19 @@ var Note = Protected.extend({
 				});
 			}
 		}.bind(this));
+
+		this.bind('destroy', function() {
+			if(this.disable_file_monitoring) return false;
+			this.clear_files();
+		}.bind(this));
+
 		this.get('file').trigger('change:hash');
 	},
 
 	destroy: function()
 	{
-		if(this.get('file').get('blob_url')) {
+		if(this.get('file').get('blob_url'))
+		{
 			URL.revokeObjectURL(this.get('file').get('blob_url'));
 		}
 		return this.parent.apply(this, arguments);
@@ -266,6 +298,8 @@ var Note = Protected.extend({
 		var hash	=	this.get('file').get('hash');
 		if(!hash) return;
 
+		console.log('note id: ', this.id());
+
 		// if the file exists, update it to have local_change = 1 so it'll be
 		// synced.
 		turtl.db.files.query()
@@ -323,6 +357,7 @@ var Notes = SyncCollection.extend({
 
 	process_local_sync: function(note_data, note)
 	{
+		console.log('note: sync: ', note_data);
 		if(note_data.deleted)
 		{
 			if(note) note.destroy({skip_local_sync: true, skip_remote_sync: true});
@@ -341,9 +376,16 @@ var Notes = SyncCollection.extend({
 
 	sync_to_api: function()
 	{
+		// this code creates empty file records in the files table from notes
+		// that we know have file data
+		//
+		// what we do here is search for notes with has_file = 1 (0 is does not
+		// have a file, 1 is has a file but not sure if the file record exists
+		// in the files table, and 2 is note has a file and file record is 
+		// definitely in the files table)
 		turtl.db.notes
 			.query('has_file')
-			.only(1)
+			.only(1)		// only query notes that we're uncertain if it has matching file record
 			.execute()
 			.done(function(res) {
 				res.each(function(notedata) {
@@ -355,9 +397,21 @@ var Notes = SyncCollection.extend({
 						has_data: 0
 					};
 					turtl.db.files.get(filedata.id).done(function(file) {
+						// mark note as definitely having file record
+						turtl.db.notes
+							.query()
+							.only(notedata.id)
+							.modify({has_file: 2})
+							.execute()
+							.fail(function(e) {
+								console.error('sync: '+ this.local_table +': set has_file = 2', e);
+							}.bind(this));
+						// no need to mess with the file record if we've got one already
 						if(file) return false;
 						// file record doesn't exist! add it.
-						turtl.db.files.update(filedata);
+						turtl.db.files.update(filedata).fail(function(e) {
+							console.error('sync: ', this.local_table +': insert file record: ', e);
+						}.bind(this));
 					}.bind(this));
 				}.bind(this));
 			}.bind(this))
@@ -370,3 +424,4 @@ var Notes = SyncCollection.extend({
 
 var NotesFilter = Composer.FilterCollection.extend({
 });
+

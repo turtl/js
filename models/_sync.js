@@ -1,5 +1,5 @@
 var SyncError			=	extend_error(Error, 'SyncError');
-var _sync_debug_list	=	['boards', 'notes', 'files'];
+var _sync_debug_list	=	['notes', 'files'];
 
 /**
  * Sync model, handles (almost) all syncing between the in-memory models, the
@@ -232,6 +232,7 @@ var Sync = Composer.Model.extend({
 						(sync.personas && sync.personas.length > 0) ||
 						(sync.boards && sync.boards.length > 0) ||
 						(sync.notes && sync.notes.length > 0) ||
+						(sync.files && sync.files.length > 0) ||
 						(sync.user && sync.user.length > 0)
 					)
 					{
@@ -241,6 +242,7 @@ var Sync = Composer.Model.extend({
 						if(sync.personas && sync.personas.length > 0) sync_clone.personas = sync.personas.length;
 						if(sync.boards && sync.boards.length > 0) sync_clone.boards = sync.boards.length;
 						if(sync.notes && sync.notes.length > 0) sync_clone.notes = sync.notes.length;
+						if(sync.files && sync.files.length > 0) sync_clone.files = sync.files.length;
 						console.log('sync: ', JSON.encode(sync_clone));
 					}
 
@@ -302,7 +304,7 @@ var Sync = Composer.Model.extend({
 	 */
 	process_data: function(data)
 	{
-		if(!data || !data.notes) return false;
+		if(!data || !data.notes) return data;
 		data.notes.each(function(note) {
 			if(!note || !note.file || !note.file.hash) return
 			note.has_file	=	1;
@@ -375,6 +377,7 @@ var SyncCollection	=	Composer.Collection.extend({
 		// standard sync parse function before applying into the model.
 		model.parse	=	function(data)
 		{
+			if(!data) return data;
 			var key			=	this.local_table;
 			var process		=	{};
 			process[key]	=	[data];
@@ -691,15 +694,7 @@ var SyncCollection	=	Composer.Collection.extend({
 			// record is from something just did, and we don't need to re-apply
 			// changes we already made...in fact, doing so can cause problems
 			// such as race conditions).
-			try
-			{
-				if(turtl.sync.should_ignore(item._sync.id, {type: 'remote'})) return false;
-			}
-			catch(e)
-			{
-				turtl.do_sync=false;
-				throw e;
-			}
+			if(turtl.sync.should_ignore(item._sync.id, {type: 'remote'})) return false;
 
 			var do_sync	=	function()
 			{

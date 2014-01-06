@@ -130,6 +130,17 @@ var Profile = Composer.RelationalModel.extend({
 							// process the data through the sync system
 							profile	=	turtl.sync.process_data(profile);
 
+							// create file records from note records
+							profile.files	=	profile.notes
+								.filter(function(note) { return note.file && note.file.hash; })
+								.map(function(note) {
+									return {
+										id: note.file.hash,
+										note_id: note.id,
+										has_data: 0
+									};
+								});
+
 							// send all profile data to the local db
 							this.persist_profile_to_db(profile, {
 								complete: function() {
@@ -258,6 +269,7 @@ var Profile = Composer.RelationalModel.extend({
 		populate('personas', profile.personas, {complete: complete_fn('personas')});
 		populate('boards', profile.boards, {complete: complete_fn('boards')});
 		populate('notes', profile.notes, {complete: complete_fn('notes')});
+		populate('files', profile.files, {complete: complete_fn('files')});
 	},
 
 	/**

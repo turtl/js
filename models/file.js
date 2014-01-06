@@ -96,6 +96,8 @@ var FileData = ProtectedThreaded.extend({
 		if(options.api_save)
 		{
 			var data	=	this.toJSON();
+			// don't try to upload until we have a real note id
+			if(!data.note_id || !data.note_id.match(/[0-9a-f]+/)) return false;
 			var body	=	data.body;
 			var data	=	{
 				hash: data.id,
@@ -136,15 +138,16 @@ var FileData = ProtectedThreaded.extend({
 		options || (options = {});
 
 		if(!this.get('note_id') || !this.get('id')) return false;
-		turtl.api.get('/notes/'+this.get('note_id')+'/file', {}, {
+		turtl.api.get('/notes/'+this.get('note_id')+'/file', {hash: this.get('id')}, {
 			responseType: 'arraybuffer',
 			success: function(res) {
 				var body	=	uint8array_to_string(res);
 
 				this.set({data: body});
 
+				var hash	=	this.id();
 				var data	=	{
-					id: this.id(),
+					id: hash,
 					note_id: this.get('note_id'),
 					body: body,
 					synced: 1,
@@ -159,8 +162,15 @@ var FileData = ProtectedThreaded.extend({
 							.query()
 							.only(this.get('note_id'))
 							.modify({
-								file: function(n) { n.file.has_data = 1; return n.file; },
-								last_mod: new Date().getTime()
+								file: function(n) {
+									n.file.hash		=	hash;
+									// increment has_file. this notifies the in-mem
+									// model to reload.
+									n.file.has_data	=	n.file.has_data < 1 ? 1 : n.file.has_data + 1;
+									return n.file;
+								},
+								last_mod: new Date().getTime(),
+								has_file: 2
 							})
 							.execute()
 							.done(function() {
@@ -176,6 +186,7 @@ var FileData = ProtectedThreaded.extend({
 						if(options.error) options.error(e);
 					});
 			}.bind(this),
+			progress: options.progress,
 			error: options.error
 		});
 	}
@@ -208,13 +219,20 @@ var Files = SyncCollection.extend({
 		turtl.db.files
 			.query()
 			.only(hash)
-			.modify({synced: 1})
+			.modify({synced: 1, has_data: 1})
 			.execute()
 			.done(function() {
 				turtl.db.notes
 					.query()
 					.filter('id', note_id)
-					.modify({last_mod: new Date().getTime()})
+					.modify({
+						file: function(note) {
+							note.file.hash		=	hash;
+							note.file.has_data	=	1;
+							return note.file;
+						},
+						last_mod: new Date().getTime()
+					})
 					.execute()
 					.done(function() {
 						if(options.success) options.success();
@@ -241,6 +259,8 @@ var Files = SyncCollection.extend({
 			.execute()
 			.done(function(res) {
 				res.each(function(filedata) {
+					console.log('about to download: ', filedata);
+					if(res.deleted) return false;
 					var model	=	this.create_remote_model(filedata);
 					files.download(model);
 				}.bind(this));
@@ -251,11 +271,33 @@ var Files = SyncCollection.extend({
 		return this.parent.apply(this, arguments);
 	},
 
+	sync_from_api: function(table, syncdata)
+	{
+		syncdata.each(function(item) {
+			if(turtl.sync.should_ignore(item._sync.id, {type: 'remote'})) return false;
+
+			if(_sync_debug_list.contains(this.local_table))
+			{
+				console.log('sync: '+ this.local_table +': api -> db ('+ item._sync.action +')');
+			}
+
+			var filedata	=	{
+				id: item.file.hash,
+				note_id: item.id,
+				has_data: 0
+			};
+			if(item.deleted) filedata.deleted = 1;
+
+			item.last_mod	=	new Date().getTime();
+
+			table.update(filedata);
+		});
+	},
+
 	track_file: function(type, track_id, trigger_fn, options)
 	{
 		options || (options = {});
 
-		console.log('files: track: ', type, track_id, this[type][track_id]);
 		// download in progress? GTFO
 		if(this[type][track_id]) return false;
 
@@ -263,9 +305,13 @@ var Files = SyncCollection.extend({
 		this[type][track_id]	=	true;
 
 		// hijack our completion functions so we can track the download
-		var success		=	options.success;
-		var progress	=	options.progress;
-		var error		=	options.error;
+		var success			=	options.success;
+		var progress		=	options.progress;
+		var uploadprogress	=	options.progress;
+		var error			=	options.error;
+
+		this.trigger(type+'-start', track_id);
+
 		options.success	=	function()
 		{
 			delete this[type][track_id];
@@ -277,11 +323,17 @@ var Files = SyncCollection.extend({
 			if(progress) progress.apply(this, arguments);
 			this.trigger(type+'-progress', track_id, ev);
 		}.bind(this);
-		options.error	=	function()
+		options.uploadprogress	=	function(ev)
+		{
+			if(uploadprogress) uploadprogress.apply(this, arguments);
+			this.trigger(type+'-progress', track_id, ev);
+		}.bind(this);
+		options.error	=	function(e, xhr)
 		{
 			delete this[type][track_id];
 			if(error) error.apply(this, arguments);
 			this.trigger(type+'-error', track_id);
+			console.error('files: '+type+': error', xhr);
 		}.bind(this);
 
 		// run the actual download
@@ -297,7 +349,7 @@ var Files = SyncCollection.extend({
 	upload: function(model, save_fn, options)
 	{
 		options || (options = {});
-		return this.track_file('uploads', model.id(), save_fn, options);
+		return this.track_file('uploads', model.id(), save_fn.bind(model), options);
 	}
 });
 
