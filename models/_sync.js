@@ -126,7 +126,7 @@ var Sync = Composer.Model.extend({
 		turtl.db.sync.update(
 			{key: 'sync_id', value: sync_id}
 		).fail(function(e) {
-			console.log('Sync.save: problem persisting sync record: ', e);
+			console.error('Sync.save: problem persisting sync record: ', e);
 		});
 	},
 

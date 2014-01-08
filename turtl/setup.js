@@ -40,3 +40,10 @@ if(window.chrome && window.chrome.extension)
 		};
 	}
 }
+
+if(window._in_desktop)
+{
+	window.__api_url	=	config.api_url;
+	window._base_url	=	window.location.toString().replace(/^(.*)\/.*?$/, '$1/app');
+}
+
