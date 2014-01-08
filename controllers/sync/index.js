@@ -7,6 +7,7 @@ var SyncController = Composer.Controller.extend({
 
 	init: function()
 	{
+return false;
 		if(!turtl.files) return false;
 
 		turtl.files.bind('all', this.render.bind(this), 'sync:files:all:render');
