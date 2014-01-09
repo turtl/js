@@ -52,7 +52,7 @@
 
 /* note color circles */
 .note-view .color,
-ul.note_list .note .color {display: block; position: absolute; width: 8px; height: 8px; margin: -12px 0 0 -12px; border-radius: 4px;}
+ul.note_list .note .color {display: block; position: absolute; width: 8px; height: 8px; margin: 4px 0 0 4px; border-radius: 4px;}
 /*.note-view .color,
 ul.note_list .note .color {width: 4px; height: 32px; margin: -16px -16px; border-radius: 0;}*/
 .note-view.image .color,
