@@ -475,7 +475,7 @@ var ProtectedThreaded = Protected.extend({
 			if(res.type != 'success')
 			{
 				var dec	=	false;
-				console.log('tcrypt.thread: err: ', res);
+				console.error('tcrypt.thread: err: ', res);
 			}
 			else
 			{
@@ -538,7 +538,7 @@ var ProtectedThreaded = Protected.extend({
 			if(res.type != 'success')
 			{
 				var enc	=	false;
-				console.log('tcrypt.thread: err: ', res);
+				console.error('tcrypt.thread: err: ', res);
 			}
 			else
 			{
