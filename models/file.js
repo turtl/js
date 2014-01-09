@@ -139,6 +139,14 @@ var FileData = ProtectedThreaded.extend({
 	},
 
 	/**
+	 * wrapper around calling of download API to make some tricky things easier
+	 * (properly handling redirects in various buggy browsers, mainly).
+	 */
+	_do_download: function(options)
+	{
+	},
+
+	/**
 	 * download a file's contents from the API and also notify the owning note
 	 * that the file contents are ready to go.
 	 */
@@ -256,6 +264,7 @@ var Files = SyncCollection.extend({
 					.filter('id', note_id)
 					.modify({
 						file: function(note) {
+							if(!note.file) note.file = {};
 							note.file.hash		=	hash;
 							note.file.has_data	=	1;
 							return note.file;
@@ -290,8 +299,7 @@ var Files = SyncCollection.extend({
 				res.each(function(filedata) {
 					if(res.deleted) return false;
 					var model	=	this.create_remote_model(filedata);
-// TODO enable
-//files.download(model);
+					files.download(model);
 				}.bind(this));
 			}.bind(this))
 			.fail(function(e) {

@@ -213,8 +213,9 @@ var turtl	=	{
 			turtl.profile	=	null;
 			turtl.search.destroy();
 			turtl.search	=	false;
-			turtl.files.destroy();
-			turtl.files	=	false;
+			turtl.files		=	false;
+
+			turtl.route('/');
 
 			if(window.port) window.port.send('logout');
 		}.bind(turtl));
