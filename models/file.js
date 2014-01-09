@@ -278,7 +278,7 @@ var Files = SyncCollection.extend({
 			.done(function() {
 				turtl.db.notes
 					.query()
-					.filter('id', note_id)
+					.only(note_id)
 					.modify({
 						file: function(note) {
 							if(!note.file) note.file = {};
