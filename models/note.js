@@ -89,11 +89,12 @@ var Note = Protected.extend({
 		this.bind_relational('file', ['change:hash', 'change:has_data'], function() {
 			if(this.disable_file_monitoring) return false;
 
+			// generate a preview
 			if(this.get('file').get('type', '').match(/^image/))
 			{
 				this.get('file').to_blob({
 					success: function(blob) {
-						this.get('file').set({blob_url: URL.createObjectURL(blob)});
+						this.get('file').set({blob_url: URL.createObjectURL(blob)+'#name='+this.get('file').get('name')});
 						this.trigger('change', this);
 					}.bind(this),
 					error: function(e) {
