@@ -1,5 +1,6 @@
 var NoteEditController = Composer.Controller.extend({
 	elements: {
+		'.note-edit .boards': 'board_container',
 		'.note-edit form div.tags': 'tags',
 		'.type.upload': 'uploader',
 		'textarea[name=quick]': 'inp_quick',
@@ -33,6 +34,7 @@ var NoteEditController = Composer.Controller.extend({
 
 	edit_in_modal: true,
 	show_tabs: true,
+	show_boards: false,
 
 	board: null,
 	note: null,
@@ -62,6 +64,12 @@ var NoteEditController = Composer.Controller.extend({
 			modal.addEvent('close', close_fn);
 		}
 		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
+
+		turtl.profile.bind('change:current_board', function() {
+			this.board	=	turtl.profile.get_current_board();
+			if(!this.board) this.release();
+			this.render_tags();
+		}.bind(this), 'notes:edit:profile:change_board');
 	},
 
 	release: function()
@@ -75,6 +83,7 @@ var NoteEditController = Composer.Controller.extend({
 		}
 		if(this.tag_controller) this.tag_controller.release();
 		turtl.keyboard.attach(); // re-enable shortcuts
+		turtl.profile.unbind('change:current_board', 'notes:edit:profile:change_board');
 		if(this.tips) this.tips.detach();
 		this.parent.apply(this, arguments);
 	},
@@ -98,12 +107,26 @@ var NoteEditController = Composer.Controller.extend({
 		this.tips = new TurtlTips(this.el.getElements('.tooltip'), {
 			className: 'tip-container'
 		});
-		this.tag_controller = new NoteEditTagController({
+		this.render_tags();
+		if(this.show_boards)
+		{
+			this.board_controller	=	new BoardsController({
+				inject: this.board_container,
+				profile: turtl.profile,
+				add_bare: true
+			});
+		}
+		this.select_tab(this.note_copy.get('type'));
+	},
+
+	render_tags: function()
+	{
+		if(this.tag_controller) this.tag_controller.release();
+		this.tag_controller	=	new NoteEditTagController({
 			inject: this.tags,
 			note: this.note_copy,
 			board: this.board
 		});
-		this.select_tab(this.note_copy.get('type'));
 	},
 
 	save_form_to_copy: function(e, options)

@@ -97,8 +97,7 @@ var BoardEditController = Composer.Controller.extend({
 			success: function() {
 				turtl.loading(false);
 				if(success) success();
-				if(this.edit_in_modal && modal.is_open) modal.close();
-				else this.release();
+				if(this.edit_in_modal && modal.is_open && !this.bare) modal.close();
 
 				if(this.return_to_manage)
 				{

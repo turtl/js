@@ -42,7 +42,7 @@ var BoardsController = Composer.Controller.extend({
 
 	add_board: function(e)
 	{
-		if(modal.is_open) return false;
+		if(modal.is_open && !this.add_bare) return false;
 		if(e) e.stop();
 
 		var parent	=	this.el.getParent();
@@ -59,6 +59,7 @@ var BoardsController = Composer.Controller.extend({
 				edit.unbind('boards:index:edit:release');
 				this.inject	=	parent;
 				this.el.setStyle('display', '');
+				this.render();
 			}.bind(this), 'boards:index:edit:release');
 		}
 	},

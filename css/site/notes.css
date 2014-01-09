@@ -109,7 +109,12 @@ ul.note_list .note.image .color {margin: 0;}*/
 .note-view.image .content {padding: 20px; margin-top: -2px; background: #fff;}
 
 /* add/edit */
-.note-edit ul.type {list-style: none; position: absolute; top: 32px; left: 200px;}
+.note-edit .boards {position: absolute; top: 22px; left: 160px;}
+.note-edit .boards .board-list {margin: 0; padding: 0; border: 0;}
+.note-edit .boards .board-list select {width: 120px;}
+.note-edit .boards .board-list ul.actions li a {display: none;}
+.note-edit .boards .board-list ul.actions li a.add {margin: 5px 0 0 0; display: inline-block;}
+.note-edit ul.type {list-style: none; position: absolute; top: 32px; left: 380px;}
 .note-edit ul.type li {float: left; display: inline-block; margin: 0 6px -1px 0; padding: 5px 10px; font-size: 12px; color: #73b8d1; text-transform: uppercase; cursor: pointer; border-radius: 4px;}
 .note-edit ul.type li.sel {padding-top: 4px; color: #73b8d1; color: #111; border-top: 1px solid #ddd; background: #fff;}
 .note-edit > form > .do-edit {float: left; width: 60%;}
