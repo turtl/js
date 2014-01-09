@@ -1,6 +1,6 @@
 .board-list {padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #d0d0d0;}
 .board-list img.loading {display: none;}
-.board-list select {float: left; display: block; width: 160px; margin: 0 10px 0 0; padding: 2px auto;}
+.board-list select {float: left; display: block; width: 160px; margin: 0 10px 0 0; padding-top: 2px; padding-bottom: 2px;}
 .board-list ul.actions {float: left; padding: 2px 0 0 0; list-style: none;}
 .board-list ul.actions li {display: inline; margin: 0 3px 0 0;}
 .board-list ul.actions a {display: inline-block; opacity: .8;}
