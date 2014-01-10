@@ -391,7 +391,9 @@ var SyncCollection	=	Composer.Collection.extend({
 		model.raw_data	=	true;
 		Object.each(model.relations, function(v, k) {
 			// set raw data for each of the model's sub-objects
-			model.get(k).raw_data	=	true;
+			var submodel	=	model.get(k);
+			if(!submodel) return false;
+			submodel.raw_data	=	true;
 		});
 
 		// set our model to use the API sync function (instead of

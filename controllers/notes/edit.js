@@ -35,15 +35,24 @@ var NoteEditController = Composer.Controller.extend({
 	edit_in_modal: true,
 	show_tabs: true,
 	show_boards: false,
+	track_last_board: false,
 
 	board: null,
 	note: null,
 	note_copy: null,
 	tag_controller: null,
+	board_controller: null,
 	tips: null,
 
 	init: function()
 	{
+		if(this.board == 'last')
+		{
+			var board_id	=	turtl.user.get('settings').get_by_key('last_board').value() || false;
+			var board		=	turtl.profile.get('boards').find_by_id(board_id);
+			if(board) this.board = board;
+		}
+
 		if(!this.board) return false;
 		if(!this.note) this.note = new Note({type: 'quick'});
 		// clone the note so any changes to it pre-save don't show up in the listings.
@@ -65,11 +74,19 @@ var NoteEditController = Composer.Controller.extend({
 		}
 		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
 
-		turtl.profile.bind('change:current_board', function() {
-			this.board	=	turtl.profile.get_current_board();
-			if(!this.board) this.release();
-			this.render_tags();
-		}.bind(this), 'notes:edit:profile:change_board');
+		// listen to board-change events
+		if(this.board_controller)
+		{
+			this.board_controller.bind('change-board', function(board) {
+				this.board	=	board;
+				if(!this.board)
+				{
+					this.release();
+					return;
+				}
+				this.render_tags();
+			}.bind(this), 'notes:edit:change-board');
+		}
 	},
 
 	release: function()
@@ -82,8 +99,8 @@ var NoteEditController = Composer.Controller.extend({
 			this.note_copy	=	null;
 		}
 		if(this.tag_controller) this.tag_controller.release();
+		if(this.board_controller) this.board_controller.release();
 		turtl.keyboard.attach(); // re-enable shortcuts
-		turtl.profile.unbind('change:current_board', 'notes:edit:profile:change_board');
 		if(this.tips) this.tips.detach();
 		this.parent.apply(this, arguments);
 	},
@@ -110,10 +127,14 @@ var NoteEditController = Composer.Controller.extend({
 		this.render_tags();
 		if(this.show_boards)
 		{
+			var board	=	null;
+			if(this.track_last_board) board = this.board;
 			this.board_controller	=	new BoardsController({
 				inject: this.board_container,
 				profile: turtl.profile,
-				add_bare: true
+				add_bare: true,
+				track_last_board: this.track_last_board,
+				board: board
 			});
 		}
 		this.select_tab(this.note_copy.get('type'));

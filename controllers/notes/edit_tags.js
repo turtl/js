@@ -16,6 +16,8 @@ var NoteEditTagController = Composer.Controller.extend({
 
 	init: function()
 	{
+		if(!this.board) return false;
+
 		var load_suggestions = function()
 		{
 			this.suggested_tags = toJSON(this.board.get('tags'))

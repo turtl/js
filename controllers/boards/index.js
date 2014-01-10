@@ -11,6 +11,8 @@ var BoardsController = Composer.Controller.extend({
 
 	profile: null,
 	add_bare: false,
+	track_last_board: false,
+	board: null,
 
 	init: function()
 	{
@@ -31,9 +33,11 @@ var BoardsController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var current = this.profile.get_current_board();
+		var current	=	null;
+		if(this.board) current = this.board;
+		if(!current) current = this.profile.get_current_board();
 		if(current) current = current.get('id');
-		var content = Template.render('boards/list', {
+		var content	=	Template.render('boards/list', {
 			boards: toJSON(this.profile.get('boards')),
 			current: current
 		});
@@ -74,10 +78,13 @@ var BoardsController = Composer.Controller.extend({
 
 	change_board: function(e)
 	{
-		this.trigger('change-board');
-		var board_id = this.selector.value;
-		var board = this.profile.get('boards').find_by_id(board_id);
-		if(board) this.profile.set_current_board(board);
+		var board_id	=	this.selector.value;
+		var board		=	this.profile.get('boards').find_by_id(board_id);
+		this.trigger('change-board', board);
+		if(this.track_last_board)
+		{
+			turtl.user.get('settings').get_by_key('last_board').value(board.id());
+		}
 	}
 });
 
