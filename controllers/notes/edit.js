@@ -51,6 +51,7 @@ var NoteEditController = Composer.Controller.extend({
 			var board_id	=	turtl.user.get('settings').get_by_key('last_board').value() || false;
 			var board		=	turtl.profile.get('boards').find_by_id(board_id);
 			if(board) this.board = board;
+			else this.board = turtl.profile.get_current_board();
 		}
 
 		if(!this.board) return false;
