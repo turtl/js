@@ -101,7 +101,7 @@ var turtl	=	{
 			this.user.login_from_auth(window._auth);
 			window._auth	=	null;	// clear, because i'm paranoid
 		}
-		else
+		else if(!window._disable_cookie)
 		{
 			this.user.login_from_cookie();
 		}
@@ -248,7 +248,11 @@ var turtl	=	{
 		turtl.do_sync	=	false;
 		if(turtl.db) turtl.db.close();
 		window.indexedDB.deleteDatabase('turtl.'+turtl.user.id());
-		turtl.setup_local_db();
+		turtl.setup_local_db({
+			complete: function() {
+				turtl.do_sync	=	true;
+			}
+		});
 	},
 
 	setup_header_bar: function()
