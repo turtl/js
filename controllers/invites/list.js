@@ -15,6 +15,8 @@ var InvitesListController	=	Composer.Controller.extend({
 	collection: null,
 	persona: null,
 
+	edit_in_modal: false,
+
 	init: function()
 	{
 		if(!this.collection) this.collection = new Invites();
@@ -26,10 +28,21 @@ var InvitesListController	=	Composer.Controller.extend({
 		}.bind(this));
 		this.collection.bind(['add', 'remove', 'reset', 'change'], this.render.bind(this), 'invites:list:collection:all');
 		turtl.messages.bind(['add', 'remove', 'reset', 'change'], this.render.bind(this), 'invites:list:messages:all');
+		if(this.edit_in_modal)
+		{
+			this.render()
+			modal.open(this.el);
+			var close_fn = function() {
+				this.release.delay(0, this);
+				modal.removeEvent('close', close_fn);
+			}.bind(this);
+			modal.addEvent('close', close_fn);
+		}
 	},
 
 	release: function()
 	{
+		if(modal.is_open && this.edit_in_modal) modal.close();
 		if(window.port) window.port.unbind('invites-populate');
 		this.collection.unbind(['add', 'remove', 'reset', 'change'], 'invites:list:collection:all');
 		turtl.messages.unbind(['add', 'remove', 'reset', 'change'], 'invites:list:messages:all');
