@@ -67,6 +67,7 @@ var NoteEditController = Composer.Controller.extend({
 		if(this.edit_in_modal)
 		{
 			modal.open(this.el);
+			modal.objects.container.removeClass('bare');
 			var close_fn = function() {
 				this.release();
 				modal.removeEvent('close', close_fn);
