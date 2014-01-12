@@ -416,6 +416,8 @@ var Notes = SyncCollection.extend({
 			.fail(function(e) {
 				console.error('sync: '+ this.local_table +': add file records: ', e);
 			});
+
+		// go running to mommy
 		return this.parent.apply(this, arguments);
 	}
 });

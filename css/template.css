@@ -36,21 +36,10 @@ a { text-decoration: none; }
 #wrap > .sidebar-bg {position: fixed; z-index: -1; top: 0; left: 0; width: 20%; padding-right: 9px; height: 100%; background: #e3e3e3; border-right: 1px solid #ddd;}
 body.bare #wrap > .sidebar-bg {display: none;}
 
-header {float: left; width: 20%; height: 40px; margin: 0 0 22px 0; padding: 0 10px 0 0; border-bottom: 1px solid #222;}
-header {
-	background: #222; /* Old browsers */
-	background: -moz-linear-gradient(top,  #333333 1%, #111111 100%); /* FF3.6+ */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(1%,#333333), color-stop(100%,#111111)); /* Chrome,Safari4+ */
-	background: -webkit-linear-gradient(top,  #333333 1%,#111111 100%); /* Chrome10+,Safari5.1+ */
-	background: -o-linear-gradient(top,  #333333 1%,#111111 100%); /* Opera 11.10+ */
-	background: -ms-linear-gradient(top,  #333333 1%,#111111 100%); /* IE10+ */
-	background: linear-gradient(to bottom,  #333333 1%,#111111 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#333333', endColorstr='#111111',GradientType=0 ); /* IE6-9 */
-}
-header h1 {float: left; padding: 11px 0 0 10px; font-size: 16px; font-weight: bold; text-transform: lowercase;}
+header {float: left; width: 20%; height: 40px; margin: 0 0 22px 0; padding: 0 0 0 10px; background: #222; border-bottom: 1px solid #222;}
+header h1 {float: left; display: block; width: 29px; height: 30px; margin: 5px 0 0 0; background: url(../images/template/logo.png) 0 0 no-repeat;}
+header h1 span {display: none;}
 header h1 {color: #eee; color: #92b579; cursor: default;}
-header h1 span {display: inline-block; padding: 0 2px;}
-header h1:hover span {color: #73b8d1;}
 header div.loading {visibility: hidden; float: left; margin: 13px 16px 0 16px;}
 
 header .apps ul.switch a {display: block; height: 40px;}
@@ -69,9 +58,9 @@ header .apps ul.switch a {
 }
 header .apps {float: left; margin: 0 6px 0 0;}
 header .apps ul.switch a.sel {background: #202020;}
-header .apps ul.switch {float: left; list-style: none; margin: 0 0 0 6px;}
+header .apps ul.switch {float: left; list-style: none; margin: 0;}
 header .apps ul.switch.hidden {display: none;}
-header .apps ul.switch li {float: left;}
+header .apps ul.switch li {float: left; margin: 0 0 0 0;}
 header .apps ul.switch li a {position: relative; width: 40px; border-left: 0;}
 header .apps ul.switch li a span {width: 40px; height: 40px; opacity: .8;}
 header .apps ul.switch li a:hover span {opacity: 1;}
@@ -91,7 +80,7 @@ header div.actions > ul li:first-child a {}
 header div.actions > ul a.sel {background: #202020;}
 
 /* logged in menu */
-header div.actions > a.menu {display: inline-block; height: 36px; margin: 5px 0px 0 0; opacity: .9;}
+header div.actions > a.menu {display: inline-block; height: 36px; margin: 5px 4px 0 0; opacity: .9;}
 header div.actions > a.menu:hover {opacity: 1;}
 header div.actions ul.menu {display: none; position: absolute; left: 20%; z-index: 10; width: 230px; margin: -1px 0 0 -220px; list-style: none; background: #111;}
 header div.actions ul.menu.open {display: block;}
