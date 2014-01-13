@@ -94,7 +94,16 @@ var Note = Protected.extend({
 			{
 				this.get('file').to_blob({
 					success: function(blob) {
-						this.get('file').set({blob_url: URL.createObjectURL(blob)+'#name='+this.get('file').get('name')});
+						var blob_url	=	URL.createObjectURL(blob)
+						if(Browser.chrome)
+						{
+							// only append the filename if we're in chrome, since
+							// chrome can gracefully handle the hash AND because
+							// the hash is required for the desktop app (for the
+							// image download context menu).
+							blob_url	+=	'#name='+this.get('file').get('name')
+						}
+						this.get('file').set({blob_url: blob_url});
 						this.trigger('change', this);
 					}.bind(this),
 					error: function(e) {
