@@ -120,7 +120,10 @@ var turtl	=	{
 		// update the user_profiles collection on login
 		this.user.bind('login', function() {
 			// init our feedback
-			this.load_controller('feedback', FeedbackButtonController);
+			if(!window._in_background)
+			{
+				this.load_controller('feedback', FeedbackButtonController);
+			}
 
 			// if the user is logged in, we'll put their auth info into the api object
 			if(!window._in_ext && !window._disable_cookie)

@@ -9,13 +9,12 @@ if(window.chrome && window.chrome.extension)
 	window.__api_url			=	config.api_url;
 	window._disable_cookie		=	true;
 	window._in_ext				=	true;
-	window._disable_api_tracker	=	true;
 
 	if(window._in_background)
 	{
 		// this is a background page of the chrome app.
-		turtl.sync	=	true;
-		window.port	=	new ChromeAddonPort();
+		turtl.do_sync	=	true;
+		window.port		=	new ChromeAddonPort();
 	}
 	else
 	{

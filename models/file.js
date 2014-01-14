@@ -144,9 +144,9 @@ var FileData = ProtectedThreaded.extend({
 	 */
 	_do_download: function(options)
 	{
-		if(window._in_desktop)
+		if(window._in_desktop || window.firefox)
 		{
-			// we're in desktop. 302 redirect won't work, so we do it by hand
+			// we're in desktop/FF. 302 redirect won't work, so we do it by hand
 			// by asking the api to just send the URL for the file back.
 			var do_download	=	function(url)
 			{
