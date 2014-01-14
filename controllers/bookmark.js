@@ -1,9 +1,7 @@
 var BookmarkController = Composer.Controller.extend({
-	inject: turtl.main_container_selector,
 	className: 'bookmark',
 
 	elements: {
-		'div.board': 'board_container',
 		'div.edit': 'edit_container'
 	},
 
@@ -21,7 +19,6 @@ var BookmarkController = Composer.Controller.extend({
 	},
 	profile: null,
 
-	board_controller: null,
 	edit_controller: null,
 	last_url: null,
 
@@ -31,7 +28,6 @@ var BookmarkController = Composer.Controller.extend({
 		{
 			this.linkdata = parse_querystring();
 		}
-		this.render();
 
 		if(window.port) window.port.bind('bookmark-open', function(data) {
 			// prevent overwriting what's in the bookmark interface
@@ -53,90 +49,62 @@ var BookmarkController = Composer.Controller.extend({
 
 		this.profile	=	turtl.profile;
 
-		this.profile.bind('change:current_board', function() {
-			var board	=	this.profile.get_current_board();
-			if(!board)
-			{
-				this.edit_controller	=	new BoardEditController({
-					inject: this.edit_container,
-					profile: turtl.profile,
-					edit_in_modal: false,
-					title: 'Add your first board to start bookmarking'
-				});
-				this.resize();
-				return false;
-			}
-			turtl.user.get('settings').get_by_key('last_board').value(board.id());
-			this.soft_release();
+		this.soft_release();
 
-			var savedstr	=	localStorage['bookmarker:note:saved'];
-			var saved		=	savedstr && JSON.parse(savedstr);
-			if(saved && saved.url == this.linkdata.url)
-			{
-				var note = new Note(saved.note);
-			}
-			else
-			{
-				window.localStorage.removeItem('bookmarker:note:saved');
-				var note = new Note({
-					type: this.linkdata.type,
-					url: this.linkdata.url,
-					title: this.linkdata.title,
-					text: this.linkdata.text
-				});
-			}
-			this.edit_controller = new NoteEditController({
-				inject: this.edit_container,
-				note: note,
-				board: board,
-				edit_in_modal: false,
-				show_tabs: false	// who needs tabs when the bookmarker is smart?
+		var savedstr	=	localStorage['bookmarker:note:saved'];
+		var saved		=	savedstr && JSON.parse(savedstr);
+		if(saved && saved.url == this.linkdata.url)
+		{
+			var note = new Note(saved.note);
+		}
+		else
+		{
+			window.localStorage.removeItem('bookmarker:note:saved');
+			var note = new Note({
+				type: this.linkdata.type,
+				url: this.linkdata.url,
+				title: this.linkdata.title,
+				text: this.linkdata.text
 			});
+		}
+		this.edit_controller = new NoteEditController({
+			inject: this.inject,
+			note: note,
+			edit_in_modal: false,
+			show_tabs: false,	// who needs tabs when the bookmarker is smart?
+			board: 'last',
+			show_boards: true,
+			track_last_board: true
+		});
+		this.edit_controller.el.addClass('bookmarker');
 
-			// save the note in case bookmarker is clooooseeed
-			this.edit_controller.note_copy.bind('change', this.track_note_changes.bind(this))
-			this.edit_controller.note_copy.bind_relational('tags', 'all', this.track_note_changes.bind(this))
+		// save the note in case bookmarker is clooooseeed
+		this.edit_controller.note_copy.bind('change', this.track_note_changes.bind(this))
+		this.edit_controller.note_copy.bind_relational('tags', 'all', this.track_note_changes.bind(this))
 
-			this.board_controller = new BoardsController({
-				inject: this.board_container,
-				profile: this.profile,
-				add_bare: true
-			});
+		this.edit_controller.bind('saved', function() {
+			// remove the localStorage entry for this note
+			window.localStorage.removeItem('bookmarker:note:saved');
 
-			this.edit_controller.bind('release', function() {
-				if(!window._in_ext) window.close();
-			}, 'bookmark:edit_note:release');
-			this.edit_controller.bind('saved', function() {
-				// remove the localStorage entry for this note
-				window.localStorage.removeItem('bookmarker:note:saved');
-
-				this.profile.trigger('change:current_board');
-				if(window._in_ext && window.port)
-				{
-					window.port.send('close');
-					window.port.send('addon-controller-release');
-				}
-				else this.edit_controller.release();
-			}.bind(this), 'bookmark:edit_note:saved');
-			this.edit_controller.bind('change-type', function() {
-				this.resize();
-			}.bind(this), 'bookmark:edit_note:type');
+			this.profile.trigger('change:current_board');
+			if(window._in_ext && window.port)
+			{
+				window.port.send('close');
+				window.port.send('addon-controller-release');
+			}
+			else this.edit_controller.release();
+		}.bind(this), 'bookmark:edit_note:saved');
+		this.edit_controller.bind('change-type', function() {
 			this.resize();
-		}.bind(this), 'bookmark:change_board');
-
-		var last	=	turtl.user.get('settings').get_by_key('last_board').value() || false;
-		var board	=	turtl.profile.get('boards').find_by_id(last);
-		this.profile.set_current_board(board, {silent: true});
-		this.profile.trigger('change:current_board');
+		}.bind(this), 'bookmark:edit_note:type');
+		this.resize();
 	},
 
 	soft_release: function()
 	{
-		if(this.board_controller) this.board_controller.release();
 		if(this.edit_controller)
 		{
 			this.edit_controller.release({silent: 'release'});
-			this.edit_controller.unbind('release', 'bookmark:edit_note:release');
 			this.edit_controller.unbind('change-type', 'bookmark:edit_note:type');
 			this.edit_controller.unbind('saved', 'bookmark:edit_note:saved');
 		}
@@ -148,14 +116,6 @@ var BookmarkController = Composer.Controller.extend({
 		this.profile.unbind('change:current_board', 'bookmark:change_board');
 		//if(window.port) window.port.unbind('bookmark-open');
 		return this.parent.apply(this, arguments);
-	},
-
-	render: function()
-	{
-		var content = Template.render('bookmark/index', {
-			have_boards: turtl.profile.get('boards').models().length > 0
-		});
-		this.html(content);
 	},
 
 	/**
