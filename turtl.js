@@ -57,6 +57,10 @@ var turtl	=	{
 
 	// Files collection, used to track file uploads/downloads
 	files: null,
+
+	// holds all non-messaged invites (for instance, once we get via the addon
+	// or desktop invite page scraping)
+	invites: null,
 	// -------------------------------------------------------------------------
 
 	init: function()
@@ -138,6 +142,17 @@ var turtl	=	{
 			turtl.search	=	new Search();
 			turtl.files		=	new Files();
 
+			// setup invites and move invites from local storage into collection
+			if(!turtl.invites) turtl.invites = new Invites();
+			if(localStorage.invites)
+			{
+				turtl.invites.reset(Object.values(JSON.parse(localStorage.invites)));
+			}
+			localStorage.invites	=	'{}';	// wipe local storage
+			if(window.port) window.port.bind('invites-populate', function(invite_data) {
+				turtl.invites.reset(Object.values(invite_data));
+			}.bind(this));
+
 			// init our sync interface (shows updates on syncing/uploads/downloads)
 			this.load_controller('sync', SyncController);
 
@@ -200,12 +215,18 @@ var turtl	=	{
 			turtl.api.clear_auth();
 			modal.close();
 
+			localStorage.invites	=	'{}';	// wipe local storage
+
 			// local storage is for logged in people only
 			if(turtl.db)
 			{
 				turtl.db.close();
 				turtl.db	=	null;
 			}
+
+			// clear out invites
+			turtl.invites.clear();
+			turtl.invites	=	false;
 
 			// this should give us a clean slate
 			turtl.user.unbind();
@@ -260,6 +281,7 @@ var turtl	=	{
 
 	setup_header_bar: function()
 	{
+		// setup the header bar
 		if(turtl.controllers.HeaderBar) turtl.controllers.HeaderBar.release();
 		turtl.controllers.HeaderBar = new HeaderBarController();
 	},

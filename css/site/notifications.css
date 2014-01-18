@@ -1,4 +1,4 @@
-.notification-list {display: none; position: absolute; z-index: 4; top: 40px; width: 360px; margin: 0 0 0 5px; color: #eee; background: #202020;}
+.notification-list {display: none; position: absolute; z-index: 4; top: 40px; left: 0; width: 360px; margin: 0 0 0 5px; font-size: 13px; color: #eee; background: #202020;}
 .notification-list.sel {display: block;}
 .notification-list > .gutter {padding: 6px 0 4px 0;}
 .notification-list ul {list-style: none; margin: 0; padding: 0;}

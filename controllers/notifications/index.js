@@ -1,31 +1,35 @@
 var NotificationsController = Composer.Controller.extend({
 	elements: {
-		'a.notifications': 'button',
 		'div.notification-list': 'notification_list'
 	},
 
 	events: {
-		'click a.notifications': 'open_notifications',
 		'click a.accept': 'accept',
 		'click a.deny': 'deny'
 	},
 
 	check_close: null,
 	is_open: false,
+	button: null,
 
 	init: function()
 	{
 		var notifications = function()
 		{
-			if(!turtl.messages) return false;
+			if(!turtl.messages || !turtl.invites) return false;
 
 			this.render();
 			turtl.messages.bind(['add', 'remove', 'reset'], function() {
 				this.render()
 				this.msg_notify();
 			}.bind(this), 'header_bar:monitor_messages');
+			turtl.invites.bind(['add', 'remove', 'reset'], function() {
+				this.render()
+				this.msg_notify();
+			}.bind(this), 'header_bar:monitor_invites');
 			this.msg_notify();
 
+			/*
 			this.check_close	=	function(e) {
 				if(!e || !e.page) return;
 				if(!this.notification_list.hasClass('sel')) return;
@@ -36,7 +40,11 @@ var NotificationsController = Composer.Controller.extend({
 				}
 			}.bind(this);
 			document.addEvent('click', this.check_close);
+			*/
 		}.bind(this);
+
+		this._open_list	=	this.open_notifications.bind(this);
+		if(this.button) this.button.addEvent('click', this._open_list);
 
 		if(turtl.user.logged_in)
 		{
@@ -55,44 +63,57 @@ var NotificationsController = Composer.Controller.extend({
 	release: function()
 	{
 		turtl.messages.unbind(['add', 'remove', 'reset'], 'header_bar:monitor_messages');
+		turtl.invites.unbind(['add', 'remove', 'reset'], 'header_bar:monitor_invites');
+		if(this.button) this.button.removeEvent('click', this._open_list);
 		if(this.check_close) $(document).removeEvent('click', this.check_close);
 		this.parent.apply(this, arguments);
 	},
 
 	render: function()
 	{
+		/*
 		var notifications	=	turtl.messages.select({notification: true}).map(function(n) {
 			return toJSON(n);
 		});
 
 		var content	=	Template.render('notifications/index', {
 			notifications: notifications,
+			invites: toJSON(turtl.invites),
 			is_open: this.is_open,
 		});
 		this.html(content);
+		*/
 	},
 
 	msg_notify: function()
 	{
+		if(!this.button) return;
 		var num_unread	=	turtl.messages.select({notification: true}).length;
+		num_unread		+=	turtl.invites.models().length;
 		if(num_unread > 0)
 		{
-			var notif	=	this.el.getElement('li a.notifications small');
+			var notif	=	this.button.getElement('small');
+			this.button.addClass('active');
 			if(notif) notif.destroy();
 			var notif	=	new Element('small').set('html', num_unread+'');
-			var a		=	this.el.getElement('li a.notifications');
-			if(!a) return;
-			notif.inject(a);
+			notif.inject(this.button);
 		}
 		else
 		{
-			var notif	=	this.el.getElement('li a.notifications small');
+			var notif	=	this.button.getElement('small');
 			if(notif) notif.destroy();
+			this.button.removeClass('active');
 		}
 	},
 
 	open_notifications: function(e)
 	{
+		if(e) e.stop();
+		if(!this.button.hasClass('active')) return false;
+
+		new InvitesListController({ edit_in_modal: true });
+
+		/*
 		if(e) e.stop();
 		if(this.button.hasClass('sel'))
 		{
@@ -106,6 +127,7 @@ var NotificationsController = Composer.Controller.extend({
 			this.notification_list.addClass('sel');
 			this.is_open	=	true;
 		}
+		*/
 	},
 
 	get_notification_id_from_el: function(el)
