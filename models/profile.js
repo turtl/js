@@ -131,7 +131,11 @@ var Profile = Composer.RelationalModel.extend({
 							profile	=	turtl.sync.process_data(profile);
 
 							// create file records from note records
-							profile.files	=	profile.notes
+							// TODO: determine if this is necessary. from my
+							// understanding, all one has to do is set note.has_file
+							// = 1 for a file record to be created for that note.
+							// was this done for performance reasons?
+							profile.files	=	(profile.notes || [])
 								.filter(function(note) { return note.file && note.file.hash; })
 								.map(function(note) {
 									return {

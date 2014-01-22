@@ -265,11 +265,16 @@ var NoteEditController = Composer.Controller.extend({
 			else this.trigger('saved');
 		}.bind(this);
 
+		// grab the binary file data (and clear out the ref in the NoteFile)
+		var file_bin	=	this.note_copy.get('file').get('data');
+		this.note_copy.get('file').unset('data');
+
 		var note_copy				=	new Note();
 		note_copy.key				=	this.note_copy.key;
-		note_copy.data				=	this.note_copy.data;
-		note_copy.relation_data		=	this.note_copy.relation_data;
 		note_copy.get('file').key	=	this.note_copy.key;
+		//note_copy.data				=	this.note_copy.data;
+		//note_copy.relation_data		=	this.note_copy.relation_data;
+		note_copy.set(toJSON(this.note_copy));
 		var do_note_save	=	function(options)
 		{
 			options || (options = {});
@@ -298,10 +303,6 @@ var NoteEditController = Composer.Controller.extend({
 			});
 		}.bind(this);
 
-		// grab the binary file data (and clear out the ref in the NoteFile)
-		var file_bin	=	this.note_copy.get('file').get('data');
-		note_copy.get('file').unset('data');
-
 		var file	=	note_copy.get('file');
 		if(file.get('set'))
 		{
@@ -311,7 +312,7 @@ var NoteEditController = Composer.Controller.extend({
 			// ready to post when we save the note. this saves us a lot of
 			// heartache when actually running our syncing.
 			file.unset('set');
-			note_copy.clear_files();
+			note_copy.clear_files({skip_remote_sync: true});
 			var filedata	=	new FileData({data: file_bin});
 			filedata.key	=	note_copy.key;
 			filedata.toJSONAsync(function(res) {

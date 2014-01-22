@@ -129,12 +129,44 @@ var FileData = ProtectedThreaded.extend({
 				console.log('progress: ', ev);
 			};
 			var save_fn	=	get_parent(this);
-			return turtl.files.upload(this, save_fn, options);
-			//return this.parent.apply(this, arguments);
+			turtl.db.notes.get(this.get('note_id')).done(function(note_data) {
+				if(!note_data) return false;
+				var persona_id	=	false;
+				if(note_data.meta && note_data.meta.persona)
+				{
+					options.args.persona	=	note_data.meta.persona;
+				}
+				turtl.files.upload(this, save_fn, options);
+			}.bind(this));
 		}
 		else
 		{
 			return this.parent.apply(this, arguments);
+		}
+	},
+
+	destroy: function(options)
+	{
+		options || (options = {});
+
+		if(options.api_save)
+		{
+			var parent_fn	=	get_parent(this);
+			turtl.db.notes.get(this.get('note_id')).done(function(note_data) {
+				if(!note_data) return false;
+				var persona_id	=	false;
+				if(!options.args) options.args = {};
+				if(note_data.meta && note_data.meta.persona)
+				{
+					options.args.persona	=	note_data.meta.persona;
+				}
+
+				parent_fn.call(this, options);
+			}.bind(this));
+		}
+		else
+		{
+			return this.parent.call(this, options);
 		}
 	},
 
@@ -144,6 +176,9 @@ var FileData = ProtectedThreaded.extend({
 	 */
 	_do_download: function(options)
 	{
+		var args	=	{hash: this.get('id')};
+		if(options.persona) args.persona = options.persona;
+
 		if(window._in_desktop || window.firefox)
 		{
 			// we're in desktop/FF. 302 redirect won't work, so we do it by hand
@@ -168,14 +203,15 @@ var FileData = ProtectedThreaded.extend({
 
 			// chrome/firefox are both being really bitchy about a very simple 302
 			// redirect, so we essentially just do it ourselves here.
-			turtl.api.get('/notes/'+this.get('note_id')+'/file', {hash: this.get('id'), disable_redirect: 1}, {
+			args.disable_redirect	=	1;
+			turtl.api.get('/notes/'+this.get('note_id')+'/file', args, {
 				success: do_download,
 				error: options.error
 			});
 		}
 		else
 		{
-			turtl.api.get('/notes/'+this.get('note_id')+'/file', {hash: this.get('id')}, {
+			turtl.api.get('/notes/'+this.get('note_id')+'/file', args, {
 				responseType: 'arraybuffer',
 				success: options.success,
 				progress: options.progress,
@@ -193,56 +229,67 @@ var FileData = ProtectedThreaded.extend({
 		options || (options = {});
 
 		if(!this.get('note_id') || !this.get('id')) return false;
-		this._do_download({
-			success: function(res) {
-				var body	=	uint8array_to_string(res);
+		turtl.db.notes.get(this.get('note_id')).done(function(note_data) {
+			if(!note_data) return false;
+			var persona_id	=	false;
+			if(note_data.meta && note_data.meta.persona)
+			{
+				persona_id	=	note_data.meta.persona;
+			}
+			console.log('file: download: note_data: ', note_data.id);
 
-				this.set({data: body});
+			this._do_download({
+				persona: persona_id,
+				success: function(res) {
+					var body	=	uint8array_to_string(res);
 
-				var hash	=	this.id();
-				var data	=	{
-					id: hash,
-					note_id: this.get('note_id'),
-					body: body,
-					synced: 1,
-					has_data: 1
-				};
+					this.set({data: body});
 
-				// save the file data into the db
-				turtl.db.files.update(data)
-					.done(function() {
-						// now update the note so it knows it has file contents
-						turtl.db.notes
-							.query()
-							.only(this.get('note_id'))
-							.modify({
-								file: function(n) {
-									n.file.hash		=	hash;
-									// increment has_file. this notifies the in-mem
-									// model to reload.
-									n.file.has_data	=	n.file.has_data < 1 ? 1 : n.file.has_data + 1;
-									return n.file;
-								},
-								last_mod: new Date().getTime(),
-								has_file: 2
-							})
-							.execute()
-							.done(function() {
-								if(options.success) options.success(this);
-							}.bind(this))
-							.fail(function(e) {
-								console.error('file: download: save error: ', e);
-								if(options.error) options.error(e);
-							});
-					}.bind(this))
-					.fail(function(_, e) {
-						console.error('file: download: save error: ', e);
-						if(options.error) options.error(e);
-					});
-			}.bind(this),
-			progress: options.progress,
-			error: options.error
-		});
+					var hash	=	this.id();
+					var data	=	{
+						id: hash,
+						note_id: this.get('note_id'),
+						body: body,
+						synced: 1,
+						has_data: 1
+					};
+
+					// save the file data into the db
+					turtl.db.files.update(data)
+						.done(function() {
+							// now update the note so it knows it has file contents
+							turtl.db.notes
+								.query()
+								.only(this.get('note_id'))
+								.modify({
+									file: function(n) {
+										n.file.hash		=	hash;
+										// increment has_file. this notifies the in-mem
+										// model to reload.
+										n.file.has_data	=	n.file.has_data < 1 ? 1 : n.file.has_data + 1;
+										return n.file;
+									},
+									last_mod: new Date().getTime(),
+									has_file: 2
+								})
+								.execute()
+								.done(function() {
+									if(options.success) options.success(this);
+								}.bind(this))
+								.fail(function(e) {
+									console.error('file: download: save error: ', e);
+									if(options.error) options.error(e);
+								});
+						}.bind(this))
+						.fail(function(_, e) {
+							console.error('file: download: save error: ', e);
+							if(options.error) options.error(e);
+						});
+				}.bind(this),
+				progress: options.progress,
+				error: options.error
+			});
+		}.bind(this));
 	}
 });
 
@@ -314,8 +361,8 @@ var Files = SyncCollection.extend({
 			.execute()
 			.done(function(res) {
 				res.each(function(filedata) {
-					if(res.deleted) return false;
-					var model	=	this.create_remote_model(filedata);
+					if(filedata.deleted || !filedata.note_id) return false;
+					var model		=	this.create_remote_model(filedata);
 					files.download(model);
 				}.bind(this));
 			}.bind(this))

@@ -108,7 +108,6 @@ var Keychain	=	SyncCollection.extend({
 
 	process_local_sync: function(keychain_data, model)
 	{
-		console.log('sync: keychain: db -> mem ('+ (keychain_data.deleted ? 'delete' : 'add/edit') +')');
 		if(keychain_data.deleted)
 		{
 			if(model) model.destroy({skip_local_sync: true, skip_remote_sync: true});

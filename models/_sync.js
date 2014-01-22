@@ -1,5 +1,5 @@
 var SyncError			=	extend_error(Error, 'SyncError');
-var _sync_debug_list	=	['notes', 'files'];
+var _sync_debug_list	=	['notes', 'boards'];
 
 /**
  * Sync model, handles (almost) all syncing between the in-memory models, the
@@ -304,11 +304,92 @@ var Sync = Composer.Model.extend({
 	 */
 	process_data: function(data)
 	{
-		if(!data || !data.notes) return data;
-		data.notes.each(function(note) {
-			if(!note || !note.file || !note.file.hash) return
-			note.has_file	=	1;
-		});
+		if(!data) return data;
+
+		var board_idx	=	{};
+		var persona_idx	=	{};
+
+		// used to create id => object indexes generically. note that this pulls
+		// both from the passed data *and* a passed collection (which is
+		// generally the turtl.profile matching collection).
+		var make_idx	=	function(index, collection, name)
+		{
+			if(turtl.profile && collection)
+			{
+				collection.each(function(item) {
+					index[item.id()]	=	item.toJSON();
+				});
+			}
+			if(data && data[name])
+			{
+				data[name].each(function(item) {
+					index[item.id]	=	item;
+				});
+			}
+		};
+
+		// index our data, also indexing the global data in the user's profile.
+		// this helps us make some decisions below with how to set certain meta
+		// data in the given objects.
+		make_idx(persona_idx, turtl.user.get('personas'), 'personas');
+		make_idx(board_idx, turtl.profile.get('boards'), 'boards');
+
+		if(data.boards)
+		{
+			// set board.shared, and set board.meta.persona
+			var user_id	=	turtl.user.id();
+			data.boards.each(function(board) {
+				if(board.user_id != user_id)
+				{
+					board.shared	=	true;
+
+					// loop over each share in the board's data, noting the
+					// user's persona that has the highest ranking privs in the
+					// board.
+					//
+					// we then set this persona into board.meta.persona (if it
+					// exists).
+					if(board.privs)
+					{
+						var perms		=	0;
+						var the_persona	=	false;
+						Object.keys(persona_idx).each(function(pid) {
+							if(!board.privs[pid]) return;
+							var this_privs	=	board.privs[pid].perms;
+							if(this_privs > perms)
+							{
+								the_persona	=	pid;
+								perms		=	this_privs;
+							}
+						});
+						if(the_persona)
+						{
+							if(!board.meta) board.meta = {};
+							board.meta.persona	=	the_persona;
+						}
+					}
+				}
+			});
+		}
+
+		if(data.notes)
+		{
+			data.notes.each(function(note) {
+				// set note.meta.persona based on owning board's meta.persona
+				var board	=	board_idx[note.board_id];
+				if(board && board.meta && board.meta.persona)
+				{
+					if(!note.meta) note.meta = {};
+					note.meta.persona	=	board.meta.persona;
+				}
+
+				// make sure if we have file data, we have has_file = 1
+				if(note && note.file && note.file.hash)
+				{
+					note.has_file	=	1;
+				}
+			});
+		}
 		return data;
 	}
 });
@@ -472,6 +553,10 @@ var SyncCollection	=	Composer.Collection.extend({
 						if(model) model.set({id: result.id}, {silent: true});
 					}
 					//console.log(this.local_table + '.sync_from_db: process: ', result, model);
+					if(_sync_debug_list.contains(this.local_table))
+					{
+						console.log('sync: '+ this.local_table +': db -> mem ('+ (result.deleted ? 'delete' : 'add/edit') +')');
+					}
 					this.process_local_sync(result, model);
 				}.bind(this));
 				if(options.success) options.success();

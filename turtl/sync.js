@@ -117,7 +117,7 @@ var api_sync	=	function(method, model, options)
 		throw new SyncError('Bad method passed to Composer.sync: '+ method);
 	}
 
-	console.log('API: '+ method.toUpperCase().replace(/_/g, '') +' '+ model.base_url);
+	//console.log('API: '+ method.toUpperCase().replace(/_/g, '') +' '+ model.base_url);
 
 	var headers	=	{};
 	var args	=	options.args;
