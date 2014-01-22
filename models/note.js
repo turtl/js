@@ -122,15 +122,6 @@ var Note = Protected.extend({
 		this.get('file').trigger('change:hash');
 	},
 
-	destroy: function()
-	{
-		if(this.get('file').get('blob_url'))
-		{
-			URL.revokeObjectURL(this.get('file').get('blob_url'));
-		}
-		return this.parent.apply(this, arguments);
-	},
-
 	ensure_key_exists: function()
 	{
 		var key	=	this.parent.apply(this, arguments);
@@ -220,13 +211,13 @@ var Note = Protected.extend({
 			options.table	=	'notes';
 
 			var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
-			if(!board)
+			if(!board && !options.force_save)
 			{
 				if(options.error) options.error('Problem finding board for that note.');
 				return false;
 			}
 
-			if(board.get('shared', false) && this.get('user_id') != turtl.user.id())
+			if(board && board.get('shared', false) && this.get('user_id') != turtl.user.id())
 			{
 				var persona		=	board.get_shared_persona();
 				args.persona	=	persona.id();
@@ -253,16 +244,21 @@ var Note = Protected.extend({
 		}
 		else
 		{
+			if(this.get('file').get('blob_url'))
+			{
+				URL.revokeObjectURL(this.get('file').get('blob_url'));
+			}
+
 			options.table	=	'notes';
 
 			var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
-			if(!board)
+			if(!board && !options.force_save)
 			{
 				if(options.error) options.error('Problem finding board for that note.');
 				return false;
 			}
 
-			if(board.get('shared', false) && this.get('user_id') != turtl.user.id())
+			if(board && board.get('shared', false) && this.get('user_id') != turtl.user.id())
 			{
 				var persona		=	board.get_shared_persona();
 				args.persona	=	persona.id();
@@ -282,8 +278,16 @@ var Note = Protected.extend({
 	{
 		options || (options = {});
 
-		turtl.db.files.removeOnIndex('note_id', this.id())
-			.done(options.success || function() {})
+		turtl.db.files.query('note_id')
+			.only(this.id())
+			.execute()
+			.done(function(files) {
+				files.each(function(filedata) {
+					delete filedata.body;
+					var file		=	new FileData(filedata);
+					file.destroy(options);
+				});
+			})
 			.fail(options.error || function() {});
 	},
 
@@ -291,13 +295,13 @@ var Note = Protected.extend({
 	{
 		options || (options = {});
 		search || (search = {});
-		var board_id = this.get('board_id');
-		var board_key = turtl.profile.get('boards').find_by_id(board_id).key;
+		var board_id	=	this.get('board_id');
+		var board_key	=	turtl.profile.get('boards').find_by_id(board_id).key;
 		if(!search.b && board_id && board_key)
 		{
-			search.b = [{id: board_id, k: board_key}];
+			search.b	=	[{id: board_id, k: board_key}];
 		}
-		var ret = this.parent(keys, search, options);
+		var ret	=	this.parent(keys, search, options);
 		return ret;
 	},
 
@@ -376,7 +380,7 @@ var Notes = SyncCollection.extend({
 		else
 		{
 			var note	=	new Note(note_data);
-			if(note_data.cid) note._cid	=	note_data.cid;
+			if(note_data.cid) note._cid = note_data.cid;
 			this.upsert(note);
 		}
 	},

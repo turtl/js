@@ -226,7 +226,7 @@ var turtl	=	{
 
 			// clear out invites
 			turtl.invites.clear();
-			turtl.invites	=	false;
+			turtl.invites.unbind();
 
 			// this should give us a clean slate
 			turtl.user.unbind();

@@ -37,12 +37,13 @@ var Board = Composer.RelationalModel.extend({
 		'keys',
 		'privs',
 		'personas',
-		'body'
+		'body',
+		'meta',
+		'shared'
 	],
 
 	private_fields: [
-		'title',
-		'shared'
+		'title'
 	],
 
 	defaults: {
@@ -194,6 +195,38 @@ var Board = Composer.RelationalModel.extend({
 		});
 	},
 
+	from_share: function(board_data)
+	{
+		// add this project to the end of the user's list
+		var sort		=	Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
+		sort[this.id()]	=	99999;
+		turtl.user.get('settings').get_by_key('board_sort').value(sort);
+		turtl.profile.get('keychain').add_key(this.id(), 'board', this.key);
+
+		var _notes	=	board_data.notes;
+		delete board_data.notes;
+		board_data.shared	=	true;
+		this.set(board_data);
+
+		turtl.profile.get('boards').add(this);
+
+		// save the notes into the board (really, this just adds them to the
+		// global turtl.profile.notes collection). once done, we *make sure*
+		// the notes are persisted to the local db
+		_notes	=	turtl.sync.process_data({notes: _notes}).notes;
+		this.update_notes(_notes, {
+			complete: function() {
+				this.get('notes').each(function(note) {
+					note.save({ skip_remote_sync: true });
+				});
+			}.bind(this)
+		});
+
+		this.save({skip_remote_sync: true, force_local_sync: true});
+		//console.log('NOTES: ', _notes);
+		//console.log('BOARD: ', board_data);
+	},
+
 	accept_share: function(persona, options)
 	{
 		options || (options = {});
@@ -210,19 +243,9 @@ var Board = Composer.RelationalModel.extend({
 
 				// save the board key into the user's data
 				turtl.profile.get('keychain').add_key(this.id(), 'board', this.key);
-				var _notes = board.notes;
-				delete board.notes;
-				board.shared	=	true;
-				this.set(board);
-				this.save({skip_remote_sync: true});
 
-				// add this project to the end of the user's list
-				var sort		=	Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
-				sort[this.id()]	=	99999;
-				turtl.user.get('settings').get_by_key('board_sort').value(sort);
+				this.from_share(board);
 
-				turtl.profile.get('boards').add(this);
-				this.update_notes(_notes);
 				if(options.success) options.success();
 			}.bind(this),
 			error: options.error
@@ -264,6 +287,12 @@ var Board = Composer.RelationalModel.extend({
 	 */
 	get_shared_persona: function()
 	{
+		// NOTE: this is all done in Sync.process_data() now
+		var meta	=	this.get('meta');
+		if(!meta && !meta.persona) return false;
+		var persona	=	turtl.user.get('personas').find_by_id(meta.persona);
+		return persona;
+		/*
 		var persona		=	false;
 		var privs		=	this.get('privs');
 		var high_priv	=	0;
@@ -278,6 +307,7 @@ var Board = Composer.RelationalModel.extend({
 			}
 		});
 		return persona;
+		*/
 	},
 
 	share_enabled: function()
@@ -292,11 +322,11 @@ var Board = Composer.RelationalModel.extend({
 
 	destroy_submodels: function()
 	{
-		var notes = this.get('notes');
-		var tags = this.get('tags');
-		var cats = this.get('categories');
+		var notes	=	this.get('notes');
+		var tags	=	this.get('tags');
+		var cats	=	this.get('categories');
 
-		notes.each(function(n) { n.destroy({skip_remote_sync: true}); n.unbind(); });
+		notes.each(function(n) { n.destroy({skip_remote_sync: true, force_save: true}); n.unbind(); });
 		tags.each(function(t) { t.destroy({skip_remote_sync: true}); t.unbind(); });
 		cats.each(function(c) { c.destroy({skip_remote_sync: true}); c.unbind(); });
 		notes.clear();
@@ -382,7 +412,6 @@ var Boards = SyncCollection.extend({
 
 	process_local_sync: function(board_data, board)
 	{
-		console.log('sync: board: db -> mem ('+ (board_data.deleted ? 'delete' : 'add/edit') +')');
 		// process some user/board key stuff. when the user first adds a board,
 		// its key is saved in the user's data with the board's CID. it stays
 		// this way until the board is posted to the API and gets a real ID. we
@@ -408,6 +437,7 @@ var Boards = SyncCollection.extend({
 				board_data.shared	=	true;
 			}
 			board.set(board_data);
+			board.trigger('change:privs');
 		}
 		else
 		{

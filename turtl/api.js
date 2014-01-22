@@ -179,7 +179,7 @@ var Api	=	new Class({
 			{
 				var res	=	xhr;
 				if(!params.responseType) res = JSON.parse(xhr.responseText);
-				if(params.error) params.error(res);
+				if(params.error) params.error(res, xhr);
 			},
 			onProgress: function(event, xhr)
 			{
