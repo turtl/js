@@ -264,8 +264,10 @@ var turtl	=	{
 		return database.setup(options);
 	},
 
-	wipe_local_db: function()
+	wipe_local_db: function(options)
 	{
+		options || (options = {});
+
 		if(!turtl.user.logged_in)
 		{
 			console.log('wipe_local_db only works when logged in. if you know the users ID, you can wipe via:');
@@ -278,6 +280,7 @@ var turtl	=	{
 		turtl.setup_local_db({
 			complete: function() {
 				turtl.do_sync	=	true;
+				if(options.complete) options.complete();
 			}
 		});
 	},

@@ -11,6 +11,7 @@ var HeaderBarController = Composer.Controller.extend({
 		'click li.bookmarklet a': 'bookmarklet',
 		'click li.persona a': 'open_personas',
 		'click li.invites a': 'open_invites',
+		'click li.wipe a': 'wipe_data',
 		'mouseenter ul.menu': 'cancel_close_menu',
 		'mouseleave ul.menu': 'close_menu'
 	},
@@ -92,5 +93,16 @@ var HeaderBarController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		new InvitesListController({ edit_in_modal: true });
+	},
+
+	wipe_data: function(e)
+	{
+		if(e) e.stop();
+		if(!confirm('Really wipe out local data and log out? All unsynced changes will be lost!')) return false;
+		turtl.wipe_local_db({
+			complete: function() {
+				turtl.user.logout();
+			}
+		});
 	}
 });
