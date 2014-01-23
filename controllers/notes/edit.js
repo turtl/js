@@ -272,9 +272,9 @@ var NoteEditController = Composer.Controller.extend({
 		var note_copy				=	new Note();
 		note_copy.key				=	this.note_copy.key;
 		note_copy.get('file').key	=	this.note_copy.key;
-		//note_copy.data				=	this.note_copy.data;
-		//note_copy.relation_data		=	this.note_copy.relation_data;
-		note_copy.set(toJSON(this.note_copy));
+		// bit of a hack to copy the data over
+		note_copy.data				=	this.note_copy.data;
+		note_copy.relation_data		=	this.note_copy.relation_data;
 		var do_note_save	=	function(options)
 		{
 			options || (options = {});
