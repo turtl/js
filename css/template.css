@@ -42,7 +42,7 @@ header h1 span {display: none;}
 header h1 {color: #eee; color: #92b579;}
 header h1.active {cursor: pointer;}
 header h1 small {position: absolute; z-index: 4; right: 0; bottom: 0; display: block; padding: 1px 4px; font-size: 11px; font-weight: bold; color: #fff; background: #d22;}
-header div.loading {visibility: hidden; float: left; margin: 13px 16px 0 16px;}
+header div.loading {visibility: hidden; float: left; margin: 15px 16px 0 16px;}
 
 header .apps ul.switch a {display: block; height: 40px;}
 header .apps ul.switch a span {display: block;}
@@ -58,7 +58,7 @@ header .apps ul.switch li a:hover span {opacity: 1;}
 header .apps ul.switch li a.notifications span {background: url(../images/template/app_messages_24x24.png) center center no-repeat;}
 
 /* logged out menu */
-header div.actions {position: relative; float: right; margin: 0;}
+header div.actions {position: relative; float: right; margin: 0 4px 0 0;}
 header div.actions > ul {list-style: none; margin: 0 0 0 0;}
 header div.actions > ul li {display: block; margin: 0; float: left;}
 header div.actions > ul a {display: block; height: 40px; border-left: 1px solid #111;}
@@ -70,7 +70,7 @@ header div.actions > ul a.sel {background: #202020;}
 header div.actions > a.menu {display: inline-block; height: 36px; margin: 5px 0 0 0; opacity: .9;}
 header div.actions > a.menu icon {padding: 7px 0 0 0; font-size: 2.2em; color: #ddd;}
 header div.actions > a.menu:hover {opacity: 1;}
-header div.actions ul.menu {display: none; position: absolute; right: 0; z-index: 10; width: 180px; margin: -1px 0 0 -220px; list-style: none; background: #202020;}
+header div.actions ul.menu {display: none; position: absolute; right: -4px; z-index: 10; width: 180px; margin: -1px 0 0 -220px; list-style: none; background: #202020;}
 header div.actions ul.menu.open {display: block;}
 header div.actions ul.menu li {display: block; float: none; margin: 0;}
 header div.actions ul.menu li:hover {background: #262626;}
