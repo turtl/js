@@ -426,7 +426,8 @@ var NoteEditController = Composer.Controller.extend({
 			set_type: true
 		});
 		var html	=	Template.render('notes/view/index', {
-			note: toJSON(preview_note)
+			note: toJSON(preview_note),
+			has_file: false
 		});
 		html_el.set('html', html);
 		html_el.getElement('.actions').dispose();
