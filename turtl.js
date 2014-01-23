@@ -203,8 +203,11 @@ var turtl	=	{
 		}.bind(turtl));
 		turtl.user.bind('logout', function() {
 			// remove feedback button
-			this.controllers.feedback.release();
-			delete this.controllers.feedback;
+			if(turtl.controllers.feedback)
+			{
+				turtl.controllers.feedback.release();
+				delete turtl.controllers.feedback;
+			}
 
 			turtl.controllers.pages.release_current();
 			turtl.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
