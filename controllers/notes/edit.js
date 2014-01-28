@@ -275,6 +275,7 @@ var NoteEditController = Composer.Controller.extend({
 		// bit of a hack to copy the data over
 		note_copy.data				=	this.note_copy.data;
 		note_copy.relation_data		=	this.note_copy.relation_data;
+		console.log('note data: ', toJSON(this.note_copy));
 		var do_note_save	=	function(options)
 		{
 			options || (options = {});
@@ -346,6 +347,7 @@ var NoteEditController = Composer.Controller.extend({
 				filedata.save({
 					skip_remote_sync: note_copy.is_new(),
 					success: function() {
+						note_copy.get('file').unset('blob_url');
 						do_note_save({no_close: true});
 					}.bind(this),
 					error: function(e) {

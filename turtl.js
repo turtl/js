@@ -202,6 +202,9 @@ var turtl	=	{
 			}, 'turtl:personas:counter');
 		}.bind(turtl));
 		turtl.user.bind('logout', function() {
+			// stop syncing
+			turtl.sync.stop();
+
 			// remove feedback button
 			if(turtl.controllers.feedback)
 			{
@@ -274,7 +277,7 @@ var turtl	=	{
 			console.log('window.indexedDB.deleteDatabase("turtl.<userid>")');
 			return false;
 		}
-		turtl.do_sync	=	false;
+		turtl.sync.stop();
 		if(turtl.db) turtl.db.close();
 		window.indexedDB.deleteDatabase('turtl.'+turtl.user.id());
 		turtl.setup_local_db({
@@ -316,6 +319,9 @@ var turtl	=	{
 
 	setup_syncing: function()
 	{
+		// enable syncing
+		turtl.sync.start();
+
 		// register our tracking for local syncing (db => in-mem)
 		//
 		// NOTE: order matters here! since the keychain holds keys in its data,

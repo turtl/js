@@ -25,6 +25,9 @@ var Sync = Composer.Model.extend({
 		remote: []
 	},
 
+	// if false, syncing functions will no longer run
+	enabled: false,
+
 	// holds collections/models that monitor their respective local db table for
 	// remote changes and sync those changes to in-memory models. note that
 	// local trackers also listen for changes that are made locally because this
@@ -41,6 +44,21 @@ var Sync = Composer.Model.extend({
 	{
 		// initialize our time tracker(s)
 		this.time_track.local	=	new Date().getTime();
+	},
+
+	/**
+	 * Instruct the syncing system to start
+	 */
+	start: function()
+	{
+		this.enabled	=	true;
+	},
+
+	/**
+	 */
+	stop: function()
+	{
+		this.enabled	=	false;
 	},
 
 	/**
@@ -137,7 +155,7 @@ var Sync = Composer.Model.extend({
 	 */
 	sync_from_db: function()
 	{
-		if(!turtl.user.logged_in) return false;
+		if(!turtl.user.logged_in || !this.enabled) return false;
 
 		// store last local sync time, update local sync time
 		var last_local_sync	=	this.time_track.local;
@@ -181,7 +199,7 @@ var Sync = Composer.Model.extend({
 	 */
 	sync_to_api: function()
 	{
-		if(!turtl.user.logged_in) return false;
+		if(!turtl.user.logged_in || !this.enabled) return false;
 
 		if(turtl.do_sync)
 		{
@@ -204,7 +222,7 @@ var Sync = Composer.Model.extend({
 	 */
 	sync_from_api: function()
 	{
-		if(!turtl.user.logged_in) return false;
+		if(!turtl.user.logged_in || !this.enabled) return false;
 
 		var do_sync	=	function()
 		{
