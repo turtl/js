@@ -74,7 +74,7 @@ var User	=	Protected.extend({
 
 	login_from_cookie: function()
 	{
-		var cookie	=	Cookie.read(config.user_cookie);
+		var cookie	=	localStorage[config.user_cookie];
 		if(cookie == null)
 		{
 			return false;
@@ -149,7 +149,7 @@ var User	=	Protected.extend({
 			a: auth,
 			last_board: this.get('last_board')
 		};
-		Cookie.write(config.user_cookie, JSON.encode(save), { duration: duration });
+		localStorage[config.user_cookie]	=	JSON.encode(save);
 	},
 
 	logout: function()
@@ -158,7 +158,7 @@ var User	=	Protected.extend({
 		this.key = null;
 		this.logged_in	=	false;
 		this.clear();
-		Cookie.dispose(config.user_cookie);
+		delete localStorage[config.user_cookie];
 		this.unbind_relational('personas', ['saved'], 'user:track_personas');
 		this.unbind_relational('personas', ['destroy'], 'user:track_personas:destroy');
 		this.unbind_relational('settings', ['change'], 'user:save_settings');
