@@ -1,5 +1,5 @@
 var SyncError			=	extend_error(Error, 'SyncError');
-var _sync_debug_list	=	['notes', 'boards'];
+var _sync_debug_list	=	['notes', 'files'];
 
 /**
  * Sync model, handles (almost) all syncing between the in-memory models, the
@@ -405,6 +405,11 @@ var Sync = Composer.Model.extend({
 				if(note && note.file && note.file.hash)
 				{
 					note.has_file	=	1;
+
+					// check in-mem notes for has_data value
+					var note_mem		=	turtl.profile.get('notes').find_by_id(note.id);
+					var has_data		=	note_mem && note_mem.get('file').get('has_data');
+					note.file.has_data	=	has_data;
 				}
 			});
 		}
