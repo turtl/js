@@ -90,7 +90,7 @@ var Note = Protected.extend({
 			if(this.disable_file_monitoring) return false;
 
 			// generate a preview
-			if(this.get('file').get('type', '').match(/^image/))
+			if(this.get('file').get('has_data') > 0 && this.get('file').get('type', '').match(/^image/))
 			{
 				this.get('file').to_blob({
 					success: function(blob) {
