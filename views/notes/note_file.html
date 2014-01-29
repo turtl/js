@@ -1,0 +1,16 @@
+<? if(has_file) { ?>
+	<? var is_image = note.file.blob_url && note.file.type && note.file.type.match(/^image/); ?>
+	<div class="note-file <?=(is_image ? 'image' : '')?>">
+		<? if(is_image) { ?>
+			<a href="<?=note.file.blob_url?>" target="_blank"><img src="<?=note.file.blob_url?>"></a>
+		<? } else if(note.type != 'image' && note.file.type && note.file.type.match(/^image/)) { ?>
+			<?=note.file.name?> (generating preview)
+		<? } else if(note.file && note.type != 'image') { ?>
+			<a href="#attachment" class="attachment" target="_blank">
+				<img src="<?=img('/images/site/icons/files/'+file_type+'.png')?>" width="16" height="16" alt="file">
+				<?=note.file.name?>
+			</a>
+		<? } ?>
+	</div>
+<? } ?>
+
