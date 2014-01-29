@@ -45,7 +45,7 @@ var BaseNoteItem = Composer.Controller.extend({
 		var file		=	note_data.file || {};
 		var ext			=	(file.name || '').replace(/^.*\./, '');
 		var file_type	=	this.get_file_type(ext, {blank: true});
-		var has_file	=	(file.has_data > 0 || file.upload_id != -1) && (file.hash || file.name)
+		var has_file	=	(file.hash || file.name)
 		var content = Template.render('notes/'+type+'/index', {
 			note: note_data,
 			has_file: has_file,
