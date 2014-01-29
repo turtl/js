@@ -282,7 +282,6 @@ var turtl	=	{
 		window.indexedDB.deleteDatabase('turtl.'+turtl.user.id());
 		turtl.setup_local_db({
 			complete: function() {
-				turtl.do_sync	=	true;
 				if(options.complete) options.complete();
 			}
 		});
