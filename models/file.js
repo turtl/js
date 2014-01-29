@@ -236,7 +236,6 @@ var FileData = ProtectedThreaded.extend({
 			{
 				persona_id	=	note_data.meta.persona;
 			}
-			console.log('file: download: note_data: ', note_data.id);
 
 			this._do_download({
 				persona: persona_id,
@@ -266,7 +265,8 @@ var FileData = ProtectedThreaded.extend({
 										n.file.hash		=	hash;
 										// increment has_file. this notifies the in-mem
 										// model to reload.
-										n.file.has_data	=	n.file.has_data < 1 ? 1 : n.file.has_data + 1;
+										var has_data	=	n.file.has_data || 0;
+										n.file.has_data	=	has_data < 1 ? 1 : has_data + 1;
 										return n.file;
 									},
 									last_mod: new Date().getTime(),
@@ -363,7 +363,7 @@ var Files = SyncCollection.extend({
 				res.each(function(filedata) {
 					if(filedata.deleted || !filedata.note_id) return false;
 					var model		=	this.create_remote_model(filedata);
-					files.download(model);
+					files.download(model, model.download);
 				}.bind(this));
 			}.bind(this))
 			.fail(function(e) {
@@ -381,6 +381,8 @@ var Files = SyncCollection.extend({
 			{
 				console.log('sync: '+ this.local_table +': api -> db ('+ item._sync.action +')');
 			}
+
+			if(!item.file || !item.file.hash) return false;
 
 			var filedata	=	{
 				id: item.file.hash,
@@ -445,13 +447,14 @@ var Files = SyncCollection.extend({
 		}.bind(this);
 
 		// run the actual download
+		console.log('file: '+ type + ': ', track_id);
 		return trigger_fn(options);
 	},
 
-	download: function(model, options)
+	download: function(model, save_fn, options)
 	{
 		options || (options = {});
-		return this.track_file('downloads', model.id(), model.download.bind(model), options);
+		return this.track_file('downloads', model.id(), save_fn.bind(model), options);
 	},
 
 	upload: function(model, save_fn, options)
