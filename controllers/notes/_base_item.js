@@ -1,6 +1,7 @@
 var BaseNoteItem = Composer.Controller.extend({
 	elements: {
-		'ul.dropdown': 'dropdown_menu'
+		'ul.dropdown': 'dropdown_menu',
+		'a.attachment': 'attachment'
 	},
 
 	events: {
@@ -42,7 +43,6 @@ var BaseNoteItem = Composer.Controller.extend({
 			note_data.file.blob_url	=	null;
 		}
 
-		console.log('render note: ', note_data);
 		var file		=	note_data.file || {};
 		var ext			=	(file.name || '').replace(/^.*\./, '');
 		var file_type	=	this.get_file_type(ext, {blank: true});
@@ -117,28 +117,38 @@ var BaseNoteItem = Composer.Controller.extend({
 	download_attachment: function(e)
 	{
 		if(e) e.stop();
-		var win		=	window.open(img('/views/file.html'));
+		var atag	=	next_tag_up('a', e.target);
+		if(atag.hasClass('decrypting')) return false;
+
+		atag.addClass('decrypting');
+		atag.setProperties({title: 'Decrypting, this can take a while.'});
+		var icon		=	this.attachment.getElement('img');
+		var icon_src	=	icon.src;
+		icon.src		=	img('/images/site/icons/load_16x16.gif');
 		this.model.get('file').to_blob({
 			success: function(blob) {
-				var url		=	URL.createObjectURL(blob);
-				var name	=	this.model.get('file').get('name');
-				done		=	true;
-				win.document.body.innerHTML += '<a href="'+url+'" download="'+name.replace(/"/, '&quot;')+'" style="visibility: hidden;">Download '+name+'</a>';
-				var atag	=	win.document.body.getElementsByTagName('a')[0];
-				fire_click(atag);
+				icon.src	=	icon_src;
+				atag.removeClass('decrypting');
+				atag.setProperties({title: ''});
+				console.log('decryption done!');
+
+				var url			=	URL.createObjectURL(blob);
+				var name		=	this.model.get('file').get('name');
+				var download	=	new Element('a')
+					.setStyles({visibility: 'hidden'})
+					.set('html', 'Download '+ name)
+					.setProperties({
+						href: url,
+						download: name,
+						target: '_blank'
+					});
+
+				download.inject(document.body);
+				fire_click(download);
 				(function() {
-					win.close();
-				}).delay(100, this);
-				var monitor		=	function()
-				{
-					if(win.closed)
-					{
-						URL.revokeObjectURL(url);
-						return false;
-					}
-					monitor.delay(100, this);
-				};
-				monitor();
+					URL.revokeObjectURL(url);
+					download.destroy();
+				}).delay(5000, this);
 			}.bind(this)
 		});
 	},

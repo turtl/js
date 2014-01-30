@@ -277,15 +277,12 @@ var NoteEditController = Composer.Controller.extend({
 		note_copy.data				=	this.note_copy.data;
 		note_copy.relation_data		=	this.note_copy.relation_data;
 		note_copy.get('file').set({encrypting: true}, {silent: true});
-		console.log('note data: ', toJSON(this.note_copy));
 
 		if(isnew && note_copy.get('file').get('set'))
 		{
 			// display a note stub to let the user know we're encrypting the
 			// file
-			console.log('note file: ', toJSON(note_copy.get('file')));
 			this.board.get('notes').upsert(note_copy, {allow_cid: true});
-			console.log('upserted lol');
 		}
 
 		var do_note_save	=	function(options)
