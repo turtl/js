@@ -36,6 +36,10 @@ var InvitesListController	=	Composer.Controller.extend({
 			}.bind(this);
 			modal.addEvent('close', close_fn);
 		}
+		else
+		{
+			this.render();
+		}
 	},
 
 	release: function(options)
