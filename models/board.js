@@ -289,11 +289,13 @@ var Board = Composer.RelationalModel.extend({
 	{
 		// NOTE: this is all done in Sync.process_data() now
 		var meta	=	this.get('meta');
-		if(!meta && !meta.persona) return false;
-		var persona	=	turtl.user.get('personas').find_by_id(meta.persona);
-		return persona;
-		/*
-		var persona		=	false;
+		if(meta && meta.persona)
+		{
+			var persona	=	turtl.user.get('personas').find_by_id(meta.persona);
+		}
+		if(persona) return persona;
+
+		persona			=	false;
 		var privs		=	this.get('privs');
 		var high_priv	=	0;
 		if(!privs) return false;
@@ -307,7 +309,6 @@ var Board = Composer.RelationalModel.extend({
 			}
 		});
 		return persona;
-		*/
 	},
 
 	share_enabled: function()
