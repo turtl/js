@@ -188,7 +188,10 @@ var Note = Protected.extend({
 	toJSON: function()
 	{
 		var data	=	this.parent.apply(this, arguments);
-		if(!this.get('file') || !this.get('file').get('hash')) delete data.file;
+		if(!this.get('file') || (!this.get('file').get('hash') && !this.get('file').get('encrypting')))
+		{
+			delete data.file;
+		}
 		return data;
 	},
 

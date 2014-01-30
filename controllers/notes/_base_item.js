@@ -42,10 +42,11 @@ var BaseNoteItem = Composer.Controller.extend({
 			note_data.file.blob_url	=	null;
 		}
 
+		console.log('render note: ', note_data);
 		var file		=	note_data.file || {};
 		var ext			=	(file.name || '').replace(/^.*\./, '');
 		var file_type	=	this.get_file_type(ext, {blank: true});
-		var has_file	=	(file.hash || file.name)
+		var has_file	=	(file.hash || file.name || file.encrypting)
 		var content = Template.render('notes/'+type+'/index', {
 			note: note_data,
 			has_file: has_file,

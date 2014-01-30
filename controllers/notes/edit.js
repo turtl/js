@@ -270,12 +270,24 @@ var NoteEditController = Composer.Controller.extend({
 		this.note_copy.get('file').unset('data');
 
 		var note_copy				=	new Note();
+		note_copy._cid				=	this.note._cid;
 		note_copy.key				=	this.note_copy.key;
 		note_copy.get('file').key	=	this.note_copy.key;
 		// bit of a hack to copy the data over
 		note_copy.data				=	this.note_copy.data;
 		note_copy.relation_data		=	this.note_copy.relation_data;
+		note_copy.get('file').set({encrypting: true}, {silent: true});
 		console.log('note data: ', toJSON(this.note_copy));
+
+		if(isnew && note_copy.get('file').get('set'))
+		{
+			// display a note stub to let the user know we're encrypting the
+			// file
+			console.log('note file: ', toJSON(note_copy.get('file')));
+			this.board.get('notes').upsert(note_copy, {allow_cid: true});
+			console.log('upserted lol');
+		}
+
 		var do_note_save	=	function(options)
 		{
 			options || (options = {});
@@ -289,7 +301,7 @@ var NoteEditController = Composer.Controller.extend({
 					var copy_json	=	note_copy.toJSON();
 					copy_json.mod	=	Math.round(new Date().getTime() / 1000);
 					this.note.set(copy_json);
-					if(isnew) this.board.get('notes').add(this.note);
+					if(isnew) this.board.get('notes').upsert(this.note, {allow_cid: true});
 					// make sure the current filter applies to the edited note
 					this.board.get('tags').trigger('change:selected');
 					if(!options.no_close)
@@ -342,6 +354,9 @@ var NoteEditController = Composer.Controller.extend({
 
 				// give the note's file object a ref to the file's id
 				file.set({hash: hash});
+
+				// we're no longer encrypting
+				file.unset('encrypting');
 
 				// save the file contents into local db then save the note
 				filedata.save({
