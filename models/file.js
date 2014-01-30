@@ -179,7 +179,7 @@ var FileData = ProtectedThreaded.extend({
 		var args	=	{hash: this.get('id')};
 		if(options.persona) args.persona = options.persona;
 
-		if(window._in_desktop || window.firefox)
+		if(window._in_desktop || window.firefox || window.chrome)
 		{
 			// we're in desktop/FF. 302 redirect won't work, so we do it by hand
 			// by asking the api to just send the URL for the file back.
