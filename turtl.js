@@ -589,6 +589,15 @@ window.addEvent('domready', function() {
 	
 	turtl.load_controller('pages', PagesController);
 
+	(function() {
+		console.log('turtl: DEBUG init!!');
+		window.port.bind('debug', function(code) {
+			if(!window._debug_mode) return false;
+			var res	=	eval(code);
+			console.log('turtl: debug: ', res);
+		});
+	}).delay(100);
+
 	// init it LOL
 	turtl.init.delay(50, turtl);
 });

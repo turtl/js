@@ -1,12 +1,3 @@
-var _file;
-var _do_file_test = function()
-{
-	turtl.do_sync = false;
-	turtl.sync.sync_from_db = function() {};
-	turtl.db.files.query().all().execute().done(function(f) { _file = new FileData(f[0]); })
-	return true;
-};
-
 var NoteFile = Protected.extend({
 	base_url: '/files',
 
@@ -391,10 +382,11 @@ var Files = SyncCollection.extend({
 			};
 			if(item.deleted) filedata.deleted = 1;
 
-			item.last_mod	=	new Date().getTime();
+			filedata.last_mod	=	new Date().getTime();
 
+			console.log('files: save to DB from API: ', filedata);
 			table.update(filedata);
-		});
+		}.bind(this));
 	},
 
 	track_file: function(type, track_id, trigger_fn, options)
