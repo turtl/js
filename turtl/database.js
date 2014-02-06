@@ -15,7 +15,7 @@ var database = {
 		db.open({
 			// DB has user id in it...client might have multiple users
 			server: 'turtl.'+turtl.user.id(),
-			version: 6,
+			version: 7,
 			// NOTE: all tables that are sync between the client and the API
 			// *must* have "local_change" and "last_mod" indexex. or else. or
 			// else what?? or else it won't work.
