@@ -517,15 +517,28 @@
         }
         
         for ( var tableName in schema ) {
-            var table = schema[ tableName ];
-            if ( !(!hasOwn.call( schema , tableName ) || db.objectStoreNames.contains( tableName )) ) {
+			var table = schema[ tableName ];
+			var store = null;
+            if ( !hasOwn.call( schema , tableName ) || db.objectStoreNames.contains( tableName ) ) {
+				store = e.currentTarget.transaction.objectStore(tableName);
+			} else {
 				var store = db.createObjectStore( tableName , table.key );
 			}
+
+			if(!store) continue;
 
             for ( var indexKey in table.indexes ) {
                 var index = table.indexes[ indexKey ];
 				log.info('db.js: index: ', tableName, indexKey);
-                store.createIndex( indexKey , index.key || indexKey , Object.keys(index).length ? index : { unique: false } );
+				try
+				{
+					store.createIndex( indexKey , index.key || indexKey , Object.keys(index).length ? index : { unique: false } );
+				}
+				catch(e)
+				{
+					if(e instanceof ConstraintError) continue;
+					throw e;
+				}
             }
         }
     };
