@@ -518,14 +518,13 @@
         
         for ( var tableName in schema ) {
             var table = schema[ tableName ];
-            if ( !hasOwn.call( schema , tableName ) || db.objectStoreNames.contains( tableName ) ) {
-                continue;
-            }
-
-            var store = db.createObjectStore( tableName , table.key );
+            if ( !(!hasOwn.call( schema , tableName ) || db.objectStoreNames.contains( tableName )) ) {
+				var store = db.createObjectStore( tableName , table.key );
+			}
 
             for ( var indexKey in table.indexes ) {
                 var index = table.indexes[ indexKey ];
+				log.info('db.js: index: ', tableName, indexKey);
                 store.createIndex( indexKey , index.key || indexKey , Object.keys(index).length ? index : { unique: false } );
             }
         }
