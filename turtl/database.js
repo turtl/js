@@ -28,7 +28,7 @@ var database = {
 			// has been changed (either by a remote sync call or by another
 			// app "thread" in an addon) and should be synced to the in-memory
 			// models.
-			schema: {
+			schema: function() { log.info('db.js: create schema'); return {
 				// -------------------------------------------------------------
 				// k/v tables - always has "key" field as primary key
 				// -------------------------------------------------------------
@@ -104,7 +104,7 @@ var database = {
 						deleted: {}
 					}
 				}
-			}
+			}}
 		}).done(function(server) {
 			if(options.complete) options.complete(server);
 		}).fail(function(e) {
