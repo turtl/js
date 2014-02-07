@@ -9,6 +9,7 @@ if(window.chrome && window.chrome.extension)
 	window.__api_url			=	config.api_url;
 	window._disable_cookie		=	true;
 	window._in_ext				=	true;
+	config.version				=	chrome.app.getDetails().version;
 
 	if(window._in_background)
 	{
@@ -42,6 +43,7 @@ if(window.chrome && window.chrome.extension)
 
 if(window._in_desktop)
 {
+	config.version			=	gui.App.manifest.version;
 	window.__api_url		=	config.api_url;
 	window._base_url		=	window.location.toString().replace(/^(.*)\/.*?$/, '$1/app');
 	window._disable_cookie	=	true;

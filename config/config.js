@@ -1,4 +1,6 @@
 var config = {
+	version: 'core-0.4',
+
 	// used to tell us where to store auth. this is only used when serving turtl
 	// as a webapp (big no no). the addons do their own auth.
 	user_cookie: 'turtl:user:v2',
