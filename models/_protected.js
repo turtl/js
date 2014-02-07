@@ -95,6 +95,7 @@ var Protected = Composer.RelationalModel.extend({
 			console.log('err: protected: error deserializing: ', e);
 			console.log('err: this id: ', this.id());
 			//console.trace();
+			return false;
 		}
 		return obj;
 	},
