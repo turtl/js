@@ -280,11 +280,18 @@ var turtl	=	{
 		turtl.sync.stop();
 		if(turtl.db) turtl.db.close();
 		window.indexedDB.deleteDatabase('turtl.'+turtl.user.id());
-		turtl.setup_local_db({
-			complete: function() {
-				if(options.complete) options.complete();
-			}
-		});
+		if(options.restart)
+		{
+			turtl.setup_local_db({
+				complete: function() {
+					if(options.complete) options.complete();
+				}
+			});
+		}
+		else
+		{
+			if(options.complete) options.complete();
+		}
 	},
 
 	setup_header_bar: function()
