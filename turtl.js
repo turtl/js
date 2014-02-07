@@ -613,3 +613,16 @@ window.addEvent('beforeunload', function() {
 	if(window.port) window.port.send('tab-unload');
 });
 
+// set up a global error handler that XHRs shit to the API so we know when bugs
+// are cropping up
+window.onerror	=	function(msg, url, line)
+{
+	if(!turtl.api) return;
+	log.debug('error log: sending to API');
+	turtl.api.post('/log/error', {data: {version: config.version, msg: msg, url: url, line: line}}, {
+		success: function() {
+		},
+		error: function() {
+		}
+	});
+};
