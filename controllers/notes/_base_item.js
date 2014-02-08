@@ -53,7 +53,6 @@ var BaseNoteItem = Composer.Controller.extend({
 			file_type: file_type
 		});
 		content = view.make_links(content);
-		console.log('note: _base: rendered');
 		this.html(content);
 		if(has_file) className += ' file ';
 		if(!note_data.text && !note_data.url && !note_data.title) className += ' empty ';
