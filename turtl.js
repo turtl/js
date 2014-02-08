@@ -598,7 +598,7 @@ window.addEvent('domready', function() {
 
 	(function() {
 		console.log('turtl: DEBUG init!!');
-		window.port.bind('debug', function(code) {
+		if(window.port) window.port.bind('debug', function(code) {
 			if(!window._debug_mode) return false;
 			var res	=	eval(code);
 			console.log('turtl: debug: ', res);
