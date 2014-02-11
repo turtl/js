@@ -55,6 +55,9 @@ var turtl	=	{
 	// which stores files and notes locally).
 	db: null,
 
+	// holds our queue/messaging library
+	hustle: null,
+
 	// Files collection, used to track file uploads/downloads
 	files: null,
 
@@ -257,12 +260,26 @@ var turtl	=	{
 
 		// hijack the complete function to set our shiny new database into the
 		// turtl scope.
-		var complete		=	options.complete;
+		var complete		=	options.complete || function() {};
 		options.complete	=	function(server)
 		{
 			turtl.db	=	server;
-			if(complete) complete(server);
+			if(turtl.db && turtl.hustle) complete(server);
 		};
+
+		var hustle	=	new Hustle({
+			tubes: ['incoming', 'outgoing'],
+			db_name: 'hustle_user_'+turtl.user.id()
+		});
+		hustle.open({
+			success: function() {
+				turtl.hustle	=	hustle;
+				if(turtl.db && turtl.hustle) complete(turtl.db);
+			},
+			error: function(e) {
+				console.error('problem opening Hustle: ', e);
+			}
+		});
 
 		return database.setup(options);
 	},

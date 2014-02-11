@@ -21,7 +21,7 @@ Composer.sync	=	function(method, model, options)
 	if(_sync_debug_list.contains(table))
 	{
 		var action = method == 'delete' ? 'delete' : (method == 'create' ? 'add' : 'edit');
-		console.log('save: '+ table +': mem -> db ('+ action +')');
+		log.info('save: '+ table +': mem -> db ('+ action +')');
 	}
 
 	if(!turtl.db[table])
@@ -29,9 +29,55 @@ Composer.sync	=	function(method, model, options)
 		throw new SyncError('Bad db.js table: '+ table);
 	}
 
+	var modeldata	=	null;
+
 	// define some callbacks for our indexeddb queries
 	var success	=	function(res)
 	{
+		if(['create', 'update', 'delete'].contains(method))
+		{
+			var msg	=	{
+				type: tabla,
+				action: method,
+				data: modeldata
+			};
+			if(!options.skip_local_sync)
+			{
+				var notify_fail_count	=	0;
+				var notify	=	function()
+				{
+					turtl.hustle.Pubsub.publish('local-changes', msg, {
+						error: function(e) {
+							log.error('sync: local: local-changes: error ', e);
+							notify_fail_count++;
+							if(notify_fail_count < 3) notify.delay(100, this);
+						}
+					})
+				};
+				notify();
+			}
+			if(!options.skip_remote_sync)
+			{
+				var queue_fail_count	=	0;
+				var enqueue	=	function()
+				{
+					turtl.hustle.Queue.put(msg, {
+						tube: 'outgoing',
+						error: function(e) {
+							log.error('sync: local: outgoing: error: ', e);
+							queue_fail_count++;
+							if(queue_fail_count < 3) enqueue.delay(100, this);
+						}
+					});
+				};
+				enqueue();
+			}
+		}
+
+		// try not to double-sync (mem -> db -> mem). by tracking this model, we can
+		// avoid it being synced from DB on the next local sync
+		turtl.sync.ignore_on_next_sync(model.id(), {type: 'local'});
+
 		if(res instanceof Array && res.length == 1)
 		{
 			res	=	res[0];
@@ -43,9 +89,7 @@ Composer.sync	=	function(method, model, options)
 	if(method != 'read')
 	{
 		// serialize our model, and add in any extra data needed
-		var modeldata		=	model.toJSON();
-		if(!options.skip_local_sync) modeldata.last_mod = new Date().getTime();
-		if(!options.skip_remote_sync) modeldata.local_change = 1;
+		modeldata	=	model.toJSON();
 		if(options.args) modeldata.meta = options.args;
 	}
 
@@ -74,15 +118,8 @@ Composer.sync	=	function(method, model, options)
 		turtl.db[table].add(modeldata).then(success, error);
 		break;
 	case 'delete':
-		// delete flows through to update (after marking the item deleted). we
-		// don't actually delete the item here because then the sync processes
-		// would never know it changed.
-		//
-		// the remote sync (bless its heart) will check for "deleted" records
-		// and remove them accordingly, once they have had sufficient time to
-		// propagate to all local threads and have successfully been synced to
-		// the server
-		modeldata.deleted   =   1;
+		turtl.db[table].remove(model.id()).then(success, error);
+		break;
 	case 'update':
 		turtl.db[table].update(modeldata).then(success, error);
 		break;
@@ -90,10 +127,6 @@ Composer.sync	=	function(method, model, options)
 		throw new SyncError('Bad method passed to Composer.sync: '+ method);
 		return false;
 	}
-
-	// try not to double-sync (mem -> db -> mem). by tracking this model, we can
-	// avoid it being synced from DB on the next local sync
-	turtl.sync.ignore_on_next_sync(model.id(), {type: 'local'});
 };
 
 /**
@@ -117,7 +150,7 @@ var api_sync	=	function(method, model, options)
 		throw new SyncError('Bad method passed to Composer.sync: '+ method);
 	}
 
-	//console.log('API: '+ method.toUpperCase().replace(/_/g, '') +' '+ model.base_url);
+	log.debug('API: '+ method.toUpperCase().replace(/_/g, '') +' '+ model.base_url);
 
 	var headers	=	{};
 	var args	=	options.args;

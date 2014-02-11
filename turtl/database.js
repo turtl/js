@@ -41,10 +41,7 @@ var database = {
 				// settings
 				user: {
 					key: { keyPath: 'key', autoIncrement: false },
-					indexes: {
-						local_change: {},
-						last_mod: {}
-					}
+					indexes: { }
 				},
 
 				// -------------------------------------------------------------
@@ -53,27 +50,17 @@ var database = {
 				keychain: {
 					key: { keyPath: 'id', autoIncrement: false },
 					indexes: {
-						local_change: {},
-						last_mod: {},
-						deleted: {},
 						item_id: {}
 					}
 				},
 				personas: {
 					key: { keyPath: 'id', autoIncrement: false },
-					indexes: {
-						local_change: {},
-						last_mod: {},
-						deleted: {}
-					}
+					indexes: { }
 				},
 				boards: {
 					key: { keyPath: 'id', autoIncrement: false },
 					indexes: {
 						user_id: {},
-						local_change: {},
-						last_mod: {},
-						deleted: {}
 					}
 				},
 				notes: {
@@ -82,9 +69,6 @@ var database = {
 						user_id: {},
 						board_id: {},
 						has_file: {},
-						local_change: {},
-						last_mod: {},
-						deleted: {}
 					}
 				},
 				// note that the files table holds raw/encrypted file data for
@@ -99,9 +83,6 @@ var database = {
 						note_id: {},
 						synced: {},
 						has_data: {},
-						local_change: {},
-						last_mod: {},
-						deleted: {}
 					}
 				}
 			}}

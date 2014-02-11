@@ -203,8 +203,24 @@ var Sync = Composer.Model.extend({
 
 		if(turtl.do_sync)
 		{
-			this.remote_trackers.each(function(track_obj) {
-				track_obj.tracker.sync_to_api();
+			var get_tracker	=	function(type)
+			{
+				for(var i = 0, n = this.remote_trackers.length; i < n; i++)
+				{
+					if(this.remote_trackers[i].type == type) return this.remote_trackers[i];
+				}
+			}.bind(this);
+
+			var consumer	=	turtl.hustle.Queue.Consumer(function(item) {
+				var track_obj	=	get_tracker(item.type);
+				if(!track_obj) return;
+				track_obj.tracker.sync_record_to_api(item.data, item);
+			}, {
+				tube: 'outgoing',
+				enable_fn: function() { return this.enabled; },
+				error: function(e) {
+					log.error('sync: sync_to_api: consumer: error: ', e);
+				}
 			});
 		}
 
@@ -652,7 +668,7 @@ var SyncCollection	=	Composer.Collection.extend({
 	 *
 	 * Called mainly by sync_to_api.
 	 */
-	sync_record_to_api: function(record, options)
+	sync_record_to_api: function(record, queue_item, options)
 	{
 		options || (options = {});
 
@@ -733,55 +749,6 @@ var SyncCollection	=	Composer.Collection.extend({
 		{
 			model.save(options);
 		}
-	},
-
-	/**
-	 * Looks for data in the local DB (under our table) that has been marked as
-	 * changed locally (local_change=1). Takes all found records, atomically
-	 * sets local_change=0, and calls sync_record_to_api on each.
-	 *
-	 * Also, this function searches its tables for records that have been marked
-	 * as deleted (deleted=1) and if their local_mod is more than 10s ago, they
-	 * are permenently removed. The 10s delay allows other pieces of the client
-	 * to process their deletion before the record is lost permenently.
-	 */
-	sync_to_api: function()
-	{
-		var table	=	turtl.db[this.local_table];
-
-		// grab objects that have been modified locally, atomically set their
-		// modified flag to false, and sync them out to the API.
-		table.query('local_change')
-			.only(1)
-			.modify({local_change: 0})
-			.execute()
-			.done(function(results) {
-				results.each(this.sync_record_to_api.bind(this));
-			}.bind(this))
-			.fail(function(e) {
-				barfr.barf('Problem syncing '+ this.local_table +' records remotely:' + e.target.error.name +': '+ e.target.error.message);
-				console.log(this.local_table + '.sync_to_api: error: ', e);
-			});
-
-		// remove any records marked as "deleted" more than 10s ago
-		table.query('deleted')
-			.only(1)
-			.execute()
-			.done(function(results) {
-				var now	=	new Date().getTime();
-				results.each(function(record) {
-					// only remove deleted items if they were deleted more than
-					// 10s ago
-					if(now - record.last_mod < 10000) return false;
-
-					table.remove(record.id).fail(function(e) {
-						console.log(this.local_table + '.sync_to_api: error removing deleted record: ', e);
-					})
-				}.bind(this));
-			}.bind(this))
-			.fail(function(e) {
-				console.log(this.local_table + '.sync_to_api: error removing deleted records: ', e);
-			});
 	},
 
 	/**
