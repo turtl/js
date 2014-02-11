@@ -1,10 +1,10 @@
 (function(window, undefined) {
 	"use strict";
-	var version		=	'0.1.0';
-	var db_version	=	2;
+	var version		=	'0.1.1';
+	var db_version	=	3;
 
-    var indexedDB	=	window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.oIndexedDB || window.msIndexedDB;
-    var IDBKeyRange	=	window.IDBKeyRange || window.webkitIDBKeyRange
+	var indexedDB	=	window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.oIndexedDB || window.msIndexedDB;
+	var IDBKeyRange	=	window.IDBKeyRange || window.webkitIDBKeyRange
 
 	if(!indexedDB) throw 'IndexedDB required';
 
@@ -36,12 +36,16 @@
 		qoptions || (qoptions = {});
 		if(!qoptions.tubes) qoptions.tubes = [];
 
+		var housekeeping_delay	=	qoptions.housekeeping_delay ? qoptions.housekeeping_delay : 1000;
+		var msg_lifetime		=	qoptions.message_lifetime ? qoptions.message_lifetime : 10000;
+
 		// define some system db vars
 		var db_name	=	qoptions.db_name ? qoptions.db_name : 'hustle';
 		var tbl		=	{
 			ids: '_ids',
 			reserved: '_reserved',
-			buried: '_buried'
+			buried: '_buried',
+			pubsub: '_pubsub'
 		};
 
 		// always add a default tube
@@ -60,10 +64,51 @@
 		};
 
 		/**
+		 * this function does database cleanup. only runs while db is open.
+		 */
+		var start_housekeeping	=	function()
+		{
+			/**
+			 * remove old messages
+			 */
+			var cleanup_messages	=	function(options)
+			{
+				if(!db) return false;
+
+				options || (options = {});
+
+				var trx			=	db.transaction(tbl.pubsub, 'readwrite');
+				trx.oncomplete	=	function(e) { if(options.success) options.success(e); };
+				trx.onerror		=	function(e) { if(options.error) options.error(e); }
+
+				var store	=	trx.objectStore(tbl.pubsub);
+				store.openCursor().onsuccess	=	function(e)
+				{
+					var cursor	=	e.target.result;
+					if(cursor)
+					{
+						if(cursor.value.created < (new Date().getTime() - msg_lifetime))
+						{
+							store.delete(cursor.value.id);
+						}
+						cursor.continue();
+					}
+				}
+			};
+
+			var do_cleanup	=	function()
+			{
+				cleanup_messages();
+				setTimeout(do_cleanup, housekeeping_delay);
+			};
+			setTimeout(do_cleanup, housekeeping_delay);
+		};
+
+		/**
 		 * helper function, creates a table if it doesn't exist, otherwise grabs
 		 * it. returns the store.
 		 */
-		var create_table_if_not_exists	=	function(e, tablename, options)
+		var update_table_schema	=	function(e, tablename, options)
 		{
 			options || (options = {});
 			var store	=	null;
@@ -79,42 +124,25 @@
 			{
 				store	=	udb.createObjectStore(tablename, {keyPath: keypath, autoIncrement: autoinc});
 			}
-			return store;
-		};
 
-		/**
-		 * create a tube and index it
-		 */
-		var create_tube	=	function(e, tubename)
-		{
-			var store	=	create_table_if_not_exists(e, tubename);
-
-			// create our primary index
-			try
+			if(options.indexes)
 			{
-				store.createIndex('priority', ['priority', 'id'], {unique: false});
+				var keys	=	Object.keys(options.indexes);
+				for(var i = 0; i < keys.length; i++)
+				{
+					(function(key, idx) {
+						var index_val	=	idx.index ? idx.index : key;
+						var unique		=	idx.unique ? true : false;
+						try
+						{
+							store.createIndex(key, index_val, { unique: unique });
+						}
+						// index probably exists already
+						// TODO: check store.indexNames
+						catch(e) {}
+					})(keys[i], options.indexes[keys[i]]);
+				}
 			}
-			// index probably exists already
-			catch(e) {}
-
-			return store;
-		};
-
-		/**
-		 * create our buried table
-		 */
-		var create_buried_table	=	function(e)
-		{
-			var store	=	create_table_if_not_exists(e, tbl.buried, {keypath: '_id', autoincrement: true});
-
-			// create our primary index
-			try
-			{
-				store.createIndex('id', 'id', {unique: false});
-			}
-			// index probably exists already
-			catch(e) {}
-
 			return store;
 		};
 
@@ -137,6 +165,7 @@
 			{
 				db	=	req.result;
 				if(options.success) options.success(e);
+				start_housekeeping();
 			};
 
 			req.onupgradeneeded	=	function(e)
@@ -144,13 +173,22 @@
 				var store		=	null;
 				var tubes		=	qoptions.tubes;
 
-				create_table_if_not_exists(e, tbl.ids, {autoincrement: true});
-				create_table_if_not_exists(e, tbl.reserved);
-				create_buried_table(e);
+				update_table_schema(e, tbl.ids, { autoincrement: true });
+				update_table_schema(e, tbl.reserved);
+				update_table_schema(e, tbl.buried, {
+					indexes: { id: { unique: false } }
+				});
+				update_table_schema(e, tbl.pubsub, {
+					autoincrement: true,
+					indexes: { channel: { index: 'channel', unique: false } }
+				});
+
 				for(var i = 0; i < tubes.length; i++)
 				{
 					if([tbl.reserved, tbl.buried].indexOf(tubes[i]) >= 0) continue;
-					create_tube(e, tubes[i]);
+					update_table_schema(e, tubes[i], {
+						indexes: { priority: { index: ['priority', 'id'], unique: false } }
+					});
 				}
 			};
 		};
@@ -691,27 +729,35 @@
 			};
 		};
 
-		// ---------------------------------------------------------------------
-		// extras
-		// ---------------------------------------------------------------------
-
 		/**
-		 * consume a tube by polling it. calls the passed function for each item
-		 * that it reserves. returns a function that stops the consumer when
-		 * called.
+		 * A class that makes consumption of a tube more manageable. For each
+		 * reserved item, calls the given handler function.
 		 *
-		 * returns a function that when called stops the consumer
+		 * Has two public methods: start and stop. The consumer is started by
+		 * default on instantiation.
 		 */
-		var consume	=	function(tube, fn, options)
+		var Consumer	=	function(fn, coptions)
 		{
-			options || (options = {});
-			var quit	=	false;
-			var delay	=	options.delay ? options.delay : 100;
+			coptions || (coptions = {});
 
-			// poll the tube
-			var poll	=	function()
+			var tube	=	coptions.tube ? coptions.tube : 'default';
+			var delay	=	coptions.delay ? coptions.delay : 100;
+			var do_stop	=	false;
+
+			var poll	=	function(options)
 			{
-				if(quit && !db) return;
+				options || (options = {});
+
+				if(do_stop || !db) return;
+				if(coptions.enable_fn)
+				{
+					var res	=	coptions.enable_fn();
+					if(!res)
+					{
+						do_stop	=	true;
+						return false;
+					}
+				}
 
 				// grab an item from the tube
 				reserve({
@@ -719,33 +765,197 @@
 					success: function(item) {
 						if(!item) return;
 						fn(item);
+						// immediately poll for new items
+						setTimeout( function() { poll({skip_recurse: true}); }, 0 );
 					}
 				});
 
 				// poll again
-				setTimeout(poll, delay);
+				if(!options.skip_recurse) setTimeout(poll, delay);
 			};
+
+			var start	=	function()
+			{
+				if(!do_stop) return false;
+				do_stop	=	false;
+				setTimeout(poll, delay);
+				return true;
+			};
+
+			var stop	=	function()
+			{
+				if(do_stop) return false;
+				do_stop	=	true;
+				return true;
+			};
+
 			setTimeout(poll, delay);
 
-			return function() { if(quit) { return false } return quit = true; };
+			this.start	=	start;
+			this.stop	=	stop;
+
+			return this;
 		};
 
+		// ---------------------------------------------------------------------
+		// pubsub functions
+		// ---------------------------------------------------------------------
+
+		/**
+		 * Publish a message into a channel
+		 */
+		var publish	=	function(channel, msg, options)
+		{
+			check_db();
+			options || (options = {});
+
+			var item	=	{
+				channel: channel,
+				data: msg,
+				created: new Date().getTime()
+			};
+
+			var trx			=	db.transaction(tbl.pubsub, 'readwrite');
+			trx.oncomplete	=	function(e) { if(options.success) options.success(item, e); };
+			trx.onerror		=	function(e) { if(options.error) options.error(e); }
+
+			var store		=	trx.objectStore(tbl.pubsub);
+			var req			=	store.add(item);
+			req.onsuccess	=	function(e)
+			{
+				item.id		=	e.target.result;
+			};
+		};
+
+		/**
+		 * Class to make subscribing to a channel easy. Calls the given function
+		 * for each message that comes through on the specified channel.
+		 *
+		 * Holds two public methods: start and stop (subscriber is started by
+		 * default).
+		 */
+		var Subscriber	=	function(channel, fn, soptions)
+		{
+			soptions || (soptions = {});
+
+			var delay			=	soptions.delay ? soptions.delay : 100;
+			var do_stop			=	false;
+			var seen_messages	=	{};
+
+			var housekeeping	=	function()
+			{
+				// clean up seen_messages keys
+				var keys	=	Object.keys(seen_messages);
+				var curr	=	new Date().getTime();
+				for(var i = 0, n = keys.length; i < n; i++)
+				{
+					var time	=	seen_messages[keys[i]];
+					if(time < (curr - (1000 + msg_lifetime))) delete seen_messages[keys[i]];
+				}
+			};
+
+			var poll	=	function(options)
+			{
+				options || (options = {});
+
+				if(do_stop || !db) return;
+				if(soptions.enable_fn)
+				{
+					var res	=	soptions.enable_fn();
+					if(!res)
+					{
+						do_stop	=	true;
+						return false;
+					}
+				}
+
+				housekeeping();
+
+				var item	=	null;
+
+				var trx		=	db.transaction(tbl.pubsub, 'readonly');
+				trx.oncomplete	=	function(e) {
+					if(!item) return;
+					fn(item);
+				};
+				trx.onerror		=	function(e) { if(options.error) options.error(e); }
+
+				var store	=	trx.objectStore(tbl.pubsub);
+				var index	=	store.index('channel');
+				index.openCursor(IDBKeyRange.only(channel)).onsuccess	=	function(e)
+				{
+					var cursor	=	e.target.result;
+					if(cursor)
+					{
+						if(seen_messages[cursor.value.id])
+						{
+							cursor.continue();
+						}
+						else
+						{
+							item	=	cursor.value;
+							seen_messages[item.id]	=	new Date().getTime();
+							// immediately check for more messages
+							setTimeout( function() { poll({skip_recurse: true}); }, 0 );
+						}
+					}
+				}
+
+				if(!options.skip_recurse) setTimeout(poll, delay);
+			};
+
+			var start	=	function()
+			{
+				if(!do_stop) return false;
+				do_stop	=	false;
+				setTimeout(poll, delay);
+				return true;
+			};
+
+			var stop	=	function()
+			{
+				if(do_stop) return false;
+				do_stop	=	true;
+				return true;
+			};
+
+			setTimeout(poll, delay);
+
+			this.start	=	start;
+			this.stop	=	stop;
+
+			return this;
+		};
+
+		// ---------------------------------------------------------------------
 		// exports
-		this.open			=	open;
-		this.close			=	close;
-		this.is_open		=	function() { return !!db; };
-		this.peek			=	peek;
-		this.put			=	put;
-		this.reserve		=	reserve;
-		this['delete']		=	del;
-		this.release		=	release;
-		this.bury			=	bury;
-		this.kick			=	kick;
-		this.kick_job		=	kick_job;
-		this.count_ready	=	count_ready;
-		//this.touch		=	touch;	// TODO
-		this.consume		=	consume;
-		this.wipe			=	wipe;
+		// ---------------------------------------------------------------------
+		var Queue	=	{
+			peek: peek,
+			put: put,
+			reserve: reserve,
+			'delete': del,
+			release: release,
+			bury: bury,
+			kick: kick,
+			kick_job: kick_job,
+			count_ready: count_ready,
+			Consumer: Consumer
+		};
+		var Pubsub	=	{
+			publish: publish,
+			Subscriber: Subscriber
+		}
+		var debug	=	{
+			get_db: function() { return db; }
+		};
+		this.open		=	open;
+		this.close		=	close;
+		this.is_open	=	function() { return !!db; };
+		this.wipe		=	wipe;
+		this.Pubsub		=	Pubsub;
+		this.Queue		=	Queue;
+		this.debug		=	debug;
 
 		return this;
 	};
