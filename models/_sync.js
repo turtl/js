@@ -72,13 +72,13 @@ var Sync = Composer.Model.extend({
 	 * turtl.profile (turtl.profile.(notes|boards|personas). Also, the model
 	 * turtl.user will be added too.
 	 */
-	register_local_tracker: function(type, collection_or_model)
+	register_local_tracker: function(type, collection)
 	{
-		if(!collection_or_model.sync_from_db || typeof collection_or_model.sync_from_db != 'function')
+		if(!collection.sync_record_from_db || typeof collection.sync_record_from_db != 'function')
 		{
 			throw new SyncError('Local tracker of type `'+ type +'` does not have `sync_from_db` function.');
 		}
-		this.local_trackers.push({type: type, tracker: collection_or_model});
+		this.local_trackers.push({type: type, tracker: collection});
 	},
 
 	/**
@@ -91,17 +91,17 @@ var Sync = Composer.Model.extend({
 	 * needed to flow (most) data changes through the local DB without relying
 	 * on tight coupling of the pieces involved.
 	 */
-	register_remote_tracker: function(type, collection_or_model)
+	register_remote_tracker: function(type, collection)
 	{
-		if(!collection_or_model.sync_to_api || typeof collection_or_model.sync_to_api != 'function')
+		if(!collection.sync_record_to_api || typeof collection.sync_record_to_api != 'function')
 		{
 			throw new SyncError('Remote tracker of type `'+ type +'` does not have `sync_to_api` function.');
 		}
-		if(!collection_or_model.sync_from_api || typeof collection_or_model.sync_from_api != 'function')
+		if(!collection.sync_from_api || typeof collection.sync_from_api != 'function')
 		{
 			throw new SyncError('Remote tracker of type `'+ type +'` does not have `sync_from_api` function.');
 		}
-		this.remote_trackers.push({type: type, tracker: collection_or_model});
+		this.remote_trackers.push({type: type, tracker: collection});
 	},
 
 	/**
@@ -235,12 +235,12 @@ var Sync = Composer.Model.extend({
 		};
 
 		var subscriber	=	new turtl.hustle.Pubsub.Subscriber('local-changes', function(msg) {
-			var track_obj	=	get_tracker(msg.type);
+			var track_obj	=	get_tracker(msg.data.type);
 			if(!track_obj) return;
 			track_obj.tracker.sync_record_from_db(msg.data, msg);
 		}, {
 			enable_fn: function() {
-				return turl.user.logged_in && this.enabled;
+				return turtl.user.logged_in && this.enabled;
 			}.bind(this),
 			error: function(e) {
 				log.error('sync: sync_from_db: subscriber: error: ', e);
@@ -270,7 +270,7 @@ var Sync = Composer.Model.extend({
 		}.bind(this);
 
 		var consumer	=	turtl.hustle.Queue.Consumer(function(item) {
-			var track_obj	=	get_tracker(item.type);
+			var track_obj	=	get_tracker(item.data.type);
 			if(!track_obj) return;
 			track_obj.tracker.sync_record_to_api(item.data, item);
 		}, {
@@ -783,18 +783,15 @@ var SyncCollection	=	Composer.Collection.extend({
 				// set the record as local_modified again so we can
 				// try again next run
 				table.get(options.model_key || model.id()).done(function(obj) {
-					var errorfn	=	function(e)
-					{
-						console.log(this.local_table + '.sync_model_to_api: error marking object '+ this.local_table +'.'+ model.id() +' as local_change = true: ', e);
-					}.bind(this);
 					if(!obj) return errorfn('missing obj');
 					if(xhr && xhr.status >= 500)
 					{
-						// internal server error. just try again in a bit.
-						(function() {
-							obj.local_change	=	1;
-							table.update(obj).fail(errorfn);
-						}).delay(30000, this);
+						hustle.Queue.release(queue_item.id, {
+							delay: 10,
+							error: function(e) {
+								log.error('sync_record_to_api: error releasing queue item: ', queue_item);
+							}
+						});
 					}
 					else
 					{

@@ -16,18 +16,6 @@ var database = {
 			// DB has user id in it...client might have multiple users
 			server: 'turtl.'+turtl.user.id(),
 			version: 7,
-			// NOTE: all tables that are sync between the client and the API
-			// *must* have "local_change" and "last_mod" indexex. or else. or
-			// else what?? or else it won't work.
-			//
-			// "local_change" lets the remote sync processes (local db -> API)
-			// know that something has been changed locally and needs to be
-			// synced to the API. It must be 1 or 0.
-			//
-			// "last_mod" lets the local sync process(es) know that something
-			// has been changed (either by a remote sync call or by another
-			// app "thread" in an addon) and should be synced to the in-memory
-			// models.
 			schema: function() { log.info('db.js: create schema'); return {
 				// -------------------------------------------------------------
 				// k/v tables - always has "key" field as primary key

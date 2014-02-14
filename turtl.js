@@ -297,6 +297,7 @@ var turtl	=	{
 		turtl.sync.stop();
 		if(turtl.db) turtl.db.close();
 		window.indexedDB.deleteDatabase('turtl.'+turtl.user.id());
+		if(turtl.hustle) turtl.hustle.wipe();
 		if(options.restart)
 		{
 			turtl.setup_local_db({
@@ -614,7 +615,6 @@ window.addEvent('domready', function() {
 	turtl.load_controller('pages', PagesController);
 
 	(function() {
-		console.log('turtl: DEBUG init!!');
 		if(window.port) window.port.bind('debug', function(code) {
 			if(!window._debug_mode) return false;
 			var res	=	eval(code);
@@ -630,16 +630,20 @@ window.addEvent('beforeunload', function() {
 	if(window.port) window.port.send('tab-unload');
 });
 
-// set up a global error handler that XHRs shit to the API so we know when bugs
-// are cropping up
-window.onerror	=	function(msg, url, line)
+if(config.catch_global_errors)
 {
-	if(!turtl.api) return;
-	log.debug('error log: sending to API');
-	turtl.api.post('/log/error', {data: {version: config.version, msg: msg, url: url, line: line}}, {
-		success: function() {
-		},
-		error: function() {
-		}
-	});
-};
+	// set up a global error handler that XHRs shit to the API so we know when bugs
+	// are cropping up
+	window.onerror	=	function(msg, url, line)
+	{
+		if(!turtl.api) return;
+		log.error('remote error log: '+ url +':'+ line + ' "'+ msg +'"');
+		turtl.api.post('/log/error', {data: {version: config.version, msg: msg, url: url, line: line}}, {
+			success: function() {
+			},
+			error: function() {
+			}
+		});
+	};
+}
+
