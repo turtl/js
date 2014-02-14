@@ -40,6 +40,9 @@ var Sync = Composer.Model.extend({
 	// local changes and sync those changes to the API
 	remote_trackers: [],
 
+	// used to track local syncs
+	local_sync_id: 0,
+
 	init: function()
 	{
 		// initialize our time tracker(s)
@@ -138,6 +141,11 @@ var Sync = Composer.Model.extend({
 		return false;
 	},
 
+	/**
+	 * Persist the sync state. This lets us pick up where we left off when a
+	 * client closes and re-opens later, grabbing all changes that occurred
+	 * inbetween.
+	 */
 	save: function()
 	{
 		var sync_id	=	this.get('sync_id');
@@ -146,6 +154,61 @@ var Sync = Composer.Model.extend({
 		).fail(function(e) {
 			console.error('Sync.save: problem persisting sync record: ', e);
 		});
+	},
+
+	/**
+	 * Notify all listening parties that an item's data has changed and should
+	 * be updated in-memory.
+	 */
+	notify_local_change: function(table, action, data)
+	{
+		var msg	=	{
+			sync_id: this.local_sync_id++,
+			type: table,
+			action: action,
+			data: data
+		};
+		var fail_count	=	0;
+		var notify	=	function()
+		{
+			turtl.hustle.Pubsub.publish('local-changes', msg, {
+				error: function(e) {
+					// this is what happens when you're not a *fucking* local
+					log.error('sync: notify local: error ', e);
+					fail_count++;
+					if(fail_count < 3) notify.delay(100, this);
+				}
+			})
+		};
+		notify();
+		turtl.sync.ignore_on_next_sync(msg.sync_id, {type: 'local'});
+	},
+
+	/**
+	 * Notify the syncing system that data has changed locally and needs to be
+	 * synced to the API.
+	 */
+	queue_remote_change: function(table, action, data)
+	{
+		var msg	=	{
+			sync_id: this.local_sync_id++,
+			type: table,
+			action: action,
+			data: data
+		};
+		var fail_count	=	0;
+		var enqueue	=	function()
+		{
+			turtl.hustle.Queue.put(msg, {
+				tube: 'outgoing',
+				error: function(e) {
+					log.error('sync: queue remote: error: ', e);
+					fail_count++;
+					if(fail_count < 3) enqueue.delay(100, this);
+				}
+			});
+		};
+		enqueue();
 	},
 
 	/**
@@ -164,6 +227,13 @@ var Sync = Composer.Model.extend({
 			}
 		}.bind(this);
 
+		var cleanup	=	function()
+		{
+			if(!turtl.user.logged_in || !this.enabled) return false;
+			this.sync_ignore.local.empty();
+			cleanup.delay(10000, this);
+		};
+
 		var subscriber	=	new turtl.hustle.Pubsub.Subscriber('local-changes', function(msg) {
 			var track_obj	=	get_tracker(msg.type);
 			if(!track_obj) return;
@@ -176,38 +246,6 @@ var Sync = Composer.Model.extend({
 				log.error('sync: sync_from_db: subscriber: error: ', e);
 			}
 		});
-
-		// store last local sync time, update local sync time
-		var last_local_sync	=	this.time_track.local;
-		this.time_track.local	=	new Date().getTime();
-
-		// called when all trackers complete
-		var done	=	function()
-		{
-			this.sync_ignore.local.empty();
-			this.sync_from_db.delay(1000, this);
-		}.bind(this);
-
-		// run the local trackers individually, making sure that one fully
-		// completes its run before calling the next (due to the async nature of
-		// indexeddb, this must be enforced explicitely here, we can't just run
-		// them in order and hope for the best).
-		var i	=	0;
-		var next_tracker	=	function()
-		{
-			var track_obj	=	this.local_trackers[i];
-			if(!track_obj) return done();
-			i++;
-			track_obj.tracker.sync_from_db(last_local_sync, {
-				success: function() {
-					next_tracker();
-				},
-				error: function() {
-					next_tracker();
-				}
-			});
-		}.bind(this);
-		next_tracker();
 	},
 
 	/**
@@ -307,7 +345,7 @@ var Sync = Composer.Model.extend({
 						var syncdata	=	sync[type];
 						if(!syncdata || syncdata.length == 0) return false;
 
-						tracker.sync_from_api(turtl.db[tracker.local_table], syncdata);
+						tracker.sync_from_api(syncdata);
 					});
 				}.bind(this),
 				error: function(e, xhr) {
@@ -778,11 +816,48 @@ var SyncCollection	=	Composer.Collection.extend({
 	},
 
 	/**
+	 * Run the actual save for a single item from a remote sync call.
+	 */
+	sync_record_from_api: function(item)
+	{
+		if(_sync_debug_list.contains(this.local_table))
+		{
+			console.log('sync: '+ this.local_table +': api -> db ('+ item._sync.action +')');
+		}
+
+		var action	=	'update';
+
+		if(item.deleted)
+		{
+			table.remove(item.id);
+			action	=	'delete';
+		}
+		else
+		{
+			// if we have sync data (we definitely should), move some of the
+			// data into the actual item object we save, then obliterate the
+			// _sync key so it never touches the local db
+			if(item._sync)
+			{
+				// move the CID into the item if we have it.
+				if(item._sync.cid) item.cid = item._sync.cid;
+				delete item._sync;
+				action	=	'create';
+			}
+
+			// run the actual local DB update
+			table.update(item);
+
+			turtl.sync.notify_local_change(this.local_table, action, item);
+		}
+	},
+
+	/**
 	 * This function takes items from a POST /sync call and saves them to the
 	 * local DB. POST /sync objects are full representations (not just diffs) so
 	 * saving them to the local DB fully is ok.
 	 */
-	sync_from_api: function(table, syncdata)
+	sync_from_api: function(syncdata)
 	{
 		// process the sync data
 		var process	=	{};
@@ -793,41 +868,16 @@ var SyncCollection	=	Composer.Collection.extend({
 		// and perform any standard data transformations before saving to the
 		// local DB. update is the only operation we need.
 		syncdata.each(function(item) {
+			var table	=	turtl.db[this.local_table];
+
 			// check if this item has an ignored sync_id (if yes, this sync
 			// record is from something just did, and we don't need to re-apply
 			// changes we already made...in fact, doing so can cause problems
 			// such as race conditions).
 			if(turtl.sync.should_ignore(item._sync.id, {type: 'remote'})) return false;
 
-			var do_sync	=	function()
-			{
-				if(_sync_debug_list.contains(this.local_table))
-				{
-					console.log('sync: '+ this.local_table +': api -> db ('+ item._sync.action +')');
-				}
-
-				// POST /sync returns deleted === true, but we need it to be an int
-				// value (IDB don't like filtering bools), so we either set it to 1
-				// or just delete it.
-				if(item.deleted) item.deleted = 1;
-				else delete item.deleted;
-
-				// make sure the local "threads" know this data changed
-				item.last_mod	=	new Date().getTime();
-
-				// if we have sync data (we definitely should), move some of the
-				// data into the actual item object we save, then obliterate the
-				// _sync key so it never touches the local db
-				if(item._sync)
-				{
-					// move the CID into the item if we have it.
-					if(item._sync.cid) item.cid = item._sync.cid;
-					delete item._sync;
-				}
-
-				// run the actual local DB update
-				table.update(item);
-			}.bind(this);
+			// just create a forward to sync_record_from_api
+			var do_sync	=	function() { this.sync_record_from_api(item); }.bind(this);
 
 			if(item._sync && item._sync.cid)
 			{

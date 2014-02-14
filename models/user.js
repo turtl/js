@@ -237,101 +237,43 @@ var User	=	Protected.extend({
 			error: options.error
 		});
 		turtl.api.clear_auth();
+	}
+});
+
+var Users	=	SyncCollection.extend({
+	model: User,
+	local_table: 'user',
+
+	sync_record_from_db: function(userdata, msg)
+	{
+		var continuefn	=	function()
+		{
+			if(options.success) options.success();
+			return false;
+		};
+		if(!userdata) return continuefn();
+
+		if(turtl.sync.should_ignore([msg.sync_id], {type: 'local'})) return continuefn();
+
+		this.set(userdata);
+
+		continuefn();
 	},
 
-	/**
-	 * AL - these are deprecated in favor of the keychain (turtl.profile.get('keychain'))
-	 *
-	add_user_key: function(item_id, key)
+	sync_record_to_api: function(userdata, queue, options)
 	{
-		if(!item_id || !key) return false;
-		var user_keys		=	Object.clone(this.get('settings').get_by_key('keys').value()) || {};
-		user_keys[item_id]	=	tcrypt.key_to_string(key);
-		this.get('settings').get_by_key('keys').value(user_keys);
-	},
-
-	remove_user_key: function(item_id)
-	{
-		if(!item_id) return false;
-		var user_keys	=	Object.clone(this.get('settings').get_by_key('keys').value()) || {};
-		delete user_keys[item_id];
-		this.get('settings').get_by_key('keys').value(user_keys);
-	},
-
-	find_user_key: function(item_id)
-	{
-		if(!item_id) return false;
-		var user_keys	=	Object.clone(this.get('settings').get_by_key('keys').value()) || {};
-		var key			=	user_keys[item_id];
-		if(!key) return false;
-		return tcrypt.key_to_bin(key);
-	},
-	*/
-
-	// -------------------------------------------------------------------------
-	// Sync section
-	// -------------------------------------------------------------------------
-	sync_from_db: function(last_local_sync, options)
-	{
-		turtl.db.user.query('last_mod')
-			.lowerBound(last_local_sync)
-			.execute()
-			.done(function(userdata) {
-				var continuefn	=	function()
-				{
-					if(options.success) options.success();
-					return false;
-				};
-
-				if(userdata.length == 0) return continuefn();
-				var userdata	=	userdata[0];
-
-				if(turtl.sync.should_ignore([userdata.id])) return continuefn();
-
-				if(userdata.last_mod < last_local_sync) return continuefn();
-				this.set(userdata);
-
-				continuefn();
-			}.bind(this))
-			.fail(function(e) {
-				barfr.barf('Problem syncing user record locally: '+ e);
-				console.log('user.sync_from_db: error: ', e);
-				if(options.error) options.error();
-			});
-	},
-
-	sync_to_api: function()
-	{
-		turtl.db.user.query('local_change')
-			.only(1)
-			.modify({local_change: 0})
-			.execute()
-			.done(function(userdata) {
-				if(userdata.length == 0) return false;
-				userdata	=	userdata[0];
-
-				// "borrow" some code from the SyncCollection
-				var collection	=	new SyncCollection([], {
-					model: User,
-					local_table: 'user'
-				});
-				collection.sync_record_to_api(userdata);
-			}.bind(this))
-			.fail(function(e) {
-				barfr.barf('Problem syncing user record remotely: '+ e);
-				console.log('user.sync_to_api: error: ', e);
-			});
-	},
-
-	sync_from_api: function(table, syncdata)
-	{
-		syncdata.each(function(user) {
-			// check that we aren't ignoring user on remote sync
-			if(turtl.sync.should_ignore([user.id, user.cid], {type: 'remote'})) return false;
-			user.key		=	'user';
-			user.last_mod	=	new Date().getTime();
-			table.update(user);
+		// "borrow" some code from the SyncCollection
+		var collection	=	new SyncCollection([], {
+			model: User,
+			local_table: 'user'
 		});
+		collection.sync_record_to_api(userdata, queue, options);
+	}
+
+	sync_record_from_api: function(item)
+	{
+		item.key		=	'user';
+		return this.parent.apply(this, arguments);
 	}
 });
 

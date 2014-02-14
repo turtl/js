@@ -39,50 +39,15 @@ Composer.sync	=	function(method, model, options)
 	{
 		if(['create', 'update', 'delete'].contains(method))
 		{
-			var msg	=	{
-				sync_id: local_sync_id++,
-				type: table,
-				action: method,
-				data: modeldata
-			};
 			if(!options.skip_local_sync)
 			{
-				var notify_fail_count	=	0;
-				var notify	=	function()
-				{
-					turtl.hustle.Pubsub.publish('local-changes', msg, {
-						error: function(e) {
-							// this is what happens when you're not a *fucking* local
-							log.error('sync: local: local-changes: error ', e);
-							notify_fail_count++;
-							if(notify_fail_count < 3) notify.delay(100, this);
-						}
-					})
-				};
-				notify();
-				turtl.sync.ignore_on_next_sync(msg.sync_id, {type: 'local'});
+				turtl.sync.notify_local_change(table, method, modeldata);
 			}
 			if(!options.skip_remote_sync)
 			{
-				var queue_fail_count	=	0;
-				var enqueue	=	function()
-				{
-					turtl.hustle.Queue.put(msg, {
-						tube: 'outgoing',
-						error: function(e) {
-							log.error('sync: local: outgoing: error: ', e);
-							queue_fail_count++;
-							if(queue_fail_count < 3) enqueue.delay(100, this);
-						}
-					});
-				};
-				enqueue();
+				turtl.sync.queue_remote_change(table, method, modeldata);
 			}
 		}
-
-		// try not to double-sync (mem -> db -> mem). by tracking this model, we can
-		// avoid it being synced from DB on the next local sync
-		turtl.sync.ignore_on_next_sync(model.id(), {type: 'local'});
 
 		if(res instanceof Array && res.length == 1)
 		{
