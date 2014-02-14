@@ -240,6 +240,7 @@ var User	=	Protected.extend({
 	}
 });
 
+// we don't actually use this collection for anything but syncing
 var Users	=	SyncCollection.extend({
 	model: User,
 	local_table: 'user',
@@ -255,23 +256,15 @@ var Users	=	SyncCollection.extend({
 
 		if(turtl.sync.should_ignore([msg.sync_id], {type: 'local'})) return continuefn();
 
-		this.set(userdata);
+		turtl.user.set(userdata);
 
 		continuefn();
 	},
 
-	sync_record_to_api: function(userdata, queue, options)
-	{
-		// "borrow" some code from the SyncCollection
-		var collection	=	new SyncCollection([], {
-			model: User,
-			local_table: 'user'
-		});
-		collection.sync_record_to_api(userdata, queue, options);
-	}
-
 	sync_record_from_api: function(item)
 	{
+		// make sure item.key is set so the correct record updates in the DB
+		// (since we only ever get one user object synced: ours)
 		item.key		=	'user';
 		return this.parent.apply(this, arguments);
 	}

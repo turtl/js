@@ -351,7 +351,7 @@ var turtl	=	{
 		// it's important that it runs before everything else, or you may wind
 		// up with data that doesn't get decrypted properly. next is the
 		// personas, followed by boards, and lastly notes.
-		turtl.sync.register_local_tracker('user', turtl.user);
+		turtl.sync.register_local_tracker('user', new Users());
 		turtl.sync.register_local_tracker('keychain', turtl.profile.get('keychain'));
 		turtl.sync.register_local_tracker('personas', turtl.profile.get('personas'));
 		turtl.sync.register_local_tracker('boards', turtl.profile.get('boards'));
@@ -372,7 +372,7 @@ var turtl	=	{
 			// models/collections we'll be tracking. this enforces a nice
 			// separation between remote syncing and local syncing (and
 			// encourages all data changes to flow through the local db).
-			turtl.sync.register_remote_tracker('user', new User());
+			turtl.sync.register_local_tracker('user', new Users());
 			turtl.sync.register_remote_tracker('keychain', new Keychain());
 			turtl.sync.register_remote_tracker('personas', new Personas());
 			turtl.sync.register_remote_tracker('boards', new Boards());
