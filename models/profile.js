@@ -163,6 +163,15 @@ var Profile = Composer.RelationalModel.extend({
 
 				if(res)
 				{
+					return finished();
+					/**
+					 * NOTE: this is ALL WRONG. we can't use a sync id from the DB
+					 * as the last sync id, we need to use a locally stored value.
+					 * also, wiping the profile after a month of not syncing is
+					 * the Wrong Thing (tm). we need a popup that tells the user
+					 * they are out of sync and give them an option to export
+					 * their data before syncing
+					 *
 					var sync_id		=	res.value;
 					var timestamp	=	parseInt(sync_id.substr(0, 8), 16);
 					var month		=	(new Date().getTime() / 1000) - 2592000;
@@ -177,6 +186,7 @@ var Profile = Composer.RelationalModel.extend({
 
 						return;
 					}
+					*/
 				}
 				make_the_call();
 			}.bind(this),
