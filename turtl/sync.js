@@ -1,6 +1,9 @@
 // extend_error is in functions.js
 var SyncError	=	extend_error(Error, 'SyncError');
 
+// helps us track local changes so we don't double-apply
+var local_sync_id	=	0;
+
 /**
  * Default sync function, persists items to the local DB
  */
@@ -37,7 +40,8 @@ Composer.sync	=	function(method, model, options)
 		if(['create', 'update', 'delete'].contains(method))
 		{
 			var msg	=	{
-				type: tabla,
+				sync_id: local_sync_id++,
+				type: table,
 				action: method,
 				data: modeldata
 			};
@@ -48,6 +52,7 @@ Composer.sync	=	function(method, model, options)
 				{
 					turtl.hustle.Pubsub.publish('local-changes', msg, {
 						error: function(e) {
+							// this is what happens when you're not a *fucking* local
 							log.error('sync: local: local-changes: error ', e);
 							notify_fail_count++;
 							if(notify_fail_count < 3) notify.delay(100, this);
@@ -55,6 +60,7 @@ Composer.sync	=	function(method, model, options)
 					})
 				};
 				notify();
+				turtl.sync.ignore_on_next_sync(msg.sync_id, {type: 'local'});
 			}
 			if(!options.skip_remote_sync)
 			{

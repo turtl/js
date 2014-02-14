@@ -411,8 +411,10 @@ var Boards = SyncCollection.extend({
 		return this.parent.apply(this, arguments);
 	},
 
-	process_local_sync: function(board_data, board)
+	process_local_sync: function(board_data, board, msg)
 	{
+		var action	=	msg.action;
+
 		// process some user/board key stuff. when the user first adds a board,
 		// its key is saved in the user's data with the board's CID. it stays
 		// this way until the board is posted to the API and gets a real ID. we
@@ -427,7 +429,7 @@ var Boards = SyncCollection.extend({
 			keychain.remove_key(board_data.cid);
 		}
 
-		if(board_data.deleted)
+		if(action == 'delete')
 		{
 			if(board) board.destroy({skip_local_sync: true, skip_remote_sync: true});
 		}

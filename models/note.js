@@ -371,9 +371,11 @@ var Notes = SyncCollection.extend({
 	},
 	*/
 
-	process_local_sync: function(note_data, note)
+	process_local_sync: function(note_data, note, msg)
 	{
-		if(note_data.deleted)
+		var action	=	msg.action;
+
+		if(action == 'deleted')
 		{
 			if(note) note.destroy({skip_local_sync: true, skip_remote_sync: true});
 		}

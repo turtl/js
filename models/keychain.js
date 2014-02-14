@@ -106,9 +106,11 @@ var Keychain	=	SyncCollection.extend({
 		});
 	},
 
-	process_local_sync: function(keychain_data, model)
+	process_local_sync: function(keychain_data, model, msg)
 	{
-		if(keychain_data.deleted)
+		var action	=	msg.action;
+
+		if(action == 'deleted')
 		{
 			if(model) model.destroy({skip_local_sync: true, skip_remote_sync: true});
 		}

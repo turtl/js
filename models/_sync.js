@@ -149,13 +149,33 @@ var Sync = Composer.Model.extend({
 	},
 
 	/**
-	 * Start syncing locally. This means calling registered local trackers that
-	 * will look for changes in the local DB and update their models
-	 * accordingly.
+	 * Listen for changes to our local data. These get fired whenever anything
+	 * touches the database.
 	 */
 	sync_from_db: function()
 	{
 		if(!turtl.user.logged_in || !this.enabled) return false;
+
+		var get_tracker	=	function(type)
+		{
+			for(var i = 0, n = this.local_trackers.length; i < n; i++)
+			{
+				if(this.local_trackers[i].type == type) return this.local_trackers[i];
+			}
+		}.bind(this);
+
+		var subscriber	=	new turtl.hustle.Pubsub.Subscriber('local-changes', function(msg) {
+			var track_obj	=	get_tracker(msg.type);
+			if(!track_obj) return;
+			track_obj.tracker.sync_record_from_db(msg.data, msg);
+		}, {
+			enable_fn: function() {
+				return turl.user.logged_in && this.enabled;
+			}.bind(this),
+			error: function(e) {
+				log.error('sync: sync_from_db: subscriber: error: ', e);
+			}
+		});
 
 		// store last local sync time, update local sync time
 		var last_local_sync	=	this.time_track.local;
@@ -201,31 +221,29 @@ var Sync = Composer.Model.extend({
 	{
 		if(!turtl.user.logged_in || !this.enabled) return false;
 
-		if(turtl.do_sync)
+		if(!turtl.do_sync) return false;
+
+		var get_tracker	=	function(type)
 		{
-			var get_tracker	=	function(type)
+			for(var i = 0, n = this.remote_trackers.length; i < n; i++)
 			{
-				for(var i = 0, n = this.remote_trackers.length; i < n; i++)
-				{
-					if(this.remote_trackers[i].type == type) return this.remote_trackers[i];
-				}
-			}.bind(this);
+				if(this.remote_trackers[i].type == type) return this.remote_trackers[i];
+			}
+		}.bind(this);
 
-			var consumer	=	turtl.hustle.Queue.Consumer(function(item) {
-				var track_obj	=	get_tracker(item.type);
-				if(!track_obj) return;
-				track_obj.tracker.sync_record_to_api(item.data, item);
-			}, {
-				tube: 'outgoing',
-				enable_fn: function() { return this.enabled; },
-				error: function(e) {
-					log.error('sync: sync_to_api: consumer: error: ', e);
-				}
-			});
-		}
-
-		// async loop
-		this.sync_to_api.delay(1000, this);
+		var consumer	=	turtl.hustle.Queue.Consumer(function(item) {
+			var track_obj	=	get_tracker(item.type);
+			if(!track_obj) return;
+			track_obj.tracker.sync_record_to_api(item.data, item);
+		}, {
+			tube: 'outgoing',
+			enable_fn: function() {
+				return turtl.user.logged_in && this.enabled && turtl.do_sync;
+			}.bind(this),
+			error: function(e) {
+				log.error('sync: sync_to_api: consumer: error: ', e);
+			}
+		});
 	},
 
 	/**
@@ -558,6 +576,31 @@ var SyncCollection	=	Composer.Collection.extend({
 	},
 
 	/**
+	 * Applies the changes from the DB to a single in-memory record
+	 */
+	sync_record_from_db: function(result, msg)
+	{
+		// check if we're ignoring this item
+		if(turtl.sync.should_ignore([msg.sync_id], {type: 'local'})) return false;
+
+		// try to find the model locally (using both the ID and CID)
+		var model	=	this.find_by_id(result.id, {strict: true});
+		if(!model && result.cid)
+		{
+			model	=	this.find_by_id(result.cid, {strict: true});
+			// make sure we actually save the ID, even if
+			// process_local_sync neglects to
+			if(model) model.set({id: result.id}, {silent: true});
+		}
+		//console.log(this.local_table + '.sync_from_db: process: ', result, model);
+		if(_sync_debug_list.contains(this.local_table))
+		{
+			console.log('sync: '+ this.local_table +': db -> mem ('+ (result.deleted ? 'delete' : 'add/edit') +')');
+		}
+		this.process_local_sync(result, model, msg);
+	},
+
+	/**
 	 * Looks for data modified in the local DB (last_mod > last_local_sync) for
 	 * this collection's table and syncs any changed data to in-memory models
 	 * via `process_local_sync`.
@@ -579,24 +622,7 @@ var SyncCollection	=	Composer.Collection.extend({
 			.execute()
 			.done(function(results) {
 				results.each(function(result) {
-					// check if we're ignoring this item
-					if(turtl.sync.should_ignore([result.id], {type: 'local'})) return false;
-
-					// try to find the model locally (using both the ID and CID)
-					var model	=	this.find_by_id(result.id, {strict: true});
-					if(!model && result.cid)
-					{
-						model	=	this.find_by_id(result.cid, {strict: true});
-						// make sure we actually save the ID, even if
-						// process_local_sync neglects to
-						if(model) model.set({id: result.id}, {silent: true});
-					}
-					//console.log(this.local_table + '.sync_from_db: process: ', result, model);
-					if(_sync_debug_list.contains(this.local_table))
-					{
-						console.log('sync: '+ this.local_table +': db -> mem ('+ (result.deleted ? 'delete' : 'add/edit') +')');
-					}
-					this.process_local_sync(result, model);
+					this.sync_record_from_db(result, {});
 				}.bind(this));
 				if(options.success) options.success();
 			}.bind(this))

@@ -241,9 +241,11 @@ var Personas = SyncCollection.extend({
 	model: Persona,
 	local_table: 'personas',
 
-	process_local_sync: function(persona_data, persona)
+	process_local_sync: function(persona_data, persona, msg)
 	{
-		if(persona_data.deleted)
+		var action	=	msg.action;
+
+		if(action == 'deleted')
 		{
 			if(persona) persona.destroy_persona({skip_local_sync: true, skip_remote_sync: true});
 		}
