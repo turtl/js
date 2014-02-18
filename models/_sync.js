@@ -136,7 +136,11 @@ var Sync = Composer.Model.extend({
 		{
 			var id	=	ids[i];
 			if(!id) continue;
-			if(ignores.contains(id)) return true;
+			if(ignores.contains(id))
+			{
+				log.debug('sync: ignore: ', id);
+				return true;
+			}
 		}
 		return false;
 	},
@@ -172,6 +176,9 @@ var Sync = Composer.Model.extend({
 		var notify	=	function()
 		{
 			turtl.hustle.Pubsub.publish('local-changes', msg, {
+				success: function() {
+					log.debug('sync: notify local: send: ', msg);
+				},
 				error: function(e) {
 					// this is what happens when you're not a *fucking* local
 					log.error('sync: notify local: error ', e);
@@ -201,6 +208,9 @@ var Sync = Composer.Model.extend({
 		{
 			turtl.hustle.Queue.put(msg, {
 				tube: 'outgoing',
+				success: function() {
+					log.debug('sync: queue remote: send: ', msg);
+				},
 				error: function(e) {
 					log.error('sync: queue remote: error: ', e);
 					fail_count++;
@@ -237,7 +247,8 @@ var Sync = Composer.Model.extend({
 		var subscriber	=	new turtl.hustle.Pubsub.Subscriber('local-changes', function(msg) {
 			var track_obj	=	get_tracker(msg.data.type);
 			if(!track_obj) return;
-			track_obj.tracker.sync_record_from_db(msg.data, msg);
+			log.debug('sync: notify local: recv: ', msg);
+			track_obj.tracker.sync_record_from_db(msg.data.data, msg.data);
 		}, {
 			enable_fn: function() {
 				return turtl.user.logged_in && this.enabled;
@@ -272,7 +283,8 @@ var Sync = Composer.Model.extend({
 		var consumer	=	turtl.hustle.Queue.Consumer(function(item) {
 			var track_obj	=	get_tracker(item.data.type);
 			if(!track_obj) return;
-			track_obj.tracker.sync_record_to_api(item.data, item);
+			log.debug('sync: queue remote: recv: ', item);
+			track_obj.tracker.sync_record_to_api(item.data.data, item);
 		}, {
 			tube: 'outgoing',
 			enable_fn: function() {
@@ -333,7 +345,7 @@ var Sync = Composer.Model.extend({
 						if(sync.boards && sync.boards.length > 0) sync_clone.boards = sync.boards.length;
 						if(sync.notes && sync.notes.length > 0) sync_clone.notes = sync.notes.length;
 						if(sync.files && sync.files.length > 0) sync_clone.files = sync.files.length;
-						console.log('sync: ', JSON.encode(sync_clone));
+						log.info('sync: ', JSON.encode(sync_clone));
 					}
 
 
@@ -683,8 +695,7 @@ var SyncCollection	=	Composer.Collection.extend({
 	update_record_from_api_save: function(modeldata, record, options)
 	{
 		var table		=	turtl.db[this.local_table];
-		var is_create	=	options.is_create;
-		var is_delete	=	options.is_delete;
+		var action		=	options.action;
 
 		// saves the model into the database
 		var run_update	=	function()
@@ -699,7 +710,7 @@ var SyncCollection	=	Composer.Collection.extend({
 				.fail(function(e) { if(options.error) options.error(e); });
 		}.bind(this);
 
-		if(is_create)
+		if(action == 'add')
 		{
 			// if the record was just added, we have a new ID for it
 			// from the API, however we can't change the id of our
@@ -738,26 +749,19 @@ var SyncCollection	=	Composer.Collection.extend({
 
 		// create a model suited for DB <--> API tasks
 		var model	=	this.create_remote_model(record, {destructive: true});
-
-		// store whether or not we're deleting this model
-		var is_delete	=	record.deleted == 1;
-
-		// also store if we're adding a new model
-		var is_create	=	model.is_new();
+		var action	=	queue_item.data.action;
 
 		if(_sync_debug_list.contains(this.local_table))
 		{
-			var action	=	is_delete ? 'delete' : (is_create ? 'add' : 'edit');
 			console.log('sync: '+ this.local_table +': db -> api ('+action+') (new: '+model.is_new()+')');
 		}
 
 		var table	=	turtl.db[this.local_table];
-		var _model = model;
 		var options	=	{
 			api_save: true,
 			success: function(model, res) {
 				// don't save the model back into the db if it's a delete
-				if(is_delete) return;
+				if(action == 'delete') return;
 
 				// the model may have changed during save, to serialize it and
 				// put it back into the db
@@ -769,8 +773,7 @@ var SyncCollection	=	Composer.Collection.extend({
 				if(record.key) modeldata.key = record.key;
 
 				this.update_record_from_api_save(modeldata, record, {
-					is_create: is_create,
-					is_delete: is_delete,
+					action: action,
 					success: function() {},
 					error: function(e) {
 						console.log(this.local_table + '.sync_model_to_api: error saving model in '+ this.local_table +'.'+ model.id() +' (local -> API): ', e);
@@ -802,7 +805,7 @@ var SyncCollection	=	Composer.Collection.extend({
 			}.bind(this)
 		};
 
-		if(is_delete)
+		if(action == 'delete')
 		{
 			model.destroy(options);
 		}

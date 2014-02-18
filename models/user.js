@@ -247,18 +247,10 @@ var Users	=	SyncCollection.extend({
 
 	sync_record_from_db: function(userdata, msg)
 	{
-		var continuefn	=	function()
-		{
-			if(options.success) options.success();
-			return false;
-		};
-		if(!userdata) return continuefn();
-
-		if(turtl.sync.should_ignore([msg.sync_id], {type: 'local'})) return continuefn();
+		if(!userdata) return false;
+		if(turtl.sync.should_ignore([msg.sync_id], {type: 'local'})) return false;
 
 		turtl.user.set(userdata);
-
-		continuefn();
 	},
 
 	sync_record_from_api: function(item)
