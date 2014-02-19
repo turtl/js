@@ -11,7 +11,7 @@ var config = {
 
 	// the amount of time we let a client not sync with the server before
 	// forcing a profile refresh.
-	sync_cutoff: (60 * 60 * 24 * 30)
+	sync_cutoff: (60 * 60 * 24 * 30),
 
 	// if true, any uncaught errors will be logged to the API for processing
 	catch_global_errors: false

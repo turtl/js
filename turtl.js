@@ -619,7 +619,7 @@ window.onerror	=	function(msg, url, line)
 {
 	if(!turtl.api) return;
 	log.debug('error log: sending to API');
-	turtl.api.post('/log/error', {data: {version: config.version, msg: msg, url: url, line: line}}, {
+	turtl.api.post('/log/error', {data: {client: config.client, version: config.version, msg: msg, url: url, line: line}}, {
 		success: function() {
 		},
 		error: function() {

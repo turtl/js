@@ -202,6 +202,10 @@ var Api	=	new Class({
 			request.processData	=	false;
 		}
 
+		// fill in the client we're using
+		request.headers['X-Turtl-Client']	=	config.client + '-' + config.version;
+
+		// if we're sending auth AND we're logged in, authenticate
 		if(this.user && send_auth)
 		{
 			request.headers['X-Auth-Api-Key']	=	this.api_key;
