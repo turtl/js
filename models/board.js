@@ -287,7 +287,6 @@ var Board = Composer.RelationalModel.extend({
 	 */
 	get_shared_persona: function()
 	{
-		// NOTE: this is all done in Sync.process_data() now
 		var meta	=	this.get('meta');
 		if(meta && meta.persona)
 		{

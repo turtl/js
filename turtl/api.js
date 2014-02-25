@@ -172,13 +172,37 @@ var Api	=	new Class({
 			responseType: params.responseType,
 			onSuccess: function(res)
 			{
-				if(!params.responseType) res = JSON.parse(res);
+				if(!params.responseType)
+				{
+					try
+					{
+						res	=	JSON.parse(res);
+					}
+					catch(e)
+					{
+						var err	=	'api: error parsing resonse: '+ res
+						log.debug(err);
+						if(params.error) params.error(err);
+						return;
+					}
+				}
 				if(params.success) params.success(res);
 			},
 			onFailure: function(xhr)
 			{
 				var res	=	xhr;
-				if(!params.responseType) res = JSON.parse(xhr.responseText);
+				if(!params.responseType && xhr)
+				{
+					try
+					{
+						res	=	JSON.parse(xhr.responseText);
+					}
+					catch(e)
+					{
+						res	=	'error parsing error response: '+ xhr.responseText;
+						log.debug('api: ', res);
+					}
+				}
 				if(params.error) params.error(res, xhr);
 			},
 			onProgress: function(event, xhr)
@@ -202,6 +226,10 @@ var Api	=	new Class({
 			request.processData	=	false;
 		}
 
+		// fill in the client we're using
+		request.headers['X-Turtl-Client']	=	config.client + '-' + config.version;
+
+		// if we're sending auth AND we're logged in, authenticate
 		if(this.user && send_auth)
 		{
 			request.headers['X-Auth-Api-Key']	=	this.api_key;
@@ -213,7 +241,7 @@ var Api	=	new Class({
 		this.send_request(request);
 		//if(user_cookie) Cookie.write(config.user_cookie, user_cookie);
 
-		return url;
+		return null;
 	},
 
 	send_request: function(request)

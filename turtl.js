@@ -615,6 +615,7 @@ window.addEvent('domready', function() {
 	turtl.load_controller('pages', PagesController);
 
 	(function() {
+		log.debug('turtl: DEBUG init!!');
 		if(window.port) window.port.bind('debug', function(code) {
 			if(!window._debug_mode) return false;
 			var res	=	eval(code);
@@ -630,18 +631,21 @@ window.addEvent('beforeunload', function() {
 	if(window.port) window.port.send('tab-unload');
 });
 
+// set up a global error handler that XHRs shit to the API so we know when bugs
+// are cropping up
 if(config.catch_global_errors)
 {
-	// set up a global error handler that XHRs shit to the API so we know when bugs
-	// are cropping up
+	var enable_errlog	=	true;
 	window.onerror	=	function(msg, url, line)
 	{
-		if(!turtl.api) return;
+		if(!turtl.api || !enable_errlog) return;
 		log.error('remote error log: '+ url +':'+ line + ' "'+ msg +'"');
-		turtl.api.post('/log/error', {data: {version: config.version, msg: msg, url: url, line: line}}, {
-			success: function() {
-			},
-			error: function() {
+		turtl.api.post('/log/error', {data: {client: config.client, version: config.version, msg: msg, url: url, line: line}}, {
+			error: function(err) {
+				log.error(err);
+				// error posting, disable log for 30s
+				enable_errlog	=	false;
+				(function() { enable_errlog = true; }).delay(30000);
 			}
 		});
 	};
