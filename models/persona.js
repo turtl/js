@@ -239,27 +239,7 @@ var Persona = Protected.extend({
 
 var Personas = SyncCollection.extend({
 	model: Persona,
-	local_table: 'personas',
-
-	process_local_sync: function(persona_data, persona, msg)
-	{
-		var action	=	msg.action;
-
-		if(action == 'deleted')
-		{
-			if(persona) persona.destroy_persona({skip_local_sync: true, skip_remote_sync: true});
-		}
-		else if(persona)
-		{
-			persona.set(persona_data);
-		}
-		else
-		{
-			var persona	=	new Persona(persona_data);
-			if(persona_data.cid) persona._cid = persona_data.cid;
-			turtl.user.get('personas').upsert(persona);
-		}
-	}
+	local_table: 'personas'
 });
 
 var PersonasFilter = Composer.FilterCollection.extend({

@@ -104,26 +104,6 @@ var Keychain	=	SyncCollection.extend({
 				if(options.error) options.error();
 			}
 		});
-	},
-
-	process_local_sync: function(keychain_data, model, msg)
-	{
-		var action	=	msg.action;
-
-		if(action == 'deleted')
-		{
-			if(model) model.destroy({skip_local_sync: true, skip_remote_sync: true});
-		}
-		else if(model)
-		{
-			model.set(keychain_data);
-		}
-		else
-		{
-			var model	=	new KeychainEntry(keychain_data);
-			if(keychain_data.cid) model._cid = keychain_data.cid;
-			this.upsert(model);
-		}
 	}
 });
 

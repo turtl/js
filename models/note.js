@@ -371,26 +371,6 @@ var Notes = SyncCollection.extend({
 	},
 	*/
 
-	process_local_sync: function(note_data, note, msg)
-	{
-		var action	=	msg.action;
-
-		if(action == 'deleted')
-		{
-			if(note) note.destroy({skip_local_sync: true, skip_remote_sync: true});
-		}
-		else if(note)
-		{
-			note.set(note_data);
-		}
-		else
-		{
-			var note	=	new Note(note_data);
-			if(note_data.cid) note._cid = note_data.cid;
-			this.upsert(note);
-		}
-	},
-
 	sync_to_api: function()
 	{
 		// this code creates empty file records in the files table from notes

@@ -517,12 +517,26 @@ var SyncCollection	=	Composer.Collection.extend({
 
 	/**
 	 * Takes data from a local db => mem sync (sync_from_db) and updates any
-	 * in-memory models/collections as needed. This is essentially what used to
-	 * be Profile.process_sync().
+	 * in-memory models/collections as needed.
 	 */
-	process_local_sync: function(sync_item_data, sync_model)
+	process_local_sync: function(item_data, model, msg)
 	{
-		console.log(this.local_table + '.process_local_sync: You *really* want to extend me!');
+		var action	=	msg.action;
+
+		if(action == 'deleted')
+		{
+			if(note) model.destroy({skip_local_sync: true, skip_remote_sync: true});
+		}
+		else if(note)
+		{
+			model.set(item_data);
+		}
+		else
+		{
+			var model	=	new this.model(item_data);
+			if(item_data.cid) model._cid = item_data.cid;
+			this.upsert(model);
+		}
 	},
 
 	/**
