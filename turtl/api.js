@@ -172,13 +172,37 @@ var Api	=	new Class({
 			responseType: params.responseType,
 			onSuccess: function(res)
 			{
-				if(!params.responseType) res = JSON.parse(res);
+				if(!params.responseType)
+				{
+					try
+					{
+						res	=	JSON.parse(res);
+					}
+					catch()
+					{
+						var err	=	'api: error parsing resonse: '+ res
+						log.error(err);
+						if(params.error) params.error(err);
+						return;
+					}
+				}
 				if(params.success) params.success(res);
 			},
 			onFailure: function(xhr)
 			{
 				var res	=	xhr;
-				if(!params.responseType) res = JSON.parse(xhr.responseText);
+				if(!params.responseType && xhr)
+				{
+					try
+					{
+						res	=	JSON.parse(xhr.responseText);
+					}
+					catch()
+					{
+						res	=	'error parsing error response: '+ xhr.responseText;
+						log.error('api: ', res);
+					}
+				}
 				if(params.error) params.error(res, xhr);
 			},
 			onProgress: function(event, xhr)
