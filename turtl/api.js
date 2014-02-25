@@ -178,10 +178,10 @@ var Api	=	new Class({
 					{
 						res	=	JSON.parse(res);
 					}
-					catch()
+					catch(e)
 					{
 						var err	=	'api: error parsing resonse: '+ res
-						log.error(err);
+						log.debug(err);
 						if(params.error) params.error(err);
 						return;
 					}
@@ -197,10 +197,10 @@ var Api	=	new Class({
 					{
 						res	=	JSON.parse(xhr.responseText);
 					}
-					catch()
+					catch(e)
 					{
 						res	=	'error parsing error response: '+ xhr.responseText;
-						log.error('api: ', res);
+						log.debug('api: ', res);
 					}
 				}
 				if(params.error) params.error(res, xhr);
@@ -241,7 +241,7 @@ var Api	=	new Class({
 		this.send_request(request);
 		//if(user_cookie) Cookie.write(config.user_cookie, user_cookie);
 
-		return url;
+		return null;
 	},
 
 	send_request: function(request)
