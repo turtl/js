@@ -413,6 +413,10 @@ var Boards = SyncCollection.extend({
 	process_local_sync: function(board_data, board, msg)
 	{
 		var action	=	msg.action;
+		if(_sync_debug_list.contains(this.local_table))
+		{
+			log.debug('sync: process_local_sync: '+ this.local_table +': '+ action, item_data, model);
+		}
 
 		// process some user/board key stuff. when the user first adds a board,
 		// its key is saved in the user's data with the board's CID. it stays

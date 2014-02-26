@@ -1,5 +1,5 @@
 var SyncError			=	extend_error(Error, 'SyncError');
-var _sync_debug_list	=	['notes', 'files'];
+var _sync_debug_list	=	['notes', 'files', 'boards'];
 
 /**
  * Sync model, handles (almost) all syncing between the in-memory models, the
@@ -76,7 +76,7 @@ var Sync = Composer.Model.extend({
 	{
 		if(!collection.sync_record_from_db || typeof collection.sync_record_from_db != 'function')
 		{
-			throw new SyncError('Local tracker of type `'+ type +'` does not have `sync_from_db` function.');
+			throw new SyncError('Local tracker of type `'+ type +'` does not have `sync_record_from_db` function.');
 		}
 		this.local_trackers.push({type: type, tracker: collection});
 	},
@@ -95,7 +95,7 @@ var Sync = Composer.Model.extend({
 	{
 		if(!collection.sync_record_to_api || typeof collection.sync_record_to_api != 'function')
 		{
-			throw new SyncError('Remote tracker of type `'+ type +'` does not have `sync_to_api` function.');
+			throw new SyncError('Remote tracker of type `'+ type +'` does not have `sync_record_to_api` function.');
 		}
 		if(!collection.sync_from_api || typeof collection.sync_from_api != 'function')
 		{
@@ -135,10 +135,11 @@ var Sync = Composer.Model.extend({
 		for(var i = 0; i < ids.length; i++)
 		{
 			var id	=	ids[i];
-			if(!id) continue;
+			if(!id && id !== 0) continue;
 			if(ignores.contains(id))
 			{
-				log.debug('sync: ignore: ', id);
+				log.debug('sync: ignore: '+ options.type, id);
+				ignores.erase(id);
 				return true;
 			}
 		}
@@ -156,7 +157,7 @@ var Sync = Composer.Model.extend({
 		turtl.db.sync.update(
 			{key: 'sync_id', value: sync_id}
 		).fail(function(e) {
-			console.error('Sync.save: problem persisting sync record: ', e);
+			log.error('Sync.save: problem persisting sync record: ', e);
 		});
 	},
 
@@ -172,6 +173,7 @@ var Sync = Composer.Model.extend({
 			action: action,
 			data: data
 		};
+		this.ignore_on_next_sync(msg.sync_id, {type: 'local'});
 		var fail_count	=	0;
 		var notify	=	function()
 		{
@@ -188,7 +190,6 @@ var Sync = Composer.Model.extend({
 			})
 		};
 		notify();
-		turtl.sync.ignore_on_next_sync(msg.sync_id, {type: 'local'});
 	},
 
 	/**
@@ -198,7 +199,6 @@ var Sync = Composer.Model.extend({
 	queue_remote_change: function(table, action, data)
 	{
 		var msg	=	{
-			sync_id: this.local_sync_id++,
 			type: table,
 			action: action,
 			data: data
@@ -236,13 +236,6 @@ var Sync = Composer.Model.extend({
 				if(this.local_trackers[i].type == type) return this.local_trackers[i];
 			}
 		}.bind(this);
-
-		var cleanup	=	function()
-		{
-			if(!turtl.user.logged_in || !this.enabled) return false;
-			this.sync_ignore.local.empty();
-			cleanup.delay(10000, this);
-		};
 
 		var subscriber	=	new turtl.hustle.Pubsub.Subscriber('local-changes', function(msg) {
 			var track_obj	=	get_tracker(msg.data.type);
@@ -313,7 +306,7 @@ var Sync = Composer.Model.extend({
 			var sync_id	=	this.get('sync_id', false);
 			if(!sync_id)
 			{
-				console.log('Sync.sync_from_api: error starting API sync (bad initial sync ID)');
+				log.error('Sync.sync_from_api: error starting API sync (bad initial sync ID)');
 				return false;
 			}
 
@@ -395,7 +388,7 @@ var Sync = Composer.Model.extend({
 				}.bind(this))
 				.fail(function(e) {
 					barfr.barf('Error starting syncing: can\'t grab sync id: '+ e);
-					console.log('Sync.sync_from_api: ', e);
+					log.error('Sync.sync_from_api: ', e);
 				}.bind(this))
 		}
 	},
@@ -522,6 +515,10 @@ var SyncCollection	=	Composer.Collection.extend({
 	process_local_sync: function(item_data, model, msg)
 	{
 		var action	=	msg.action;
+		if(_sync_debug_list.contains(this.local_table))
+		{
+			log.debug('sync: process_local_sync: '+ this.local_table +': '+ action, item_data, model);
+		}
 
 		if(action == 'deleted')
 		{
@@ -659,42 +656,9 @@ var SyncCollection	=	Composer.Collection.extend({
 		//console.log(this.local_table + '.sync_from_db: process: ', result, model);
 		if(_sync_debug_list.contains(this.local_table))
 		{
-			console.log('sync: '+ this.local_table +': db -> mem ('+ (result.deleted ? 'delete' : 'add/edit') +')');
+			log.debug('sync: '+ this.local_table +': db -> mem ('+ (result.deleted ? 'delete' : 'add/edit') +')');
 		}
 		this.process_local_sync(result, model, msg);
-	},
-
-	/**
-	 * Looks for data modified in the local DB (last_mod > last_local_sync) for
-	 * this collection's table and syncs any changed data to in-memory models
-	 * via `process_local_sync`.
-	 *
-	 * It tries to be smart about the model it pulls out. When a new model is
-	 * added, it is added with a CID instead of an ID. When the API responds
-	 * back with "thx, added" it gives us a real ID. We can match the real ID to
-	 * the CID by trying to pull out the model by CID (if we don't find it by
-	 * the given ID).
-	 */
-	sync_from_db: function(last_local_sync, options)
-	{
-		options || (options = {});
-
-		// find all records in our owned table that were modified after the last
-		// time we synced db -> mem and sync them to our in-memory models
-		turtl.db[this.local_table].query('last_mod')
-			.lowerBound(last_local_sync)
-			.execute()
-			.done(function(results) {
-				results.each(function(result) {
-					this.sync_record_from_db(result, {});
-				}.bind(this));
-				if(options.success) options.success();
-			}.bind(this))
-			.fail(function(e) {
-				barfr.barf('Problem syncing '+ this.local_table +' records locally:' + e);
-				console.log(this.local_table + '.sync_from_db: error: ', e);
-				if(options.error) options.error();
-			}.bind(this));
 	},
 
 	/**
@@ -717,7 +681,7 @@ var SyncCollection	=	Composer.Collection.extend({
 			//console.log(this.local_table + '.sync_record_to_api: got: ', modeldata);
 			if(_sync_debug_list.contains(this.local_table))
 			{
-				console.log('save: '+ this.local_table +': api -> db ', modeldata);
+				log.debug('save: '+ this.local_table +': api -> db ', modeldata);
 			}
 			table.update(modeldata)
 				.done(function() { if(options.success) options.success(); })
@@ -741,7 +705,7 @@ var SyncCollection	=	Composer.Collection.extend({
 				},
 				error: function(e) {
 					barfr.barf('Error removing stubbed record: '+this.local_table+'.'+model.id()+': '+ e)
-					console.log(this.local_table +'.sync_model_to_api: error removing stubbed record: ', model.id(), e);
+					log.error(this.local_table +'.sync_model_to_api: error removing stubbed record: ', model.id(), e);
 				}.bind(this)
 			});
 		}
@@ -767,7 +731,7 @@ var SyncCollection	=	Composer.Collection.extend({
 
 		if(_sync_debug_list.contains(this.local_table))
 		{
-			console.log('sync: '+ this.local_table +': db -> api ('+action+') (new: '+model.is_new()+')');
+			log.debug('sync: '+ this.local_table +': db -> api ('+action+') (new: '+model.is_new()+')');
 		}
 
 		var table	=	turtl.db[this.local_table];
@@ -790,7 +754,7 @@ var SyncCollection	=	Composer.Collection.extend({
 					action: action,
 					success: function() {},
 					error: function(e) {
-						console.log(this.local_table + '.sync_model_to_api: error saving model in '+ this.local_table +'.'+ model.id() +' (local -> API): ', e);
+						log.error(this.local_table + '.sync_model_to_api: error saving model in '+ this.local_table +'.'+ model.id() +' (local -> API): ', e);
 					}
 				});
 
@@ -813,7 +777,7 @@ var SyncCollection	=	Composer.Collection.extend({
 					else
 					{
 						// TODO: possibly delete local object??
-						console.log('sync_record_to_api: either remote object doesn\'t exist or we don\'t have access. giving up!'); 
+						log.warn('sync_record_to_api: either remote object doesn\'t exist or we don\'t have access. giving up!'); 
 					}
 				});
 			}.bind(this)
@@ -834,9 +798,10 @@ var SyncCollection	=	Composer.Collection.extend({
 	 */
 	sync_record_from_api: function(item)
 	{
+		var table	=	turtl.db[this.local_table];
 		if(_sync_debug_list.contains(this.local_table))
 		{
-			console.log('sync: '+ this.local_table +': api -> db ('+ item._sync.action +')');
+			log.debug('sync: '+ this.local_table +': api -> db ('+ item._sync.action +')');
 		}
 
 		var action	=	'update';
@@ -911,7 +876,7 @@ var SyncCollection	=	Composer.Collection.extend({
 									do_sync();
 								},
 								error: function(e) {
-									console.log('sync: '+ this.local_table +': api -> db: error updating CID -> ID (remove '+ item._sync.cid +')');
+									log.error('sync: '+ this.local_table +': api -> db: error updating CID -> ID (remove '+ item._sync.cid +')');
 									// keep going anyway
 									do_sync();
 								}.bind(this)
@@ -919,7 +884,7 @@ var SyncCollection	=	Composer.Collection.extend({
 						}
 					})
 					.fail(function(e) {
-						console.log('sync: '+ this.local_table +': api -> db: error updating CID -> ID (get '+ item._sync.cid +')');
+						log.error('sync: '+ this.local_table +': api -> db: error updating CID -> ID (get '+ item._sync.cid +')');
 						// keep going anyway
 						do_sync();
 					});

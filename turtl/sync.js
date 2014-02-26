@@ -71,6 +71,7 @@ Composer.sync	=	function(method, model, options)
 		modeldata.key	=	'user';
 	}
 
+	log.debug('save: '+ table +': '+ method, modeldata);
 	switch(method)
 	{
 	case 'read':
