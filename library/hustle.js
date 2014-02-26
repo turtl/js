@@ -220,7 +220,7 @@
 			{
 				if(options.error) options.error(e);
 			}
-			// add a dummy object, grab its id, then delete it.
+			// upsert the ID record
 			var store		=	trx.objectStore(tbl.ids);
 			var req			=	store.get('id');
 			req.onsuccess	=	function(e)
