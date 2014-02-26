@@ -165,15 +165,22 @@ var Sync = Composer.Model.extend({
 	 * Notify all listening parties that an item's data has changed and should
 	 * be updated in-memory.
 	 */
-	notify_local_change: function(table, action, data)
+	notify_local_change: function(table, action, data, options)
 	{
+		options || (options = {});
+
 		var msg	=	{
 			sync_id: this.local_sync_id++,
 			type: table,
 			action: action,
 			data: data
 		};
-		this.ignore_on_next_sync(msg.sync_id, {type: 'local'});
+
+		if(!options.skip_track)
+		{
+			this.ignore_on_next_sync(msg.sync_id, {type: 'local'});
+		}
+
 		var fail_count	=	0;
 		var notify	=	function()
 		{
@@ -744,7 +751,6 @@ var SyncCollection	=	Composer.Collection.extend({
 				// the model may have changed during save, to serialize it and
 				// put it back into the db
 				var modeldata		=	model.toJSON();
-				modeldata.last_mod	=	new Date().getTime();
 
 				// make sure synced k/v items have their primary key (aka the
 				// User model)
@@ -752,7 +758,9 @@ var SyncCollection	=	Composer.Collection.extend({
 
 				this.update_record_from_api_save(modeldata, record, {
 					action: action,
-					success: function() {},
+					success: function() {
+						turtl.sync.notify_local_change(this.local_table, 'update', modeldata, {skip_track: true});
+					}.bind(this),
 					error: function(e) {
 						log.error(this.local_table + '.sync_model_to_api: error saving model in '+ this.local_table +'.'+ model.id() +' (local -> API): ', e);
 					}
