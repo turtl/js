@@ -525,9 +525,9 @@ var SyncCollection	=	Composer.Collection.extend({
 
 		if(action == 'deleted')
 		{
-			if(note) model.destroy({skip_local_sync: true, skip_remote_sync: true});
+			if(model) model.destroy({skip_local_sync: true, skip_remote_sync: true});
 		}
-		else if(note)
+		else if(model)
 		{
 			model.set(item_data);
 		}
