@@ -256,15 +256,18 @@ var FileData = ProtectedThreaded.extend({
 										n.file.hash		=	hash;
 										// increment has_file. this notifies the in-mem
 										// model to reload.
-										var has_data	=	n.file.has_data || 0;
+										var has_data	=	(n.file.has_data && n.file.has_data > 0) || 0;
 										n.file.has_data	=	has_data < 1 ? 1 : has_data + 1;
 										return n.file;
 									},
-									last_mod: new Date().getTime(),
 									has_file: 2
 								})
 								.execute()
-								.done(function() {
+								.done(function(notedata) {
+									if(notedata && notedata[0])
+									{
+										turtl.sync.notify_local_change('notes', 'update', notedata[0]);
+									}
 									if(options.success) options.success(this);
 								}.bind(this))
 								.fail(function(e) {
@@ -292,6 +295,59 @@ var Files = SyncCollection.extend({
 	downloads: {},
 	// used to track which files are currently uploading from this client.
 	uploads: {},
+
+	// holds the consumer that processes file queue jobs
+	queue_consumer: null,
+
+	start_consumer: function()
+	{
+		var do_queue_download	=	function()
+		{
+			if(!turtl.user.logged_in || !turtl.do_remote_sync) return false;
+			this.queue_download_blank_files();
+			do_queue_download.delay(1000, this);
+		}.bind(this);
+		do_queue_download();
+
+		this.queue_consumer	=	new turtl.hustle.Queue.Consumer(function(job) {
+			log.debug('files: job: ', job);
+			switch(job.data.type)
+			{
+			case 'download':
+				var model		=	this.create_remote_model(job.data.filedata);
+				turtl.files.download(model, model.download, {
+					success: function() {
+					},
+					error: function(err, xhr) {
+						if(job.releases > 3)
+						{
+							turtl.hustle.Queue.delete(job.id);
+							log.error('files: download: giving up on '+ job.id +': too many releases', job.releases);
+							return;
+						}
+
+						if(xhr.status == 404)
+						{
+							turtl.hustle.Queue.delete(job.id);
+							log.error('files: download: giving up on '+ job.id +': got 404 while downloading');
+							return;
+						}
+
+						turtl.hustle.Queue.release(job.id, {
+							delay: 30,
+							error: function(err) {
+								log.error('files: download: release '+ job.id +': error releasing: ', err);
+							}
+						});
+					}
+				});
+				break;
+			}
+		}.bind(this), {
+			tube: 'files',
+			enable_fn: function() { return turtl.user.logged_in && turtl.do_remote_sync; }
+		});
+	},
 
 	update_record_from_api_save: function(modeldata, record, options)
 	{
@@ -324,14 +380,17 @@ var Files = SyncCollection.extend({
 							note.file.has_data	=	1;
 							return note.file;
 						},
-						last_mod: new Date().getTime()
 					})
 					.execute()
-					.done(function() {
+					.done(function(notedata) {
+						if(notedata && notedata[0])
+						{
+							turtl.sync.notify_local_change('notes', 'update', notedata[0]);
+						}
 						if(options.success) options.success();
 					})
 					.fail(function(e) {
-						console.error('file: error setting note.last_mod', e);
+						log.error('file: update from api save: update note: ', e);
 						if(options.error) options.error(e);
 					});
 			})
@@ -342,51 +401,54 @@ var Files = SyncCollection.extend({
 
 	},
 
-	sync_to_api: function()
+	queue_download_blank_files: function()
 	{
 		// grab the files collection, used to track downloads
-		var files	=	turtl.files;
 		turtl.db.files
 			.query('has_data')
 			.only(0)
+			.modify({has_data: -1})		// -1 means "in downloading limbo"
 			.execute()
 			.done(function(res) {
 				res.each(function(filedata) {
-					if(filedata.deleted || !filedata.note_id) return false;
-					var model		=	this.create_remote_model(filedata);
-					files.download(model, model.download);
+					if(!filedata.note_id) return false;
+					var failues	=	0;
+					var do_add_queue_item	=	function()
+					{
+						log.debug('files: queue for download: ', filedata.id);
+						turtl.hustle.Queue.put({type: 'download', filedata: filedata}, {
+							tube: 'files',
+							error: function(err) {
+								log.error('files: queue download: ', err);
+								if(failures >= 3)
+								{
+									log.error('files: queue download: giving up ('+ failures +' fails)');
+									return false;
+								}
+								failures++;
+								do_add_queue_item.delay(1000);
+							}
+						});
+					};
+					do_add_queue_item();
 				}.bind(this));
 			}.bind(this))
 			.fail(function(e) {
 				console.error('sync: '+ this.local_table +': download: ', e);
 			});
-		return this.parent.apply(this, arguments);
 	},
 
-	sync_from_api: function(table, syncdata)
+	sync_record_from_api: function(item)
 	{
-		syncdata.each(function(item) {
-			if(turtl.sync.should_ignore(item._sync.id, {type: 'remote'})) return false;
+		if(!item.file || !item.file.hash) return false;
 
-			if(_sync_debug_list.contains(this.local_table))
-			{
-				console.log('sync: '+ this.local_table +': api -> db ('+ item._sync.action +')');
-			}
-
-			if(!item.file || !item.file.hash) return false;
-
-			var filedata	=	{
-				id: item.file.hash,
-				note_id: item.id,
-				has_data: 0
-			};
-			if(item.deleted) filedata.deleted = 1;
-
-			filedata.last_mod	=	new Date().getTime();
-
-			console.log('files: save to DB from API: ', filedata);
-			table.update(filedata);
-		}.bind(this));
+		var filedata	=	{
+			_sync: item._sync,
+			id: item.file.hash,
+			note_id: item.id,
+			has_data: 0
+		};
+		return this.parent.call(this, filedata);
 	},
 
 	track_file: function(type, track_id, trigger_fn, options)
@@ -439,7 +501,7 @@ var Files = SyncCollection.extend({
 		}.bind(this);
 
 		// run the actual download
-		console.log('file: '+ type + ': ', track_id);
+		log.debug('file: '+ type + ': ', track_id);
 		return trigger_fn(options);
 	},
 

@@ -105,15 +105,8 @@ var Sync = Composer.Model.extend({
 	},
 
 	/**
-	 * When a model saves itself into the DB, it sets its last_mod. this makes
-	 * it so the data in the DB will be synced back into the model on the next
-	 * DB -> mem sync, which is a) stupid and b) harmful (if the model has
-	 * change between the last save and the sync).
-	 *
 	 * This function (mainly called by Composer.sync) tells the sync system to
-	 * ignore a model on the next DB -> local sync. There is a slight chance
-	 * that this will ignore remote data coming in, but that's a problem that
-	 * can't be solved here and needs to be handled when saving.
+	 * ignore a model on the next sync.
 	 */
 	ignore_on_next_sync: function(id, options)
 	{
@@ -176,7 +169,17 @@ var Sync = Composer.Model.extend({
 			data: data
 		};
 
-		if(!options.skip_track)
+		// don't want to blast out file content willy nilly since it's pretty
+		// big and we only ever update files in-mem by pulling directly from the
+		// DB newayz
+		if(table == 'files')
+		{
+			var data	=	Object.clone(msg.data);
+			delete data.body;
+			msg.data	=	data;
+		}
+
+		if(options.track)
 		{
 			this.ignore_on_next_sync(msg.sync_id, {type: 'local'});
 		}
@@ -759,7 +762,7 @@ var SyncCollection	=	Composer.Collection.extend({
 				this.update_record_from_api_save(modeldata, record, {
 					action: action,
 					success: function() {
-						turtl.sync.notify_local_change(this.local_table, 'update', modeldata, {skip_track: true});
+						turtl.sync.notify_local_change(this.local_table, 'update', modeldata);
 					}.bind(this),
 					error: function(e) {
 						log.error(this.local_table + '.sync_model_to_api: error saving model in '+ this.local_table +'.'+ model.id() +' (local -> API): ', e);
@@ -806,6 +809,7 @@ var SyncCollection	=	Composer.Collection.extend({
 	 */
 	sync_record_from_api: function(item)
 	{
+		console.log('SRFAPI: ', item);
 		var table	=	turtl.db[this.local_table];
 		if(_sync_debug_list.contains(this.local_table))
 		{

@@ -401,13 +401,13 @@ var Notes = SyncCollection.extend({
 							.modify({has_file: 2})
 							.execute()
 							.fail(function(e) {
-								console.error('sync: '+ this.local_table +': set has_file = 2', e);
+								log.error('sync: notes: set has_file = 2', e);
 							}.bind(this));
 						// no need to mess with the file record if we've got one already
 						if(file) return false;
 						// file record doesn't exist! add it.
 						turtl.db.files.update(filedata).fail(function(e) {
-							console.error('sync: ', this.local_table +': insert file record: ', e);
+							log.error('sync: files: insert file record: ', e);
 						}.bind(this));
 					}.bind(this));
 				}.bind(this));

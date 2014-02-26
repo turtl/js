@@ -272,7 +272,7 @@ var turtl	=	{
 		};
 
 		var hustle	=	new Hustle({
-			tubes: ['incoming', 'outgoing'],
+			tubes: ['incoming', 'outgoing', 'files'],
 			db_name: 'hustle_user_'+turtl.user.id()
 		});
 		hustle.open({
@@ -391,6 +391,9 @@ var turtl	=	{
 
 			// start the local db -> API sync process.
 			turtl.sync.sync_to_api();
+
+			// handles all file jobs (download mainly)
+			turtl.files.start_consumer();
 		}
 
 		// set up manual syncing, and listen for persona key assignments

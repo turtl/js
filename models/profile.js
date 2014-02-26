@@ -83,15 +83,6 @@ var Profile = Composer.RelationalModel.extend({
 				// only continue when all local DB grabs are done
 				if(num_synced < num_items) return false;
 
-				// this prevents the profile from double-loading once the local
-				// sync starts (if the profile loads from API and populates
-				// itself into the local DB, it sets last_mod on all added data.
-				// then when the local sync process starts, it will load all
-				// that data again, even though it's about to all be loaded here
-				// by the profile. this tricks the local sync into not double
-				// loading).
-				turtl.sync.time_track.local	=	new Date().getTime();
-
 				// once we have all our data, populate the profile with it
 				this.load_from_data(profile_data, options);
 			}.bind(this);
@@ -228,12 +219,6 @@ var Profile = Composer.RelationalModel.extend({
 				if(options.complete) options.complete([]);
 				return;
 			}
-
-			// update our mod time
-			collection	=	collection.map(function(item) {
-				item.last_mod	=	new Date().getTime();
-				return item;
-			});
 
 			var errors	=	[];
 			turtl.db[table].update.apply(turtl.db[table], collection).then(

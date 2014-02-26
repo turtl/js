@@ -41,7 +41,7 @@ Composer.sync	=	function(method, model, options)
 		{
 			if(!options.skip_local_sync)
 			{
-				turtl.sync.notify_local_change(table, method, modeldata);
+				turtl.sync.notify_local_change(table, method, modeldata, {track: true});
 			}
 			if(!options.skip_remote_sync)
 			{
