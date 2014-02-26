@@ -415,7 +415,7 @@ var Boards = SyncCollection.extend({
 		var action	=	msg.action;
 		if(_sync_debug_list.contains(this.local_table))
 		{
-			log.debug('sync: process_local_sync: '+ this.local_table +': '+ action, item_data, model);
+			log.debug('sync: process_local_sync: '+ this.local_table +': '+ action, board_data, board);
 		}
 
 		// process some user/board key stuff. when the user first adds a board,
@@ -427,7 +427,7 @@ var Boards = SyncCollection.extend({
 		var key			=	keychain.find_key(board_data.cid);
 		if(key && board_data.id && !board_data.deleted)
 		{
-			console.log('board: got CID key, adding ID key (and removing CID key)');
+			log.debug('board: got CID key, adding ID key (and removing CID key)');
 			keychain.add_key(board_data.id, 'board', key);
 			keychain.remove_key(board_data.cid);
 		}
