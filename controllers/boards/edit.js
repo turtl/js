@@ -74,10 +74,10 @@ var BoardEditController = Composer.Controller.extend({
 			this.board = new Board({title: title});
 			this.board.generate_key();
 			this.board.generate_subkeys();
-			success = function() {
-				// make sure the project key gets saved with the user's data
-				turtl.profile.get('keychain').add_key(this.board.id(), 'board', this.board.key);
+			// save the board key to the keychain *before* we save the board
+			turtl.profile.get('keychain').add_key(this.board.id(), 'board', this.board.key);
 
+			success = function() {
 				var boards = this.profile.get('boards');
 				if(boards) boards.add(this.board);
 				if(!this.return_to_manage)
