@@ -84,7 +84,7 @@ Composer.sync	=	function(method, model, options)
 		// added to the API but the response (with the ID) doesn't update in the
 		// local db (becuase of the client being closed, for instance, or the
 		// server handling the request crashing after the record is added)
-		model._cid		=	model.cid() + '.' + (new Date().getTime());
+		model._cid		=	model.cid();
 		modeldata.id	=	model.cid();
 
 		turtl.db[table].add(modeldata).then(success, error);

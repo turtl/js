@@ -3,6 +3,10 @@
 var $E = function(selector, filter){ return ($(filter) || document).getElement(selector); };
 var $ES = function(selector, filter){ return ($(filter) || document).getElements(selector); };
 
+// make our client IDs a bit more accurate
+var _cid		=	Composer.cid;
+Composer.cid	=	function() { return _cid() + '.' + (new Date().getTime()); };
+
 var turtl	=	{
 	site_url: null,
 
@@ -615,7 +619,6 @@ window.addEvent('domready', function() {
 	turtl.load_controller('pages', PagesController);
 
 	(function() {
-		log.debug('turtl: DEBUG init!!');
 		if(window.port) window.port.bind('debug', function(code) {
 			if(!window._debug_mode) return false;
 			var res	=	eval(code);

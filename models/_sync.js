@@ -688,7 +688,7 @@ var SyncCollection	=	Composer.Collection.extend({
 				.fail(function(e) { if(options.error) options.error(e); });
 		}.bind(this);
 
-		if(action == 'add')
+		if(action == 'create')
 		{
 			// if the record was just added, we have a new ID for it
 			// from the API, however we can't change the id of our
