@@ -95,39 +95,45 @@ var FileData = ProtectedThreaded.extend({
 
 		if(options.api_save)
 		{
-			var data	=	this.toJSON();
-			// don't try to upload until we have a real note id
-			if(!data.note_id || !data.note_id.match(/[0-9a-f]+/)) return false;
-			var body	=	data.body;
-			var data	=	{
-				hash: data.id,
-				cid: this.cid()
-			};
-
-			// convert body to Uint8Array
-			var raw	=	new Uint8Array(body.length);
-			for(var i = 0, n = body.length; i < n; i++)
-			{
-				raw[i]	=	body.charCodeAt(i);
-			}
-
-			// mark the save as raw and fire it off
-			options.rawUpload	=	true;
-			options.data		=	raw;
-			options.args		=	data;
-			this.url			=	'/notes/'+this.get('note_id')+'/file';
-			options.uploadprogress	=	function(ev) {
-				console.log('progress: ', ev);
-			};
 			var save_fn	=	get_parent(this);
-			turtl.db.notes.get(this.get('note_id')).done(function(note_data) {
-				if(!note_data) return false;
-				var persona_id	=	false;
-				if(note_data.meta && note_data.meta.persona)
+			turtl.db.files.get(this.id()).done(function(filedata) {
+				if(!filedata)
 				{
-					options.args.persona	=	note_data.meta.persona;
+					log.error('files: save: missing file: ', this.id());
 				}
-				turtl.files.upload(this, save_fn, options);
+				var data	=	filedata;
+				// don't try to upload until we have a real note id
+				if(!data.note_id || !data.note_id.match(/[0-9a-f]+/)) return false;
+				var body	=	data.body;
+				var data	=	{
+					hash: data.id,
+					cid: this.cid()
+				};
+
+				// convert body to Uint8Array
+				var raw	=	new Uint8Array(body.length);
+				for(var i = 0, n = body.length; i < n; i++)
+				{
+					raw[i]	=	body.charCodeAt(i);
+				}
+
+				// mark the save as raw and fire it off
+				options.rawUpload	=	true;
+				options.data		=	raw;
+				options.args		=	data;
+				this.url			=	'/notes/'+this.get('note_id')+'/file';
+				options.uploadprogress	=	function(ev) {
+					console.log('progress: ', ev);
+				};
+				turtl.db.notes.get(this.get('note_id')).done(function(note_data) {
+					if(!note_data) return false;
+					var persona_id	=	false;
+					if(note_data.meta && note_data.meta.persona)
+					{
+						options.args.persona	=	note_data.meta.persona;
+					}
+					turtl.files.upload(this, save_fn, options);
+				}.bind(this));
 			}.bind(this));
 		}
 		else
@@ -144,7 +150,7 @@ var FileData = ProtectedThreaded.extend({
 		{
 			var parent_fn	=	get_parent(this);
 			turtl.db.notes.get(this.get('note_id')).done(function(note_data) {
-				if(!note_data) return false;
+				if(!note_data) note_data = {};
 				var persona_id	=	false;
 				if(!options.args) options.args = {};
 				if(note_data.meta && note_data.meta.persona)
@@ -420,7 +426,7 @@ var Files = SyncCollection.extend({
 							tube: 'files',
 							error: function(err) {
 								log.error('files: queue download: ', err);
-								if(failures >= 3)
+								if(failures >= 2)
 								{
 									log.error('files: queue download: giving up ('+ failures +' fails)');
 									return false;

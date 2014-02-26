@@ -320,8 +320,15 @@ var Note = Protected.extend({
 		// synced.
 		turtl.db.files.query()
 			.only(hash)
-			.modify({local_change: 1, note_id: this.id()})
+			.modify({note_id: this.id()})
 			.execute()
+			.done(function(filedata) {
+				if(!filedata || !filedata[0]) return false;
+				filedata	=	filedata[0];
+				delete filedata.body;
+				console.log('pre-queue: ', filedata);
+				turtl.sync.queue_remote_change('files', 'create', filedata);
+			})
 			.fail(function(e) {
 				console.error('Error uploading file: ', hash, e);
 			});

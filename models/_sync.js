@@ -1,5 +1,5 @@
 var SyncError			=	extend_error(Error, 'SyncError');
-var _sync_debug_list	=	['notes', 'files', 'boards'];
+var _sync_debug_list	=	['notes', 'files', 'boards', 'keychain'];
 
 /**
  * Sync model, handles (almost) all syncing between the in-memory models, the
@@ -218,6 +218,7 @@ var Sync = Composer.Model.extend({
 		{
 			turtl.hustle.Queue.put(msg, {
 				tube: 'outgoing',
+				ttr: 10,
 				success: function() {
 					log.debug('sync: queue remote: send: ', msg);
 				},
@@ -496,7 +497,7 @@ var Sync = Composer.Model.extend({
 					// check in-mem notes for has_data value
 					var note_mem		=	turtl.profile.get('notes').find_by_id(note.id);
 					var has_data		=	note_mem && note_mem.get('file').get('has_data');
-					note.file.has_data	=	has_data;
+					note.file.has_data	=	has_data || 0;
 				}
 			});
 		}
@@ -530,7 +531,7 @@ var SyncCollection	=	Composer.Collection.extend({
 			log.debug('sync: process_local_sync: '+ this.local_table +': '+ action, item_data, model);
 		}
 
-		if(action == 'deleted')
+		if(action == 'delete')
 		{
 			if(model) model.destroy({skip_local_sync: true, skip_remote_sync: true});
 		}
@@ -744,10 +745,18 @@ var SyncCollection	=	Composer.Collection.extend({
 			log.debug('sync: '+ this.local_table +': db -> api ('+action+') (new: '+model.is_new()+')');
 		}
 
+		var delete_queue_item	=	function()
+		{
+			turtl.hustle.Queue.delete(queue_item.id);
+		};
+
 		var table	=	turtl.db[this.local_table];
 		var options	=	{
 			api_save: true,
 			success: function(model, res) {
+				// save done, delete the queue item
+				delete_queue_item();
+
 				// don't save the model back into the db if it's a delete
 				if(action == 'delete') return;
 
@@ -772,12 +781,27 @@ var SyncCollection	=	Composer.Collection.extend({
 			}.bind(this),
 			error: function(xhr, err) {
 				barfr.barf('Error syncing model to API: '+ err);
+				log.error('sync_record_to_api: error saving: ', err, xhr);
 				// set the record as local_modified again so we can
 				// try again next run
-				table.get(options.model_key || model.id()).done(function(obj) {
-					if(!obj) return errorfn('missing obj');
+				var item_id	=	options.model_key || model.id();
+				table.get(item_id).done(function(obj) {
+					if(!obj)
+					{
+						log.error('sync_record_to_api: missing local item: ', item_id);
+						delete_queue_item();
+						return false;
+					}
 					if(xhr && xhr.status >= 500)
 					{
+						if(queue_item.releases >= 2 || queue_item.timeouts >= 2)
+						{
+							log.error('sync_record_to_api: queue item reached max retry limit: ', this.local_table, item_id);
+							delete_queue_item();
+							return false;
+						}
+
+						log.debug('sync_record_to_api: releasing queue item: ', queue_item.id);
 						hustle.Queue.release(queue_item.id, {
 							delay: 10,
 							error: function(e) {
@@ -789,8 +813,9 @@ var SyncCollection	=	Composer.Collection.extend({
 					{
 						// TODO: possibly delete local object??
 						log.warn('sync_record_to_api: either remote object doesn\'t exist or we don\'t have access. giving up!'); 
+						delete_queue_item();
 					}
-				});
+				}.bind(this));
 			}.bind(this)
 		};
 
@@ -809,7 +834,6 @@ var SyncCollection	=	Composer.Collection.extend({
 	 */
 	sync_record_from_api: function(item)
 	{
-		console.log('SRFAPI: ', item);
 		var table	=	turtl.db[this.local_table];
 		if(_sync_debug_list.contains(this.local_table))
 		{
@@ -838,9 +862,8 @@ var SyncCollection	=	Composer.Collection.extend({
 
 			// run the actual local DB update
 			table.update(item);
-
-			turtl.sync.notify_local_change(this.local_table, action, item);
 		}
+		turtl.sync.notify_local_change(this.local_table, action, item);
 	},
 
 	/**
