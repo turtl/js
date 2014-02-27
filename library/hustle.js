@@ -1,6 +1,6 @@
 (function(window, undefined) {
 	"use strict";
-	var version				=	'0.1.4';
+	var version				=	'0.1.5';
 	var internal_db_version	=	4;
 
 	var indexedDB	=	window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.oIndexedDB || window.msIndexedDB;
@@ -126,8 +126,8 @@
 
 			if(db) throw new HustleDBOpened('db is already open');
 
-			var version	=	(internal_db_version * 10000) + db_version;
-			var req		=	indexedDB.open(db_name, internal_db_version);
+			var version	=	(internal_db_version * 1000) + db_version;
+			var req		=	indexedDB.open(db_name, version);
 			req.onerror	=	function(e)
 			{
 				if(options.error) options.error(e);
@@ -891,6 +891,7 @@
 			soptions || (soptions = {});
 
 			var delay			=	soptions.delay ? soptions.delay : 100;
+			var start_time		=	new Date().getTime();
 			var do_stop			=	false;
 			var seen_messages	=	{};
 
@@ -938,7 +939,7 @@
 					var cursor	=	e.target.result;
 					if(cursor)
 					{
-						if(seen_messages[cursor.value.id])
+						if(seen_messages[cursor.value.id] || cursor.value.created < start_time)
 						{
 							cursor.continue();
 						}
