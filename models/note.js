@@ -92,7 +92,6 @@ var Note = Protected.extend({
 			// generate a preview
 			if(this.get('file').get('has_data') > 0 && this.get('file').get('type', '').match(/^image/))
 			{
-				log.debug('note: file: change hash/has_data! (making blob)');
 				this.get('file').to_blob({
 					success: function(blob) {
 						var blob_url	=	URL.createObjectURL(blob)
@@ -108,19 +107,21 @@ var Note = Protected.extend({
 						this.trigger('change', this);
 					}.bind(this),
 					error: function(e) {
-						if(!e) return false;
-						console.error('note: file: problem converting to blob: ', e);
+						log.error('note: file: problem converting to blob: ', e);
 					}.bind(this)
 				});
 			}
 		}.bind(this));
 
+		if(this.get('has_file', 0) > 0 && this.get('file').get('hash', false))
+		{
+			this.get('file').trigger('change:hash');
+		}
+
 		this.bind('destroy', function() {
 			if(this.disable_file_monitoring) return false;
 			this.clear_files();
 		}.bind(this));
-
-		this.get('file').trigger('change:hash');
 	},
 
 	ensure_key_exists: function()

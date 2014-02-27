@@ -3,9 +3,15 @@
 var $E = function(selector, filter){ return ($(filter) || document).getElement(selector); };
 var $ES = function(selector, filter){ return ($(filter) || document).getElements(selector); };
 
-// make our client IDs a bit more accurate
+// make our client IDs such that they are always sorted *after* real,
+// server-generated IDs ('z.') and they are chronologically sortable from each
+// other. Also, append in the original cid() at the end for easier debugging.
+//
+// NOTE: *DO NOT* change the cid scheme without updating the cid math regex
+// below!
 var _cid		=	Composer.cid;
-Composer.cid	=	function() { return _cid() + '.' + (new Date().getTime()); };
+Composer.cid	=	function() { return 'z.' + (new Date().getTime()).toString(16) + '.' + _cid(); };
+var cid_match	=	/^z\.[0-9a-f]+\.c[0-9]+$/;
 
 var turtl	=	{
 	site_url: null,

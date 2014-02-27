@@ -573,7 +573,7 @@ var SyncCollection	=	Composer.Collection.extend({
 		// Well, well...Indiana Jones. we got ourselves a CID. don't want to
 		// send this to the save() function in the `id` field or it'll get
 		// mistaken as an update (not an add).
-		if(record.id && record.id.match(/^c[0-9]+(\.[0-9]+)?$/))
+		if(record.id && record.id.match(cid_match))
 		{
 			record.cid	=	record.id;
 			delete record.id;

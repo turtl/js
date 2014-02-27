@@ -112,6 +112,7 @@ var NoteEditController = Composer.Controller.extend({
 		}
 		if(this.tag_controller) this.tag_controller.release();
 		if(this.board_controller) this.board_controller.release();
+		if(this.upload_controller) this.upload_controller.release();
 		turtl.keyboard.attach(); // re-enable shortcuts
 		if(this.tips) this.tips.detach();
 		this.parent.apply(this, arguments);
@@ -270,17 +271,25 @@ var NoteEditController = Composer.Controller.extend({
 		this.note_copy.get('file').unset('data');
 
 		var note_copy				=	new Note();
-		note_copy._cid				=	this.note._cid;
 		note_copy.key				=	this.note_copy.key;
-		note_copy.get('file').key	=	this.note_copy.key;
 		// bit of a hack to copy the data over
 		note_copy.data				=	this.note_copy.data;
 		note_copy.relation_data		=	this.note_copy.relation_data;
-		note_copy.get('file').set({encrypting: true}, {silent: true});
+		note_copy.get('file').key	=	this.note_copy.key;
 
-		var file_set	=	note_copy.get('file').get('set');
+		var file		=	note_copy.get('file');
+
+		// get rid of the temporary blob URL
+		URL.revokeObjectURL(file.get('blob_url'));
+		file.unset('blob_url');
+
+		var file_set	=	file.get('set');
 		if(isnew && file_set)
 		{
+			// let the view know we're encrypting, and remove the blog_url so it
+			// doesn't try to display an image
+			file.set({encrypting: true}, {silent: true});
+
 			// display a note stub to let the user know we're encrypting the
 			// file
 			this.board.get('notes').upsert(note_copy, {allow_cid: true});
@@ -289,28 +298,34 @@ var NoteEditController = Composer.Controller.extend({
 		var do_note_save	=	function(options)
 		{
 			options || (options = {});
-			if(!isnew && file_set)
-			{
-				var has_data	=	this.note.get('file').get('has_data', 0);
-				note_copy.get('file').set({has_data: has_data + 1});
-			}
 
 			// save the note copy, and on success, set the resulting data back into
 			// the original note (not the copy)
 			note_copy.save({
-				// if we have a file, re-sync the note after the save
-				skip_track: file_set,
-
 				// make sure we pass if we have a file or not
 				success: function() {
 					this.note.key	=	note_copy.key;
 					var copy_json	=	note_copy.toJSON();
-					copy_json.mod	=	Math.round(new Date().getTime() / 1000);
-					this.note.set(copy_json);
 					if(isnew)
 					{
-						this.board.get('notes').upsert(this.note, {allow_cid: true});
+						// if we put in a placeholder note, destroy it
+						var copy	=	turtl.profile.get('notes').find_by_id(note_copy.cid(), {allow_cid: true});
+						if(copy) copy.destroy({skip_local_sync: true, skip_remote_sync: true});
+						// now re-add the original, with the copy's mods
+						turtl.profile.get('notes').upsert(this.note, {allow_cid: true});
 					}
+					copy_json.mod	=	Math.round(new Date().getTime() / 1000);
+					if(file_set)
+					{
+						// manually set the file data and trigger a hash change
+						// async, which forces the note to refresh its file
+						// contents
+						var copy_file	=	copy_json.file;
+						delete copy_json.file;
+						this.note.get('file').set(copy_file, {silent: true});
+						(function() { this.note.get('file').trigger('change:hash'); }).delay(1, this);
+					}
+					this.note.set(copy_json);
 					// make sure the current filter applies to the edited note
 					this.board.get('tags').trigger('change:selected');
 					if(!options.no_close)
@@ -325,7 +340,6 @@ var NoteEditController = Composer.Controller.extend({
 			});
 		}.bind(this);
 
-		var file	=	note_copy.get('file');
 		if(file_set)
 		{
 			// we are uploading a new file! JOY!
@@ -351,7 +365,7 @@ var NoteEditController = Composer.Controller.extend({
 				hash			=	convert.binstring_to_hex(tcrypt.deserialize(res.body, {hmac_only: true}));
 				res.id			=	hash;
 				// we don't want to upload the file until the note we're
-				// attaching to has a real ID (synced = -1)
+				// attaching to has a real ID
 				res.synced		=	0;
 				res.has_data	=	1;
 				if(!note_copy.is_new())
@@ -363,15 +377,13 @@ var NoteEditController = Composer.Controller.extend({
 
 				// we're no longer encrypting
 				file.unset('encrypting');
-
 				// save the file contents into local db then save the note
 				filedata.save({
 					skip_remote_sync: note_copy.is_new(),
 					success: function() {
 						// give the note's file object a ref to the file's id
-						file.set({hash: hash});
-
-						note_copy.get('file').unset('blob_url');
+						var has_data	=	this.note.get('file').get('has_data', 0);
+						file.set({hash: hash, has_data: has_data + 1});
 						do_note_save({no_close: true});
 					}.bind(this),
 					error: function(e) {
@@ -379,7 +391,7 @@ var NoteEditController = Composer.Controller.extend({
 						turtl.loading(false);
 					}
 				});
-			});
+			}.bind(this));
 			do_close();
 		}
 		else

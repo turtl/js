@@ -32,13 +32,17 @@ var NoteFile = Protected.extend({
 	{
 		options || (options = {});
 
-		if(!this.get('hash')) return false;
+		if(!this.get('hash'))
+		{
+			if(options.error) options.error('to_array: bad hash');
+			return false;
+		}
 
 		turtl.db.files.get(this.get('hash'))
 			.done(function(filedata) {
 				if(!filedata)
 				{
-					if(options.error) options.error(false);
+					if(options.error) options.error('to_array: file data not present');
 					this.set({has_data: 0});
 					return false;
 				}
@@ -68,7 +72,8 @@ var NoteFile = Protected.extend({
 
 		return this.to_array({
 			success: function(array) {
-				if(options.success) options.success(new Blob([array.buffer], {type: this.get('type')}))
+				var blob	=	new Blob([array.buffer], {type: this.get('type')});
+				if(options.success) options.success(blob);
 			}.bind(this),
 			error: options.error
 		});
@@ -388,7 +393,7 @@ var Files = SyncCollection.extend({
 						file: function(note) {
 							if(!note.file) note.file = {};
 							note.file.hash		=	hash;
-							note.file.has_data	=	1;
+							note.file.has_data	=	(note.file.has_data || 0) + 1;
 							return note.file;
 						},
 					})
