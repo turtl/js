@@ -92,7 +92,7 @@ var Note = Protected.extend({
 			// generate a preview
 			if(this.get('file').get('has_data') > 0 && this.get('file').get('type', '').match(/^image/))
 			{
-				console.log('note: file: change hash/has_data! (making blob)');
+				log.debug('note: file: change hash/has_data! (making blob)');
 				this.get('file').to_blob({
 					success: function(blob) {
 						var blob_url	=	URL.createObjectURL(blob)
