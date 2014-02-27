@@ -278,7 +278,8 @@ var NoteEditController = Composer.Controller.extend({
 		note_copy.relation_data		=	this.note_copy.relation_data;
 		note_copy.get('file').set({encrypting: true}, {silent: true});
 
-		if(isnew && note_copy.get('file').get('set'))
+		var file_set	=	note_copy.get('file').get('set');
+		if(isnew && file_set)
 		{
 			// display a note stub to let the user know we're encrypting the
 			// file
@@ -288,17 +289,28 @@ var NoteEditController = Composer.Controller.extend({
 		var do_note_save	=	function(options)
 		{
 			options || (options = {});
+			if(!isnew && file_set)
+			{
+				var has_data	=	this.note.get('file').get('has_data', 0);
+				note_copy.get('file').set({has_data: has_data + 1});
+			}
 
 			// save the note copy, and on success, set the resulting data back into
 			// the original note (not the copy)
 			note_copy.save({
+				// if we have a file, re-sync the note after the save
+				skip_track: file_set,
+
 				// make sure we pass if we have a file or not
 				success: function() {
 					this.note.key	=	note_copy.key;
 					var copy_json	=	note_copy.toJSON();
 					copy_json.mod	=	Math.round(new Date().getTime() / 1000);
 					this.note.set(copy_json);
-					if(isnew) this.board.get('notes').upsert(this.note, {allow_cid: true});
+					if(isnew)
+					{
+						this.board.get('notes').upsert(this.note, {allow_cid: true});
+					}
 					// make sure the current filter applies to the edited note
 					this.board.get('tags').trigger('change:selected');
 					if(!options.no_close)
@@ -314,7 +326,7 @@ var NoteEditController = Composer.Controller.extend({
 		}.bind(this);
 
 		var file	=	note_copy.get('file');
-		if(file.get('set'))
+		if(file_set)
 		{
 			// we are uploading a new file! JOY!
 			// we're going to actually serialize the file (encrypt it, dumbell)
@@ -349,9 +361,6 @@ var NoteEditController = Composer.Controller.extend({
 				}
 				filedata.set({id: hash});		// set the id for good measure
 
-				// give the note's file object a ref to the file's id
-				file.set({hash: hash});
-
 				// we're no longer encrypting
 				file.unset('encrypting');
 
@@ -359,6 +368,9 @@ var NoteEditController = Composer.Controller.extend({
 				filedata.save({
 					skip_remote_sync: note_copy.is_new(),
 					success: function() {
+						// give the note's file object a ref to the file's id
+						file.set({hash: hash});
+
 						note_copy.get('file').unset('blob_url');
 						do_note_save({no_close: true});
 					}.bind(this),

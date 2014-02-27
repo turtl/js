@@ -287,6 +287,7 @@ var Note = Protected.extend({
 			.execute()
 			.done(function(files) {
 				files.each(function(filedata) {
+					if(options.exclude && options.exclude.contains(filedata.id)) return;
 					delete filedata.body;
 					var file		=	new FileData(filedata);
 					file.destroy(options);
@@ -316,8 +317,6 @@ var Note = Protected.extend({
 		var hash	=	this.get('file').get('hash');
 		if(!hash) return;
 
-		// if the file exists, update it to have local_change = 1 so it'll be
-		// synced.
 		turtl.db.files.query()
 			.only(hash)
 			.modify({note_id: this.id()})
@@ -326,7 +325,6 @@ var Note = Protected.extend({
 				if(!filedata || !filedata[0]) return false;
 				filedata	=	filedata[0];
 				delete filedata.body;
-				console.log('pre-queue: ', filedata);
 				turtl.sync.queue_remote_change('files', 'create', filedata);
 			})
 			.fail(function(e) {

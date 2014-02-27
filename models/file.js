@@ -250,6 +250,10 @@ var FileData = ProtectedThreaded.extend({
 						has_data: 1
 					};
 
+					// clear out extra files
+					var note	=	new Note({id: this.get('note_id')});
+					note.clear_files({ exclude: [hash] });
+
 					// save the file data into the db
 					turtl.db.files.update(data)
 						.done(function() {
@@ -262,7 +266,8 @@ var FileData = ProtectedThreaded.extend({
 										n.file.hash		=	hash;
 										// increment has_file. this notifies the in-mem
 										// model to reload.
-										var has_data	=	(n.file.has_data && n.file.has_data > 0) || 0;
+										var has_data	=	(n.file.has_data && n.file.has_data > 0 && n.file.has_data) || 0;
+										console.log('file: download: has_data: ', has_data);
 										n.file.has_data	=	has_data < 1 ? 1 : has_data + 1;
 										return n.file;
 									},
