@@ -1661,7 +1661,9 @@ sjcl.beware["CBC mode is dangerous because it doesn't protect message integrity.
       bo = bi * 0x1010101;
       if (!w.equal(w.bitSlice([bo,bo,bo,bo], 0, bi*8),
                    w.bitSlice(output, output.length*32 - bi*8, output.length*32))) {
-        throw new sjcl.exception.corrupt("pkcs#5 padding corrupt");
+        // AL - disable check since it prevents us from decrypting AsciiX923
+        // padding, and we only use CBC for legacy data, so no harm done.
+        //throw new sjcl.exception.corrupt("pkcs#5 padding corrupt");
       }
 
       return w.bitSlice(output, 0, output.length*32 - bi*8);
