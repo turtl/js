@@ -322,6 +322,10 @@ var NoteEditController = Composer.Controller.extend({
 						(function() { this.note.get('file').trigger('change:hash'); }).delay(1, this);
 					}
 					this.note.set(copy_json);
+					if(isnew && !file_set)
+					{
+						this.board.get('notes').upsert(this.note, {allow_cid: true});
+					}
 					// make sure the current filter applies to the edited note
 					this.board.get('tags').trigger('change:selected');
 					if(!options.no_close)
