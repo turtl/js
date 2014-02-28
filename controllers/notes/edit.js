@@ -286,13 +286,17 @@ var NoteEditController = Composer.Controller.extend({
 		var file_set	=	file.get('set');
 		if(isnew && file_set)
 		{
-			// let the view know we're encrypting, and remove the blog_url so it
+			// let the view know we're encrypting, and remove the blob_url so it
 			// doesn't try to display an image
-			file.set({encrypting: true}, {silent: true});
+			var setnote				=	this.note_copy.toJSON();
+			delete setnote.file;
+			this.note.set(setnote);
+			this.note.set({file: toJSON(file)});
+			this.note.get('file').set({encrypting: true}, {silent: true});
 
 			// display a note stub to let the user know we're encrypting the
 			// file
-			this.board.get('notes').upsert(note_copy, {allow_cid: true});
+			this.board.get('notes').upsert(this.note, {allow_cid: true});
 		}
 
 		var do_note_save	=	function(options)
@@ -300,20 +304,12 @@ var NoteEditController = Composer.Controller.extend({
 			options || (options = {});
 
 			// save the note copy, and on success, set the resulting data back into
-			// the original note (not the copy)
+			// the original note
 			note_copy.save({
 				// make sure we pass if we have a file or not
 				success: function() {
 					this.note.key	=	note_copy.key;
 					var copy_json	=	note_copy.toJSON();
-					if(isnew)
-					{
-						// if we put in a placeholder note, destroy it
-						var copy	=	turtl.profile.get('notes').find_by_id(note_copy.cid(), {allow_cid: true});
-						if(copy) copy.destroy({skip_local_sync: true, skip_remote_sync: true});
-						// now re-add the original, with the copy's mods
-						turtl.profile.get('notes').upsert(this.note, {allow_cid: true});
-					}
 					copy_json.mod	=	Math.round(new Date().getTime() / 1000);
 					if(file_set)
 					{
@@ -377,6 +373,8 @@ var NoteEditController = Composer.Controller.extend({
 
 				// we're no longer encrypting
 				file.unset('encrypting');
+				this.note.get('file').unset('encrypting');
+
 				// save the file contents into local db then save the note
 				filedata.save({
 					skip_remote_sync: note_copy.is_new(),
