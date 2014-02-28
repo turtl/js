@@ -81,7 +81,7 @@ var Note = Protected.extend({
 					.modify({has_file: has_file})
 					.execute()
 					.fail(function(e) {
-						console.error('note: set has_file: ', e)
+						log.error('note: set has_file: ', e)
 					});
 			}
 		}.bind(this));
@@ -329,7 +329,7 @@ var Note = Protected.extend({
 				turtl.sync.queue_remote_change('files', 'create', filedata);
 			})
 			.fail(function(e) {
-				console.error('Error uploading file: ', hash, e);
+				log.error('Error uploading file: ', hash, e);
 			});
 	}
 });
@@ -419,7 +419,7 @@ var Notes = SyncCollection.extend({
 				}.bind(this));
 			}.bind(this))
 			.fail(function(e) {
-				console.error('sync: '+ this.local_table +': add file records: ', e);
+				log.error('sync: '+ this.local_table +': add file records: ', e);
 			});
 
 		// go running to mommy
