@@ -3,6 +3,9 @@
 var $E = function(selector, filter){ return ($(filter) || document).getElement(selector); };
 var $ES = function(selector, filter){ return ($(filter) || document).getElements(selector); };
 
+// we need CBC for backwards compat
+sjcl.beware['CBC mode is dangerous because it doesn\'t protect message integrity.']();
+
 // make our client IDs such that they are always sorted *after* real,
 // server-generated IDs ('z.') and they are chronologically sortable from each
 // other. Also, append in the original cid() at the end for easier debugging.
