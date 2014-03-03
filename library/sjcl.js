@@ -1586,7 +1586,7 @@ sjcl.beware["CBC mode is dangerous because it doesn't protect message integrity.
      * @return The encrypted data, an array of bytes.
      * @throws {sjcl.exception.invalid} if the IV isn't exactly 128 bits, or if any adata is specified.
      */
-    encrypt: function(prp, plaintext, iv, adata) {
+    encrypt: function(prp, plaintext, iv, adata, options) {
       if (adata && adata.length) {
         throw new sjcl.exception.invalid("cbc can't authenticate data");
       }
@@ -1613,8 +1613,22 @@ sjcl.beware["CBC mode is dangerous because it doesn't protect message integrity.
       /* Construct the pad. */
       bl = (16 - ((bl >> 3) & 15)) * 0x1010101;
 
+	  // AL - add option for AsciiX923 padding
+	  var padded = w.concat(plaintext,[bl,bl,bl,bl]).slice(i,i+4);
+	  if(options.ascii)
+	  {
+		  // convert PKCS padding to AsciiX923
+		  var bytes = sjcl.codec.bytes.fromBits(padded);
+		  var padv = bytes[bytes.length - 1];
+		  for(var ip = 0; ip < padv - 1; ip++)
+		  {
+			  bytes[(bytes.length - padv) + ip] = 0;
+		  }
+		  padded = sjcl.codec.bytes.toBits(bytes);
+	  }
       /* Pad and encrypt. */
-      iv = prp.encrypt(xor(iv,w.concat(plaintext,[bl,bl,bl,bl]).slice(i,i+4)));
+      iv = prp.encrypt(xor(iv,padded));
+      //iv = prp.encrypt(xor(iv,w.concat(plaintext,[bl,bl,bl,bl]).slice(i,i+4)));
       output.splice(i,0,iv[0],iv[1],iv[2],iv[3]);
       return output;
     },
