@@ -347,8 +347,8 @@ var NoteEditController = Composer.Controller.extend({
 			note_copy.clear_files({skip_remote_sync: true});
 			var filedata	=	new FileData({data: file_bin});
 			filedata.key	=	note_copy.key;
-			filedata.toJSONAsync(function(res) {
-				// we now have the payload hash (thanks, hmac), set it as the
+			filedata.toJSONAsync(function(res, hash) {
+				// we now have the encrypted data + hash, set the hash as the
 				// ID. note we're not setting it directly into filedata here,
 				// instead we're setting it into the res object. this res object
 				// is actually cached internally so that when filedata.toJSON()
@@ -358,7 +358,6 @@ var NoteEditController = Composer.Controller.extend({
 				//
 				// setting id here is a roundabout way of modifying the cache,
 				// but it works great.
-				hash			=	convert.binstring_to_hex(tcrypt.deserialize(res.body, {hmac_only: true}));
 				res.id			=	hash;
 				// we don't want to upload the file until the note we're
 				// attaching to has a real ID
