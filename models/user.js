@@ -220,7 +220,7 @@ var User	=	Protected.extend({
 
 		// note we serialize with version 0 (the original Turtl serialization
 		// format) for backwards compat
-		var auth	=	tcrypt.encrypt(key, user_record, {iv: iv, version: 0}).toString();
+		var auth	=	tcrypt.encrypt(key, user_record, {iv: iv, version: 0});
 
 		// save auth
 		this.auth	=	auth;
