@@ -58,7 +58,7 @@ var Protected = Composer.RelationalModel.extend({
 	 */
 	detect_old_format: function(data)
 	{
-		var raw	=	data.match(/:i[0-9a-f]{32}$/) ? data : convert.base64.decode(data);
+		var raw	=	data.match(/:i[0-9a-f]{32}$/) ? data : tcrypt.from_base64(data);
 		return raw;
 	},
 
@@ -114,7 +114,7 @@ var Protected = Composer.RelationalModel.extend({
 		// it's always JSON), but would give an attacker less data about the
 		// payload (it wouldn't ALWAYS start with "{")
 		var encrypted	=	tcrypt.encrypt(this.key, json);
-		encrypted		=	convert.base64.encode(encrypted);
+		encrypted		=	tcrypt.to_base64(encrypted);
 		return encrypted;
 	},
 
@@ -142,7 +142,7 @@ var Protected = Composer.RelationalModel.extend({
 	encrypt_key: function(key, key_to_encrypt)
 	{
 		var encrypted	=	tcrypt.encrypt(key, key_to_encrypt);
-		encrypted		=	convert.base64.encode(encrypted);
+		encrypted		=	tcrypt.to_base64(encrypted);
 		return encrypted;
 	},
 
@@ -674,7 +674,7 @@ var ProtectedShared = Protected.extend({
 
 	decrypt_key: function(decrypting_key, encrypted_key)
 	{
-		encrypted_key	=	convert.base64.decode(encrypted_key);
+		encrypted_key	=	tcrypt.from_base64(encrypted_key);
 		tcrypt.decrypt_rsa(decrypting_key, encrypted_key, {async: function(key) {
 			this.trigger('rsa-decrypt', key);
 		}.bind(this)});
@@ -684,7 +684,7 @@ var ProtectedShared = Protected.extend({
 	encrypt_key: function(key, key_to_encrypt)
 	{
 		var encrypted_key	=	tcrypt.encrypt_rsa(key, key_to_encrypt);
-		encrypted_key		=	convert.base64.encode(encrypted_key);
+		encrypted_key		=	tcrypt.to_base64(encrypted_key);
 		return encrypted_key;
 	},
 
