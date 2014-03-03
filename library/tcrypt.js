@@ -385,10 +385,29 @@ var tcrypt = {
 		}
 
 		// force latest version. only decryption needs to support old versions.
-		var version		=	tcrypt.current_version;
+		var version		=	options.version;
+		if(version !== 0 || (version > 0 && version <= 4)) version = tcrypt.current_version;
 
 		var block_class	=	tcrypt.get_block_mode(block_mode);
 		var iv			=	options.iv || tcrypt.iv();
+
+		if(version === 0)
+		{
+			var cipher		=	new sjcl.cipher.aes(key);
+			var ciphertext	=	sjcl.mode.cbc.encrypt(
+				cipher,
+				sjcl.codec.utf8String.toBits(data),
+				iv,
+				null,
+				{ascii: true}	// added this in for backwards compat
+			);
+			var enc	=	tcrypt.words_to_bin(ciphertext);
+			var formatted	=	tcrypt.serialize(enc, {
+				version: version,
+				iv: tcrypt.words_to_bin(iv)
+			});
+			return formatted;
+		}
 
 		// utf8 encoding section. up til version 4, all encrypted strings were
 		// utf8 encoded. this is the easy option, but sometimes doubles the size
@@ -636,11 +655,27 @@ var tcrypt = {
 	},
 
 	/**
+	 * convert word array to base64
+	 */
+	to_base64: function(words)
+	{
+		return sjcl.codec.base64.fromBits(words);
+	},
+
+	/**
+	 * convert base64 to word array
+	 */
+	from_base64: function(str)
+	{
+		return sjcl.codec.base64.toBits(str);
+	},
+
+	/**
 	 * Given a binary key, convert to hex string
 	 */
 	key_to_string: function(keywords)
 	{
-		return sjcl.codec.base64.fromBits(keywords);
+		return tcrypt.to_base64(keywords);
 	},
 
 	/**
@@ -649,7 +684,7 @@ var tcrypt = {
 	 */
 	key_to_bin: function(keystring)
 	{
-		return sjcl.codec.base64.toBits(keystring);
+		return tcrypt.from_base64(keystring);
 	},
 
 	/**
