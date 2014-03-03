@@ -43,7 +43,7 @@ self.addEventListener('message', function(e) {
 	}
 
 	if(!res) res = {type: 'null'};
-	else if(!res.type) res = {type: 'success', data: res.toString()};
+	else if(!res.type) res = {type: 'success', data: res};
 
 	self.postMessage(res);
 	self.close();
