@@ -86,14 +86,14 @@ var tcrypt = {
 			// parse json string
 			var parts = crypto.split(/:/g);
 			var params = {
-				ciphertext: atob(parts[0]),
+				ciphertext: sjcl.codec.base64.toBits(parts[0]),
 				cipher: 'AES',
 				block_mode: 'CBC',
 				padding: 'AnsiX923'
 			}
 			parts.shift();
 			parts.each(function(p) {
-				if(p.match(/^i/)) params.iv = tcrypt.words_to_bin(sjcl.codec.hex.toBits(p.slice(1)));
+				if(p.match(/^i/)) params.iv = sjcl.codec.hex.toBits(p.slice(1));
 			});
 			return params;
 		}
@@ -529,18 +529,10 @@ var tcrypt = {
 
 		if(version === 0)
 		{
-			// we're deserializing/decrypting an old-version message. use the
-			// values passed to us by tcrypt.old_formatter.parse to form a
-			// description object. note in this case, we skip HMAC generation
-			// and authentication, and use the master key as the crypto key.
 			var desc	=	{
-				cipher: params.cipher,
-				block_mode: params.block_mode,
-				padding: params.padding,
-				kdf_mode: null
+				cipher: 'aes',
+				block_mode: 'cbc'
 			};
-			var crypto_key	=	key;
-			var hmac_key	=	null;
 		}
 		else
 		{
@@ -551,26 +543,41 @@ var tcrypt = {
 		var iv			=	params.iv;
 		var cipherclass	=	tcrypt.get_cipher(desc.cipher);
 
-		if(version == 4)
+		if(version <= 4)
 		{
-			// generate an encryption key and an authentication key from the
-			// master key `key`.
-			var kdf_entry	=	tcrypt.kdf_index[desc.kdf_mode];
-			var keys		=	tcrypt.derive_keys(key, {
-				hasher: tcrypt.get_hasher(kdf_entry[0]),
-				iterations: kdf_entry[1],
-				key_size: kdf_entry[2]
-			});
-			var crypto_key	=	keys.crypto;
-			var hmac_key	=	keys.hmac;
-
-			// build/authenticate HMAC
-			var hmac	=	tcrypt.words_to_bin(params.hmac);
-			if(params.version !== 0 && hmac && hmac_key)
+			if(version === 0)
 			{
-				if(hmac !== tcrypt.authenticate_payload(hmac_key, version, params.desc, params.iv, params.ciphertext))
+				// we're deserializing/decrypting an old-version message. use the
+				// values passed to us by tcrypt.old_formatter.parse to form a
+				// description object. note in this case, we skip HMAC generation
+				// and authentication, and use the master key as the crypto key.
+				var crypto_key	=	key;
+				var hmac_key	=	null;
+			}
+			else
+			{
+				// generate an encryption key and an authentication key from the
+				// master key `key`.
+				var kdf_entry	=	tcrypt.kdf_index[desc.kdf_mode];
+				var keys		=	tcrypt.derive_keys(key, {
+					hasher: tcrypt.get_hasher(kdf_entry[0]),
+					iterations: kdf_entry[1],
+					key_size: kdf_entry[2]
+				});
+				var crypto_key	=	keys.crypto;
+				var hmac_key	=	keys.hmac;
+			}
+
+			if(params.version !== 0)
+			{
+				// build/authenticate HMAC
+				var hmac	=	tcrypt.words_to_bin(params.hmac);
+				if(hmac && hmac_key)
 				{
-					throw new TcryptAuthFailed('Authentication error. This data has been tampered with (or the key is incorrect).');
+					if(hmac !== tcrypt.authenticate_payload(hmac_key, version, params.desc, params.iv, params.ciphertext))
+					{
+						throw new TcryptAuthFailed('Authentication error. This data has been tampered with (or the key is incorrect).');
+					}
 				}
 			}
 
@@ -615,12 +622,11 @@ var tcrypt = {
 		if(version >= 4)
 		{
 			var utf8byte	=	(decrypted[0] >> 24) & 255;
-			decrypted		=	sjcl.bitArray.bitSlice(decrypted, 8);
 			var is_utf8		=	utf8byte >= 128;
+			decrypted		=	sjcl.bitArray.bitSlice(decrypted, 8);
 		}
 		else
 		{
-			var utf8byte	=	null;
 			var is_utf8		=	true;
 		}
 
