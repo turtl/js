@@ -82,7 +82,6 @@ var Protected = Composer.RelationalModel.extend({
 				log.warn('item ('+ (this.id(true) || parentobj.id) +'): ', e.message);
 				return false;
 			}
-			console.log('key: ', this.key.length, this.key)
 			log.error('Protected: deserialize error: ', e);
 			//throw e;
 		}
@@ -543,7 +542,8 @@ var ProtectedThreaded = Protected.extend({
 			}
 			else
 			{
-				var enc		=	res.data.c;
+				// TODO: uint8array?
+				var enc		=	tcrypt.words_to_bin(res.data.c);
 				var hash	=	res.data.h;
 			}
 			this.trigger('serialize', enc, hash);
