@@ -52,19 +52,18 @@ var NoteEditController = Composer.Controller.extend({
 			var board		=	turtl.profile.get('boards').find_by_id(board_id);
 			if(board) this.board = board;
 			else this.board = turtl.profile.get_current_board();
+			if(!this.board && turtl.profile.get('boards').models().length > 0)
+			{
+				this.board	=	turtl.profile.get('boards').first();
+			}
 		}
 
 		if(!this.board)
 		{
-			this.edit_controller	=	new BoardEditController({
-				inject: this.edit_container,
-				profile: turtl.profile,
-				edit_in_modal: false,
-				title: 'Add your first board to start adding notes'
-			});
-			if(window.port) window.port.send('resize');
-			return false;
+			console.log('el: ', this.el.getParent());
+			return this.release();
 		}
+
 		if(!this.note) this.note = new Note({type: 'quick'});
 		// clone the note so any changes to it pre-save don't show up in the listings.
 		this.note_copy		=	new Note(toJSON(this.note));

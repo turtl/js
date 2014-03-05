@@ -77,7 +77,8 @@ div.button.share icon {color: #f761c7;}
 /* modal styles */
 .modalcontent {background: #fff url(../images/site/modal/header.png) 0 0 repeat-x !important;}
 /*.modalcontent {background: url(../images/site/trans_111_90.png) 0 0 !important;}*/
-.modalcontent > div > h1 {margin: -4px 0 24px 0; font-size: 20px; font-weight: normal; color: #999; text-transform: uppercase;}
+.modalcontent > div > h1,
+.modalcontent > div.bookmark > div.edit > div > h1 {margin: -4px 0 24px 0; font-size: 20px; font-weight: normal; color: #999; text-transform: uppercase;}
 
 /* tooltips */
 span.tooltip {display: inline; cursor: help; color: #73b8d1;}
