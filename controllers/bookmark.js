@@ -69,7 +69,6 @@ var BookmarkController = Composer.Controller.extend({
 				text: this.linkdata.text
 			});
 		}
-		console.log('this edit: ', this.edit_container);
 		this.edit_controller = new NoteEditController({
 			inject: this.edit_container,
 			note: note,

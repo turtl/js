@@ -60,7 +60,6 @@ var NoteEditController = Composer.Controller.extend({
 
 		if(!this.board)
 		{
-			console.log('el: ', this.el.getParent());
 			return this.release();
 		}
 
@@ -145,6 +144,7 @@ var NoteEditController = Composer.Controller.extend({
 				inject: this.board_container,
 				profile: turtl.profile,
 				add_bare: true,
+				change_on_add: true,
 				track_last_board: this.track_last_board,
 				board: board
 			});
