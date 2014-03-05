@@ -1,17 +1,11 @@
 importScripts(
 	'./mootools-core-1.4.5-server.js',
-	'./cowcrypt/convert.js',
-	'./cowcrypt/crypto_math.js',
-	'./cowcrypt/biginteger.js',
-	'./cowcrypt/block_cipher.js',
-	'./cowcrypt/hasher.js',
-	'./cowcrypt/sha.js',
-	'./cowcrypt/hmac.js',
-	'./cowcrypt/aes.js',
-	'./cowcrypt/rsa.js',
-	'./cowcrypt/pbkdf2.js',
+	'./sjcl.js',
 	'./tcrypt.js' 
 );
+
+// we need CBC for backwards compat
+sjcl.beware['CBC mode is dangerous because it doesn\'t protect message integrity.']();
 
 self.addEventListener('message', function(e) {
 	var cmd		=	e.data.cmd;
@@ -26,6 +20,11 @@ self.addEventListener('message', function(e) {
 			case 'encrypt':
 				res	=	tcrypt.encrypt(key, data, options);
 				break;
+			case 'encrypt+hash':
+				var enc		=	tcrypt.encrypt(key, data, options);
+				var hash	=	tcrypt.hash(enc);
+				res			=	{c: enc, h: hash};
+				break;
 			case 'decrypt':
 				res	=	tcrypt.decrypt(key, data, options);
 				break;
@@ -36,11 +35,15 @@ self.addEventListener('message', function(e) {
 	}
 	catch(e)
 	{
-		res	=	{type: 'error', data: e.message};
+		var stack = e.stack.replace(/^[^\(]+?[\n$]/gm, '')
+			.replace(/^\s+at\s+/gm, '')
+			.replace(/^Object.<anonymous>\s*\(/gm, '{anonymous}()@')
+			.split('\n');
+		res	=	{type: 'error', data: e.message, trace: stack};
 	}
 
 	if(!res) res = {type: 'null'};
-	else if(!res.type) res = {type: 'success', data: res.toString()};
+	else if(!res.type) res = {type: 'success', data: res};
 
 	self.postMessage(res);
 	self.close();

@@ -105,6 +105,7 @@ var FileData = ProtectedThreaded.extend({
 				if(!filedata)
 				{
 					log.error('files: save: missing file: ', this.id());
+					return options.error('missing file locally');
 				}
 				var data	=	filedata;
 				// don't try to upload until we have a real note id

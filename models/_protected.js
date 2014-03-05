@@ -58,7 +58,7 @@ var Protected = Composer.RelationalModel.extend({
 	 */
 	detect_old_format: function(data)
 	{
-		var raw	=	data.match(/:i[0-9a-f]{32}$/) ? data : convert.base64.decode(data);
+		var raw	=	data.match(/:i[0-9a-f]{32}$/) ? data : tcrypt.from_base64(data);
 		return raw;
 	},
 
@@ -79,10 +79,10 @@ var Protected = Composer.RelationalModel.extend({
 		{
 			if(e instanceof SyncError)
 			{
-				console.log('item ('+ (this.id(true) || parentobj.id) +'): ', e.message);
+				log.warn('item ('+ (this.id(true) || parentobj.id) +'): ', e.message);
 				return false;
 			}
-			console.error('Protected: deserialize error: ', e);
+			log.error('Protected: deserialize error: ', e);
 			//throw e;
 		}
 
@@ -92,9 +92,8 @@ var Protected = Composer.RelationalModel.extend({
 		}
 		catch(e)
 		{
-			console.log('err: protected: error deserializing: ', e);
-			console.log('err: this id: ', this.id());
-			//console.trace();
+			log.error('err: protected: error deserializing: ', e);
+			log.error('err: this id: ', this.id());
 			return false;
 		}
 		return obj;
@@ -114,7 +113,7 @@ var Protected = Composer.RelationalModel.extend({
 		// it's always JSON), but would give an attacker less data about the
 		// payload (it wouldn't ALWAYS start with "{")
 		var encrypted	=	tcrypt.encrypt(this.key, json);
-		encrypted		=	convert.base64.encode(encrypted);
+		encrypted		=	tcrypt.to_base64(encrypted);
 		return encrypted;
 	},
 
@@ -126,11 +125,11 @@ var Protected = Composer.RelationalModel.extend({
 		var raw			=	this.detect_old_format(encrypted_key);
 		try
 		{
-			var decrypted	=	tcrypt.decrypt(decrypting_key, raw);
+			var decrypted	=	tcrypt.decrypt(decrypting_key, raw, {raw: true});
 		}
 		catch(e)
 		{
-			console.log('item ('+ (this.id(true) || parentobj.id) +'): ', e.message);
+			log.warn('item ('+ (this.id(true) || parentobj.id) +'): ', e.message);
 			return false;
 		}
 		return decrypted;
@@ -142,7 +141,7 @@ var Protected = Composer.RelationalModel.extend({
 	encrypt_key: function(key, key_to_encrypt)
 	{
 		var encrypted	=	tcrypt.encrypt(key, key_to_encrypt);
-		encrypted		=	convert.base64.encode(encrypted);
+		encrypted		=	tcrypt.to_base64(encrypted);
 		return encrypted;
 	},
 
@@ -476,7 +475,7 @@ var ProtectedThreaded = Protected.extend({
 			if(res.type != 'success')
 			{
 				var dec	=	false;
-				console.error('tcrypt.thread: err: ', res);
+				log.error('tcrypt.thread: err: ', res, e.stack);
 			}
 			else
 			{
@@ -525,7 +524,7 @@ var ProtectedThreaded = Protected.extend({
 		}
 
 		worker.postMessage({
-			cmd: 'encrypt',
+			cmd: 'encrypt+hash',
 			key: this.key,
 			data: enc_data,
 			options: {
@@ -539,14 +538,16 @@ var ProtectedThreaded = Protected.extend({
 			if(res.type != 'success')
 			{
 				var enc	=	false;
-				console.error('tcrypt.thread: err: ', res);
+				log.error('tcrypt.thread: err: ', res);
 			}
 			else
 			{
-				var enc	=	res.data;
+				// TODO: uint8array?
+				var enc		=	tcrypt.words_to_bin(res.data.c);
+				var hash	=	res.data.h;
 			}
-			this.trigger('serialize', enc);
-			if(options.complete) options.complete(enc);
+			this.trigger('serialize', enc, hash);
+			if(options.complete) options.complete(enc, hash);
 
 			// got a response, clean up
 			worker.terminate();
@@ -620,12 +621,12 @@ var ProtectedThreaded = Protected.extend({
 		options || (options = {});
 		var data		=	{};
 
-		var do_finish	=	function(encrypted)
+		var do_finish	=	function(encrypted, hash)
 		{
 			data[this.body_key]	=	encrypted;
 			// cache (before we call the finish cb)
 			this._cached_serialization	=	data;
-			finish_cb(data);
+			finish_cb(data, hash);
 		}.bind(this);
 		data	=	this.toJSON(Object.merge({}, options, {skip_cache: true, complete: do_finish}));
 	}
@@ -674,7 +675,7 @@ var ProtectedShared = Protected.extend({
 
 	decrypt_key: function(decrypting_key, encrypted_key)
 	{
-		encrypted_key	=	convert.base64.decode(encrypted_key);
+		encrypted_key	=	tcrypt.from_base64(encrypted_key);
 		tcrypt.decrypt_rsa(decrypting_key, encrypted_key, {async: function(key) {
 			this.trigger('rsa-decrypt', key);
 		}.bind(this)});
@@ -684,7 +685,7 @@ var ProtectedShared = Protected.extend({
 	encrypt_key: function(key, key_to_encrypt)
 	{
 		var encrypted_key	=	tcrypt.encrypt_rsa(key, key_to_encrypt);
-		encrypted_key		=	convert.base64.encode(encrypted_key);
+		encrypted_key		=	tcrypt.to_base64(encrypted_key);
 		return encrypted_key;
 	},
 
