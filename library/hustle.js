@@ -1,6 +1,6 @@
 (function(window, undefined) {
 	"use strict";
-	var version				=	'0.1.5';
+	var version				=	'0.1.6';
 	var internal_db_version	=	4;
 
 	var indexedDB	=	window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.oIndexedDB || window.msIndexedDB;
@@ -277,15 +277,16 @@
 			req.onsuccess	=	function(e)
 			{
 				var item	=	req.result;
-				var item_id	=	item.id;
-				// account for the buried table's IDs
-				if(from == tbl.buried) item_id = item._id;
-
 				if(!item)
 				{
 					if(options.error) options.error(new HustleNotFound('item '+ id +' wasn\'t found'));
 					return;
 				}
+
+				var item_id	=	item.id;
+				// account for the buried table's IDs
+				if(from == tbl.buried) item_id = item._id;
+
 				do_move_item(item, function(e) {
 					var req		=	store.delete(item_id);
 					req.onerror	=	options.error;
@@ -1138,6 +1139,7 @@
 		this.close		=	close;
 		this.is_open	=	function() { return !!db; };
 		this.wipe		=	wipe;
+		this.Error		=	Error;
 		this.Pubsub		=	Pubsub;
 		this.Queue		=	Queue;
 		this.promisify	=	function()
@@ -1167,12 +1169,20 @@
 			this.Queue.touch		=	do_promisify(this.Queue.touch, 1);
 			this.Queue.count_ready	=	do_promisify(this.Queue.count_ready, 1);
 			this.Pubsub.publish		=	do_promisify(this.Pubsub.publish, 2);
+			return this;
 		}.bind(this);
 		this.debug		=	{
 			get_db: function() { return db; }
 		};
 
 		return this;
+	};
+	Hustle.Error	=	{
+		DBClosed: HustleDBClosed,
+		DBOpened: HustleDBOpened,
+		BadTube: HustleBadTube,
+		BadID: HustleBadID,
+		NotFound: HustleNotFound
 	};
 	window.Hustle	=	Hustle;
 })(window);
