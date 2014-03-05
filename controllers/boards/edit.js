@@ -80,6 +80,7 @@ var BoardEditController = Composer.Controller.extend({
 			success = function() {
 				var boards = this.profile.get('boards');
 				if(boards) boards.add(this.board);
+				this.trigger('new-board', this.board);
 				if(!this.return_to_manage)
 				{
 					// only set the new board as current if we are NOT going

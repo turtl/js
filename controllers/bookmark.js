@@ -24,6 +24,8 @@ var BookmarkController = Composer.Controller.extend({
 
 	init: function()
 	{
+		this.render();
+
 		if(!window._in_ext)
 		{
 			this.linkdata = parse_querystring();
@@ -68,7 +70,7 @@ var BookmarkController = Composer.Controller.extend({
 			});
 		}
 		this.edit_controller = new NoteEditController({
-			inject: this.inject,
+			inject: this.edit_container,
 			note: note,
 			edit_in_modal: false,
 			show_tabs: false,	// who needs tabs when the bookmarker is smart?
@@ -76,6 +78,23 @@ var BookmarkController = Composer.Controller.extend({
 			show_boards: true,
 			track_last_board: true
 		});
+		if(!this.edit_controller.board)
+		{
+			this.edit_controller	=	new BoardEditController({
+				inject: this.edit_container,
+				profile: turtl.profile,
+				edit_in_modal: false,
+				title: 'Add your first board to start adding notes'
+			});
+			this.edit_controller.bind('release', function() {
+				if(turtl.profile.get('boards').models().length > 0)
+				{
+					this.init();
+				}
+			}.bind(this));
+			if(window.port) window.port.send('resize');
+			return false;
+		}
 		this.edit_controller.el.addClass('bookmarker');
 
 		// save the note in case bookmarker is clooooseeed
@@ -116,6 +135,11 @@ var BookmarkController = Composer.Controller.extend({
 		this.profile.unbind('change:current_board', 'bookmark:change_board');
 		//if(window.port) window.port.unbind('bookmark-open');
 		return this.parent.apply(this, arguments);
+	},
+
+	render: function()
+	{
+		this.html('<div class="edit"></div>');
 	},
 
 	/**
