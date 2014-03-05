@@ -11,13 +11,14 @@ var BoardsController = Composer.Controller.extend({
 
 	profile: null,
 	add_bare: false,
+	change_on_add: false,
 	track_last_board: false,
 	board: null,
 
 	init: function()
 	{
 		this.render();
-		this.profile.bind_relational('boards', ['add', 'remove', 'reset', 'change:title'], this.render.bind(this), 'boards:change');
+		this.profile.bind_relational('boards', ['add', 'remove', 'reset', 'change'], this.render.bind(this), 'boards:change');
 		this.profile.bind('change:current_board', this.render.bind(this), 'boards:track_current');
 		turtl.keyboard.bind('b', this.add_board.bind(this), 'boards:shortcut:add_board');
 	},
@@ -25,7 +26,7 @@ var BoardsController = Composer.Controller.extend({
 	release: function()
 	{
 		this.unbind('change-board');
-		this.profile.unbind_relational('boards', ['add', 'remove', 'reset', 'change:title'], 'boards:change');
+		this.profile.unbind_relational('boards', ['add', 'remove', 'reset', 'change'], 'boards:change');
 		this.profile.unbind('change:current_board', 'boards:track_current');
 		turtl.keyboard.unbind('b', 'boards:shortcut:add_board');
 		this.parent.apply(this, arguments);
@@ -55,6 +56,15 @@ var BoardsController = Composer.Controller.extend({
 			profile: this.profile,
 			bare: this.add_bare
 		});
+		if(this.change_on_add)
+		{
+			edit.bind('new-board', function(board) {
+				this.board	=	board;
+				this.render();
+				this.trigger('change-board', board);
+			}.bind(this));
+		}
+
 		if(this.add_bare)
 		{
 			this.el.setStyle('display', 'none');
