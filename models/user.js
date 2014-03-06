@@ -164,7 +164,8 @@ var User	=	Protected.extend({
 		this.unbind_relational('settings', ['change'], 'user:save_settings');
 
 		// clear user data
-		this.get('personas').each(function(p) {
+		var personas	=	this.get('personas');
+		if(personas) personas.each(function(p) {
 			p.unbind();
 			p.destroy({silent: true, skip_remote_sync: true, skip_local_sync: true});
 		});
