@@ -181,11 +181,8 @@ var Persona = Protected.extend({
 					if(turtl.messages.find_by_id(msgdata.id)) return;
 					var msg	=	new Message();
 					msg.setup_keys(msgdata.keys);
-					msg.bind('have-key', function() {
-						msg.unbind('have-key');
-						msg.set(msgdata);
-						turtl.messages.add(msg);
-					});
+					msg.set(msgdata);
+					turtl.messages.add(msg);
 				});
 
 				/**
