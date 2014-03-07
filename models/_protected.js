@@ -397,9 +397,6 @@ var Protected = Composer.RelationalModel.extend({
 	 *   {u: <user id>, k: <user's key>}
 	 * ]
 	 *
-	 * Note that an entry for the current user is automatically generated unless
-	 * options.skip_user_key is specified.
-	 *
 	 * Also note that this operation *wipes out all subkeys for this object* and
 	 * replaces them. You must pass in all required data each time!
 	 * TODO: possibly remove above restriction.
@@ -695,7 +692,7 @@ var ProtectedShared = Protected.extend({
 			p: persona.id(),
 			k: persona.get('pubkey')
 		});
-		this.generate_subkeys(this.recipients, {skip_user_key: true});
+		this.generate_subkeys(this.recipients);
 	},
 
 	ensure_key_exists: function()
@@ -709,14 +706,6 @@ var ProtectedShared = Protected.extend({
 		// we're looking for a key, and the one we have is probably the auto-
 		// generated one from initialize
 		this.key	=	false;
-
-		// we don't have a key! decrypt it from our keys data and run our
-		// deserialize/set when done
-		this.bind('rsa-decrypt', function(key) {
-			this.unbind('rsa-decrypt');
-			this.key	=	key;
-			this.trigger('have-key');
-		}.bind(this));
 
 		// this will find/decrypt our key, but async (and triggers rsa-decrypt
 		// when it's done, which is bound above)

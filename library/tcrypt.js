@@ -476,6 +476,9 @@ var tcrypt = {
 			128
 		);
 
+		// TODO: investigate performance tweaks here? doing a concat (depending
+		// on the bit length) may require shifting the *entire* ciphertext words
+		// over, which on a large file could be pretty expensive.
 		var words	=	sjcl.bitArray.concat(formatted, ciphertext);
 		if(options.uint_array) return new Uint8Array(sjcl.codec.bytes.fromBits(words));
 		return words;
@@ -1076,3 +1079,76 @@ var tcrypt = {
 		return {public: pubkey, private: privkey};
 	}
 };
+
+tcrypt.asym	=	{
+	current_version: 1,
+
+	/**
+	 * Standard serialization for asymetric data
+	 *
+	 *   |-2 bytes-| |-96 bytes-| |-N bytes----|
+	 *   | version | |   tag    | |payload data|
+	 */
+	serialize: function(enc, options)
+	{
+		options || (options = {});
+
+		var serialized	=	String.fromCharCode(version >> 8) + String.fromCharCode(version & 255);
+		serialized		+=	options.tag;
+		serialized		+=	enc;
+
+		return serialized;
+	},
+
+	/**
+	 * Standard deserialization for asymetric data
+	 */
+	deserialize: function(version, options)
+	{
+	},
+
+	/**
+	 * Encrypt data via ECC.
+	 *
+	 * Uses tcrypt.asym.serialize to wrap the tag + ciphertext into one blob.
+	 */
+	encrypt: function(key_bin, data)
+	{
+		var version	=	tcrypt.asym.current_version;
+		var point	=	sjcl.ecc.curves.c384.fromBits(key_bin);
+		var key		=	new sjcl.ecc.elGamal.publicKey(sjcl.ecc.curves.c384, point)
+		var kem		=	key.kem(10);
+		var symkey	=	kem.key;
+		var tag		=	kem.tag;
+
+		var ciphertext	=	tcrypt.encrypt(symkey, data);
+		var serialized	=	tcrypt.asym.serialize('', {
+			version: version,
+			tag: tcrypt.words_to_bin(tag)
+		});
+		serialized		=	tcrypt.bin_to_words(serialized);
+
+		return sjcl.bitArray.concat(serialized, ciphertext);
+	},
+
+	/**
+	 * Decrypt data via ECC.
+	 *
+	 * Uses tcrypt.asym.deserialize to extract the tag and ciphertext
+	 */
+	decrypt: function(key, data)
+	{
+		var version	=	tcrypt.asym.current_version;
+		var params	=	tcrypt.asym.deserialize(version, data);
+	},
+
+	/**
+	 * Generate a new ECC keypair
+	 */
+	generate_ecc_keys: function()
+	{
+		var keys	=	sjcl.ecc.elGamal.generateKeys(384, 10);
+		return {public: keys.pub._point.toBits(), private: keys.sec.get()};
+	}
+};
+
