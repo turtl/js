@@ -5,7 +5,7 @@ var action = persona.id ? 'Edit' : 'Add';
 	<!--<? if(was_join) { ?><em>Almost done: </em><? } ?>-->
 	<?=action?> <? if(was_join) { ?>a <? } ?>persona
 	<? if(was_join) { ?>
-		<small>(personas let you to share with others)</small>
+		<small>(personas let you share with others)</small>
 	<? } else { ?>
 		<small><a href="#personas">&laquo; Back to <? if(return_to_manage) { ?>board management<? } else { ?>your personas<? } ?></a></small>
 	<? } ?>
