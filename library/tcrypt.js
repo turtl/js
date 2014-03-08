@@ -286,13 +286,13 @@ var tcrypt = {
 		if(options.raw) return get_bytes(enc, 0, idx);
 
 		// finally, the encrypted data
-		var enc	=	get_bytes(enc, idx);
+		var ciphertext	=	get_bytes(enc, idx);
 
 		var params	=	{
 			version: version,
 			desc: desc_str,
 			iv: iv,
-			ciphertext: enc
+			ciphertext: ciphertext
 		};
 		if(typeof(hmac) != 'undefined')
 		{
@@ -1093,6 +1093,7 @@ tcrypt.asym	=	{
 	{
 		options || (options = {});
 
+		var version		=	options.version;
 		var serialized	=	String.fromCharCode(version >> 8) + String.fromCharCode(version & 255);
 		serialized		+=	options.tag;
 		serialized		+=	enc;
@@ -1103,8 +1104,45 @@ tcrypt.asym	=	{
 	/**
 	 * Standard deserialization for asymetric data
 	 */
-	deserialize: function(version, options)
+	deserialize: function(enc, options)
 	{
+		options || (options = {});
+
+		var is_str		=	typeof(enc) == 'string';
+		var get_bytes	=	function(data, idx, length)
+		{
+			var sliceargs	=	length ? [data, idx * 8, (idx * 8) + (length * 8)] : [data, idx * 8];
+			return is_str ? tcrypt.bin_to_words(data.substr(idx, length)) : sjcl.bitArray.bitSlice.apply(this, sliceargs);
+		};
+		var get_byte	=	function(data, idx)
+		{
+			return is_str ? data.charCodeAt(idx) : sjcl.bitArray.extract(data, idx * 8, 8); 
+		}
+
+		// define an index we increment to keep track of deserialization
+		var idx	=	0;
+
+		// if the first character is not 0, either Turtl has come a really long
+		// way (and had over 255 serialization versions) or we're at the very
+		// first version, which just uses Base64.
+		var version	=	(get_byte(enc, idx) << 8) + get_byte(enc, idx + 1);
+		idx	+=	2;
+
+		// get the message tag
+		var tag	=	get_bytes(enc, idx, 96);
+		idx	+=	96;
+
+		if(options.raw) return get_bytes(enc, 0, idx);
+
+		// finally, the encrypted data
+		var ciphertext	=	get_bytes(enc, idx);
+
+		var params	=	{
+			version: version,
+			tag: tag,
+			ciphertext: ciphertext
+		};
+		return params;
 	},
 
 	/**
@@ -1112,8 +1150,10 @@ tcrypt.asym	=	{
 	 *
 	 * Uses tcrypt.asym.serialize to wrap the tag + ciphertext into one blob.
 	 */
-	encrypt: function(key_bin, data)
+	encrypt: function(key_bin, data, options)
 	{
+		options || (options = {});
+
 		var version	=	tcrypt.asym.current_version;
 		var point	=	sjcl.ecc.curves.c384.fromBits(key_bin);
 		var key		=	new sjcl.ecc.elGamal.publicKey(sjcl.ecc.curves.c384, point)
@@ -1128,6 +1168,7 @@ tcrypt.asym	=	{
 		});
 		serialized		=	tcrypt.bin_to_words(serialized);
 
+		// TODO: find a better way to concat?
 		return sjcl.bitArray.concat(serialized, ciphertext);
 	},
 
@@ -1136,10 +1177,16 @@ tcrypt.asym	=	{
 	 *
 	 * Uses tcrypt.asym.deserialize to extract the tag and ciphertext
 	 */
-	decrypt: function(key, data)
+	decrypt: function(key_bin, data, options)
 	{
+		options || (options = {});
+
+		var key		=	new sjcl.ecc.elGamal.secretKey(sjcl.ecc.curves.c384, sjcl.bn.fromBits(key_bin));
 		var version	=	tcrypt.asym.current_version;
-		var params	=	tcrypt.asym.deserialize(version, data);
+		var params	=	tcrypt.asym.deserialize(data);
+		var symkey	=	key.unkem(params.tag);
+
+		return tcrypt.decrypt(symkey, params.ciphertext, options);
 	},
 
 	/**
