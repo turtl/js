@@ -111,7 +111,7 @@ var Board = Composer.RelationalModel.extend({
 			if(this.get('shared', false))
 			{
 				// board was UNshared from us
-				var persona	=	this.get_shared_persona();
+				var persona	=	this.get_shared_persona({privs_only: true});
 				if(!persona)
 				{
 					barfr.barf('The board "'+ this.get('title') + '" is no longer shared with you.');
@@ -285,14 +285,19 @@ var Board = Composer.RelationalModel.extend({
 	 * the highest privileges on this board. If the only entries are ones with
 	 * p == 0 then we return false.
 	 */
-	get_shared_persona: function()
+	get_shared_persona: function(options)
 	{
-		var meta	=	this.get('meta');
-		if(meta && meta.persona)
+		options || (options = {});
+
+		if(!options.privs_only)
 		{
-			var persona	=	turtl.user.get('personas').find_by_id(meta.persona);
+			var meta	=	this.get('meta');
+			if(meta && meta.persona)
+			{
+				var persona	=	turtl.user.get('personas').find_by_id(meta.persona);
+			}
+			if(persona) return persona;
 		}
-		if(persona) return persona;
 
 		persona			=	false;
 		var privs		=	this.get('privs');

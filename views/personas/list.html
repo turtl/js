@@ -3,11 +3,9 @@
 		<h3><?=p.email?></h3>
 		<small><?=p.name?></small>
 		<? if(p.has_key) { ?>
-			<small class="success">(RSA 3072)</small>
-		<? } else if(p.generating_key) { ?>
-			<small>(generating RSA key)</small>
+			<small class="success">(ECC384)</small>
 		<? } else if(show_edit) { ?>
-			<small><a href="#generate">Generate RSA key</a></small>
+			<small><a href="#generate">Generate keypair</a></small>
 		<? } ?>
 		<? if(show_edit) { ?>
 			<ul>

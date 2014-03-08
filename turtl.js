@@ -405,29 +405,6 @@ var turtl	=	{
 			// handles all file jobs (download mainly)
 			turtl.files.start_consumer();
 		}
-
-		// set up manual syncing, and listen for persona key assignments
-		if(window.port && window._in_background)
-		{
-			window.port.bind('persona-attach-key', function(key, persona_data) {
-				var persona	=	turtl.user.get('personas').find_by_id(persona_data.id);
-				if(!persona || persona.has_rsa())
-				{
-					console.log('key attached, but persona gone (or has key)');
-					// persona doesn't exist (or already has key), return the key
-					window.port.send('rsa-keypair', key);
-					return false;
-				}
-				persona.set_rsa(tcrypt.rsa_key_from_json(key));
-				persona.save();
-			});
-			var persona	=	turtl.user.get('personas').first();
-			if(persona && !persona.has_rsa({check_private: true}))
-			{
-				window.port.send('persona-created', persona.toJSON());
-				console.log('turtl: persona created (init)');
-			}
-		}
 	},
 
 	setup_background_panel: function()

@@ -49,8 +49,9 @@ var Keychain	=	SyncCollection.extend({
 			success: function(model) {
 				if(options.success) options.success(model);
 			}.bind(this),
-			error: function(err) {
+			error: function(model, err) {
 				barfr.barf('Error saving key for item: '+ err);
+				log.error('keychain: error saving: ', err);
 				this.remove(entry);
 				if(options.error) options.error(err);
 			}.bind(this)

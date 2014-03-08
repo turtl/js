@@ -106,19 +106,12 @@ var PersonaEditController = Composer.Controller.extend({
 			set.privkey	=	false;
 		}
 		this.model.set(set);
+		if(is_new) this.model.generate_ecc_key();
 		turtl.loading(true);
 		this.model.save({
 			success: function() {
 				turtl.loading(false);
-				if(is_new)
-				{
-					this.collection.add(this.model);
-					this.model.generate_rsa_key({
-						error: function(err) {
-							barfr.barf('Problem generating key for persona: '+ err);
-						}
-					});
-				}
+				if(is_new) this.collection.add(this.model);
 				this.model.trigger('saved');
 				if(this.join)
 				{

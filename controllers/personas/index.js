@@ -49,7 +49,7 @@ var PersonasController = Composer.Controller.extend({
 	{
 		var personas = this.collection.map(function(persona) {
 			var data		=	toJSON(persona);
-			data.has_key	=	persona.has_rsa();
+			data.has_key	=	persona.has_keypair();
 			return data;
 		});
 		var content = Template.render('personas/index', {
@@ -147,7 +147,7 @@ var PersonasController = Composer.Controller.extend({
 		turtl.profile.track_sync_changes(persona.id());
 	},
 
-	make_rsa_key: function(e)
+	make_ecc_key: function(e)
 	{
 		if(e) e.stop();
 
@@ -155,10 +155,6 @@ var PersonasController = Composer.Controller.extend({
 		var persona	=	this.collection.find_by_id(pid);
 		if(!persona) return false;
 
-		persona.generate_rsa_key({
-			error: function(err) {
-				barfr.barf('Problem generating key for persona: '+ err);
-			}
-		});
+		persona.generate_ecc_key();
 	}
 });

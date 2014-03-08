@@ -645,6 +645,8 @@ var ProtectedThreaded = Protected.extend({
  */
 var ProtectedShared = Protected.extend({
 	recipients: [],
+	public_key: null,
+	private_key: null,
 
 	initialize: function()
 	{
@@ -654,36 +656,39 @@ var ProtectedShared = Protected.extend({
 
 	deserialize: function(data, parentobj)
 	{
-		// grab our private keys from our personas and use them to decrypt the
-		// object's AES key
-		var search	=	{
-			p: turtl.user.get('personas').map(function(p) {
-				return {id: p.id(), k: p.get('privkey')};
-			})
-		};
-		if(!this.key) return false;
-		return this.parent.apply(this, arguments);
+		if(!this.private_key) return false;
+		var obj	=	false;
+		try
+		{
+			var binary		=	tcrypt.from_base64(data);
+			var decrypted	=	tcrypt.asym.decrypt(this.private_key, binary);
+			obj				=	JSON.decode(decrypted);
+		}
+		catch(e)
+		{
+			console.error('ProtectedShared: problem decrypting message: ', e);
+			return false;
+		}
+		return obj;
 	},
 
 	serialize: function(data, parentobj)
 	{
-		return this.parent.apply(this, arguments);
-	},
+		if(!this.public_key) return false;
 
-	decrypt_key: function(decrypting_key, encrypted_key)
-	{
-		encrypted_key	=	tcrypt.from_base64(encrypted_key);
-		tcrypt.decrypt_rsa(decrypting_key, encrypted_key, {async: function(key) {
-			this.trigger('rsa-decrypt', key);
-		}.bind(this)});
-		return false;
-	},
-
-	encrypt_key: function(key, key_to_encrypt)
-	{
-		var encrypted_key	=	tcrypt.encrypt_rsa(key, key_to_encrypt);
-		encrypted_key		=	tcrypt.to_base64(encrypted_key);
-		return encrypted_key;
+		var encrypted	=	false;
+		try
+		{
+			var json	=	JSON.encode(data);
+			encrypted	=	tcrypt.asym.encrypt(this.public_key, json);
+			encrypted	=	tcrypt.to_base64(encrypted);
+		}
+		catch(e)
+		{
+			console.error('ProtectedShared: problem encrypting message: ', e);
+			return false;
+		}
+		return encrypted;
 	},
 
 	add_recipient: function(persona)
@@ -693,28 +698,6 @@ var ProtectedShared = Protected.extend({
 			k: persona.get('pubkey')
 		});
 		this.generate_subkeys(this.recipients);
-	},
-
-	ensure_key_exists: function()
-	{
-		if(!this.key) return false;
-		return this.key;
-	},
-
-	setup_keys: function(keydata)
-	{
-		// we're looking for a key, and the one we have is probably the auto-
-		// generated one from initialize
-		this.key	=	false;
-
-		// this will find/decrypt our key, but async (and triggers rsa-decrypt
-		// when it's done, which is bound above)
-		var search	=	{
-			p: turtl.user.get('personas').map(function(p) {
-				return {id: p.id(), k: p.get('privkey')};
-			})
-		};
-		this.find_key(keydata, search);
 	}
 });
 

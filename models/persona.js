@@ -38,83 +38,6 @@ var Persona = Protected.extend({
 		}.bind(this), 'persona:user:cleanup');
 	},
 
-	generate_rsa_key: function(options)
-	{
-		options || (options = {});
-
-		if(this.has_rsa({check_private: true}))
-		{
-			if(options.success) options.success();
-			return;
-		}
-
-		if(window.port) window.port.send('rsa-keygen-start', this.id());
-		this.set({generating_key: true});
-		tcrypt.generate_rsa_keypair({
-			success: function(rsakey) {
-				this.unset('generating_key');
-				this.set_rsa(rsakey);
-				this.save();
-				if(window.port) window.port.send('rsa-keygen-finish', this.id());
-				if(options.success) options.success();
-			}.bind(this),
-			error: function(err) {
-				this.unset('generating_key');
-				if(window.port) window.port.send('rsa-keygen-error', err, this.id());
-				if(options.error) options.error(err);
-			}.bind(this)
-		});
-
-	},
-
-	set_rsa: function(rsakey, options)
-	{
-		options || (options = {});
-
-		var split	=	tcrypt.split_rsa_key(rsakey);
-		this.set({
-			pubkey: tcrypt.rsa_key_to_json(split.public),
-			privkey: tcrypt.rsa_key_to_json(split.private)
-		});
-	},
-
-	has_rsa: function(options)
-	{
-		options || (options = {});
-		var has_key	=	this.get('pubkey') && true;
-		if(options.check_private) has_key = has_key && this.get('privkey') && true;
-		return has_key;
-	},
-
-	set: function(data, options)
-	{
-		if(data)
-		{
-			if(data.pubkey)
-			{
-				data.pubkey		=	tcrypt.rsa_key_from_json(data.pubkey);
-			}
-			if(data.privkey)
-			{
-				data.privkey	=	tcrypt.rsa_key_from_json(data.privkey);
-			}
-		}
-		return this.parent.apply(this, arguments);
-	},
-
-	toJSON: function()
-	{
-		var privkey	=	this.get('privkey');
-		if(privkey) this.data.privkey = tcrypt.rsa_key_to_json(privkey);
-		var data	=	this.parent.apply(this, arguments);
-		this.data.privkey	=	privkey;
-
-		var pubkey	=	this.get('pubkey');
-		if(pubkey) pubkey = tcrypt.rsa_key_to_json(pubkey);
-		data.pubkey	=	pubkey;
-		return data;
-	},
-
 	destroy_persona: function(options)
 	{
 		// in addition to destroying the persona, we need to UNset all board
@@ -170,34 +93,15 @@ var Persona = Protected.extend({
 
 		turtl.api.get('/messages/personas/'+this.id(), {after: options.after}, {
 			success: function(res) {
-				var my_personas	=	turtl.user.get('personas');
-
-				// messages decrypt async (because RSA is slooowwww). because of
-				// this, we dont add them to turtl.messages until they are done
-				// decrypting.
 				res.received.each(function(msgdata) {
 					// if we already have this message, don't bother with all
 					// the crypto stuff
 					if(turtl.messages.find_by_id(msgdata.id)) return;
-					var msg	=	new Message();
-					msg.setup_keys(msgdata.keys);
+					var msg			=	new Message();
+					msg.private_key	=	this.get('privkey');
 					msg.set(msgdata);
 					turtl.messages.add(msg);
-				});
-
-				/**
-				 * disable processing "sent" messages since nobody cares ATM
-				 *
-				// messages we sent have the "to" persona replaced with our own for
-				// display purposes
-				turtl.messages.add((res.sent || []).map(function(sent) {
-					var persona		=	my_personas.find_by_id(sent.from);
-					if(!persona) return false;
-					sent.persona	=	persona.toJSON();
-					sent.mine		=	true;	// let the app know WE sent it
-					return sent;
-				}));
-				*/
+				}.bind(this));
 				if(options.success) options.success(res, this);
 			}.bind(this),
 			error: options.error
@@ -231,7 +135,106 @@ var Persona = Protected.extend({
 				if(options.error) options.error(err);
 			}
 		});
+	},
+
+	generate_ecc_key: function(options)
+	{
+		options || (options = {});
+
+		if(this.has_keypair({check_private: true}))
+		{
+			return true;
+		}
+
+		var keys	=	tcrypt.asym.generate_ecc_keys();
+		this.set({pubkey: keys.public, privkey: keys.private});
+		return true;
+	},
+
+	has_keypair: function(options)
+	{
+		options || (options = {});
+		var has_key	=	this.get('pubkey') && true;
+		if(options.check_private) has_key = has_key && this.get('privkey') && true;
+		return has_key;
+	},
+
+	toJSON: function()
+	{
+		var privkey	=	this.get('privkey');
+		if(privkey && typeof(privkey != 'string'))
+		{
+			this.data.privkey = tcrypt.to_base64(privkey);
+		}
+		var data	=	this.parent.apply(this, arguments);
+		this.data.privkey	=	privkey;
+
+		var pubkey	=	this.get('pubkey');
+		if(pubkey && typeof(pubkey != 'string'))
+		{
+			pubkey = tcrypt.to_base64(pubkey);
+		}
+		data.pubkey	=	pubkey;
+		return data;
+	},
+
+	set: function(data, options)
+	{
+		if(data)
+		{
+			if(data.pubkey && typeof(data.pubkey) == 'string')
+			{
+				data.pubkey		=	tcrypt.from_base64(data.pubkey);
+			}
+			if(data.privkey && typeof(data.privkey) == 'string')
+			{
+				data.privkey	=	tcrypt.from_base64(data.privkey);
+			}
+		}
+		return this.parent.apply(this, arguments);
 	}
+
+	/*
+	generate_rsa_key: function(options)
+	{
+		options || (options = {});
+
+		if(this.has_keypair({check_private: true}))
+		{
+			if(options.success) options.success();
+			return;
+		}
+
+		if(window.port) window.port.send('rsa-keygen-start', this.id());
+		this.set({generating_key: true});
+		tcrypt.generate_rsa_keypair({
+			success: function(rsakey) {
+				this.unset('generating_key');
+				this.set_rsa(rsakey);
+				this.save();
+				if(window.port) window.port.send('rsa-keygen-finish', this.id());
+				if(options.success) options.success();
+			}.bind(this),
+			error: function(err) {
+				this.unset('generating_key');
+				if(window.port) window.port.send('rsa-keygen-error', err, this.id());
+				if(options.error) options.error(err);
+			}.bind(this)
+		});
+
+	},
+
+	set_rsa: function(rsakey, options)
+	{
+		options || (options = {});
+
+		var split	=	tcrypt.split_rsa_key(rsakey);
+		this.set({
+			pubkey: tcrypt.rsa_key_to_json(split.public),
+			privkey: tcrypt.rsa_key_to_json(split.private)
+		});
+	},
+	*/
 });
 
 var Personas = SyncCollection.extend({
