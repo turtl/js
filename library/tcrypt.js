@@ -1102,7 +1102,7 @@ tcrypt.asym	=	{
 	},
 
 	/**
-	 * Standard deserialization for asymetric data
+	 * Standard deserialization for asymetric data. See tcrypt.asym.serialize.
 	 */
 	deserialize: function(enc, options)
 	{
@@ -1148,7 +1148,10 @@ tcrypt.asym	=	{
 	/**
 	 * Encrypt data via ECC.
 	 *
-	 * Uses tcrypt.asym.serialize to wrap the tag + ciphertext into one blob.
+	 * Creates a key from the given binary, and uses it to extract a tag and an
+	 * AES (256bit) key. Encrypts the given data with the AES key, then wraps
+	 * the message up (version, tag, key) using tcrypt.asym.serialize so the
+	 * whole thing can be returned as one binary blob.
 	 */
 	encrypt: function(key_bin, data, options)
 	{
@@ -1175,7 +1178,9 @@ tcrypt.asym	=	{
 	/**
 	 * Decrypt data via ECC.
 	 *
-	 * Uses tcrypt.asym.deserialize to extract the tag and ciphertext
+	 * Uses tcrypt.asym.deserialize to extract the tag and ciphertext, then
+	 * extracts the AES key using the private key + tag. The cipher text is then
+	 * decrypted and returned.
 	 */
 	decrypt: function(key_bin, data, options)
 	{
