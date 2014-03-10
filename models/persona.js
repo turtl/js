@@ -184,7 +184,23 @@ var Persona = Protected.extend({
 		{
 			if(data.pubkey && typeof(data.pubkey) == 'string')
 			{
-				data.pubkey		=	tcrypt.from_base64(data.pubkey);
+				try
+				{
+					data.pubkey		=	tcrypt.from_base64(data.pubkey);
+				}
+				catch(e)
+				{
+					// this is probably an old key (RSA). nuke it.
+					log.warn('persona: old RSA key detected. nuking it.');
+					delete data.pubkey;
+					delete data.privkey;
+					(function() {
+						this.unset('pubkey');
+						this.unset('privkey');
+						this.generate_ecc_key();
+						this.save();
+					}).delay(100, this);
+				}
 			}
 			if(data.privkey && typeof(data.privkey) == 'string')
 			{
