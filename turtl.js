@@ -387,7 +387,7 @@ var turtl	=	{
 			// models/collections we'll be tracking. this enforces a nice
 			// separation between remote syncing and local syncing (and
 			// encourages all data changes to flow through the local db).
-			turtl.sync.register_local_tracker('user', new Users());
+			turtl.sync.register_remote_tracker('user', new Users());
 			turtl.sync.register_remote_tracker('keychain', new Keychain());
 			turtl.sync.register_remote_tracker('personas', new Personas());
 			turtl.sync.register_remote_tracker('boards', new Boards());
