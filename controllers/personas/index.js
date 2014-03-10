@@ -9,7 +9,7 @@ var PersonasController = Composer.Controller.extend({
 		'click a[href=#edit]': 'edit_persona',
 		'click a[href=#delete]': 'delete_persona',
 		'click a[href=#email]': 'toggle_email_settings',
-		'click a[href=#generate]': 'make_rsa_key',
+		'click a[href=#generate]': 'make_keypair',
 		'change .email-settings input[type=checkbox]': 'update_email_setting'
 	},
 
@@ -147,7 +147,7 @@ var PersonasController = Composer.Controller.extend({
 		turtl.profile.track_sync_changes(persona.id());
 	},
 
-	make_ecc_key: function(e)
+	make_keypair: function(e)
 	{
 		if(e) e.stop();
 
@@ -156,5 +156,6 @@ var PersonasController = Composer.Controller.extend({
 		if(!persona) return false;
 
 		persona.generate_ecc_key();
+		persona.save();
 	}
 });
