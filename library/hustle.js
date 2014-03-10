@@ -1,6 +1,6 @@
 (function(window, undefined) {
 	"use strict";
-	var version				=	'0.1.6';
+	var version				=	'0.1.7';
 	var internal_db_version	=	4;
 
 	var indexedDB	=	window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.oIndexedDB || window.msIndexedDB;
@@ -1071,6 +1071,10 @@
 							return item;
 						},
 						error: function(e) {
+							if(e instanceof HustleNotFound)
+							{
+								move_items.erase(item);
+							}
 							console.error('Hustle: ttr move: ', e);
 						}
 					});
