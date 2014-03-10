@@ -888,6 +888,10 @@ var SyncCollection	=	Composer.Collection.extend({
 			// record is from something just did, and we don't need to re-apply
 			// changes we already made...in fact, doing so can cause problems
 			// such as race conditions).
+			if(!item._sync)
+			{
+				log.error('sync: sync_from_api: bad item (no _sync): ', item);
+			}
 			if(turtl.sync.should_ignore(item._sync.id, {type: 'remote'})) return false;
 
 			// just create a forward to sync_record_from_api
