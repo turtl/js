@@ -95,7 +95,7 @@ var NotificationsController = Composer.Controller.extend({
 			var notif	=	this.button.getElement('small');
 			this.button.addClass('active');
 			if(notif) notif.destroy();
-			var notif	=	new Element('small').set('html', num_unread+'');
+			var notif	=	new Element('small').set('html', (num_unread+'').safe());
 			notif.inject(this.button);
 		}
 		else

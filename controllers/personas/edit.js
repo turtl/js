@@ -147,7 +147,7 @@ var PersonaEditController = Composer.Controller.extend({
 	email_msg: function(msg, success)
 	{
 		success || (success = false);
-		msg = msg.clean();
+		msg	=	msg.clean().safe();
 
 		this.email_note.className = this.email_note.className.replace(/(error|success)/g, '');
 		this.email_note.addClass(success ? 'success' : 'error');

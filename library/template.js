@@ -2,6 +2,10 @@ var Template = {
 	// holds cached views
 	cache: {},
 
+	// if true (probably should be) will remove *all* <script> tags from
+	// generated templates
+	filter_scripts: true,
+
 	initialize: function()
 	{
 		this.load_inline_templates();
@@ -10,31 +14,32 @@ var Template = {
 	/**
 	 * render a view.
 	 */
-	render: function(view_name, data, params)
+	render: function(view_name, data, options)
 	{
 		data || (data = {});
-		params || (params = {});
+		options || (options = {});
 
 		if(typeof(this.cache[view_name]) != 'undefined')
 		{
 			// we have it in hand, so just fucking run it and return it
-			return this.do_render(view_name, data, params);
+			var content	=	this.do_render(view_name, data, options);
+			return content;
 		}
 
-		this.load(view_name, data, params);
+		this.load(view_name, data, options);
 	},
 
-	load: function(view_name, data, params)
+	load: function(view_name, data, options)
 	{
-		params || (params = {});
-		var cb_success	=	!params.onSuccess ? function(obj) {} : params.onSuccess;
-		var cb_fail		=	!params.onFail ? function(obj) {} : params.onFail;
+		options || (options = {});
+		var cb_success	=	!options.onSuccess ? function(obj) {} : options.onSuccess;
+		var cb_fail		=	!options.onFail ? function(obj) {} : options.onFail;
 
 		var success	=	function(res)
 		{
-			if(!params.load_only)
+			if(!options.load_only)
 			{
-				return this.do_render(view_name, data, params);
+				return this.do_render(view_name, data, options);
 			}
 			else
 			{
@@ -46,6 +51,10 @@ var Template = {
 		{
 			return success();
 		}
+
+		// security: don't load views remotely! preload them or go home.
+		cb_fail('Don\'t load remote templates,');
+		return false;
 
 		// we don't have the template cached, so i think... you should make that
 		// call!!!!
@@ -86,14 +95,14 @@ var Template = {
 	 * callback displaying template and doing variable replacements after view
 	 * is loaded.
 	 */
-	do_render: function(name, data, params)
+	do_render: function(name, data, options)
 	{
-		params || (params = {});
+		options || (options = {});
 
-		// pull out important vars from our params
-		var container	=	typeof(params['container']) == 'undefined' ? new Element('div') : params['container'];
-		var cb_success	=	typeof(params['onSuccess']) == 'undefined' ? null : params['onSuccess'];
-		var cb_fail		=	!params.onFail ? function(obj) {} : params.onFail;
+		// pull out important vars from our options
+		var container	=	typeof(options['container']) == 'undefined' ? new Element('div') : options['container'];
+		var cb_success	=	typeof(options['onSuccess']) == 'undefined' ? null : options['onSuccess'];
+		var cb_fail		=	!options.onFail ? function(obj) {} : options.onFail;
 
 		// check if we even have the view we want
 		if(!this.cache[name])
@@ -156,6 +165,12 @@ var Template = {
 
 		// great success!
 		var view	=	tpl_fn(data);
+		if(options.filter_scripts || Template.filter_scripts)
+		{
+			// remove inline scripts from generated content. yes, you should do
+			// this.
+			view	=	view.replace(/<\/?script(.*?)>/ig, '');
+		}
 		cb_success(view, container);
 		return view;
 	}

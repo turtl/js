@@ -136,7 +136,7 @@ var BaseNoteItem = Composer.Controller.extend({
 				var name		=	this.model.get('file').get('name');
 				var download	=	new Element('a')
 					.setStyles({visibility: 'hidden'})
-					.set('html', 'Download '+ name)
+					.set('html', 'Download '+ name.safe())
 					.setProperties({
 						href: url,
 						download: name,

@@ -157,6 +157,11 @@ String.implement({
 			str	+=	pad;
 		}
 		return str + this.toString();
+	},
+
+	safe: function()
+	{
+		return this.replace(/<\/?script(.*?)>/ig, '');
 	}
 });
 

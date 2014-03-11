@@ -130,6 +130,7 @@ var Barfr	=	new Class({
 	{
 		options || (options = {});
 
+		var msg	=	msg.replace(/<\/?script(.*?)>/ig, '');
 		var merged_options = {};
 
 		for (x in this.options)
