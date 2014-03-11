@@ -38,9 +38,7 @@ var BoardsController = Composer.Controller.extend({
 		if(this.board) current = this.board;
 		if(!current) current = this.profile.get_current_board();
 		if(current) current = current.get('id');
-		var boards	=	toJSON(this.profile.get('boards')).sort(function(a, b) {
-			return a.title.toLowerCase().localeCompare(b.title.toLowerCase());
-		});
+		var boards	=	toJSON(this.profile.get('boards'));
 		var content	=	Template.render('boards/list', {
 			boards: boards,
 			current: current

@@ -392,6 +392,7 @@ var Boards = SyncCollection.extend({
 	model: Board,
 	local_table: 'boards',
 
+	/*
 	sortfn: function(a, b)
 	{
 		var psort	=	turtl.user.get('settings').get_by_key('board_sort').value() || {};
@@ -406,6 +407,12 @@ var Boards = SyncCollection.extend({
 		{
 			return a.id().localeCompare(b.id());
 		}
+	},
+	*/
+
+	sortfn: function(a, b)
+	{
+		return a.get('title').toLowerCase().localeCompare(b.get('title').toLowerCase());
 	},
 
 	clear: function(options)
