@@ -38,7 +38,7 @@ var TagsController = Composer.Controller.extend({
 		}.bind(this), 'tags:listing:monitor_sort');
 		this.board.bind_relational('notes', ['add', 'remove', 'reset'], this.update_filters.bind(this), 'tags:listing:update_filters');
 
-		turtl.keyboard.bind('f', function() { this.inp_search.focus(); }.bind(this), 'notes:shortcut:search_focus');
+		turtl.keyboard.bind('/', function() { this.inp_search.focus(); }.bind(this), 'notes:shortcut:search_focus');
 		turtl.keyboard.bind('x', this.clear_filters.bind(this), 'notes:shortcut:clear_filters');
 
 		// track all changes to our sub-controllers
@@ -55,7 +55,7 @@ var TagsController = Composer.Controller.extend({
 			this.tags.detach();
 		}
 		turtl.keyboard.unbind('x', 'notes:shortcut:clear_filters');
-		turtl.keyboard.unbind('f', 'notes:shortcut:search_focus');
+		turtl.keyboard.unbind('/', 'notes:shortcut:search_focus');
 		this.parent.apply(this, arguments);
 	},
 
