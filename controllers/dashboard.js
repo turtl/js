@@ -113,7 +113,7 @@ var DashboardController = Composer.Controller.extend({
 
 	open_help: function()
 	{
-		console.log('help!!');
+		new HelpController();
 	},
 
 	resize_sidebar: function()
