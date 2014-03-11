@@ -4,13 +4,11 @@ var Board = Composer.RelationalModel.extend({
 	relations: {
 		tags: {
 			type: Composer.HasMany,
-			collection: 'Tags',
-			forward_events: true
+			collection: 'Tags'
 		},
 		categories: {
 			type: Composer.HasMany,
-			collection: 'Categories',
-			forward_events: true
+			collection: 'Categories'
 		},
 		notes: {
 			type: Composer.HasMany,
@@ -22,8 +20,7 @@ var Board = Composer.RelationalModel.extend({
 				},
 				forward_all_events: true,
 				refresh_on_change: false
-			},
-			forward_events: true
+			}
 		},
 		personas: {
 			type: Composer.HasMany,
@@ -209,22 +206,27 @@ var Board = Composer.RelationalModel.extend({
 		this.set(board_data);
 
 		turtl.profile.get('boards').add(this);
-
-		// save the notes into the board (really, this just adds them to the
-		// global turtl.profile.notes collection). once done, we *make sure*
-		// the notes are persisted to the local db
-		_notes	=	turtl.sync.process_data({notes: _notes}).notes;
-		this.update_notes(_notes, {
-			complete: function() {
-				this.get('notes').each(function(note) {
-					note.save({ skip_remote_sync: true });
+		this.save({
+			skip_remote_sync: true,
+			success: function() {
+				// save the notes into the board (really, this just adds them to the
+				// global turtl.profile.notes collection). once done, we *make sure*
+				// the notes are persisted to the local db
+				_notes	=	turtl.sync.process_data({notes: _notes}).notes;
+				this.update_notes(_notes, {
+					complete: function() {
+						this.get('notes').each(function(note) {
+							note.save({ skip_remote_sync: true });
+						});
+						// force a refresh on the board in case it doesn't pick
+						// up the changed notes
+						(function() {
+							turtl.sync.notify_local_change('boards', 'refresh', {id: this.id()}, {track: true});
+						}).delay(200, this);
+					}.bind(this)
 				});
 			}.bind(this)
 		});
-
-		this.save({skip_remote_sync: true, force_local_sync: true});
-		//console.log('NOTES: ', _notes);
-		//console.log('BOARD: ', board_data);
 	},
 
 	accept_share: function(persona, options)
@@ -415,12 +417,12 @@ var Boards = SyncCollection.extend({
 		return this.parent.apply(this, arguments);
 	},
 
-	process_local_sync: function(board_data, board, msg)
+	process_local_sync: function(board_data, model, msg)
 	{
 		var action	=	msg.action;
 		if(_sync_debug_list.contains(this.local_table))
 		{
-			log.debug('sync: process_local_sync: '+ this.local_table +': '+ action, board_data, board);
+			log.debug('sync: process_local_sync: '+ this.local_table +': '+ action, board_data, model);
 		}
 
 		// process some user/board key stuff. when the user first adds a board,
@@ -439,16 +441,24 @@ var Boards = SyncCollection.extend({
 
 		if(action == 'delete')
 		{
-			if(board) board.destroy({skip_local_sync: true, skip_remote_sync: true});
+			if(model) model.destroy({skip_local_sync: true, skip_remote_sync: true});
 		}
-		else if(board)
+		else if(action == 'refresh')
+		{
+			var current	=	turtl.profile.get_current_board();
+			if(current && model.id() == current.id())
+			{
+				current.get('notes').refresh();
+			}
+		}
+		else if(model)
 		{
 			if(board_data.user_id && board_data.user_id != turtl.user.id())
 			{
 				board_data.shared	=	true;
 			}
-			board.set(board_data);
-			board.trigger('change:privs');
+			model.set(board_data);
+			model.trigger('change:privs');
 		}
 		else
 		{
@@ -470,9 +480,9 @@ var Boards = SyncCollection.extend({
 				// break and skip out on this one
 				if(!has_my_persona) return false;
 			}
-			var board	=	new Board(board_data);
-			if(board_data.cid) board._cid = board_data.cid;
-			this.upsert(board);
+			var model	=	new Board(board_data);
+			if(board_data.cid) model._cid = board_data.cid;
+			this.upsert(model);
 		}
 	}
 });

@@ -340,10 +340,10 @@ var Notes = SyncCollection.extend({
 
 	sortfn: function(a, b) { return a.id().localeCompare(b.id()); },
 
+	/*
 	// used for tracking batch note saves
 	batch_track: null,
 
-	/*
 	start_batch_save: function()
 	{
 		this.batch_track	=	[];

@@ -12,14 +12,12 @@ var User	=	Protected.extend({
 					return p.get('user_id') == turtl.user.id();
 				}
 			},
-			forward_events: true,
 			delayed_init: true
 		},
 
 		settings: {
 			type: Composer.HasMany,
-			collection: 'Settings',
-			forward_events: true
+			collection: 'Settings'
 		}
 	},
 

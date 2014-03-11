@@ -545,6 +545,7 @@ var SyncCollection	=	Composer.Collection.extend({
 			if(item_data.cid) model._cid = item_data.cid;
 			this.upsert(model);
 		}
+		return model;
 	},
 
 	/**
