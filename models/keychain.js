@@ -74,7 +74,15 @@ var Keychain	=	SyncCollection.extend({
 		if(models.length > 0)
 		{
 			if(options.return_model) return models[0];
-			return tcrypt.key_to_bin(models[0].get('k'));
+			try
+			{
+				return tcrypt.key_to_bin(models[0].get('k'));
+			}
+			catch(e)
+			{
+				log.error('keychain: error deserializing key: ', models[0].id(), e);
+				return false;
+			}
 		}
 
 		if(options.disable_migrate) return false;
