@@ -320,7 +320,7 @@ var Files = SyncCollection.extend({
 	{
 		var do_queue_download	=	function()
 		{
-			if(!turtl.user.logged_in || !turtl.do_remote_sync) return false;
+			if(!turtl.user.logged_in || !turtl.do_remote_sync || !turtl.db) return false;
 			this.queue_download_blank_files();
 			do_queue_download.delay(1000, this);
 		}.bind(this);
