@@ -143,8 +143,6 @@ var PersonasController = Composer.Controller.extend({
 		// update the settings silently (otherwise dropdown will disappear)
 		persona.set({settings: settings}, {silent: true});
 		persona.save({silent: true});
-		// make sure the next sync ignores this persona
-		turtl.profile.track_sync_changes(persona.id());
 	},
 
 	make_keypair: function(e)

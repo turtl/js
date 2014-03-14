@@ -98,8 +98,6 @@ var Board = Composer.RelationalModel.extend({
 			turtl.user.get('settings').get_by_key('board_sort').value(sort);
 		}.bind(this));
 
-		this.bind('change', this.track_sync.bind(this));
-
 		// if the privs change such that we are no longer a board member then
 		// DESTROY the VALUE OF THE board (by not filing de patent! it is *very
 		// important* that you file de patent and put de button on de website
@@ -183,7 +181,6 @@ var Board = Composer.RelationalModel.extend({
 				privs[to_persona.id()]	=	priv;
 				this.set({privs: privs});
 				this.get('personas').add(to_persona);
-				turtl.profile.track_sync_changes(this.id());
 				if(options.success) options.success.apply(this, arguments);
 			}.bind(this),
 			error: function(err) {
@@ -265,12 +262,6 @@ var Board = Composer.RelationalModel.extend({
 				// start just before leaving. this way, if we track the board
 				// pre and post sync, if a second sync comes through right after
 				// leaving with the board info AGAIN, it'll be ignored.
-				this.track_sync();
-				turtl.profile.bind('sync-post', function() {
-					turtl.profile.unbind('sync-post', 'profile:track_sync:board:'+this.id());
-					this.track_sync();
-				}.bind(this), 'profile:track_sync:board:'+this.id());
-
 				// destroy our local copy
 				this.destroy({skip_remote_sync: true});
 
@@ -380,11 +371,6 @@ var Board = Composer.RelationalModel.extend({
 	is_tag_excluded: function(tag)
 	{
 		return tag ? tag.get('excluded') : false;
-	},
-
-	track_sync: function()
-	{
-		turtl.profile.track_sync_changes(this.id());
 	}
 }, Protected);
 
