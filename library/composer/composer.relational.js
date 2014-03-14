@@ -255,6 +255,8 @@
 
 			// set the object back into our relational data objects
 			this._set_key(this.relation_data, obj_key, obj);
+			this.trigger('relation', obj, obj_key);
+			this.trigger('relation:'+obj_key, obj);
 			return obj;
 		},
 
