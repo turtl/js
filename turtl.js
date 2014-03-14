@@ -10,7 +10,7 @@ sjcl.beware['CBC mode is dangerous because it doesn\'t protect message integrity
 // server-generated IDs ('z.') and they are chronologically sortable from each
 // other. Also, append in the original cid() at the end for easier debugging.
 //
-// NOTE: *DO NOT* change the cid scheme without updating the cid math regex
+// NOTE: *DO NOT* change the cid scheme without updating the cid_match regex
 // below!
 var _cid		=	Composer.cid;
 Composer.cid	=	function() { return 'z.' + (new Date().getTime()).toString(16) + '.' + _cid(); };
@@ -184,7 +184,6 @@ var turtl	=	{
 							turtl.show_loading_screen(false);
 							turtl.controllers.pages.release_current();
 							turtl.last_url = '';
-							//turtl.profile.persist();
 							turtl.search.reindex();
 							var initial_route	=	options.initial_route || '';
 							if(initial_route.match(/^\/users\//)) initial_route = '/';
@@ -312,6 +311,8 @@ var turtl	=	{
 		if(turtl.db) turtl.db.close();
 		window.indexedDB.deleteDatabase('turtl.'+turtl.user.id());
 		if(turtl.hustle) turtl.hustle.wipe();
+		turtl.db		=	null;
+		turtl.hustle	=	null;
 		if(options.restart)
 		{
 			turtl.setup_local_db({
@@ -632,7 +633,7 @@ if(config.catch_global_errors)
 	window.onerror	=	function(msg, url, line)
 	{
 		if(!turtl.api || !enable_errlog) return;
-		log.error('remote error log: '+ url +':'+ line + ' "'+ msg +'"');
+		log.error('remote error log: ', arguments);
 		turtl.api.post('/log/error', {data: {client: config.client, version: config.version, msg: msg, url: url, line: line}}, {
 			error: function(err) {
 				log.error(err);
