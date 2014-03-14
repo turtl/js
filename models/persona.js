@@ -36,6 +36,19 @@ var Persona = Protected.extend({
 			delete settings[this.id()];
 			turtl.user.get('settings').get_by_key('personas').value(settings);
 		}.bind(this), 'persona:user:cleanup');
+
+		this.bind('change:pubkey', function() {
+			if(this.get('user_id') != turtl.user.id()) return false;
+			var persona	=	turtl.user.get('personas').find_by_id(this.id());
+			if(!persona || persona.has_keypair()) return false;
+
+			log.warn('persona: old (or missing) RSA key detected. nuking it.', this.id(), this.cid());
+			persona.unset('pubkey');
+			persona.unset('privkey');
+			persona.generate_ecc_key();
+			persona.save();
+		}.bind(this));
+		this.trigger('change:pubkey');
 	},
 
 	destroy_persona: function(options)
@@ -186,25 +199,24 @@ var Persona = Protected.extend({
 			{
 				try
 				{
-					data.pubkey		=	tcrypt.from_base64(data.pubkey);
+					data.pubkey	=	tcrypt.from_base64(data.pubkey);
 				}
 				catch(e)
 				{
 					// this is probably an old key (RSA). nuke it.
-					log.warn('persona: old RSA key detected. nuking it.');
-					delete data.pubkey;
-					delete data.privkey;
-					(function() {
-						this.unset('pubkey');
-						this.unset('privkey');
-						this.generate_ecc_key();
-						this.save();
-					}).delay(100, this);
+					data.pubkey	=	null;
 				}
 			}
 			if(data.privkey && typeof(data.privkey) == 'string')
 			{
-				data.privkey	=	tcrypt.from_base64(data.privkey);
+				try
+				{
+					data.privkey	=	tcrypt.from_base64(data.privkey);
+				}
+				catch(e)
+				{
+					data.privkey	=	null;
+				}
 			}
 		}
 		return this.parent.apply(this, arguments);
