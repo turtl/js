@@ -18,10 +18,14 @@ if(color) color = ['none','blue','red','green','purple','pink','brown','black'][
 	note: note
 })?>
 <? if(note.type != 'image') { ?><div class="content clear"><? } ?>
-	<? var tags = Template.render('notes/view/tags', { tags: note.tags }); ?>
-	<?=Template.render('notes/view/'+note.type, {
-		note: note,
-		tags: tags.clean()
-	})?>
+	<? if(!has_file && empty(note.title) && empty(note.url) && empty(note.text) && empty(note.embed)) { ?>
+		<p class="empty">(empty note)</p>
+	<? } else { ?>
+		<? var tags = Template.render('notes/view/tags', { tags: note.tags }); ?>
+		<?=Template.render('notes/view/'+note.type, {
+			note: note,
+			tags: tags.clean()
+		})?>
+	<? } ?>
 <? if(note.type != 'image') { ?></div><? } ?>
 
