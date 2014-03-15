@@ -44,6 +44,10 @@ var NoteEditFileController = Composer.Controller.extend({
 			blob_url: file.get('blob_url')
 		});
 		this.html(content);
+		if(this.model.get('file').get('type'))
+		{
+			this.upload_remove.setStyle('display', 'inline');
+		}
 	},
 
 	set_attachment: function(e)
@@ -67,7 +71,7 @@ var NoteEditFileController = Composer.Controller.extend({
 				type: file.type,
 				data: binary,
 				blob_url: null
-			}, {silent: true});
+			}, {silent: true}).unset('cleared');
 
 			// update the preview window (if image)
 			this.upload_remove.setStyle('display', 'inline');
@@ -90,7 +94,7 @@ var NoteEditFileController = Composer.Controller.extend({
 		this.upload_preview.set('html', '');
 		var blob_url	=	this.model.get('file').get('blob_url');
 		//if(blob_url) URL.revokeObjectURL(blob_url);
-		this.model.get('file').clear();
+		this.model.get('file').clear().set({cleared: true});
 	}
 });
 

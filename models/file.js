@@ -164,7 +164,10 @@ var FileData = ProtectedThreaded.extend({
 					options.args.persona	=	note_data.meta.persona;
 				}
 
+				var _url	=	this.url;
+				this.url	=	'/notes/'+this.get('note_id')+'/file';
 				parent_fn.call(this, options);
+				this.url	=	_url;
 			}.bind(this));
 		}
 		else

@@ -282,6 +282,15 @@ var NoteEditController = Composer.Controller.extend({
 		URL.revokeObjectURL(file.get('blob_url'));
 		file.unset('blob_url');
 
+		if(!isnew && this.note_copy.get('file').get('cleared'))
+		{
+			note_copy.clear_files();
+			note_copy.set({has_file: 0});
+			file.clear()
+			this.note_copy.get('file').clear()
+			this.note.get('file').clear();
+		}
+
 		var file_set	=	file.get('set');
 		if(isnew && file_set)
 		{
