@@ -377,7 +377,14 @@ var Notes = SyncCollection.extend({
 	},
 	*/
 
-	sync_to_api: function()
+	start: function()
+	{
+		// poll for notes that have files (but no file record) and create dummy
+		// records
+		turtl.sync.register_poller(this.create_dummy_file_records.bind(this))
+	},
+
+	create_dummy_file_records: function()
 	{
 		// this code creates empty file records in the files table from notes
 		// that we know have file data
@@ -421,9 +428,6 @@ var Notes = SyncCollection.extend({
 			.fail(function(e) {
 				log.error('sync: '+ this.local_table +': add file records: ', e);
 			});
-
-		// go running to mommy
-		return this.parent.apply(this, arguments);
 	}
 });
 

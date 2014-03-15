@@ -318,13 +318,8 @@ var Files = SyncCollection.extend({
 
 	start_consumer: function()
 	{
-		var do_queue_download	=	function()
-		{
-			if(!turtl.user.logged_in || !turtl.do_remote_sync || !turtl.db) return false;
-			this.queue_download_blank_files();
-			do_queue_download.delay(1000, this);
-		}.bind(this);
-		do_queue_download();
+		// poll for blank file records and queue them for download
+		turtl.sync.register_poller(this.queue_download_blank_files.bind(this))
 
 		this.queue_consumer	=	new turtl.hustle.Queue.Consumer(function(job) {
 			log.debug('files: job: ', job);

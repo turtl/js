@@ -43,10 +43,14 @@ var Sync = Composer.Model.extend({
 	// used to track local syncs
 	local_sync_id: 0,
 
+	// functions we run periodically while syncing is active
+	pollers: [],
+
 	init: function()
 	{
 		// initialize our time tracker(s)
 		this.time_track.local	=	new Date().getTime();
+		this.run_pollers();
 	},
 
 	/**
@@ -230,6 +234,36 @@ var Sync = Composer.Model.extend({
 			});
 		};
 		enqueue();
+	},
+
+	/**
+	 * Sometimes we want to periodically run functions while syncing is active.
+	 * This lets us do that. Each registered function is called once/second
+	 * while syncing is active.
+	 */
+	register_poller: function(fn)
+	{
+		this.pollers.push(fn);
+	},
+
+	/**
+	 * Runs all poller functions
+	 */
+	run_pollers: function()
+	{
+		// quit on logout
+		if(!turtl.user.logged_in) return false;
+
+		// only run pollers if syncing is active
+		if(turtl.do_sync && turtl.do_remote_sync && turtl.db)
+		{
+			this.pollers.each(function(fn) {
+				fn();
+			});
+		}
+
+		// loooooop
+		this.run_pollers.delay(1000, this);
 	},
 
 	/**

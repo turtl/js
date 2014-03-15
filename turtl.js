@@ -384,6 +384,9 @@ var turtl	=	{
 		// we're in the background thread of an addon
 		if(turtl.do_sync && (!window._in_ext || window._in_background) && !window._in_app)
 		{
+			var notes	=	new Notes();
+			notes.start();	// poll for note recrods without files
+
 			// note that our remote trackers use brand new instances of the
 			// models/collections we'll be tracking. this enforces a nice
 			// separation between remote syncing and local syncing (and
@@ -392,7 +395,7 @@ var turtl	=	{
 			turtl.sync.register_remote_tracker('keychain', new Keychain());
 			turtl.sync.register_remote_tracker('personas', new Personas());
 			turtl.sync.register_remote_tracker('boards', new Boards());
-			turtl.sync.register_remote_tracker('notes', new Notes());
+			turtl.sync.register_remote_tracker('notes', notes);
 			turtl.sync.register_remote_tracker('files', new Files());
 
 			// start API -> local db sync process. calls POST /sync, which grabs
