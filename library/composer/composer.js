@@ -523,6 +523,7 @@
 					this._changed	=	false;
 				}
 			}
+			return this;
 		},
 
 		/**
