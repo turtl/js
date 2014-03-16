@@ -20,6 +20,7 @@ var BaseNoteItem = Composer.Controller.extend({
 	{
 		this.model.bind('change', this.render.bind(this), 'note:item:change:render');
 		this.model.bind('destroy', this.release.bind(this), 'note:item:destroy:release');
+		this.model.bind_relational('file', 'change', this.render.bind(this), 'note:file:encrypting');
 
 		this.menu_close_timer		=	new Timer(200);
 		this.menu_close_timer.end	=	this.do_close_menu.bind(this);
@@ -29,6 +30,7 @@ var BaseNoteItem = Composer.Controller.extend({
 	{
 		this.model.unbind('change', 'note:item:change:render');
 		this.model.unbind('destroy', 'note:item:destroy:release');
+		this.model.unbind_relational('file', 'change', 'note:file:encrypting');
 		this.menu_close_timer.end	=	null;
 		this.parent.apply(this, arguments);
 	},

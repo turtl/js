@@ -306,6 +306,12 @@ var NoteEditController = Composer.Controller.extend({
 			// file
 			this.board.get('notes').upsert(this.note, {allow_cid: true});
 		}
+		else if(file_set)
+		{
+			var filedata		=	toJSON(file);
+			filedata.encrypting	=	true;
+			this.note.get('file').set(filedata);
+		}
 
 		var do_note_save	=	function(options)
 		{
@@ -397,6 +403,7 @@ var NoteEditController = Composer.Controller.extend({
 					}.bind(this),
 					error: function(e) {
 						barfr.barf('There was a problem saving the attached file: '+ e);
+						log.error('note: edit: file save: ', e);
 						turtl.loading(false);
 					}
 				});
