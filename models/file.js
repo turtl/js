@@ -360,6 +360,7 @@ var Files = SyncCollection.extend({
 			}
 		}.bind(this), {
 			tube: 'files',
+			delay: turtl.sync.hustle_poll_delay,
 			enable_fn: function() { return turtl.user.logged_in && turtl.do_remote_sync; }
 		});
 	},

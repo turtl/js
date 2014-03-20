@@ -15,9 +15,8 @@ var Sync = Composer.Model.extend({
 	// time, in ms, between POST /sync calls
 	sync_from_api_delay: 10000,
 
-	time_track: {
-		local: 0
-	},
+	// consumer/subscriber delay
+	hustle_poll_delay: 300,
 
 	// local model ID tracking (for preventing double syncs)
 	sync_ignore: {
@@ -48,8 +47,6 @@ var Sync = Composer.Model.extend({
 
 	init: function()
 	{
-		// initialize our time tracker(s)
-		this.time_track.local	=	new Date().getTime();
 		this.run_pollers();
 	},
 
@@ -62,6 +59,7 @@ var Sync = Composer.Model.extend({
 	},
 
 	/**
+	 * Instruct the syncing system to stop
 	 */
 	stop: function()
 	{
@@ -288,6 +286,7 @@ var Sync = Composer.Model.extend({
 			log.debug('sync: notify local: recv: ', msg);
 			track_obj.tracker.sync_record_from_db(msg.data.data, msg.data);
 		}, {
+			delay: this.hustle_poll_delay,
 			enable_fn: function() {
 				return turtl.user.logged_in && this.enabled;
 			}.bind(this),
@@ -325,6 +324,7 @@ var Sync = Composer.Model.extend({
 			track_obj.tracker.sync_record_to_api(item.data.data, item);
 		}, {
 			tube: 'outgoing',
+			delay: this.hustle_poll_delay,
 			enable_fn: function() {
 				return turtl.user.logged_in && this.enabled && turtl.do_sync;
 			}.bind(this),
