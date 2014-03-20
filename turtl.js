@@ -282,7 +282,8 @@ var turtl	=	{
 		var hustle	=	new Hustle({
 			tubes: ['incoming', 'outgoing', 'files'],
 			db_name: 'hustle_user_'+turtl.user.id(),
-			db_version: 2
+			db_version: 2,
+			maintenance_delay: 5000
 		});
 		hustle.open({
 			success: function() {

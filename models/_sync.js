@@ -16,7 +16,7 @@ var Sync = Composer.Model.extend({
 	sync_from_api_delay: 10000,
 
 	// consumer/subscriber delay
-	hustle_poll_delay: 300,
+	hustle_poll_delay: 500,
 
 	// local model ID tracking (for preventing double syncs)
 	sync_ignore: {
