@@ -27,6 +27,11 @@ Composer.sync	=	function(method, model, options)
 		log.info('save: '+ table +': mem -> db ('+ action +')');
 	}
 
+	var error	=	options.error || function() {};
+	if(!turtl.db)
+	{
+		return error('DB not open.');
+	}
 	if(!turtl.db[table])
 	{
 		throw new SyncError('Bad db.js table: '+ table);
@@ -55,7 +60,6 @@ Composer.sync	=	function(method, model, options)
 		}
 		if(options.success) options.success(res);
 	};
-	var error	=	options.error || function() {};
 
 	if(method != 'read')
 	{
