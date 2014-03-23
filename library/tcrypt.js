@@ -3,9 +3,9 @@
 // define error(s) used by tcrypt
 var extend_error	=	function(extend, errname)
 {
-	var err						=	function() {
-		var tmp	=	extend.apply(this, arguments);
-		tmp.name = this.name = errname;
+	var err	=	function() {
+		var tmp		=	extend.apply(this, arguments);
+		tmp.name	=	this.name = errname;
 
 		this.stack		=	tmp.stack
 		this.message	=	tmp.message
@@ -92,7 +92,7 @@ var tcrypt = {
 				padding: 'AnsiX923'
 			}
 			parts.shift();
-			parts.each(function(p) {
+			parts.forEach(function(p) {
 				if(p.match(/^i/)) params.iv = sjcl.codec.hex.toBits(p.slice(1));
 			});
 			return params;
@@ -379,7 +379,7 @@ var tcrypt = {
 		// use the tcrypt defaults.
 		var cipher		=	options.cipher || tcrypt.cipher_index[tcrypt.default_cipher];
 		var block_mode	=	options.block_mode || tcrypt.block_index[tcrypt.default_block];
-		if(!['gcm', 'ccm'].contains(block_mode.toLowerCase()))
+		if(!['gcm', 'ccm'].indexOf(block_mode.toLowerCase()) < 0)
 		{
 			throw new TcryptError('Bad mode: '+ block_mode +' (only authenticated modes allowed: gcm, ccm)');
 		}
