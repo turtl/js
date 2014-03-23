@@ -379,7 +379,7 @@ var tcrypt = {
 		// use the tcrypt defaults.
 		var cipher		=	options.cipher || tcrypt.cipher_index[tcrypt.default_cipher];
 		var block_mode	=	options.block_mode || tcrypt.block_index[tcrypt.default_block];
-		if(!['gcm', 'ccm'].indexOf(block_mode.toLowerCase()) < 0)
+		if(['gcm', 'ccm'].indexOf(block_mode.toLowerCase()) < 0)
 		{
 			throw new TcryptError('Bad mode: '+ block_mode +' (only authenticated modes allowed: gcm, ccm)');
 		}
