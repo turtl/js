@@ -509,7 +509,7 @@ var NotesController = TrackController.extend({
 		var sub = this.sub_controller_index[model.id()];
 		if(sub)
 		{
-			sub.el.removeClass('hide');
+			if(sub.el) sub.el.removeClass('hide');
 		}
 		else
 		{

@@ -26,11 +26,6 @@ var BookmarkController = Composer.Controller.extend({
 	{
 		this.render();
 
-		if(!window._in_ext)
-		{
-			this.linkdata = parse_querystring();
-		}
-
 		if(window.port) window.port.bind('bookmark-open', function(data) {
 			// prevent overwriting what's in the bookmark interface
 			if(data.url && data.url == this.last_url)
@@ -61,6 +56,16 @@ var BookmarkController = Composer.Controller.extend({
 		}
 		else
 		{
+			if(!this.linkdata.type)
+			{
+				log.error('bad bookmark item type.');
+				(function() {
+					window.port.send('close');
+					window.port.send('addon-controller-release');
+					this.release();
+				}).delay(0, this);
+				return false;
+			}
 			window.localStorage.removeItem('bookmarker:note:saved');
 			var note = new Note({
 				type: this.linkdata.type,
@@ -70,6 +75,7 @@ var BookmarkController = Composer.Controller.extend({
 			});
 		}
 		this.edit_controller = new NoteEditController({
+			title: 'Bookmark',
 			inject: this.edit_container,
 			note: note,
 			edit_in_modal: false,
@@ -92,7 +98,7 @@ var BookmarkController = Composer.Controller.extend({
 					this.init();
 				}
 			}.bind(this));
-			if(window.port) window.port.send('resize');
+			this.resize();
 			return false;
 		}
 		this.edit_controller.el.addClass('bookmarker');
@@ -106,7 +112,7 @@ var BookmarkController = Composer.Controller.extend({
 			window.localStorage.removeItem('bookmarker:note:saved');
 
 			this.profile.trigger('change:current_board');
-			if(window._in_ext && window.port)
+			if((window._in_ext || window._in_desktop) && window.port)
 			{
 				window.port.send('close');
 				window.port.send('addon-controller-release');

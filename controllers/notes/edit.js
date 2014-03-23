@@ -44,6 +44,8 @@ var NoteEditController = Composer.Controller.extend({
 	board_controller: null,
 	tips: null,
 
+	title: null,
+
 	init: function()
 	{
 		if(this.board == 'last')
@@ -119,6 +121,7 @@ var NoteEditController = Composer.Controller.extend({
 	render: function()
 	{
 		var content = Template.render('notes/edit', {
+			title: this.title,
 			note: toJSON(this.note_copy),
 			board: toJSON(this.board),
 			show_tabs: this.show_tabs
@@ -486,7 +489,9 @@ var NoteEditController = Composer.Controller.extend({
 		});
 		html_el.set('html', html);
 		html_el.getElement('.actions').dispose();
-		if(window.port) window.port.send('resize');
+		(function() {
+			if(window.port) window.port.send('resize');
+		}).delay(10, this);
 	},
 
 	open_edit: function(e)

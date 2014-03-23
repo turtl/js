@@ -688,7 +688,23 @@ var tcrypt = {
 	},
 
 	/**
-	 * Given a binary key, convert to hex string
+	 * convert word array to hex
+	 */
+	to_hex: function(words)
+	{
+		return sjcl.codec.hex.fromBits(words);
+	},
+
+	/**
+	 * convert hex to word array
+	 */
+	from_hex: function(str)
+	{
+		return sjcl.codec.hex.toBits(str);
+	},
+
+	/**
+	 * Given a binary key, convert to base64 string
 	 */
 	key_to_string: function(keywords)
 	{
