@@ -53,8 +53,7 @@ var tcrypt = {
 	default_padding: 1,
 	default_kdf_mode: 0,	// corresponds to tcrypt.kdf_index
 
-	// define some getters. these really just wrap grabbing values out of the
-	// global window context, but in the future could be expanded
+	// define some getters.
 	get_cipher: function(ciphername) { return sjcl.cipher[ciphername.toLowerCase()]; },
 	get_block_mode: function(blockmode) { return sjcl.mode[blockmode.toLowerCase()]; },
 	get_padding: function(padding) { return ''; },	// now unused
@@ -843,7 +842,11 @@ var tcrypt = {
 	 */
 	random_number: function()
 	{
-		if(window.crypto.getRandomValues)
+		if(typeof(window) == 'undefined' && sjcl && sjcl.random)
+		{
+			return sjcl.random.randomWords(1, 10)[0] / (Math.pow(2, 32) - 1);
+		}
+		else if(window.crypto.getRandomValues)
 		{
 			// TODO: verify dividing Uint32 / 2^32 is still random
 			// TODO: handle QuotaExceededError error in FF (maybe the same in chrome)
