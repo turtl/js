@@ -460,11 +460,16 @@ var ProtectedThreaded = Protected.extend({
 		options || (options = {});
 		if(!this.key) return false;
 
+		// generate a random seed for sjcl
+		var seed	=	new Uint32Array(32);
+		window.crypto.getRandomValues(seed);
+
 		var worker	=	new Worker(window._base_url + '/library/tcrypt.thread.js');
 		this.workers.push(worker);
 		worker.postMessage({
 			cmd: 'decrypt',
-			args: [this.key, data]
+			args: [this.key, data],
+			seed: seed
 		});
 		worker.addEventListener('message', function(e) {
 			var res		=	e.data;
@@ -505,6 +510,10 @@ var ProtectedThreaded = Protected.extend({
 		options || (options = {});
 		if(!this.key) return false;
 
+		// generate a random seed for sjcl
+		var seed	=	new Uint32Array(32);
+		window.crypto.getRandomValues(seed);
+
 		var worker	=	new Worker(window._base_url + '/library/tcrypt.thread.js');
 		this.workers.push(worker);
 
@@ -528,7 +537,8 @@ var ProtectedThreaded = Protected.extend({
 					iv: tcrypt.iv(),
 					utf8_random: tcrypt.random_number()
 				}
-			]
+				],
+				seed: seed
 		});
 		worker.addEventListener('message', function(e) {
 			var res		=	e.data;

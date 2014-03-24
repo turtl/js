@@ -9,9 +9,15 @@ sjcl.beware['CBC mode is dangerous because it doesn\'t protect message integrity
 self.addEventListener('message', function(e) {
 	var cmd		=	e.data.cmd;
 	var args	=	e.data.args;
+	var seed	=	e.data.seed;
 	var res		=	null;
 	try
 	{
+		if(seed)
+		{
+			sjcl.random.addEntropy(seed, 1024, "crypto.getRandomValues");
+		}
+
 		var run_cmd	=	function(cmd)
 		{
 			var parts	=	cmd.split('.');
