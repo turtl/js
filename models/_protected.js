@@ -464,8 +464,7 @@ var ProtectedThreaded = Protected.extend({
 		this.workers.push(worker);
 		worker.postMessage({
 			cmd: 'decrypt',
-			key: this.key,
-			data: data
+			args: [this.key, data]
 		});
 		worker.addEventListener('message', function(e) {
 			var res		=	e.data;
@@ -522,13 +521,14 @@ var ProtectedThreaded = Protected.extend({
 
 		worker.postMessage({
 			cmd: 'encrypt+hash',
-			key: this.key,
-			data: enc_data,
-			options: {
-				// can't use window.crypto (for random IV), so generate IV here
-				iv: tcrypt.iv(),
-				utf8_random: tcrypt.random_number()
-			}
+			args: [
+				this.key,
+				enc_data, {
+					// can't use window.crypto (for random IV), so generate IV here
+					iv: tcrypt.iv(),
+					utf8_random: tcrypt.random_number()
+				}
+			]
 		});
 		worker.addEventListener('message', function(e) {
 			var res		=	e.data;

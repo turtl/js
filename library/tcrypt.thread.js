@@ -1,5 +1,4 @@
 importScripts(
-	'./mootools-core-1.4.5-server.js',
 	'./sjcl.js',
 	'./tcrypt.js' 
 );
@@ -9,33 +8,41 @@ sjcl.beware['CBC mode is dangerous because it doesn\'t protect message integrity
 
 self.addEventListener('message', function(e) {
 	var cmd		=	e.data.cmd;
-	var key		=	e.data.key;
-	var data	=	e.data.data;
-	var options	=	e.data.options || {};
+	var args	=	e.data.args;
 	var res		=	null;
 	try
 	{
+		var run_cmd	=	function(cmd)
+		{
+			var parts	=	cmd.split('.');
+			// only hardcode two levels deep
+			if(parts.length == 1)
+			{
+				var fn	=	tcrypt[parts[0]];
+			}
+			else if(parts.length == 2)
+			{
+				var fn	=	tcrypt[parts[0]][parts[1]];
+			}
+
+			return fn.apply(tcrypt, args);
+		};
+
 		switch(cmd)
 		{
-			case 'encrypt':
-				res	=	tcrypt.encrypt(key, data, options);
-				break;
 			case 'encrypt+hash':
-				var enc		=	tcrypt.encrypt(key, data, options);
+				var enc		=	run_cmd('encrypt');
 				var hash	=	tcrypt.hash(enc);
 				res			=	{c: enc, h: hash};
 				break;
-			case 'decrypt':
-				res	=	tcrypt.decrypt(key, data, options);
-				break;
-			case 'hash':
-				res	=	tcrypt.hash(data);
+			default:
+				res	=	run_cmd(cmd);
 				break;
 		}
 	}
 	catch(e)
 	{
-		var stack = e.stack.replace(/^[^\(]+?[\n$]/gm, '')
+		var stack = e && e.stack && e.stack.replace(/^[^\(]+?[\n$]/gm, '')
 			.replace(/^\s+at\s+/gm, '')
 			.replace(/^Object.<anonymous>\s*\(/gm, '{anonymous}()@')
 			.split('\n');
