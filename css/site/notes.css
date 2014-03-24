@@ -124,6 +124,8 @@ ul.note_list .note.image .color {margin: 0;}*/
 .note-edit > form > .do-edit {float: left; width: 60%;}
 .note-edit > form > .do-edit > div.type {display: none;}
 .note-edit > form > .do-edit > div.type.sel {display: block;}
+.no-modal .note-edit .boards {top: 10px;}
+.no-modal .note-edit ul.type {top: 20px;}
 
 .note-edit .do-edit {position: relative;}
 .note-edit .preview {display: none; position: relative; float: left; width: 60%;}

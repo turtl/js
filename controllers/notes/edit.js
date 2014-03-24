@@ -127,6 +127,11 @@ var NoteEditController = Composer.Controller.extend({
 			show_tabs: this.show_tabs
 		});
 		this.html(content);
+		this.el.removeClass('no-modal');
+		if(!this.edit_in_modal)
+		{
+			this.el.addClass('no-modal');
+		}
 
 		if(this.upload_controller) this.upload_controller.release();
 		this.upload_controller	=	new NoteEditFileController({
@@ -153,6 +158,7 @@ var NoteEditController = Composer.Controller.extend({
 			});
 		}
 		this.select_tab(this.note_copy.get('type'));
+		if(window.port) window.port.send('resize');
 	},
 
 	render_tags: function()
@@ -266,6 +272,11 @@ var NoteEditController = Composer.Controller.extend({
 			turtl.loading(false);
 			if(this.edit_in_modal) modal.close();
 			else this.trigger('saved');
+			if(window.port)
+			{
+				window.port.send('close');
+				window.port.send('addon-controller-release');
+			}
 		}.bind(this);
 
 		// grab the binary file data (and clear out the ref in the NoteFile)
