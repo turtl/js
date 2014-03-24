@@ -842,20 +842,18 @@ var tcrypt = {
 	 */
 	random_number: function()
 	{
-		if(typeof(window) == 'undefined' && sjcl && sjcl.random)
+		if((typeof(window) == 'undefined' || !window.crypto) && sjcl && sjcl.random)
 		{
 			return sjcl.random.randomWords(1, 10)[0] / (Math.pow(2, 32) - 1);
 		}
 		else if(window.crypto.getRandomValues)
 		{
-			// TODO: verify dividing Uint32 / 2^32 is still random
 			// TODO: handle QuotaExceededError error in FF (maybe the same in chrome)
 			return window.crypto.getRandomValues(new Uint32Array(1))[0] / (Math.pow(2, 32) - 1);
 		}
 		else
 		{
-			// TODO: crypto: use real crypto-PRNG
-			alert('Your browser does not support cryptographically secure random numbers. Please either update your browser or don\'t use this app =[.');
+			throw new TcryptError('no available PRNG');
 		}
 	},
 
