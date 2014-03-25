@@ -415,7 +415,8 @@ var Boards = SyncCollection.extend({
 		var action	=	msg.action;
 		if(_sync_debug_list.contains(this.local_table))
 		{
-			log.debug('sync: process_local_sync: '+ this.local_table +': '+ action, board_data, model);
+			//log.debug('sync: process_local_sync: '+ this.local_table +': '+ msg.id+ ' ' + action, board_data, model);
+			log.info('sync: process_local_sync: '+ this.local_table +': '+ msg.sync_id+ ' ' + action);
 		}
 
 		// process some user/board key stuff. when the user first adds a board,
@@ -444,16 +445,19 @@ var Boards = SyncCollection.extend({
 				current.get('notes').refresh();
 			}
 		}
-		else if(model)
+		else if(action == 'update')
 		{
-			if(board_data.user_id && board_data.user_id != turtl.user.id())
+			if(model)
 			{
-				board_data.shared	=	true;
+				if(board_data.user_id && board_data.user_id != turtl.user.id())
+				{
+					board_data.shared	=	true;
+				}
+				model.set(board_data);
+				model.trigger('change:privs');
 			}
-			model.set(board_data);
-			model.trigger('change:privs');
 		}
-		else
+		else if(action == 'create')
 		{
 			// make sure this isn't a rogue/shared board sync. sometimes a
 			// shared board will sync AFTER it's deleted, bringing us here.

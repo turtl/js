@@ -562,18 +562,19 @@ var SyncCollection	=	Composer.Collection.extend({
 		var action	=	msg.action;
 		if(_sync_debug_list.contains(this.local_table))
 		{
-			log.debug('sync: process_local_sync: '+ this.local_table +': '+ action, item_data, model);
+			//log.debug('sync: process_local_sync: '+ this.local_table +': '+ msg.sync_id + ' ' + action, item_data, model);
+			log.info('sync: process_local_sync: '+ this.local_table +': '+ msg.sync_id + ' ' + action);
 		}
 
 		if(action == 'delete')
 		{
 			if(model) model.destroy({skip_local_sync: true, skip_remote_sync: true});
 		}
-		else if(model)
+		else if(action == 'update')
 		{
-			model.set(item_data);
+			if(model) model.set(item_data);
 		}
-		else
+		else if(action == 'create')
 		{
 			var model	=	new this.model(item_data);
 			if(item_data.cid) model._cid = item_data.cid;
@@ -702,7 +703,7 @@ var SyncCollection	=	Composer.Collection.extend({
 		//console.log(this.local_table + '.sync_from_db: process: ', result, model);
 		if(_sync_debug_list.contains(this.local_table))
 		{
-			log.debug('sync: '+ this.local_table +': db -> mem ('+ (result.deleted ? 'delete' : 'add/edit') +')');
+			log.info('sync: '+ this.local_table +': db -> mem ('+ (result.deleted ? 'delete' : 'add/edit') +')');
 		}
 		this.process_local_sync(result, model, msg);
 	},
@@ -727,7 +728,8 @@ var SyncCollection	=	Composer.Collection.extend({
 			//console.log(this.local_table + '.sync_record_to_api: got: ', modeldata);
 			if(_sync_debug_list.contains(this.local_table))
 			{
-				log.debug('save: '+ this.local_table +': api -> db ', modeldata);
+				//log.info('save: '+ this.local_table +': api -> db ', modeldata);
+				log.info('save: '+ this.local_table +': api -> db ');
 			}
 			table.update(modeldata)
 				.done(function() { if(options.success) options.success(); })
@@ -777,7 +779,7 @@ var SyncCollection	=	Composer.Collection.extend({
 
 		if(_sync_debug_list.contains(this.local_table))
 		{
-			log.debug('sync: '+ this.local_table +': db -> api ('+action+') (new: '+model.is_new()+')');
+			log.info('sync: '+ this.local_table +': db -> api ('+action+') (new: '+model.is_new()+')');
 		}
 
 		var delete_queue_item	=	function()
@@ -872,7 +874,7 @@ var SyncCollection	=	Composer.Collection.extend({
 		var table	=	turtl.db[this.local_table];
 		if(_sync_debug_list.contains(this.local_table))
 		{
-			log.debug('sync: '+ this.local_table +': api -> db ('+ item._sync.action +')');
+			log.info('sync: '+ this.local_table +': api -> db ('+ item._sync.action +')');
 		}
 
 		var action	=	'update';
