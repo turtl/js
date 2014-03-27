@@ -893,8 +893,8 @@ var SyncCollection	=	Composer.Collection.extend({
 			{
 				// move the CID into the item if we have it.
 				if(item._sync.cid) item.cid = item._sync.cid;
+				if(item._sync.action == 'add') action = 'create';
 				delete item._sync;
-				action	=	'create';
 			}
 
 			// run the actual local DB update
