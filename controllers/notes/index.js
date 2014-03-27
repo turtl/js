@@ -193,7 +193,8 @@ var NotesController = TrackController.extend({
 	render: function()
 	{
 		var content = Template.render('notes/index', {
-			display_type: this.board.get('display_type')
+			display_type: this.board.get('display_type'),
+			enable_share: !this.board.get('shared')
 		});
 		this.html(content);
 
