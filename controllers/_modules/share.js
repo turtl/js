@@ -31,7 +31,9 @@ var ShareController = Composer.Controller.extend({
 		{
 			this.sub_controller.release();
 			this.sub_controller.unbind('release', 'share:sub:release');
+			this.sub_controller.unbind('sent', 'share:sub:sent');
 		}
+		this.unbind('sent');
 		turtl.keyboard.attach(); // re-enable shortcuts
 		this.parent.apply(this, arguments);
 	},
@@ -96,6 +98,7 @@ var ShareController = Composer.Controller.extend({
 		if(this.sub_controller)
 		{
 			this.sub_controller.unbind('release', 'share:sub:release');
+			this.sub_controller.unbind('sent', 'share:sub:sent');
 			this.sub_controller.release();
 		}
 		this.sub_controller	=	new this.controller({
@@ -104,9 +107,13 @@ var ShareController = Composer.Controller.extend({
 			persona_data: persona_data,
 			email: this.get_email()
 		});
+		this.sub_controller.bind('sent', function() {
+			this.trigger('sent');
+		}.bind(this), 'share:sub:sent');
 		this.sub_controller.bind('release', function() {
 			this.inp_email.value	=	'';
 			this.render();
 		}.bind(this), 'share:sub:release');
 	}
 });
+

@@ -99,7 +99,8 @@ var InviteBoardController	=	Composer.Controller.extend({
 					success: function() {
 						turtl.loading(false);
 						barfr.barf('Invite sent.');
-						this.render();
+						this.trigger('sent');
+						this.release();
 					}.bind(this),
 					error: function() {
 						turtl.loading(false);
