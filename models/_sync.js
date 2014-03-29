@@ -148,6 +148,8 @@ var Sync = Composer.Model.extend({
 	 */
 	save: function()
 	{
+		if(!turtl.db || !turtl.db.sync) return false;
+
 		var sync_id	=	this.get('sync_id');
 		turtl.db.sync.update(
 			{key: 'sync_id', value: sync_id}
