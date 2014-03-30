@@ -404,6 +404,11 @@ var Boards = SyncCollection.extend({
 	},
 	*/
 
+	init: function()
+	{
+		this.bind('change:title', function() { this.sort() }.bind(this), 'boards:change:resort');
+	},
+
 	sortfn: function(a, b)
 	{
 		return a.get('title').toLowerCase().localeCompare(b.get('title').toLowerCase());
