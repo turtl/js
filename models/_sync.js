@@ -481,7 +481,7 @@ var Sync = Composer.Model.extend({
 			// set board.shared, and set board.meta.persona
 			var user_id	=	turtl.user.id();
 			data.boards.each(function(board) {
-				if(board.user_id != user_id)
+				if(board.user_id && board.user_id != user_id)
 				{
 					board.shared	=	true;
 
@@ -931,7 +931,7 @@ var SyncCollection	=	Composer.Collection.extend({
 			{
 				log.error('sync: sync_from_api: bad item (no _sync): ', item);
 			}
-			if(turtl.sync.should_ignore(item._sync.id, {type: 'remote'})) return false;
+			if(item._sync && turtl.sync.should_ignore(item._sync.id, {type: 'remote'})) return false;
 
 			// just create a forward to sync_record_from_api
 			var do_sync	=	function() { this.sync_record_from_api(item); }.bind(this);
