@@ -621,12 +621,19 @@ window.addEvent('domready', function() {
 		});
 	}).delay(100);
 
+	// prevent backspace from navigating back
+	$(document.body).addEvent('keydown', function(e) {
+		if(e.key != 'backspace') return;
+		var is_input	=	['input', 'textarea'].contains(e.target.get('tag'));
+		var is_button	=	is_input && ['button', 'submit'].contains(e.target.get('type'));
+		if(is_input && !is_button) return;
+
+		// prevent backspace from triggering if we're not in a form element
+		e.stop();
+	});
+
 	// init it LOL
 	turtl.init.delay(50, turtl);
-});
-
-window.addEvent('beforeunload', function() {
-	if(window.port) window.port.send('tab-unload');
 });
 
 // set up a global error handler that XHRs shit to the API so we know when bugs
