@@ -118,6 +118,10 @@ var DashboardController = Composer.Controller.extend({
 
 	resize_sidebar: function()
 	{
+		// we're probably in a mobile view, or for some other reason have marked
+		// the sidebar as static. don't resize/move it at all.
+		if(this.sidebar.getStyle('position') == 'static') return false;
+
 		var scroll = window.getScroll().y;
 		var sidepos = this.sidebar.getCoordinates();
 		if(sidepos.top <= scroll && this.sidebar.getStyle('position') != 'fixed')

@@ -66,3 +66,10 @@ header div.actions ul.menu a span {padding: 9px 8px;}
 #main {min-height: 500px; padding: 0 10px;}
 
 footer {display: block; margin: 32px 0 0 0; padding: 16px; font-size: 10px; color: #777; text-align: right;}
+
+@media screen and (min-resolution: 250dpi), screen and (max-width: 1000px) {
+	header {float: none; width: auto;}
+	#wrap > .sidebar-bg {display: none;}
+	#main {padding: 0;}
+}
+

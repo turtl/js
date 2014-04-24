@@ -222,3 +222,7 @@ ul.note_list.list_masonry .note p:first-child {padding: 0 0 0 0; margin: 0;}
 ul.note_list.list_masonry .note img {max-width: 100%;}
 ul.note_list.list_masonry .note a.img {display: block; width: 232px; line-height: 0; text-align: center; background: #000;}
 
+@media screen and (min-resolution: 250dpi), screen and (max-width: 1000px) {
+	.notes div.note-actions {z-index: 200; position: fixed; bottom: 0; width: 98%; margin: 0; padding: 9px 0 0 2%; background: #dfdfdf; border-top: 1px solid #bbb;}
+}
+
