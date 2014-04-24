@@ -21,7 +21,7 @@ var UserJoinController = Composer.Controller.extend({
 	{
 		var content = Template.render('users/join');
 		this.html(content);
-		this.inp_username.focus();
+		//this.inp_username.focus();
 	},
 
 	do_join: function(e)
