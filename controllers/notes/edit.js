@@ -9,7 +9,8 @@ var NoteEditController = Composer.Controller.extend({
 		'textarea[name=text]': 'inp_text',
 		'.do-edit': 'editor',
 		'.preview': 'preview',
-		'div.markdown-tutorial': 'markdown_tutorial'
+		'div.markdown-tutorial': 'markdown_tutorial',
+		'input[type=submit]': 'inp_submit'
 	},
 
 	events: {
@@ -266,6 +267,7 @@ var NoteEditController = Composer.Controller.extend({
 		}
 
 		turtl.loading(true);
+		this.inp_submit.disabled	=	true;
 
 		var do_close	=	function()
 		{
@@ -362,6 +364,7 @@ var NoteEditController = Composer.Controller.extend({
 					}
 				}.bind(this),
 				error: function(e) {
+					this.inp_submit.disabled	=	false;
 					barfr.barf('There was a problem saving your note: '+ e);
 					turtl.loading(false);
 				}
@@ -416,6 +419,7 @@ var NoteEditController = Composer.Controller.extend({
 						do_note_save({no_close: true});
 					}.bind(this),
 					error: function(e) {
+						this.inp_submit.disabled	=	false;
 						barfr.barf('There was a problem saving the attached file: '+ e);
 						log.error('note: edit: file save: ', e);
 						turtl.loading(false);
