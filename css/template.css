@@ -37,36 +37,19 @@ a { text-decoration: none; }
 body.bare #wrap > .sidebar-bg {display: none;}
 
 header {float: left; width: 20%; height: 40px; margin: 0 0 22px 0; padding: 0 0 0 10px; background: #131313; border-bottom: 1px solid #222;}
-header h1 {position: relative; float: left; display: block; width: 29px; height: 30px; margin: 5px 0 0 0; background: url(../images/template/logo.png) 0 0 no-repeat;}
+header h1 {position: relative; float: left; display: block; width: 29px; height: 29px; margin: 5px 0 0 0; background: url(../images/template/logo.svg) 0 0 no-repeat; background-size: 100% 100%;}
 header h1 span {display: none;}
 header h1 {color: #eee; color: #92b579;}
 header h1.active {cursor: pointer;}
 header h1 small {position: absolute; z-index: 4; right: 0; bottom: 0; display: block; padding: 1px 4px; font-size: 11px; font-weight: bold; color: #fff; background: #d22;}
 header div.loading {visibility: hidden; float: left; margin: 15px 16px 0 16px;}
 
-header .apps ul.switch a {display: block; height: 40px;}
-header .apps ul.switch a span {display: block;}
-header .apps {float: left; margin: 0 6px 0 0;}
-header .apps ul.switch a.sel {background: #202020;}
-header .apps ul.switch {float: left; list-style: none; margin: 0;}
-header .apps ul.switch.hidden {display: none;}
-header .apps ul.switch li {float: left; margin: 0 0 0 0;}
-header .apps ul.switch li a {position: relative; width: 40px; border-left: 0;}
-header .apps ul.switch li a span {width: 40px; height: 40px; opacity: .8;}
-header .apps ul.switch li a:hover span {opacity: 1;}
-/*header .apps ul.switch li a.notes span {background: url(../images/template/app_notes_24x24.png) center center no-repeat;}*/
-header .apps ul.switch li a.notifications span {background: url(../images/template/app_messages_24x24.png) center center no-repeat;}
-
-/* logged out menu */
+/* header menu */
 header div.actions {position: relative; float: right; margin: 0 4px 0 0;}
 header div.actions > ul {list-style: none; margin: 0 0 0 0;}
 header div.actions > ul li {display: block; margin: 0; float: left;}
 header div.actions > ul a {display: block; height: 40px; border-left: 1px solid #111;}
 header div.actions > ul a span {display: block; padding: 13px 8px; color: #ccc; font-weight: normal; text-transform: uppercase; font-size: 11px; line-height: 12px;}
-header div.actions > ul li:first-child a {}
-header div.actions > ul a.sel {background: #202020;}
-
-/* logged in menu */
 header div.actions > a.menu {display: inline-block; height: 36px; margin: 5px 0 0 0; opacity: .9;}
 header div.actions > a.menu icon {padding: 7px 0 0 0; font-size: 2.2em; color: #ddd;}
 header div.actions > a.menu:hover {opacity: 1;}
