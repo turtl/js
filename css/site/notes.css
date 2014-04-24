@@ -37,10 +37,13 @@
 .notes div.actions a:hover {opacity: 1;}
 .notes div.actions a icon {margin-top: 6px; font-size: 1.4em; color: #fff;}
 .notes div.actions > a.sort {display: inline-block; width: 16px; height: 24px; background: url(../../images/site/icons/sort_handle_white_12x16.png) center center no-repeat;}
-.notes div.actions > a.sort > span {display: block; width: 19px; height: 24px; cursor: move;}
-.notes div.actions > a.open {display: inline-block; width: 16px; height: 24px; padding-left: 3px;}
+.notes div.actions > a.open {display: inline-block; width: 18px; height: 24px; padding: 0 3px;}
+.notes div.actions > a.edit {display: inline-block; width: 18px; height: 24px; padding: 0 3px;}
+.notes div.actions > a.delete {display: inline-block; width: 18px; height: 24px; padding: 0 3px;}
+/*
 .notes div.actions > a.menu {display: inline-block; width: 21px; height: 24px; margin: 0 0 0 3px; padding: 0 4px 0 6px; background: url(../../images/site/icons/menu_19x16.png) 6px center no-repeat; border-left: 1px solid #2b2b2b;}
 .notes div.actions > a span {display: none;}
+*/
 .notes div.actions ul.dropdown {display: none; position: absolute; top: 25px; right: -1px; list-style: none; width: 36px; background: #222;}
 .notes div.actions ul.dropdown.open {display: block;}
 .notes div.actions ul.dropdown li {display: block; border-bottom: 1px solid #333;}
