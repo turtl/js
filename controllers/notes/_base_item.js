@@ -8,9 +8,9 @@ var BaseNoteItem = Composer.Controller.extend({
 		'click .actions a.menu': 'open_menu',
 		'mouseleave ul.dropdown': 'close_menu',
 		'mouseenter ul.dropdown': 'cancel_close_menu',
-		'click ul.dropdown a.edit': 'open_edit',
-		'click ul.dropdown a.move': 'open_move',
-		'click ul.dropdown a.delete': 'delete_note',
+		'click .actions a.edit': 'open_edit',
+		'click .actions a.move': 'open_move',
+		'click .actions a.delete': 'delete_note',
 		'click a.attachment': 'download_attachment'
 	},
 
