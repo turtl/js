@@ -118,9 +118,8 @@ ul.note_list .note.image .color {margin: 0;}*/
 .note-view.image .content {padding: 20px; margin-top: -2px; background: #fff;}
 
 /* add/edit */
-.note-edit .boards {position: absolute; top: 22px; left: 160px;}
-.note-edit .boards .board-list {margin: 0; padding: 0; border: 0;}
-.note-edit .boards .board-list select {width: 120px;}
+.note-edit .boards {position: absolute; top: 0px; left: 160px; margin-top: -5px;}
+.note-edit .boards .board-list {width: 160px; margin: 0; padding: 0;}
 .note-edit .boards .board-list ul.actions li a {display: none;}
 .note-edit .boards .board-list ul.actions li a.add {margin: 5px 0 0 0; display: inline-block;}
 .note-edit ul.type {list-style: none; position: absolute; top: 32px; left: 380px;}

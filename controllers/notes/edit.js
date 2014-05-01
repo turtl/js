@@ -154,6 +154,7 @@ var NoteEditController = Composer.Controller.extend({
 				profile: turtl.profile,
 				add_bare: true,
 				show_actions: false,
+				switch_on_change: false,
 				change_on_add: true,
 				track_last_board: this.track_last_board,
 				board: board

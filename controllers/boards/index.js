@@ -17,6 +17,7 @@ var BoardsController = Composer.Controller.extend({
 	},
 
 	profile: null,
+	board: null,
 	collection: null,
 	filter_text: null,
 
@@ -24,11 +25,18 @@ var BoardsController = Composer.Controller.extend({
 	add_controller: null,
 
 	show_actions: true,
+	switch_on_change: true,
 
 	init: function()
 	{
+		if(!this.board) this.board = this.profile.get_current_board();
 		this.render();
-		turtl.profile.bind('change:current_board', this.render.bind(this), 'boards:change:render');
+		turtl.profile.bind('change:current_board', function() {
+			if(!this.switch_on_change) return;
+			this.board	=	this.profile.get_current_board();
+			this.render();
+		}.bind(this), 'boards:change:render');
+		this.bind('change-board', this.render.bind(this), 'boards:change:render');
 		turtl.keyboard.bind('b', this.open_boards.bind(this), 'boards:shortcut:open_boards');
 	},
 
@@ -43,7 +51,7 @@ var BoardsController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var current	=	this.profile.get_current_board();
+		var current	=	this.board;
 		var is_open	=	this.dropdown && this.dropdown.hasClass('open');
 		var content	=	Template.render('boards/index', {
 			num_boards: this.profile.get('boards').models().length,
@@ -58,15 +66,24 @@ var BoardsController = Composer.Controller.extend({
 		this.list_controller	=	new BoardListController({
 			inject: this.boards_sub,
 			profile: this.profile,
+			board: this.board,
 			show_actions: this.show_actions
 		});
 		this.list_controller.bind('close-boards', this.close_boards.bind(this));
 		this.list_controller.bind('change-board', function(board) {
-			this.trigger('change-board', board);
-			if(this.track_last_board && board)
+			if(board)
 			{
-				turtl.user.get('settings').get_by_key('last_board').value(board.id());
+				if(this.switch_on_change)
+				{
+					this.profile.set_current_board(board);
+				}
+				if(this.track_last_board)
+				{
+					turtl.user.get('settings').get_by_key('last_board').value(board.id());
+				}
+				this.board	=	board;
 			}
+			this.trigger('change-board', board);
 		}.bind(this));
 
 		if(this.dropdown) this.dropdown.monitorOutsideClick(function() {

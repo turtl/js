@@ -12,6 +12,7 @@ var BoardListController = Composer.Controller.extend({
 	},
 
 	profile: null,
+	board: null,
 	filtered_boards: null,
 
 	show_actions: true,
@@ -20,6 +21,7 @@ var BoardListController = Composer.Controller.extend({
 	{
 		this.collection	=	this.profile.get('boards');
 
+		if(!this.board) this.board = this.profile.get_current_board();
 		this.render();
 
 		this.profile.bind_relational('boards', ['add', 'remove', 'reset', 'change:id', 'change:title'], this.render.bind(this), 'boards:change');
@@ -53,7 +55,7 @@ var BoardListController = Composer.Controller.extend({
 				return board.title.toLowerCase().contains(this.filter_text.toLowerCase());
 			}.bind(this));
 		}
-		var current	=	this.profile.get_current_board();
+		var current	=	this.board;
 		var content	=	Template.render('boards/list', {
 			boards: this.filtered_boards,
 			current: current ? toJSON(current) : null,
@@ -92,8 +94,8 @@ var BoardListController = Composer.Controller.extend({
 		var atag		=	next_tag_up('a', e.target);
 		var board_id	=	atag.href.replace(/^.*board-([0-9a-f]+).*?$/, '$1');
 		var board		=	this.collection.find_by_id(board_id);
-		if(board) this.profile.set_current_board(board);
 		this.trigger('change-board', board);
+		this.board		=	board;
 	},
 
 	open_share: function(e)
