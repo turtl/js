@@ -5,6 +5,7 @@
 .notes div.note-actions {margin-left: 15px;}
 /*.notes div.note-actions div.button.add.note {float: left; margin: -1px 0 0 0; padding: 1px 4px; border-radius: 3px;}*/
 .notes div.note-actions div.button {margin: 0 6px 0 0;}
+.notes div.note-actions div.button:hover {background: #1e1e1e;}
 .notes div.note-actions .sort {display: inline-block; margin-left: 16px; color: #ccc; white-space: nowrap;}
 .notes div.note-actions .sort a {display: inline;}
 .notes div.note-actions .sort a icon {display: none; color: #ccc;}
