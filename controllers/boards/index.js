@@ -36,7 +36,13 @@ var BoardsController = Composer.Controller.extend({
 			this.board	=	this.profile.get_current_board();
 			this.render();
 		}.bind(this), 'boards:change:render');
-		this.bind('change-board', this.render.bind(this), 'boards:change:render');
+		this.bind('change-board', function(board) {
+			if(board && this.switch_on_change)
+			{
+				this.profile.set_current_board(board);
+			}
+			this.render();
+		}.bind(this), 'boards:change:render');
 		turtl.keyboard.bind('b', this.open_boards.bind(this), 'boards:shortcut:open_boards');
 	},
 
@@ -73,10 +79,6 @@ var BoardsController = Composer.Controller.extend({
 		this.list_controller.bind('change-board', function(board) {
 			if(board)
 			{
-				if(this.switch_on_change)
-				{
-					this.profile.set_current_board(board);
-				}
 				if(this.track_last_board)
 				{
 					turtl.user.get('settings').get_by_key('last_board').value(board.id());
@@ -137,7 +139,7 @@ var BoardsController = Composer.Controller.extend({
 
 	add_board: function(e)
 	{
-		if(modal.is_open && !this.add_bare) return false;
+		if(modal.is_open) return false;
 		if(e) e.stop();
 
 		var parent	=	this.el.getParent();
@@ -147,32 +149,33 @@ var BoardsController = Composer.Controller.extend({
 			return false;
 		}
 
-		var edit	=	new BoardEditController({
-			inject: this.add_bare ? parent : null,
+		this.add_controller	=	new BoardEditController({
+			inject: this.add_container,
 			profile: this.profile,
-			bare: this.add_bare
+			bare: true
 		});
+
 		if(this.change_on_add)
 		{
-			edit.bind('new-board', function(board) {
+			this.add_controller.bind('new-board', function(board) {
 				this.board	=	board;
-				this.render();
 				this.trigger('change-board', board);
 			}.bind(this));
 		}
 
+		/*
 		if(this.add_bare)
 		{
 			this.el.setStyle('display', 'none');
-			edit.el.dispose().inject(this.el, 'after');
-			edit.bind('release', function() {
+			this.add_controller.el.dispose().inject(this.el, 'after');
+			this.add_controller.bind('release', function() {
 				edit.unbind('boards:index:edit:release');
 				this.inject	=	parent;
 				this.el.setStyle('display', '');
 				this.render();
 			}.bind(this), 'boards:index:edit:release');
 		}
-		this.add_controller	=	edit;
+		*/
 
 		(function() {
 			this.add_container.slide('in');
