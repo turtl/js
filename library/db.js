@@ -233,6 +233,35 @@
             return deferred.promise();
         };
 
+        this.removeOnIndex = function ( table, index, key ) {
+            if ( closed ) {
+                throw 'Database has been closed';
+            }
+            var transaction = db.transaction( table , transactionModes.readwrite ),
+                store = transaction.objectStore( table ),
+                deferred = Deferred();
+            
+            var idx = store.index( index );
+            var req = idx.openKeyCursor(IDBKeyRange.only(key));
+            var keys = [];
+            req.onsuccess = function() {
+                var cursor = req.result;
+                if(cursor) {
+                    store.delete(cursor.primaryKey);
+                    keys.push(cursor.primaryKey);
+                    deferred.notify();
+                    cursor.continue();
+                }
+            };
+            transaction.oncomplete = function () {
+                deferred.resolve( keys );
+            };
+            transaction.onerror = function ( e ) {
+                deferred.reject( e );
+            };
+            return deferred.promise();
+        };
+
         this.clear = function ( table ) {
             if ( closed ) {
                 throw 'Database has been closed';
@@ -489,15 +518,23 @@
         
         for ( var tableName in schema ) {
             var table = schema[ tableName ];
+            var store = null;
             if ( !hasOwn.call( schema , tableName ) || db.objectStoreNames.contains( tableName ) ) {
-                continue;
+                store = e.currentTarget.transaction.objectStore(tableName);
+            } else {
+                var store = db.createObjectStore( tableName , table.key );
             }
 
-            var store = db.createObjectStore( tableName , table.key );
+            if(!store) continue;
 
             for ( var indexKey in table.indexes ) {
                 var index = table.indexes[ indexKey ];
-                store.createIndex( indexKey , index.key || indexKey , Object.keys(index).length ? index : { unique: false } );
+                try {
+                    store.createIndex( indexKey , index.key || indexKey , Object.keys(index).length ? index : { unique: false } );
+                } catch( e ) {
+					// index probably already exists.
+                    continue;
+                }
             }
         }
     };

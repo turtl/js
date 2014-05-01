@@ -8,7 +8,7 @@
 
 .success {color: #5a3;}
 .error {color: #c22;}
-a {color: #73b8d1; color: #92b579; outline: none;}
+a {color: #73b8d1; color: #92b579; color: #789662; outline: none;}
 strong {font-weight: bold;}
 
 h1 {font-size: 24px; font-weight: bold; color: #444; margin: 0 0 16px 0;}
@@ -20,9 +20,8 @@ form textarea {width: 60%; margin: 0 0 16px 0; padding: 3px 5px; border-radius: 
 
 img.loading {visibility: hidden;}
 
-icon {display: inline-block; margin: -10px 0 0 0; padding: 0; font-family: Entypo; font-weight: 400; font-size: 36px; line-height: 12px; vertical-align: text-top;}
+icon {display: inline-block; margin: 0 0 0 0; padding: 0; font-family: Entypo; font-weight: 300; font-size: 18px; line-height: .6em; vertical-align: baseline;}
 a icon {color: #222;}
-icon.sc {font-family: EntypoSocial;}
 
 .content {line-height: 1.4em; text-align: left;}
 .content h2 {font-size: 17px;}
@@ -42,6 +41,7 @@ icon.sc {font-family: EntypoSocial;}
 .content hr {display: block; height: 0; margin-bottom: 16px; background: 0; border: 0; border-bottom: 1px solid #999;}
 .content pre {overflow-x: auto; margin: 0 0 16px 0; padding: 6px; font-family: monospace; color: #611; background-color: #f5f5f5;}
 .content code {display: inline-block; margin: 0 2px; padding: 1px 4px; font-family: monospace; color: #611; background-color: #f5f5f5;}
+.content kbd {padding: .1em .6em; font-size: .9em; background: #f7f7f7; border: 1px solid #ccc; border-radius: 3px; box-shadow: 0 1px 0px rgba(0, 0, 0, 0.2),0 0 0 2px #ffffff inset;}
 .content .warn {color: #922;}
 
 form.standard-form input[type=text] {width: 95%;}
@@ -70,15 +70,16 @@ div.button:hover {
 	background: #222; /* Old browsers */
 	border-right: 1px solid #111;
 }
-div.button icon {float: left; margin: -10px 5px 0 0; color: #fff;}
-div.button span {display: inline-block; padding: 8px 8px 8px 8px; color: #ddd; text-transform: uppercase; font-weight: bold; font-size: 11px;}
+div.button icon {float: left; margin: 0px 5px 0 0; color: #fff;}
+div.button span {display: inline-block; padding: 8px 8px 8px 6px; color: #ddd; text-transform: uppercase; font-weight: bold; font-size: 11px;}
 div.button.add icon {color: #72b865;}
 div.button.share icon {color: #f761c7;}
 
 /* modal styles */
 .modalcontent {background: #fff url(../images/site/modal/header.png) 0 0 repeat-x !important;}
 /*.modalcontent {background: url(../images/site/trans_111_90.png) 0 0 !important;}*/
-.modalcontent > div > h1 {margin: -4px 0 24px 0; font-size: 20px; font-weight: normal; color: #999; text-transform: uppercase;}
+.modalcontent > div > h1,
+.modalcontent > div.bookmark > div.edit > div > h1 {margin: -4px 0 24px 0; font-size: 20px; font-weight: normal; color: #999; text-transform: uppercase;}
 
 /* tooltips */
 span.tooltip {display: inline; cursor: help; color: #73b8d1;}

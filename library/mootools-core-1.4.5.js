@@ -5213,6 +5213,7 @@ var Request = this.Request = new Class({
 		onRequest: function(){},
 		onLoadstart: function(event, xhr){},
 		onProgress: function(event, xhr){},
+		onUploadProgress: function(event, xhr){},
 		onComplete: function(){},
 		onCancel: function(){},
 		onSuccess: function(responseText, responseXML){},
@@ -5223,6 +5224,8 @@ var Request = this.Request = new Class({
 		password: '',*/
 		url: '',
 		data: '',
+		processData: true,
+		responseType: null,
 		headers: {
 			'X-Requested-With': 'XMLHttpRequest',
 			'Accept': 'text/javascript, text/html, application/xml, text/xml, */*'
@@ -5244,6 +5247,11 @@ var Request = this.Request = new Class({
 	initialize: function(options){
 		this.xhr = new Browser.Request();
 		this.setOptions(options);
+		if ((typeof ArrayBuffer != 'undefined' && options.data instanceof ArrayBuffer) || (typeof Blob != 'undefined' && options.data instanceof Blob) || (typeof Uint8Array != 'undefined' && options.data instanceof Uint8Array)){
+			// set data in directly if we're passing binary data because
+			// otherwise setOptions will convert the data into an empty object
+			this.options.data = options.data;
+		}
 		this.headers = this.options.headers;
 	},
 
@@ -5260,9 +5268,9 @@ var Request = this.Request = new Class({
 		if (progressSupport) xhr.onprogress = xhr.onloadstart = empty;
 		clearTimeout(this.timer);
 
-		this.response = {text: this.xhr.responseText || '', xml: this.xhr.responseXML};
+		this.response = {text: (!this.options.responseType && this.xhr.responseText) || '', xml: (!this.options.responseType && this.xhr.responseXML)};
 		if (this.options.isSuccess.call(this, this.status))
-			this.success(this.response.text, this.response.xml);
+			this.success(this.options.responseType ? this.xhr.response : this.response.text, this.response.xml);
 		else
 			this.failure();
 	},
@@ -5277,6 +5285,7 @@ var Request = this.Request = new Class({
 	},
 
 	processScripts: function(text){
+		if (typeof text != 'string') return text;
 		if (this.options.evalResponse || (/(ecma|java)script/).test(this.getHeader('Content-type'))) return Browser.exec(text);
 		return text.stripScripts(this.options.evalScripts);
 	},
@@ -5303,6 +5312,10 @@ var Request = this.Request = new Class({
 
 	progress: function(event){
 		this.fireEvent('progress', [event, this.xhr]);
+	},
+
+	uploadprogress: function(event){
+		this.fireEvent('uploadprogress', [event, this.xhr]);
 	},
 
 	timeout: function(){
@@ -5342,20 +5355,22 @@ var Request = this.Request = new Class({
 		options = Object.append({data: old.data, url: old.url, method: old.method}, options);
 		var data = options.data, url = String(options.url), method = options.method.toLowerCase();
 
-		switch (typeOf(data)){
-			case 'element': data = document.id(data).toQueryString(); break;
-			case 'object': case 'hash': data = Object.toQueryString(data);
-		}
+		if (this.options.processData || method == 'get' || method == 'delete'){
+			switch (typeOf(data)){
+				case 'element': data = document.id(data).toQueryString(); break;
+				case 'object': case 'hash': data = Object.toQueryString(data);
+			}
 
-		if (this.options.format){
-			var format = 'format=' + this.options.format;
-			data = (data) ? format + '&' + data : format;
-		}
+			if (this.options.format){
+				var format = 'format=' + this.options.format;
+				data = (data) ? format + '&' + data : format;
+			}
 
-		if (this.options.emulation && !['get', 'post'].contains(method)){
-			var _method = '_method=' + method;
-			data = (data) ? _method + '&' + data : _method;
-			method = 'post';
+			if (this.options.emulation && !['get', 'post'].contains(method)){
+				var _method = '_method=' + method;
+				data = (data) ? _method + '&' + data : _method;
+				method = 'post';
+			}
 		}
 
 		if (this.options.urlEncoded && ['post', 'put'].contains(method)){
@@ -5380,6 +5395,7 @@ var Request = this.Request = new Class({
 		if (progressSupport){
 			xhr.onloadstart = this.loadstart.bind(this);
 			xhr.onprogress = this.progress.bind(this);
+			if(xhr.upload) xhr.upload.onprogress = this.uploadprogress.bind(this);
 		}
 
 		xhr.open(method.toUpperCase(), url, this.options.async, this.options.user, this.options.password);
@@ -5394,6 +5410,10 @@ var Request = this.Request = new Class({
 				this.fireEvent('exception', [key, value]);
 			}
 		}, this);
+
+		if (this.options.responseType){
+			xhr.responseType = this.options.responseType.toLowerCase();
+		}
 
 		this.fireEvent('request');
 		xhr.send(data);

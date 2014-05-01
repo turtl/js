@@ -15,21 +15,38 @@ var InvitesListController	=	Composer.Controller.extend({
 	collection: null,
 	persona: null,
 
+	edit_in_modal: false,
+
 	init: function()
 	{
-		if(!this.collection) this.collection = new Invites();
+		this.collection	=	turtl.invites;
+
 		// TODO: persona selector (when allowing multiple personas)
 		if(!this.persona) this.persona = turtl.user.get('personas').first();
 
-		if(window.port) window.port.bind('invites-populate', function(invite_data) {
-			this.collection.reset(Object.values(invite_data));
-		}.bind(this));
 		this.collection.bind(['add', 'remove', 'reset', 'change'], this.render.bind(this), 'invites:list:collection:all');
 		turtl.messages.bind(['add', 'remove', 'reset', 'change'], this.render.bind(this), 'invites:list:messages:all');
+		if(this.edit_in_modal)
+		{
+			this.render()
+			modal.open(this.el);
+			var close_fn = function() {
+				this.release({from_modal: true});
+				modal.removeEvent('close', close_fn);
+			}.bind(this);
+			modal.addEvent('close', close_fn);
+		}
+		else
+		{
+			this.render();
+		}
 	},
 
-	release: function()
+	release: function(options)
 	{
+		options || (options = {});
+
+		if(!options.from_modal && modal.is_open && this.edit_in_modal) modal.close();
 		if(window.port) window.port.unbind('invites-populate');
 		this.collection.unbind(['add', 'remove', 'reset', 'change'], 'invites:list:collection:all');
 		turtl.messages.unbind(['add', 'remove', 'reset', 'change'], 'invites:list:messages:all');
@@ -89,9 +106,17 @@ var InvitesListController	=	Composer.Controller.extend({
 			success: function() {
 				this.collection.remove(invite);
 			}.bind(this),
-			error: function(err) {
-				barfr.barf('Error accepting invite: '+ err);
-			}
+			error: function(err, xhr) {
+				if(xhr.status == 404)
+				{
+					barfr.barf('That invite wasn\'t found.');
+					this.collection.remove(invite);
+				}
+				else
+				{
+					barfr.barf('Error accepting invite: '+ err);
+				}
+			}.bind(this)
 		});
 	},
 
@@ -107,9 +132,17 @@ var InvitesListController	=	Composer.Controller.extend({
 			success: function() {
 				this.collection.remove(invite);
 			}.bind(this),
-			error: function(err) {
-				barfr.barf('Error denying invite: '+ err);
-			}
+			error: function(err, xhr) {
+				if(xhr.status == 404)
+				{
+					// invite doesn't exist. can it.
+					this.collection.remove(invite);
+				}
+				else
+				{
+					barfr.barf('Error denying invite: '+ err);
+				}
+			}.bind(this)
 		});
 	},
 
@@ -139,7 +172,7 @@ var InvitesListController	=	Composer.Controller.extend({
 		var board_key	=	invite.decrypt_key(invite.get('data').board_key, invite.get('data').key, secret);
 		if(!board_key || !this.key_valid(board_key))
 		{
-			barfr.barf('Sorry, that secret wasn\'t correct.');
+			barfr.barf('Sorry, that answer wasn\'t correct.');
 			return false;
 		}
 
@@ -147,7 +180,6 @@ var InvitesListController	=	Composer.Controller.extend({
 		invite.accept(this.persona, {
 			success: function() {
 				this.collection.remove(invite);
-				console.log('FUCK', this.collection, this.invite);
 			}.bind(this),
 			error: function(err) {
 				barfr.barf('Error accepting invite: '+ err);
@@ -236,14 +268,14 @@ var InvitesListController	=	Composer.Controller.extend({
 	open_personas: function(e)
 	{
 		if(e) e.stop();
-		if(window._in_ext && window.port)
+		if(window._in_ext && window.port && !window._in_desktop)
 		{
 			window.port.send('personas-add-open');
 		}
 		else
 		{
 			this.release();
-			new PersonasController();
+			new PersonaEditController();
 		}
 	}
 });

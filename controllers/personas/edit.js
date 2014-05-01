@@ -102,6 +102,7 @@ var PersonaEditController = Composer.Controller.extend({
 			set.privkey	=	false;
 		}
 		this.model.set(set);
+		if(is_new) this.model.generate_ecc_key();
 		turtl.loading(true);
 		this.model.save({
 			success: function() {
@@ -151,7 +152,7 @@ var PersonaEditController = Composer.Controller.extend({
 	email_msg: function(msg, success)
 	{
 		success || (success = false);
-		msg = msg.clean();
+		msg	=	msg.clean().safe();
 
 		this.email_note.className = this.email_note.className.replace(/(error|success)/g, '');
 		this.email_note.addClass(success ? 'success' : 'error');

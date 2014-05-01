@@ -58,7 +58,7 @@ var Protected = Composer.RelationalModel.extend({
 	 */
 	detect_old_format: function(data)
 	{
-		var raw	=	data.match(/:i[0-9a-f]{32}$/) ? data : convert.base64.decode(data);
+		var raw	=	data.match(/:i[0-9a-f]{32}$/) ? data : tcrypt.from_base64(data);
 		return raw;
 	},
 
@@ -79,10 +79,10 @@ var Protected = Composer.RelationalModel.extend({
 		{
 			if(e instanceof SyncError)
 			{
-				console.log('item ('+ (this.id(true) || parentobj.id) +'): ', e.message);
+				log.warn('item ('+ (this.id(true) || parentobj.id) +'): ', e.message);
 				return false;
 			}
-			console.error('Protected: deserialize error: ', e);
+			log.error('Protected: deserialize error: ', e);
 			//throw e;
 		}
 
@@ -92,9 +92,9 @@ var Protected = Composer.RelationalModel.extend({
 		}
 		catch(e)
 		{
-			console.log('err: protected: error deserializing: ', e);
-			console.log('err: this id: ', this.id());
-			//console.trace();
+			log.error('err: protected: error deserializing: ', e);
+			log.error('err: this id: ', this.id());
+			return false;
 		}
 		return obj;
 	},
@@ -113,7 +113,7 @@ var Protected = Composer.RelationalModel.extend({
 		// it's always JSON), but would give an attacker less data about the
 		// payload (it wouldn't ALWAYS start with "{")
 		var encrypted	=	tcrypt.encrypt(this.key, json);
-		encrypted		=	convert.base64.encode(encrypted);
+		encrypted		=	tcrypt.to_base64(encrypted);
 		return encrypted;
 	},
 
@@ -125,11 +125,11 @@ var Protected = Composer.RelationalModel.extend({
 		var raw			=	this.detect_old_format(encrypted_key);
 		try
 		{
-			var decrypted	=	tcrypt.decrypt(decrypting_key, raw);
+			var decrypted	=	tcrypt.decrypt(decrypting_key, raw, {raw: true});
 		}
 		catch(e)
 		{
-			console.log('item ('+ (this.id(true) || parentobj.id) +'): ', e.message);
+			log.warn('item ('+ (this.id(true) || parentobj.id) +'): ', e.message);
 			return false;
 		}
 		return decrypted;
@@ -141,7 +141,7 @@ var Protected = Composer.RelationalModel.extend({
 	encrypt_key: function(key, key_to_encrypt)
 	{
 		var encrypted	=	tcrypt.encrypt(key, key_to_encrypt);
-		encrypted		=	convert.base64.encode(encrypted);
+		encrypted		=	tcrypt.to_base64(encrypted);
 		return encrypted;
 	},
 
@@ -260,7 +260,7 @@ var Protected = Composer.RelationalModel.extend({
 		}
 
 		// serialize the body (encrypted)
-		var encbody	=	this.serialize(_body, newdata);
+		var encbody	=	this.serialize(_body, newdata, options);
 
 		newdata[this.body_key]	=	encbody;
 		return newdata;
@@ -397,9 +397,6 @@ var Protected = Composer.RelationalModel.extend({
 	 *   {u: <user id>, k: <user's key>}
 	 * ]
 	 *
-	 * Note that an entry for the current user is automatically generated unless
-	 * options.skip_user_key is specified.
-	 *
 	 * Also note that this operation *wipes out all subkeys for this object* and
 	 * replaces them. You must pass in all required data each time!
 	 * TODO: possibly remove above restriction.
@@ -425,6 +422,223 @@ var Protected = Composer.RelationalModel.extend({
 	}
 });
 
+var ProtectedThreaded = Protected.extend({
+	// when we call toJSONAsync() on a threaded model, it will save the results
+	// (serialized JSON object) into this property. this allows toJSON() to
+	// return the correct result for the serialization, where normally it would
+	// get a blank for the body because it's all async/threaded.
+	//
+	// this is very useful if you need to call save() on a ProtectedThreaded
+	// model: you just call toJSONAsync() and once it's done serializing, you
+	// call Model.save() (which in turn calls toJSON() and pulls out the cached
+	// serialized data).
+	_cached_serialization: false,
+
+	// holds all running background workers
+	workers: [],
+
+	/**
+	 * Extend Model.clear() to stop all workers
+	 */
+	clear: function()
+	{
+		// terminate all workers
+		this.workers.each(function(worker) {
+			if(worker) worker.terminate();
+		});
+		this.workers	=	[];
+
+		// call Model.clear() (or whoever is next in the call chain)
+		return this.parent.apply(this, arguments);
+	},
+
+	/**
+	 * deserialize the model in a thread (async)
+	 */
+	deserialize: function(data, parentobj, options)
+	{
+		options || (options = {});
+		if(!this.key) return false;
+
+		// generate a random seed for sjcl
+		var seed	=	new Uint32Array(32);
+		window.crypto.getRandomValues(seed);
+
+		var worker	=	new Worker(window._base_url + '/library/tcrypt.thread.js');
+		this.workers.push(worker);
+		worker.postMessage({
+			cmd: 'decrypt',
+			args: [this.key, data],
+			seed: seed
+		});
+		worker.addEventListener('message', function(e) {
+			var res		=	e.data;
+			if(res.type != 'success')
+			{
+				var dec	=	false;
+				log.error('tcrypt.thread: err: ', res, e.stack);
+			}
+			else
+			{
+				// if we only have one private field, assume that field was
+				// encrypted *without* JSON serialization (and shove it into a
+				// new object)
+				if(this.private_fields.length == 1)
+				{
+					var dec	=	{};
+					dec[this.private_fields[0]]	=	res.data;
+				}
+				else
+				{
+					var dec	=	JSON.parse(res.data);
+				}
+			}
+			this.trigger('deserialize', dec);
+			if(options.complete) options.complete(dec);
+
+			// got a response, clean up
+			worker.terminate();
+			this.workers	=	this.workers.erase(worker);
+		}.bind(this));
+	},
+
+	/**
+	 * serialize the model in a thread (async)
+	 */
+	serialize: function(data, parentobj, options)
+	{
+		options || (options = {});
+		if(!this.key) return false;
+
+		// generate a random seed for sjcl
+		var seed	=	new Uint32Array(32);
+		window.crypto.getRandomValues(seed);
+
+		var worker	=	new Worker(window._base_url + '/library/tcrypt.thread.js');
+		this.workers.push(worker);
+
+		// if we only have 1 (one) private field, forgo JSON serialization and
+		// instead just encrypt that field directly.
+		if(this.private_fields.length == 1)
+		{
+			var enc_data	=	data[this.private_fields[0]];
+		}
+		else
+		{
+			var enc_data	=	JSON.stringify(data);
+		}
+
+		worker.postMessage({
+			cmd: 'encrypt+hash',
+			args: [
+				this.key,
+				enc_data, {
+					// can't use window.crypto (for random IV), so generate IV here
+					iv: tcrypt.iv(),
+					utf8_random: tcrypt.random_number()
+				}
+				],
+				seed: seed
+		});
+		worker.addEventListener('message', function(e) {
+			var res		=	e.data;
+			if(res.type != 'success')
+			{
+				var enc	=	false;
+				log.error('tcrypt.thread: err: ', res);
+			}
+			else
+			{
+				// TODO: uint8array?
+				var enc		=	tcrypt.words_to_bin(res.data.c);
+				var hash	=	res.data.h;
+			}
+			this.trigger('serialize', enc, hash);
+			if(options.complete) options.complete(enc, hash);
+
+			// got a response, clean up
+			worker.terminate();
+			this.workers	=	this.workers.erase(worker);
+		}.bind(this));
+	},
+
+	/**
+	 * Like its sync parent, but expects deserialization to be async.
+	 */
+	process_body: function(obj, options)
+	{
+		options || (options = {});
+
+		var _body	=	obj[this.body_key];
+		if(!_body) return false;
+
+		if(!this.ensure_key_exists(obj.keys)) return false;
+
+		var finish_fn	=	function(_body)
+		{
+			if(typeOf(_body) == 'object')
+			{
+				this.set(_body, Object.merge({ignore_body: true}, options));
+				Object.each(_body, function(v, k) {
+					var _body	=	this.get('_body');
+					var set		=	{};
+					set[k]		=	v;
+					_body.set(set);
+				}.bind(this));
+				if(options.async_success) options.async_success(this);
+			}
+		}.bind(this);
+
+		if(typeOf(_body) == 'string')
+		{
+			// decrypt/deserialize the body
+			this.deserialize(_body, obj, {
+				complete: function(body) {
+					finish_fn(body);
+				}
+			});
+		}
+		else
+		{
+			finish_fn(_body);
+		}
+	},
+
+	toJSON: function(options)
+	{
+		options || (options = {});
+
+		// allows us to call toJSONAsync() to generate a result, then pull it
+		// out via toJSON(). makes calling save() on models a lot less messy
+		if(this._cached_serialization && !options.skip_cache)
+		{
+			return this._cached_serialization;
+		}
+
+		// nvm, carry on
+		return this.parent.apply(this, arguments);
+	},
+	
+	/**
+	 * Wraps Protected.toJSON(), serializing the model async (in a thread) and
+	 * then running the finish_cb once complete.
+	 */
+	toJSONAsync: function(finish_cb, options)
+	{
+		options || (options = {});
+		var data		=	{};
+
+		var do_finish	=	function(encrypted, hash)
+		{
+			data[this.body_key]	=	encrypted;
+			// cache (before we call the finish cb)
+			this._cached_serialization	=	data;
+			finish_cb(data, hash);
+		}.bind(this);
+		data	=	this.toJSON(Object.merge({}, options, {skip_cache: true, complete: do_finish}));
+	}
+});
+
 /**
  * Provides what the Protected model does (a way to have public/private auto-
  * encrypted fields in a model) but with shared-key encryption instead of
@@ -441,6 +655,8 @@ var Protected = Composer.RelationalModel.extend({
  */
 var ProtectedShared = Protected.extend({
 	recipients: [],
+	public_key: null,
+	private_key: null,
 
 	initialize: function()
 	{
@@ -450,36 +666,39 @@ var ProtectedShared = Protected.extend({
 
 	deserialize: function(data, parentobj)
 	{
-		// grab our private keys from our personas and use them to decrypt the
-		// object's AES key
-		var search	=	{
-			p: turtl.user.get('personas').map(function(p) {
-				return {id: p.id(), k: p.get('privkey')};
-			})
-		};
-		if(!this.key) return false;
-		return this.parent.apply(this, arguments);
+		if(!this.private_key) return false;
+		var obj	=	false;
+		try
+		{
+			var binary		=	tcrypt.from_base64(data);
+			var decrypted	=	tcrypt.asym.decrypt(this.private_key, binary);
+			obj				=	JSON.decode(decrypted);
+		}
+		catch(e)
+		{
+			console.error('ProtectedShared: problem decrypting message: ', e);
+			return false;
+		}
+		return obj;
 	},
 
 	serialize: function(data, parentobj)
 	{
-		return this.parent.apply(this, arguments);
-	},
+		if(!this.public_key) return false;
 
-	decrypt_key: function(decrypting_key, encrypted_key)
-	{
-		encrypted_key	=	convert.base64.decode(encrypted_key);
-		tcrypt.decrypt_rsa(decrypting_key, encrypted_key, {async: function(key) {
-			this.trigger('rsa-decrypt', key);
-		}.bind(this)});
-		return false;
-	},
-
-	encrypt_key: function(key, key_to_encrypt)
-	{
-		var encrypted_key	=	tcrypt.encrypt_rsa(key, key_to_encrypt);
-		encrypted_key		=	convert.base64.encode(encrypted_key);
-		return encrypted_key;
+		var encrypted	=	false;
+		try
+		{
+			var json	=	JSON.encode(data);
+			encrypted	=	tcrypt.asym.encrypt(this.public_key, json);
+			encrypted	=	tcrypt.to_base64(encrypted);
+		}
+		catch(e)
+		{
+			console.error('ProtectedShared: problem encrypting message: ', e);
+			return false;
+		}
+		return encrypted;
 	},
 
 	add_recipient: function(persona)
@@ -488,37 +707,7 @@ var ProtectedShared = Protected.extend({
 			p: persona.id(),
 			k: persona.get('pubkey')
 		});
-		this.generate_subkeys(this.recipients, {skip_user_key: true});
-	},
-
-	ensure_key_exists: function()
-	{
-		if(!this.key) return false;
-		return this.key;
-	},
-
-	setup_keys: function(keydata)
-	{
-		// we're looking for a key, and the one we have is probably the auto-
-		// generated one from initialize
-		this.key	=	false;
-
-		// we don't have a key! decrypt it from our keys data and run our
-		// deserialize/set when done
-		this.bind('rsa-decrypt', function(key) {
-			this.unbind('rsa-decrypt');
-			this.key	=	key;
-			this.trigger('have-key');
-		}.bind(this));
-
-		// this will find/decrypt our key, but async (and triggers rsa-decrypt
-		// when it's done, which is bound above)
-		var search	=	{
-			p: turtl.user.get('personas').map(function(p) {
-				return {id: p.id(), k: p.get('privkey')};
-			})
-		};
-		this.find_key(keydata, search);
+		this.generate_subkeys(this.recipients);
 	}
 });
 

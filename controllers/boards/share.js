@@ -1,7 +1,8 @@
 var BoardShareController = Composer.Controller.extend({
 	elements: {
 		'div.share-to': 'share_container',
-		'div.share-to .select': 'selector'
+		'div.share-to .select': 'selector',
+		'div.personas-list': 'personas_list'
 	},
 
 	events: {
@@ -19,8 +20,8 @@ var BoardShareController = Composer.Controller.extend({
 	init: function()
 	{
 		if(!this.board) return false;
-		this.board.bind_relational('personas', ['add', 'remove', 'reset', 'change'], this.render.bind(this), 'board:share:monitor_personas');
-		this.board.bind('change:privs', this.render.bind(this), 'board:share:monitor_privs');
+		this.board.bind_relational('personas', ['add', 'remove', 'reset', 'change'], this.render_personas.bind(this), 'board:share:monitor_personas');
+		this.board.bind('change:privs', this.render_personas.bind(this), 'board:share:monitor_privs');
 		this.render();
 
 		this.from_persona = turtl.user.get('personas').first();
@@ -53,6 +54,17 @@ var BoardShareController = Composer.Controller.extend({
 
 	render: function()
 	{
+		var content	=	Template.render('boards/share', {
+			title: this.board.get('title')
+		});
+		this.html(content);
+
+		this.render_personas();
+		this.render_share();
+	},
+
+	render_personas: function()
+	{
 		// grab board data without serializing notes
 		var _notes	=	this.board.get('notes');
 		this.board.unset('notes', {silent: true});
@@ -77,13 +89,17 @@ var BoardShareController = Composer.Controller.extend({
 			invites.push(invite);
 		});
 
-		var content	=	Template.render('boards/share', {
+		var content	=	Template.render('boards/share_personas', {
 			board: board,
 			personas: personas,
 			invites: invites
 		});
-		this.html(content);
+		this.personas_list.set('html', content);
+		this.refresh_elements();
+	},
 
+	render_share: function()
+	{
 		if(this.sharer) this.sharer.release();
 		this.sharer = new ShareController({
 			inject: this.selector,
@@ -91,6 +107,9 @@ var BoardShareController = Composer.Controller.extend({
 			model: this.board,
 			tabindex: 1
 		});
+		this.sharer.bind('sent', function() {
+			this.render_share();
+		}.bind(this), 'board:share:sub:sent');
 	},
 
 	open_share: function(e)

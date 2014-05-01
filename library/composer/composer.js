@@ -523,6 +523,7 @@
 					this._changed	=	false;
 				}
 			}
+			return this;
 		},
 
 		/**
@@ -569,17 +570,16 @@
 		{
 			options || (options = {});
 
-			if(this.is_new())
-			{
-				return this.fire_event('destroy', options, this, this.collections, options);
-			}
-
 			var success	=	options.success;
 			options.success	=	function(res)
 			{
 				this.fire_event('destroy', options, this, this.collections, options);
 				if(success) success(this, res);
 			}.bind(this);
+
+			// if the model isn't saved yet, just mark it a success
+			if(this.is_new() && !options.force) return options.success();
+
 			options.error	=	wrap_error(options.error ? options.error.bind(this) : null, this, options).bind(this);
 			return (this.sync || Composer.sync).call(this, 'delete', this, options);
 		},
@@ -926,7 +926,7 @@
 		{
 			options || (options = {});
 
-			var existing	=	this.find_by_id(model.id());
+			var existing	=	this.find_by_id(model.id(), options);
 			if(existing)
 			{
 				// reposition the model if necessary
@@ -1674,7 +1674,8 @@
 			else if(this.options.hash_fallback)
 			{
 				// load the initial hash value
-				var hash	=	this.cur_path();
+				var path	=	window.location.pathname;
+				var hash	=	path == '' || path == '/' ? this.cur_path() : path;
 
 				// if redirect_initial is true, then whatever page a user lands on, redirect
 				// them to the hash version, ie

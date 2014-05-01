@@ -9,7 +9,7 @@ var PersonasController = Composer.Controller.extend({
 		'click a[href=#edit]': 'edit_persona',
 		'click a[href=#delete]': 'delete_persona',
 		'click a[href=#email]': 'toggle_email_settings',
-		'click a[href=#generate]': 'make_rsa_key',
+		'click a[href=#generate]': 'make_keypair',
 		'change .email-settings input[type=checkbox]': 'update_email_setting'
 	},
 
@@ -49,7 +49,7 @@ var PersonasController = Composer.Controller.extend({
 	{
 		var personas = this.collection.map(function(persona) {
 			var data		=	toJSON(persona);
-			data.has_key	=	persona.has_rsa();
+			data.has_key	=	persona.has_keypair();
 			return data;
 		});
 		var content = Template.render('personas/index', {
@@ -143,11 +143,9 @@ var PersonasController = Composer.Controller.extend({
 		// update the settings silently (otherwise dropdown will disappear)
 		persona.set({settings: settings}, {silent: true});
 		persona.save({silent: true});
-		// make sure the next sync ignores this persona
-		turtl.profile.track_sync_changes(persona.id());
 	},
 
-	make_rsa_key: function(e)
+	make_keypair: function(e)
 	{
 		if(e) e.stop();
 
@@ -155,10 +153,7 @@ var PersonasController = Composer.Controller.extend({
 		var persona	=	this.collection.find_by_id(pid);
 		if(!persona) return false;
 
-		persona.generate_rsa_key({
-			error: function(err) {
-				barfr.barf('Problem generating key for persona: '+ err);
-			}
-		});
+		persona.generate_ecc_key();
+		persona.save();
 	}
 });

@@ -1,13 +1,16 @@
 var NoteEditController = Composer.Controller.extend({
 	elements: {
+		'.note-edit .boards': 'board_container',
 		'.note-edit form div.tags': 'tags',
+		'.type.upload': 'uploader',
 		'textarea[name=quick]': 'inp_quick',
 		'input[name=title]': 'inp_title',
 		'input[name=url]': 'inp_url',
 		'textarea[name=text]': 'inp_text',
 		'.do-edit': 'editor',
 		'.preview': 'preview',
-		'div.markdown-tutorial': 'markdown_tutorial'
+		'div.markdown-tutorial': 'markdown_tutorial',
+		'input[type=submit]': 'inp_submit'
 	},
 
 	events: {
@@ -24,31 +27,58 @@ var NoteEditController = Composer.Controller.extend({
 	},
 
 	type_fields: {
-		'quick':   ['quick'],
-		'link':  ['url', 'title', 'text'],
-		'text':  ['text'],
-		'image': ['url', 'title', 'text']
+		'quick':   ['quick', 'upload'],
+		'link':  ['url', 'title', 'text', 'upload'],
+		'text':  ['text', 'upload'],
+		'image': ['url', 'title', 'text', 'upload']
 	},
 
 	edit_in_modal: true,
 	show_tabs: true,
+	show_boards: false,
+	track_last_board: false,
 
 	board: null,
 	note: null,
 	note_copy: null,
 	tag_controller: null,
+	board_controller: null,
 	tips: null,
+
+	title: null,
 
 	init: function()
 	{
-		if(!this.board) return false;
+		if(this.board == 'last')
+		{
+			var board_id	=	turtl.user.get('settings').get_by_key('last_board').value() || false;
+			var board		=	turtl.profile.get('boards').find_by_id(board_id);
+			if(board) this.board = board;
+			else this.board = turtl.profile.get_current_board();
+			if(!this.board && turtl.profile.get('boards').models().length > 0)
+			{
+				this.board	=	turtl.profile.get('boards').first();
+			}
+		}
+
+		if(!this.board)
+		{
+			return this.release();
+		}
+
 		if(!this.note) this.note = new Note({type: 'quick'});
 		// clone the note so any changes to it pre-save don't show up in the listings.
-		this.note_copy = this.note.clone();
+		this.note_copy		=	new Note(toJSON(this.note));
+		this.note_copy.key	=	this.note.key;
+		this.note_copy.get('file').key	=	this.note.key;
+		this.note_copy.get('file').set({blob_url: null});
+		this.note_copy.disable_file_monitoring	=	true;
+
 		this.render();
 		if(this.edit_in_modal)
 		{
 			modal.open(this.el);
+			modal.objects.container.removeClass('bare');
 			var close_fn = function() {
 				this.release();
 				modal.removeEvent('close', close_fn);
@@ -56,6 +86,20 @@ var NoteEditController = Composer.Controller.extend({
 			modal.addEvent('close', close_fn);
 		}
 		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
+
+		// listen to board-change events
+		if(this.board_controller)
+		{
+			this.board_controller.bind('change-board', function(board) {
+				this.board	=	board;
+				if(!this.board)
+				{
+					this.release();
+					return;
+				}
+				this.render_tags();
+			}.bind(this), 'notes:edit:change-board');
+		}
 	},
 
 	release: function()
@@ -68,6 +112,8 @@ var NoteEditController = Composer.Controller.extend({
 			this.note_copy	=	null;
 		}
 		if(this.tag_controller) this.tag_controller.release();
+		if(this.board_controller) this.board_controller.release();
+		if(this.upload_controller) this.upload_controller.release();
 		turtl.keyboard.attach(); // re-enable shortcuts
 		if(this.tips) this.tips.detach();
 		this.parent.apply(this, arguments);
@@ -76,21 +122,55 @@ var NoteEditController = Composer.Controller.extend({
 	render: function()
 	{
 		var content = Template.render('notes/edit', {
+			title: this.title,
 			note: toJSON(this.note_copy),
 			board: toJSON(this.board),
 			show_tabs: this.show_tabs
 		});
 		this.html(content);
+		this.el.removeClass('no-modal');
+		if(!this.edit_in_modal)
+		{
+			this.el.addClass('no-modal');
+		}
+
+		if(this.upload_controller) this.upload_controller.release();
+		this.upload_controller	=	new NoteEditFileController({
+			inject: this.uploader,
+			model: this.note_copy
+		});
+
 		if(this.tips) this.tips.detach();
 		this.tips = new TurtlTips(this.el.getElements('.tooltip'), {
 			className: 'tip-container'
 		});
-		this.tag_controller = new NoteEditTagController({
+		this.render_tags();
+		if(this.show_boards)
+		{
+			var board	=	null;
+			if(this.track_last_board) board = this.board;
+			this.board_controller	=	new BoardsController({
+				inject: this.board_container,
+				profile: turtl.profile,
+				add_bare: true,
+				show_actions: false,
+				change_on_add: true,
+				track_last_board: this.track_last_board,
+				board: board
+			});
+		}
+		this.select_tab(this.note_copy.get('type'));
+		if(window.port) window.port.send('resize');
+	},
+
+	render_tags: function()
+	{
+		if(this.tag_controller) this.tag_controller.release();
+		this.tag_controller	=	new NoteEditTagController({
 			inject: this.tags,
 			note: this.note_copy,
 			board: this.board
 		});
-		this.select_tab(this.note_copy.get('type'));
 	},
 
 	save_form_to_copy: function(e, options)
@@ -181,33 +261,179 @@ var NoteEditController = Composer.Controller.extend({
 
 		if(isnew)
 		{
-			this.note_copy.generate_key()
+			if(!this.note_copy.key) this.note_copy.generate_key()
 			this.note_copy.generate_subkeys([
 				{b: this.board.id(), k: this.board.key}
 			]);
 		}
 
-		// save the note copy, and on success, set the resulting data back into
-		// the original note (not the copy)
 		turtl.loading(true);
-		this.note_copy.save({
-			success: function() {
-				turtl.loading(false);
-				this.note.key = this.note_copy.key;
-				var copy_json	=	this.note_copy.toJSON();
-				copy_json.mod	=	Math.round(new Date().getTime() / 1000);
-				this.note.set(copy_json);
-				if(isnew) this.board.get('notes').add(this.note);
-				// make sure the current filter applies to the edited note
-				this.board.get('tags').trigger('change:selected');
-				if(this.edit_in_modal) modal.close();
-				else this.trigger('saved');
-			}.bind(this),
-			error: function(e) {
-				barfr.barf('There was a problem saving your note: '+ e);
-				turtl.loading(false);
+		this.inp_submit.disabled	=	true;
+
+		var do_close	=	function()
+		{
+			turtl.loading(false);
+			if(this.edit_in_modal) modal.close();
+			else this.trigger('saved');
+			if(window.port)
+			{
+				window.port.send('close');
+				window.port.send('addon-controller-release');
 			}
-		});
+		}.bind(this);
+
+		// grab the binary file data (and clear out the ref in the NoteFile)
+		var file_bin	=	this.note_copy.get('file').get('data');
+		this.note_copy.get('file').unset('data');
+
+		var note_copy				=	new Note();
+		note_copy.key				=	this.note_copy.key;
+		// bit of a hack to copy the data over
+		note_copy.data				=	this.note_copy.data;
+		note_copy.relation_data		=	this.note_copy.relation_data;
+		note_copy.get('file').key	=	this.note_copy.key;
+
+		var file		=	note_copy.get('file');
+
+		// get rid of the temporary blob URL
+		URL.revokeObjectURL(file.get('blob_url'));
+		file.unset('blob_url');
+
+		if(!isnew && this.note_copy.get('file').get('cleared'))
+		{
+			note_copy.clear_files();
+			note_copy.set({has_file: 0});
+			file.clear()
+			this.note_copy.get('file').clear()
+			this.note.get('file').clear();
+		}
+
+		var file_set	=	file.get('set');
+		if(isnew && file_set)
+		{
+			// let the view know we're encrypting, and remove the blob_url so it
+			// doesn't try to display an image
+			var setnote				=	this.note_copy.toJSON();
+			delete setnote.file;
+			this.note.set(setnote);
+			this.note.set({file: toJSON(file)});
+			this.note.get('file').set({encrypting: true}, {silent: true});
+
+			// display a note stub to let the user know we're encrypting the
+			// file
+			this.board.get('notes').upsert(this.note, {allow_cid: true});
+		}
+		else if(file_set)
+		{
+			var filedata		=	toJSON(file);
+			filedata.encrypting	=	true;
+			this.note.get('file').set(filedata);
+		}
+
+		var do_note_save	=	function(options)
+		{
+			options || (options = {});
+
+			// save the note copy, and on success, set the resulting data back into
+			// the original note
+			note_copy.save({
+				// make sure we pass if we have a file or not
+				success: function() {
+					this.note.key	=	note_copy.key;
+					var copy_json	=	note_copy.toJSON();
+					copy_json.mod	=	Math.round(new Date().getTime() / 1000);
+					if(file_set)
+					{
+						// manually set the file data and trigger a hash change
+						// async, which forces the note to refresh its file
+						// contents
+						var copy_file	=	copy_json.file;
+						delete copy_json.file;
+						this.note.get('file').set(copy_file, {silent: true});
+						(function() { this.note.get('file').trigger('change:hash'); }).delay(1, this);
+					}
+					this.note.set(copy_json);
+					if(isnew && !file_set)
+					{
+						this.board.get('notes').upsert(this.note, {allow_cid: true});
+					}
+					// make sure the current filter applies to the edited note
+					this.board.get('tags').trigger('change:selected');
+					if(!options.no_close)
+					{
+						do_close();
+					}
+				}.bind(this),
+				error: function(e) {
+					this.inp_submit.disabled	=	false;
+					barfr.barf('There was a problem saving your note: '+ e);
+					turtl.loading(false);
+				}
+			});
+		}.bind(this);
+
+		if(file_set)
+		{
+			// we are uploading a new file! JOY!
+			// we're going to actually serialize the file (encrypt it, dumbell)
+			// BEFORE saving the note so we'll have the full file contents,
+			// ready to post when we save the note. this saves us a lot of
+			// heartache when actually running our syncing.
+			file.unset('set');
+			note_copy.clear_files({skip_remote_sync: true});
+			var filedata	=	new FileData({data: file_bin});
+			filedata.key	=	note_copy.key;
+			filedata.toJSONAsync(function(res, hash) {
+				// we now have the encrypted data + hash, set the hash as the
+				// ID. note we're not setting it directly into filedata here,
+				// instead we're setting it into the res object. this res object
+				// is actually cached internally so that when filedata.toJSON()
+				// is called, it will pull out this object instead of running
+				// the serialization. this is so filedata.save() doesn't come up
+				// empty when it calls toJSON().
+				//
+				// setting id here is a roundabout way of modifying the cache,
+				// but it works great.
+				res.id			=	hash;
+				// we don't want to upload the file until the note we're
+				// attaching to has a real ID
+				res.synced		=	0;
+				res.has_data	=	1;
+				if(!note_copy.is_new())
+				{
+					res.note_id	=	note_copy.id();
+					filedata.set({note_id: res.note_id});
+				}
+				filedata.set({id: hash});		// set the id for good measure
+
+				// we're no longer encrypting
+				file.unset('encrypting');
+				this.note.get('file').unset('encrypting');
+
+				// save the file contents into local db then save the note
+				filedata.save({
+					skip_remote_sync: note_copy.is_new(),
+					success: function() {
+						// give the note's file object a ref to the file's id
+						var has_data	=	this.note.get('file').get('has_data', 0);
+						file.set({hash: hash, has_data: has_data + 1});
+						do_note_save({no_close: true});
+					}.bind(this),
+					error: function(e) {
+						this.inp_submit.disabled	=	false;
+						barfr.barf('There was a problem saving the attached file: '+ e);
+						log.error('note: edit: file save: ', e);
+						turtl.loading(false);
+					}
+				});
+			}.bind(this));
+			do_close();
+		}
+		else
+		{
+			// no file upload, I WANT THIS BY THE BOOK.
+			do_note_save();
+		}
 	},
 
 	select_tab: function(typename)
@@ -273,11 +499,15 @@ var NoteEditController = Composer.Controller.extend({
 			set_type: true
 		});
 		var html	=	Template.render('notes/view/index', {
-			note: toJSON(preview_note)
+			note: toJSON(preview_note),
+			has_file: false,
+			file_type: false
 		});
 		html_el.set('html', html);
 		html_el.getElement('.actions').dispose();
-		if(window.port) window.port.send('resize');
+		(function() {
+			if(window.port) window.port.send('resize');
+		}).delay(10, this);
 	},
 
 	open_edit: function(e)

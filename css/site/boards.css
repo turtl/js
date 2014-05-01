@@ -44,6 +44,7 @@
 .board-manage > ul > li > ul.actions {float: right; list-style: none;}
 .board-manage > ul > li > ul.actions li a {opacity: .3;}
 .board-manage > ul > li > ul.actions li.highlight {opacity: .6;}
+.board-manage > ul > li > ul.actions li.highlight a {opacity: .8;}
 .board-manage > ul > li > ul.actions li a:hover {opacity: 1;}
 .board-manage > ul > li > ul.actions li {display: inline-block; margin: 0 0 0 0;}
 */

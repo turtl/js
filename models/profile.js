@@ -4,10 +4,13 @@ var Profile = Composer.RelationalModel.extend({
 			type: Composer.HasMany,
 			collection: 'Keychain'
 		},
+		personas: {
+			type: Composer.HasMany,
+			collection: 'Personas'
+		},
 		boards: {
 			type: Composer.HasMany,
-			collection: 'Boards',
-			//forward_events: true
+			collection: 'Boards'
 		},
 		notes: {
 			type: Composer.HasMany,
@@ -16,10 +19,6 @@ var Profile = Composer.RelationalModel.extend({
 				forward_all_events: true,
 				refresh_on_change: false
 			}
-		},
-		personas: {
-			type: Composer.HasMany,
-			collection: 'Personas'
 		}
 	},
 
@@ -84,15 +83,6 @@ var Profile = Composer.RelationalModel.extend({
 				// only continue when all local DB grabs are done
 				if(num_synced < num_items) return false;
 
-				// this prevents the profile from double-loading once the local
-				// sync starts (if the profile loads from API and populates
-				// itself into the local DB, it sets last_mod on all added data.
-				// then when the local sync process starts, it will load all
-				// that data again, even though it's about to all be loaded here
-				// by the profile. this tricks the local sync into not double
-				// loading).
-				turtl.sync.time_track.local	=	new Date().getTime();
-
 				// once we have all our data, populate the profile with it
 				this.load_from_data(profile_data, options);
 			}.bind(this);
@@ -108,10 +98,6 @@ var Profile = Composer.RelationalModel.extend({
 			['keychain', 'personas', 'boards', 'notes'].each(function(itemname) {
 				num_items++;
 				turtl.db[itemname].query().filter().execute().done(function(res) {
-					// filter out deleted entries
-					res	=	res.filter(function(item) {
-						return item.deleted !== 1;
-					});
 					profile_data[itemname]	=	res;
 					finished();
 				});
@@ -128,6 +114,24 @@ var Profile = Composer.RelationalModel.extend({
 				{
 					turtl.api.get('/profiles/users/'+turtl.user.id(), {}, {
 						success: function(profile) {
+							// process the data through the sync system
+							profile	=	turtl.sync.process_data(profile);
+
+							// create file records from note records
+							// TODO: determine if this is necessary. from my
+							// understanding, all one has to do is set note.has_file
+							// = 1 for a file record to be created for that note.
+							// was this done for performance reasons?
+							profile.files	=	(profile.notes || [])
+								.filter(function(note) { return note.file && note.file.hash; })
+								.map(function(note) {
+									return {
+										id: note.file.hash,
+										note_id: note.id,
+										has_data: 0
+									};
+								});
+
 							// send all profile data to the local db
 							this.persist_profile_to_db(profile, {
 								complete: function() {
@@ -146,6 +150,15 @@ var Profile = Composer.RelationalModel.extend({
 
 				if(res)
 				{
+					return finished();
+					/**
+					 * NOTE: this is ALL WRONG. we can't use a sync id from the DB
+					 * as the last sync id, we need to use a locally stored value.
+					 * also, wiping the profile after a month of not syncing is
+					 * the Wrong Thing (tm). we need a popup that tells the user
+					 * they are out of sync and give them an option to export
+					 * their data before syncing
+					 *
 					var sync_id		=	res.value;
 					var timestamp	=	parseInt(sync_id.substr(0, 8), 16);
 					var month		=	(new Date().getTime() / 1000) - 2592000;
@@ -160,6 +173,7 @@ var Profile = Composer.RelationalModel.extend({
 
 						return;
 					}
+					*/
 				}
 				make_the_call();
 			}.bind(this),
@@ -201,12 +215,6 @@ var Profile = Composer.RelationalModel.extend({
 				if(options.complete) options.complete([]);
 				return;
 			}
-
-			// update our mod time
-			collection	=	collection.map(function(item) {
-				item.last_mod	=	new Date().getTime();
-				return item;
-			});
 
 			var errors	=	[];
 			turtl.db[table].update.apply(turtl.db[table], collection).then(
@@ -256,6 +264,7 @@ var Profile = Composer.RelationalModel.extend({
 		populate('personas', profile.personas, {complete: complete_fn('personas')});
 		populate('boards', profile.boards, {complete: complete_fn('boards')});
 		populate('notes', profile.notes, {complete: complete_fn('notes')});
+		populate('files', profile.files, {complete: complete_fn('files')});
 	},
 
 	/**
@@ -302,12 +311,12 @@ var Profile = Composer.RelationalModel.extend({
 		keychain.reset_async(data.keychain, {
 			complete: function() {
 				// reset the boards next
-				boards.reset_async(data.boards, {
+				personas.reset_async(data.personas, {
 					complete: function() {
-						// save some performance here by not tracking tags while updating
-						boards.each(function(b) { b.track_tags(false); });
-						personas.reset_async(data.personas, {
+						boards.reset_async(data.boards, {
 							complete: function() {
+								// save some performance here by not tracking tags while updating
+								boards.each(function(b) { b.track_tags(false); });
 								notes.reset_async(data.notes, {
 									complete: function() {
 										done();
@@ -332,280 +341,6 @@ var Profile = Composer.RelationalModel.extend({
 	{
 		options || (options = {});
 		return this.set({current_board: obj}, options);
-	},
-
-	/**
-	 * Keeps track of items to IGNORE when a sync happens
-	 */
-	track_sync_changes: function(id)
-	{
-		this.sync_ignore.push(id);
-	},
-
-	// TODO: rename me to toJSONAsync, remove localStorage junk
-	persist: function(options)
-	{
-		options || (options = {});
-
-		var do_persist	=	function(options)
-		{
-			options || (options = {});
-			var user		=	turtl.user.toJSON();
-			user.personas	=	turtl.user.get('personas').toJSON();
-			var store		=	{
-				user: user,
-				boards: []
-			};
-
-			var finish_persist	=	function()
-			{
-				var tsnow	=	Math.floor(new Date().getTime()/1000);
-				store.time	=	this.get('sync_time', tsnow);
-				if(window.port) window.port.send('profile-save', store);
-
-				if(options.complete) options.complete(store);
-
-				if(!turtl.mirror) return false;
-
-				localStorage['profile:user:'+turtl.user.id()]	=	JSON.encode(store);
-				localStorage['scheme_version']					=	config.mirror_scheme_version;
-			}.bind(this);
-
-			var boards			=	turtl.profile.get('boards');	// clone
-			var num_boards		=	boards.models().length;
-			var num_finished	=	0;
-
-			// check for empty profile =]
-			if(num_boards == 0) finish_persist();
-
-			turtl.profile.get('boards').each(function(board) {
-				board.get('notes').toJSONAsync(function(notes) {
-					var boardobj	=	board.toJSON();
-					boardobj.notes	=	notes;
-					store.boards.push(boardobj);
-					num_finished++;
-					if(num_finished >= num_boards)
-					{
-						finish_persist();
-					}
-				}.bind(this));
-			}.bind(this));
-		}.bind(this);
-
-		if(options.now)
-		{
-			do_persist(options);
-		}
-		else
-		{
-			this.persist_timer.end	=	function() { do_persist(options); };
-			this.persist_timer.start();
-		}
 	}
-
-	// -------------------------------------------------------------------------
-	// old sync code. (keep around until we're sure the local DB stuff works)
-	// -------------------------------------------------------------------------
-	/*
-	sync: function(options)
-	{
-		options || (options = {});
-		if(!turtl.sync || !turtl.user.logged_in) return false;
-
-		var sync_time = this.get('sync_time', 9999999);
-		turtl.api.post('/sync', {time: sync_time}, {
-			success: function(sync) {
-				this.set({sync_time: sync.time});
-				this.process_sync(sync, options);
-			}.bind(this),
-			error: function(e, xhr) {
-				if(xhr.status == 0)
-				{
-					barfr.barf(
-						'Error connecting with server. Your changes may not be saved.<br><br><a href="#" onclick="window.location.reload()">Try reloading</a>.'
-					);
-				}
-				else
-				{
-					barfr.barf('Error syncing user profile with server: '+ e);
-				}
-				if(options.error) options.error(e);
-			}.bind(this)
-		});
-
-		turtl.messages.sync();
-	},
-	*/
-
-	/**
-	 * Process data gotten from a server sync. It can be changed user data, new
-	 * boards, deleted notes, etc. This is basically the function that applies
-	 * the diffs that come from `POST /sync`
-	 *
-	 * Note that the changes here happen synchronously. If they are ever changed
-	 * to be async (which is entirely possible, and very likely) then the state
-	 * var in_sync must be set to trigger at the very and of all the updates.
-	 * Otherwise, it could case endless sync loops (or at least double-syncs).
-	 *
-	 * TODO: if sync data is ever applied async (most probably to the notes)
-	 * then be sure to update in_sync accordingly
-	 */
-	/*
-	process_sync: function(sync, options)
-	{
-		options || (options = {});
-
-		// starting a sync
-		this.trigger('sync-pre');
-
-		// send synced data to addon
-		if(window.port && window._in_background && turtl.sync && sync)
-		{
-			window.port.send('profile-sync', sync);
-		}
-
-		// disable sync tracking to prevent endless sync loops
-		this.in_sync	=	true;
-
-		if(	(sync.personas && sync.personas.length > 0) ||
-			(sync.boards && sync.boards.length > 0) ||
-			(sync.notes && sync.notes.length > 0) )
-		{
-			//console.log('sync: ', sync, this.sync_ignore);
-		}
-
-		// if we're syncing user data, update it
-		if(sync.user)
-		{
-			turtl.user.set(sync.user);
-		}
-
-		if(sync.personas) sync.personas.each(function(persona_data) {
-			// don't sync ignored items
-			if(this.sync_ignore.contains(persona_data.id))
-			{
-				this.sync_ignore.erase(persona_data.id);
-				return false;
-			}
-
-			var persona	=	turtl.user.get('personas').find_by_id(persona_data.id);
-			if(persona_data.deleted)
-			{
-				if(persona) persona.destroy_persona({skip_sync: true});
-			}
-			else if(persona)
-			{
-				persona.set(persona_data);
-			}
-			else
-			{
-				turtl.user.get('personas').upsert(new Persona(persona_data));
-			}
-		}.bind(this));
-
-		if(sync.boards) sync.boards.each(function(board_data) {
-			// don't sync ignored items
-			if(this.sync_ignore.contains(board_data.id))
-			{
-				this.sync_ignore.erase(board_data.id);
-				return false;
-			}
-
-			var board	=	turtl.profile.get('boards').find_by_id(board_data.id);
-			if(board_data.deleted)
-			{
-				if(board) board.destroy({skip_sync: true});
-			}
-			else if(board)
-			{
-				if(board_data.user_id && board_data.user_id != turtl.user.id())
-				{
-					board_data.shared	=	true;
-				}
-				board.set(board_data);
-			}
-			else
-			{
-				// make sure this isn't a rogue/shared board sync. sometimes a
-				// shared board will sync AFTER it's deleted, bringing us here.
-				// luckily, we can detect it via board.shared == true, and
-				// board.privs.does_not_contain(any_of_my_personas).
-				if(board_data.shared)
-				{
-					var persona_ids		=	turtl.user.get('personas').map(function(p) { return p.id(); });
-					var has_my_persona	=	false;
-					Object.keys(board_data.privs).each(function(pid) {
-						if(persona_ids.contains(pid)) has_my_persona = true;
-					});
-
-					// board is shared, and I'm not on the guest list. not sure
-					// why I got an invite telling me to join a board I'm not
-					// actually invited to, but let's save ourselves the heart-
-					// break and skip out on this one
-					if(!has_my_persona) return false;
-				}
-				turtl.profile.get('boards').upsert(new Board(board_data));
-			}
-		}.bind(this));
-
-		if(sync.notes) sync.notes.each(function(note_data) {
-			// don't sync ignored items
-			if(this.sync_ignore.contains(note_data.id))
-			{
-				this.sync_ignore.erase(note_data.id);
-				return false;
-			}
-
-			// check if the note is already in an existing board. if
-			// so, save both the original board (and existing note)
-			// for later
-			var oldboard = false;
-			var note = false;
-			this.get('boards').each(function(p) {
-				if(note) return;
-				note = p.get('notes').find_by_id(note_data.id)
-				if(note) oldboard = p;
-			});
-
-			// get the note's current board
-			var newboard	=	this.get('boards').find_by_id(note_data.board_id);
-
-			// note was deleted, remove it
-			if(note && note_data.deleted)
-			{
-				oldboard.get('notes').remove(note);
-				note.destroy({skip_sync: true});
-				note.unbind();
-			}
-			// this is an existing note. update it, and be mindful of the
-			// possibility of it moving boards
-			else if(note && oldboard)
-			{
-				note.set(note_data);
-				if(newboard && oldboard.id() != newboard.id())
-				{
-					// note switched board IDs. move it.
-					oldboard.get('notes').remove(note);
-					newboard.get('notes').add(note);
-				}
-			}
-			// note isn't existing and isn't being deleted. add it!
-			else if(!note_data.deleted && newboard)
-			{
-				newboard.get('notes').add(note_data);
-			}
-		}.bind(this));
-
-		// enable sync tracking again. if the above was processed async, then
-		// this needs to be at the end of the async processing.
-		this.in_sync	=	false;
-
-		// reset ignore list
-		this.sync_ignore	=	[];
-
-		// let the world know syncing is done
-		this.trigger('sync-post');
-	},
-	*/
 });
 

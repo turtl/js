@@ -149,9 +149,6 @@ var Api	=	new Class({
 		data || (data = {});
 		params || (params = {});
 
-		var cb_success	=	typeof(params['success']) == 'undefined' ? function() {} : params['success'];
-		var cb_fail		=	typeof(params['error']) == 'undefined' ? function() {} : params['error'];
-
 		// should we auth to the server? we don't want to unless we have to
 		var send_auth	=	this.test_auth_needed(method, resource);
 
@@ -170,28 +167,72 @@ var Api	=	new Class({
 			url: url,
 			method: (method.toLowerCase() == 'get' ? 'GET' : 'POST'),
 			emulation: false,
-			headers: {},
+			headers: params.headers || {},
 			data: data,
+			responseType: params.responseType,
 			onSuccess: function(res)
 			{
-				var data	=	JSON.decode(res);
-				cb_success(data);
+				if(!params.responseType)
+				{
+					try
+					{
+						res	=	JSON.parse(res);
+					}
+					catch(e)
+					{
+						var err	=	'api: error parsing resonse: '+ res
+						log.debug(err);
+						if(params.error) params.error(err);
+						return;
+					}
+				}
+				if(params.success) params.success(res);
 			},
 			onFailure: function(xhr)
 			{
-				var err	=	JSON.decode(xhr.responseText);
-				cb_fail(err, xhr);
+				var res	=	xhr;
+				if(!params.responseType && xhr)
+				{
+					try
+					{
+						res	=	JSON.parse(xhr.responseText);
+					}
+					catch(e)
+					{
+						res	=	'error parsing error response: '+ xhr.responseText;
+						log.debug('api: ', res);
+					}
+				}
+				if(params.error) params.error(res, xhr);
+			},
+			onProgress: function(event, xhr)
+			{
+				var progress	=	{total: event.total, loaded: event.loaded};
+				if(params.progress) params.progress(progress, xhr);
+			},
+			onUploadprogress: function(event, xhr)
+			{
+				var progress	=	{total: event.total, loaded: event.loaded};
+				if(params.uploadprogress) params.uploadprogress(progress, xhr);
 			},
 			evalScripts: false,
 			evalResponse: false
 		};
 
+		if(params.rawUpload)
+		{
+			request.urlEncoded	=	false;
+			request.encoding	=	false;
+			request.processData	=	false;
+		}
+
+		// fill in the client we're using
+		request.headers['X-Turtl-Client']	=	config.client + '-' + config.version;
+
+		// if we're sending auth AND we're logged in, authenticate
 		if(this.user && send_auth)
 		{
 			request.headers['X-Auth-Api-Key']	=	this.api_key;
-
-			//request.user		=	this.user.email;
-			//request.password	=	this.user.password;
 			request.headers['Authorization']	=	'Basic ' + Base64.encode('user:' + this.user.auth_key);
 		}
 
@@ -200,12 +241,12 @@ var Api	=	new Class({
 		this.send_request(request);
 		//if(user_cookie) Cookie.write(config.user_cookie, user_cookie);
 
-		return url;
+		return null;
 	},
 
 	send_request: function(request)
 	{
-		if(window._in_ext && !window._disable_api_tracker)
+		if(window._in_ext && window._enable_api_tracker)
 		{
 			this.tracker.send(request);
 		}

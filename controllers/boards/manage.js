@@ -55,9 +55,10 @@ var BoardManageController = Composer.Controller.extend({
 		});
 		this.html(content);
 
-		this.setup_sort();
+		//this.setup_sort();
 	},
 
+	/*
 	setup_sort: function()
 	{
 		if(this.my_sort) this.my_sort.detach();
@@ -75,6 +76,7 @@ var BoardManageController = Composer.Controller.extend({
 			}.bind(this)
 		});
 	},
+	*/
 
 	open_personas: function(e)
 	{
@@ -138,7 +140,7 @@ var BoardManageController = Composer.Controller.extend({
 		var bid		=	next_tag_up('a', e.target).className;
 		var board	=	this.collection.find_by_id(bid);
 		if(!board) return;
-		if(!confirm('Really delete this board, and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
+		if(!confirm('Really the board "'+board.get('title')+'", and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
 
 		turtl.loading(true);
 		board.destroy({

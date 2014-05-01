@@ -71,8 +71,9 @@ var DashboardController = Composer.Controller.extend({
 			el: this.boards,
 			profile: this.profile
 		});
-		this.boards_controller.bind('change-board', function() {
+		this.boards_controller.bind('change-board', function(board) {
 			this.tags_controller.clear_filters();
+			this.profile.set_current_board(board);
 		}.bind(this), 'dashboard:boards:change-board');
 
 		turtl.keyboard.bind('S-/', this.open_help.bind(this), 'dashboard:shortcut:open_help');
@@ -81,6 +82,9 @@ var DashboardController = Composer.Controller.extend({
 		this.sidebar_timer = new Timer(50);
 		this.sidebar_timer.end = this.resize_sidebar.bind(this);
 		this.sidebar_timer.start();
+
+		var sidebar	=	$E('.sidebar-bg');
+		if(sidebar) sidebar.setStyle('display', 'block');
 
 		this.profile.trigger('change:current_board');
 	},
@@ -101,6 +105,11 @@ var DashboardController = Composer.Controller.extend({
 		turtl.keyboard.unbind('S-/', 'dashboard:shortcut:open_help');
 		turtl.user.unbind('logout', 'dashboard:logout:clear_timer');
 		if(this.sidebar_timer && this.sidebar_timer.end) this.sidebar_timer.end = null;
+
+		// hide sidebar again
+		var sidebar	=	$E('.sidebar-bg');
+		if(sidebar) sidebar.setStyle('display', '');
+
 		this.parent.apply(this, arguments);
 	},
 
@@ -112,7 +121,7 @@ var DashboardController = Composer.Controller.extend({
 
 	open_help: function()
 	{
-		console.log('help!!');
+		new HelpController();
 	},
 
 	resize_sidebar: function()

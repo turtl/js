@@ -1,6 +1,9 @@
 // extend_error is in functions.js
 var SyncError	=	extend_error(Error, 'SyncError');
 
+// helps us track local changes so we don't double-apply
+var local_sync_id	=	0;
+
 /**
  * Default sync function, persists items to the local DB
  */
@@ -13,39 +16,55 @@ Composer.sync	=	function(method, model, options)
 		return;
 	}
 
-   // derive the table name from the model's base_url field.
+	// derive the table name from the model's base_url field.
 	var table	=	options.table || model.get_url().replace(/^\/(.*?)(\/|$).*/, '$1');
 	if(table == 'users') table = 'user';	// kind of a hack. oh well.
 
 	// some debugging, can make tracking down sync issues easier
-	if(['keychain', 'boards', 'notes'].contains(table))
+	if(_sync_debug_list.contains(table))
 	{
 		var action = method == 'delete' ? 'delete' : (method == 'create' ? 'add' : 'edit');
-		console.log('save: '+ table +': mem -> db ('+ action +')');
+		log.info('save: '+ table +': mem -> db ('+ action +')');
 	}
 
+	var error	=	options.error || function() {};
+	if(!turtl.db)
+	{
+		return error('DB not open.');
+	}
 	if(!turtl.db[table])
 	{
 		throw new SyncError('Bad db.js table: '+ table);
 	}
 
+	var modeldata	=	null;
+
 	// define some callbacks for our indexeddb queries
 	var success	=	function(res)
 	{
+		if(['create', 'update', 'delete'].contains(method))
+		{
+			if(!options.skip_local_sync)
+			{
+				turtl.sync.notify_local_change(table, method, modeldata, {track: !options.skip_track});
+			}
+			if(!options.skip_remote_sync)
+			{
+				turtl.sync.queue_remote_change(table, method, modeldata);
+			}
+		}
+
 		if(res instanceof Array && res.length == 1)
 		{
 			res	=	res[0];
 		}
 		if(options.success) options.success(res);
 	};
-	var error	=	options.error || function() {};
 
 	if(method != 'read')
 	{
 		// serialize our model, and add in any extra data needed
-		var modeldata		=	model.toJSON();
-		if(!options.skip_local_sync) modeldata.last_mod = new Date().getTime();
-		if(!options.skip_remote_sync) modeldata.local_change = 1;
+		modeldata	=	model.toJSON();
 		if(options.args) modeldata.meta = options.args;
 	}
 
@@ -56,6 +75,7 @@ Composer.sync	=	function(method, model, options)
 		modeldata.key	=	'user';
 	}
 
+	log.debug('save: '+ table +': '+ method, modeldata);
 	switch(method)
 	{
 	case 'read':
@@ -68,21 +88,14 @@ Composer.sync	=	function(method, model, options)
 		// added to the API but the response (with the ID) doesn't update in the
 		// local db (becuase of the client being closed, for instance, or the
 		// server handling the request crashing after the record is added)
-		model._cid		=	model.cid() + '.' + (new Date().getTime());
+		model._cid		=	model.cid();
 		modeldata.id	=	model.cid();
 
 		turtl.db[table].add(modeldata).then(success, error);
 		break;
 	case 'delete':
-		// delete flows through to update (after marking the item deleted). we
-		// don't actually delete the item here because then the sync processes
-		// would never know it changed.
-		//
-		// the remote sync (bless its heart) will check for "deleted" records
-		// and remove them accordingly, once they have had sufficient time to
-		// propagate to all local threads and have successfully been synced to
-		// the server
-		modeldata.deleted   =   1;
+		turtl.db[table].remove(model.id()).then(success, error);
+		break;
 	case 'update':
 		turtl.db[table].update(modeldata).then(success, error);
 		break;
@@ -90,10 +103,6 @@ Composer.sync	=	function(method, model, options)
 		throw new SyncError('Bad method passed to Composer.sync: '+ method);
 		return false;
 	}
-
-	// try not to double-sync (mem -> db -> mem). by tracking this model, we can
-	// avoid it being synced from DB on the next local sync
-	turtl.sync.ignore_on_next_sync(model.id(), {type: 'local'});
 };
 
 /**
@@ -117,35 +126,55 @@ var api_sync	=	function(method, model, options)
 		throw new SyncError('Bad method passed to Composer.sync: '+ method);
 	}
 
-	console.log('API: '+ method.toUpperCase().replace(/_/g, '') +' '+ model.base_url);
+	log.debug('API: '+ method.toUpperCase().replace(/_/g, '') +' '+ model.base_url);
 
-	// don't want to send all data over a GET or DELETE
+	var headers	=	{};
 	var args	=	options.args;
+	var url		=	model.get_url();
 	args || (args = {});
-	if(method != 'get' && method != '_delete')
+	if(options.rawUpload)
 	{
-		var data	=	model.toJSON();
-		data.cid	=	model.cid();
-		if(data.keys && data.keys.length == 0)
-		{
-			// empty string gets converted to empty array by the API for the keys
-			// type (this is the only way to serialize an empty array via 
-			// mootools' Request AJAX class)
-			data.keys	=	'';
-		}
-		if(options.subset)
-		{
-			var newdata	=	{};
-			for(x in data)
-			{
-				if(!options.subset.contains(x)) continue;
-				newdata[x]	=	data[x];
-			}
-			data	=	newdata;
-		}
-		args.data = data;
+		// we're sending raw/binary data.
+		args.cid	=	model.cid();
+		url			=	url + '?' + Object.toQueryString(args);
+		args		=	options.data;
+		headers['Content-Type']	=	'application/octet-stream';
 	}
-	turtl.api[method](model.get_url(), args, {
+	else
+	{
+		// don't want to send all data over a GET or DELETE
+		if(method != 'get' && method != '_delete')
+		{
+			var data	=	model.toJSON();
+			data.cid	=	model.cid();
+			if(data.keys && data.keys.length == 0)
+			{
+				// empty string gets converted to empty array by the API for the keys
+				// type (this is the only way to serialize an empty array via 
+				// mootools' Request AJAX class)
+				data.keys	=	'';
+			}
+			/*
+			if(options.subset)
+			{
+				var newdata	=	{};
+				for(x in data)
+				{
+					if(!options.subset.contains(x)) continue;
+					newdata[x]	=	data[x];
+				}
+				data	=	newdata;
+			}
+			*/
+			args.data = data;
+		}
+	}
+
+	// call the API!
+	turtl.api[method](url, args, {
+		rawUpload: options.rawUpload,
+		responseType: options.responseType,
+		headers: headers,
 		success: function(res) {
 			// if we got sync_ids back, set them into our remote sync's ignore.
 			// this ensures that although we'll get back the sync record(s) for
@@ -159,6 +188,8 @@ var api_sync	=	function(method, model, options)
 			// carry on
 			if(options.success) options.success.apply(this, arguments);
 		},
+		progress: options.progress,
+		uploadprogress: options.uploadprogress,
 		error: function(err, xhr) {
 			if(method == '_delete' && xhr.status == 404)
 			{

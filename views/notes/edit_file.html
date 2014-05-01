@@ -1,0 +1,16 @@
+Attach a file: <input type="file" name="file" placeholder="Attach a file">
+<div class="upload-preview">
+	<? if(file.hash || file.name) { ?>
+		<? if(file.type && file.type.match(/^image/)) { ?>
+			<? if(blob_url) { ?>
+				<img src="<?=blob_url?>">
+			<? } else { ?>
+				Generating preview...
+			<? } ?>
+		<? } else { ?>
+			<?=file.name?>
+		<? } ?>
+	<? } ?>
+</div>
+<a href="#remove-attachment" class="remove">Remove attachment</a>
+

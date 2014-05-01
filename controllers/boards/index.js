@@ -61,8 +61,12 @@ var BoardsController = Composer.Controller.extend({
 			show_actions: this.show_actions
 		});
 		this.list_controller.bind('close-boards', this.close_boards.bind(this));
-		this.list_controller.bind('change-board', function() {
-			this.trigger('change-board');
+		this.list_controller.bind('change-board', function(board) {
+			this.trigger('change-board', board);
+			if(this.track_last_board && board)
+			{
+				turtl.user.get('settings').get_by_key('last_board').value(board.id());
+			}
 		}.bind(this));
 
 		if(this.dropdown) this.dropdown.monitorOutsideClick(function() {
@@ -116,7 +120,7 @@ var BoardsController = Composer.Controller.extend({
 
 	add_board: function(e)
 	{
-		if(modal.is_open) return false;
+		if(modal.is_open && !this.add_bare) return false;
 		if(e) e.stop();
 
 		var parent	=	this.el.getParent();
@@ -125,11 +129,33 @@ var BoardsController = Composer.Controller.extend({
 			this.add_controller.inp_title.focus();
 			return false;
 		}
-		this.add_controller	=	new BoardEditController({
+
+		var edit	=	new BoardEditController({
+			inject: this.add_bare ? parent : null,
 			profile: this.profile,
-			inject: this.add_container,
-			bare: true
+			bare: this.add_bare
 		});
+		if(this.change_on_add)
+		{
+			edit.bind('new-board', function(board) {
+				this.board	=	board;
+				this.render();
+				this.trigger('change-board', board);
+			}.bind(this));
+		}
+
+		if(this.add_bare)
+		{
+			this.el.setStyle('display', 'none');
+			edit.el.dispose().inject(this.el, 'after');
+			edit.bind('release', function() {
+				edit.unbind('boards:index:edit:release');
+				this.inject	=	parent;
+				this.el.setStyle('display', '');
+				this.render();
+			}.bind(this), 'boards:index:edit:release');
+		}
+		this.add_controller	=	edit;
 
 		(function() {
 			this.add_container.slide('in');

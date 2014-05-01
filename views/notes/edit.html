@@ -1,8 +1,12 @@
-<?
-var action = note.id ? 'Edit' : 'Add';
-?>
-<h1><?=action?> note</h1>
+<?  var action = note.id ? 'Edit' : 'Add'; ?>
+<? if(title) { ?>
+	<h1><?=title?></h1>
+<? } else { ?>
+	<h1><?=action?> note</h1>
+<? } ?>
 <div class="note-edit clear">
+	<div class="boards"></div>
+
 	<? if(show_tabs) { ?>
 		<?
 		var showtab = function(name)
@@ -48,6 +52,8 @@ var action = note.id ? 'Edit' : 'Add';
 				<textarea tabindex="1" name="text" rows="8" cols="40" placeholder="Describe this note"><?=note.text?></textarea>
 			</div>
 
+			<div class="type upload"></div>
+
 			<a href="#" class="markdown-tutorial">Formatting help &raquo;</a>
 		</div>
 
@@ -85,8 +91,8 @@ var action = note.id ? 'Edit' : 'Add';
 					<td>You can also make text <strong>bold</strong> or <em>italic</em>.</td>
 				</tr>
 				<tr>
-					<td>Here's an image: ![Turtl logo](https://turtl.it/favicon.png)</td>
-					<td>Here's an image: <img src="https://turtl.it/favicon.png" alt="Turtl logo"></td>
+					<td>Here's an image: ![Turtl logo](https://turtl.it/images/favicon.png)</td>
+					<td>Here's an image: <img src="https://turtl.it/images/favicon.png" alt="Turtl logo"></td>
 				</tr>
 				<tr>
 					<td>&gt; Quote text with a caret</td>
@@ -109,6 +115,7 @@ var action = note.id ? 'Edit' : 'Add';
 		</div>
 
 		<span class="clearMe"></span>
+
 		<div class="submit">
 			<input tabindex="3" type="submit" value="<?=action?> note">
 		</div>

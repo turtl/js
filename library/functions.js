@@ -44,6 +44,24 @@ function get_parent(obj)
 }
 
 /**
+ * convert a Uint8Array to a binary string
+ */
+function uint8array_to_string(array)
+{
+	// be smart about converting array buffers to arrays
+	if(typeof ArrayBuffer != 'undefined' && array instanceof ArrayBuffer)
+	{
+		array	=	new Uint8Array(array);
+	}
+	var str	=	'';
+	for(var i = 0, n = array.length; i < n; i++)
+	{
+		str	+=	String.fromCharCode(array[i]);
+	}
+	return str;
+}
+
+/**
  * takes raw (non-mootools) object from whatever addon is running and ensures
  * that it is recursively turned into a mootools object
  */
@@ -72,6 +90,24 @@ function img(url)
 	else
 	{
 		return url;
+	}
+}
+
+function fire_click(node)
+{
+	if(document.createEvent)
+	{
+		var evt = document.createEvent('MouseEvents');
+		evt.initEvent('click', true, false);
+		node.dispatchEvent(evt);	
+	}
+	else if(document.createEventObject)
+	{
+		node.fireEvent('onclick');	
+	}
+	else if(typeof node.onclick == 'function')
+	{
+		node.onclick();	
 	}
 }
 
@@ -121,6 +157,11 @@ String.implement({
 			str	+=	pad;
 		}
 		return str + this.toString();
+	},
+
+	safe: function()
+	{
+		return this.replace(/<\/?script(.*?)>/ig, '');
 	}
 });
 

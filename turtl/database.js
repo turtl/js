@@ -15,37 +15,21 @@ var database = {
 		db.open({
 			// DB has user id in it...client might have multiple users
 			server: 'turtl.'+turtl.user.id(),
-			version: 4,
-			// NOTE: all tables that are sync between the client and the API
-			// *must* have "local_change" and "last_mod" indexex. or else. or
-			// else what?? or else it won't work.
-			//
-			// "local_change" lets the remote sync processes (local db -> API)
-			// know that something has been changed locally and needs to be
-			// synced to the API. It must be 1 or 0.
-			//
-			// "last_mod" lets the local sync process(es) know that something
-			// has been changed (either by a remote sync call or by another
-			// app "thread" in an addon) and should be synced to the in-memory
-			// models.
-			schema: {
+			version: 7,
+			schema: function() { log.info('db.js: create schema'); return {
 				// -------------------------------------------------------------
 				// k/v tables - always has "key" field as primary key
 				// -------------------------------------------------------------
 				// holds metadata about the sync process ("sync_time", etc)
 				sync: {
 					key: { keyPath: 'key', autoIncrement: false },
-					indexes: {
-					}
+					indexes: { }
 				},
 				// holds one record (key="user") that stores the user's data/
 				// settings
 				user: {
 					key: { keyPath: 'key', autoIncrement: false },
-					indexes: {
-						local_change: {},
-						last_mod: {}
-					}
+					indexes: { }
 				},
 
 				// -------------------------------------------------------------
@@ -54,27 +38,17 @@ var database = {
 				keychain: {
 					key: { keyPath: 'id', autoIncrement: false },
 					indexes: {
-						local_change: {},
-						last_mod: {},
-						deleted: {},
 						item_id: {}
 					}
 				},
 				personas: {
 					key: { keyPath: 'id', autoIncrement: false },
-					indexes: {
-						local_change: {},
-						last_mod: {},
-						deleted: {}
-					}
+					indexes: { }
 				},
 				boards: {
 					key: { keyPath: 'id', autoIncrement: false },
 					indexes: {
 						user_id: {},
-						local_change: {},
-						last_mod: {},
-						deleted: {}
 					}
 				},
 				notes: {
@@ -82,28 +56,31 @@ var database = {
 					indexes: {
 						user_id: {},
 						board_id: {},
-						local_change: {},
-						last_mod: {},
-						deleted: {}
+						has_file: {},
 					}
 				},
+				// note that the files table holds raw/encrypted file data for
+				// note attachments. the 'id' field is the HMAC hash from the
+				// payload. also, there isn't a 1 to 1 mapping between records
+				// in the files table and in-memory models, mainly because files
+				// are decrypted on-demand and aren't always going to be loaded
+				// in memory.
 				files: {
 					key: { keyPath: 'id', autoIncrement: false },
 					indexes: {
-						hash: {},
+						note_id: {},
 						synced: {},
-						local_change: {},
-						last_mod: {},
-						deleted: {}
+						has_data: {},
 					}
 				}
-			}
+			}}
 		}).done(function(server) {
 			if(options.complete) options.complete(server);
 		}).fail(function(e) {
 			var idburl	=	'https://turtl.it/docs/clients/core/indexeddb';
-			barfr.barf('Error opening local database.<br><a href="'+idburl+'" target="_blank">Is IndexedDB enabled in your browser?</a> Note that due to a bug in Firefox 25.* (and under), IndexedDB does not work in Private Browsing mode.', {message_persist: 'persist'});
-			console.log('database.setup: ', e);
+			//barfr.barf('Error opening local database.<br><a href="'+idburl+'" target="_blank">Is IndexedDB enabled in your browser?</a> Note that due to a bug in Firefox 25.* (and under), IndexedDB does not work in Private Browsing mode.', {message_persist: 'persist'});
+			barfr.barf('Error opening local database.', {message_persist: 'persist'});
+			console.error('database.setup: ', e);
 		});
 	}
 };

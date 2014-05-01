@@ -3,6 +3,19 @@
 var $E = function(selector, filter){ return ($(filter) || document).getElement(selector); };
 var $ES = function(selector, filter){ return ($(filter) || document).getElements(selector); };
 
+// we need CBC for backwards compat
+sjcl.beware['CBC mode is dangerous because it doesn\'t protect message integrity.']();
+
+// make our client IDs such that they are always sorted *after* real,
+// server-generated IDs ('z.') and they are chronologically sortable from each
+// other. Also, append in the original cid() at the end for easier debugging.
+//
+// NOTE: *DO NOT* change the cid scheme without updating the cid_match regex
+// below!
+var _cid		=	Composer.cid;
+Composer.cid	=	function() { return 'z.' + (new Date().getTime()).toString(16) + '.' + _cid(); };
+var cid_match	=	/^z\.[0-9a-f]+\.c[0-9]+$/;
+
 var turtl	=	{
 	site_url: null,
 
@@ -30,6 +43,7 @@ var turtl	=	{
 
 	// whether or not to sync data w/ server
 	do_sync: true,
+	do_remote_sync: true,
 
 	// if true, tells the app to mirror data to local storage
 	mirror: false,
@@ -53,6 +67,16 @@ var turtl	=	{
 	// this is our local storage DB "server" (right now an IndexedDB abstraction
 	// which stores files and notes locally).
 	db: null,
+
+	// holds our queue/messaging library
+	hustle: null,
+
+	// Files collection, used to track file uploads/downloads
+	files: null,
+
+	// holds all non-messaged invites (for instance, once we get via the addon
+	// or desktop invite page scraping)
+	invites: null,
 	// -------------------------------------------------------------------------
 
 	init: function()
@@ -97,7 +121,7 @@ var turtl	=	{
 			this.user.login_from_auth(window._auth);
 			window._auth	=	null;	// clear, because i'm paranoid
 		}
-		else
+		else if(!window._disable_cookie)
 		{
 			this.user.login_from_cookie();
 		}
@@ -116,7 +140,10 @@ var turtl	=	{
 		// update the user_profiles collection on login
 		this.user.bind('login', function() {
 			// init our feedback
-			this.load_controller('feedback', FeedbackButtonController);
+			if(!window._in_background)
+			{
+				this.load_controller('feedback', FeedbackButtonController);
+			}
 
 			// if the user is logged in, we'll put their auth info into the api object
 			if(!window._in_ext && !window._disable_cookie)
@@ -129,6 +156,21 @@ var turtl	=	{
 			turtl.messages	=	new Messages();
 			turtl.profile	=	new Profile();
 			turtl.search	=	new Search();
+			turtl.files		=	new Files();
+
+			// setup invites and move invites from local storage into collection
+			if(!turtl.invites) turtl.invites = new Invites();
+			if(localStorage.invites)
+			{
+				turtl.invites.reset(Object.values(JSON.parse(localStorage.invites)));
+			}
+			localStorage.invites	=	'{}';	// wipe local storage
+			if(window.port) window.port.bind('invites-populate', function(invite_data) {
+				turtl.invites.reset(Object.values(invite_data));
+			}.bind(this));
+
+			// init our sync interface (shows updates on syncing/uploads/downloads)
+			this.load_controller('sync', SyncController);
 
 			turtl.show_loading_screen(true);
 
@@ -142,7 +184,6 @@ var turtl	=	{
 							turtl.show_loading_screen(false);
 							turtl.controllers.pages.release_current();
 							turtl.last_url = '';
-							//turtl.profile.persist();
 							turtl.search.reindex();
 							var initial_route	=	options.initial_route || '';
 							if(initial_route.match(/^\/users\//)) initial_route = '/';
@@ -176,9 +217,15 @@ var turtl	=	{
 			}, 'turtl:personas:counter');
 		}.bind(turtl));
 		turtl.user.bind('logout', function() {
+			// stop syncing
+			turtl.sync.stop();
+
 			// remove feedback button
-			this.controllers.feedback.release();
-			delete this.controllers.feedback;
+			if(turtl.controllers.feedback)
+			{
+				turtl.controllers.feedback.release();
+				delete turtl.controllers.feedback;
+			}
 
 			turtl.controllers.pages.release_current();
 			turtl.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
@@ -189,12 +236,18 @@ var turtl	=	{
 			turtl.api.clear_auth();
 			modal.close();
 
+			localStorage.invites	=	'{}';	// wipe local storage
+
 			// local storage is for logged in people only
 			if(turtl.db)
 			{
 				turtl.db.close();
 				turtl.db	=	null;
 			}
+
+			// clear out invites
+			turtl.invites.clear();
+			turtl.invites.unbind();
 
 			// this should give us a clean slate
 			turtl.user.unbind();
@@ -203,6 +256,11 @@ var turtl	=	{
 			turtl.setup_header_bar();
 			turtl.profile.destroy();
 			turtl.profile	=	null;
+			turtl.search.destroy();
+			turtl.search	=	false;
+			turtl.files		=	false;
+
+			turtl.route('/');
 
 			if(window.port) window.port.send('logout');
 		}.bind(turtl));
@@ -214,32 +272,65 @@ var turtl	=	{
 
 		// hijack the complete function to set our shiny new database into the
 		// turtl scope.
-		var complete		=	options.complete;
+		var complete		=	options.complete || function() {};
 		options.complete	=	function(server)
 		{
 			turtl.db	=	server;
-			if(complete) complete(server);
+			if(turtl.db && turtl.hustle) complete(server);
 		};
+
+		var hustle	=	new Hustle({
+			tubes: ['incoming', 'outgoing', 'files'],
+			db_name: 'hustle_user_'+turtl.user.id(),
+			db_version: 2,
+			maintenance_delay: 5000
+		});
+		hustle.open({
+			success: function() {
+				turtl.hustle	=	hustle;
+				if(turtl.db && turtl.hustle) complete(turtl.db);
+			},
+			error: function(e) {
+				console.error('problem opening Hustle: ', e);
+			}
+		});
 
 		return database.setup(options);
 	},
 
-	wipe_local_db: function()
+	wipe_local_db: function(options)
 	{
+		options || (options = {});
+
 		if(!turtl.user.logged_in)
 		{
 			console.log('wipe_local_db only works when logged in. if you know the users ID, you can wipe via:');
 			console.log('window.indexedDB.deleteDatabase("turtl.<userid>")');
 			return false;
 		}
-		turtl.do_sync	=	false;
+		turtl.sync.stop();
 		if(turtl.db) turtl.db.close();
 		window.indexedDB.deleteDatabase('turtl.'+turtl.user.id());
-		turtl.setup_local_db();
+		if(turtl.hustle) turtl.hustle.wipe();
+		turtl.db		=	null;
+		turtl.hustle	=	null;
+		if(options.restart)
+		{
+			turtl.setup_local_db({
+				complete: function() {
+					if(options.complete) options.complete();
+				}
+			});
+		}
+		else
+		{
+			if(options.complete) options.complete();
+		}
 	},
 
 	setup_header_bar: function()
 	{
+		// setup the header bar
 		if(turtl.controllers.HeaderBar) turtl.controllers.HeaderBar.release();
 		turtl.controllers.HeaderBar = new HeaderBarController();
 	},
@@ -268,13 +359,16 @@ var turtl	=	{
 
 	setup_syncing: function()
 	{
+		// enable syncing
+		turtl.sync.start();
+
 		// register our tracking for local syncing (db => in-mem)
 		//
 		// NOTE: order matters here! since the keychain holds keys in its data,
 		// it's important that it runs before everything else, or you may wind
 		// up with data that doesn't get decrypted properly. next is the
 		// personas, followed by boards, and lastly notes.
-		turtl.sync.register_local_tracker('user', turtl.user);
+		turtl.sync.register_local_tracker('user', new Users());
 		turtl.sync.register_local_tracker('keychain', turtl.profile.get('keychain'));
 		turtl.sync.register_local_tracker('personas', turtl.profile.get('personas'));
 		turtl.sync.register_local_tracker('boards', turtl.profile.get('boards'));
@@ -291,15 +385,19 @@ var turtl	=	{
 		// we're in the background thread of an addon
 		if(turtl.do_sync && (!window._in_ext || window._in_background) && !window._in_app)
 		{
+			var notes	=	new Notes();
+			notes.start();	// poll for note recrods without files
+
 			// note that our remote trackers use brand new instances of the
 			// models/collections we'll be tracking. this enforces a nice
 			// separation between remote syncing and local syncing (and
 			// encourages all data changes to flow through the local db).
-			turtl.sync.register_remote_tracker('user', new User());
+			turtl.sync.register_remote_tracker('user', new Users());
 			turtl.sync.register_remote_tracker('keychain', new Keychain());
 			turtl.sync.register_remote_tracker('personas', new Personas());
 			turtl.sync.register_remote_tracker('boards', new Boards());
-			turtl.sync.register_remote_tracker('notes', new Notes());
+			turtl.sync.register_remote_tracker('notes', notes);
+			turtl.sync.register_remote_tracker('files', new Files());
 
 			// start API -> local db sync process. calls POST /sync, which grabs
 			// all the latest changes for our profile, which are then applied to
@@ -308,29 +406,9 @@ var turtl	=	{
 
 			// start the local db -> API sync process.
 			turtl.sync.sync_to_api();
-		}
 
-		// set up manual syncing, and listen for persona key assignments
-		if(window.port && window._in_background)
-		{
-			window.port.bind('persona-attach-key', function(key, persona_data) {
-				var persona	=	turtl.user.get('personas').find_by_id(persona_data.id);
-				if(!persona || persona.has_rsa())
-				{
-					console.log('key attached, but persona gone (or has key)');
-					// persona doesn't exist (or already has key), return the key
-					window.port.send('rsa-keypair', key);
-					return false;
-				}
-				persona.set_rsa(tcrypt.rsa_key_from_json(key));
-				persona.save();
-			});
-			var persona	=	turtl.user.get('personas').first();
-			if(persona && !persona.has_rsa({check_private: true}))
-			{
-				window.port.send('persona-created', persona.toJSON());
-				console.log('turtl: persona created (init)');
-			}
+			// handles all file jobs (download mainly)
+			turtl.files.start_consumer();
 		}
 	},
 
@@ -535,10 +613,46 @@ window.addEvent('domready', function() {
 	
 	turtl.load_controller('pages', PagesController);
 
+	(function() {
+		if(window.port) window.port.bind('debug', function(code) {
+			if(!window._debug_mode) return false;
+			var res	=	eval(code);
+			console.log('turtl: debug: ', res);
+		});
+	}).delay(100);
+
+	// prevent backspace from navigating back
+	$(document.body).addEvent('keydown', function(e) {
+		if(e.key != 'backspace') return;
+		var is_input	=	['input', 'textarea'].contains(e.target.get('tag'));
+		var is_button	=	is_input && ['button', 'submit'].contains(e.target.get('type'));
+		if(is_input && !is_button) return;
+
+		// prevent backspace from triggering if we're not in a form element
+		e.stop();
+	});
+
 	// init it LOL
 	turtl.init.delay(50, turtl);
 });
 
-window.addEvent('beforeunload', function() {
-	if(window.port) window.port.send('tab-unload');
-});
+// set up a global error handler that XHRs shit to the API so we know when bugs
+// are cropping up
+if(config.catch_global_errors)
+{
+	var enable_errlog	=	true;
+	window.onerror	=	function(msg, url, line)
+	{
+		if(!turtl.api || !enable_errlog) return;
+		log.error('remote error log: ', arguments);
+		turtl.api.post('/log/error', {data: {client: config.client, version: config.version, msg: msg, url: url, line: line}}, {
+			error: function(err) {
+				log.error(err);
+				// error posting, disable log for 30s
+				enable_errlog	=	false;
+				(function() { enable_errlog = true; }).delay(30000);
+			}
+		});
+	};
+}
+

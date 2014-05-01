@@ -49,8 +49,9 @@ var Keychain	=	SyncCollection.extend({
 			success: function(model) {
 				if(options.success) options.success(model);
 			}.bind(this),
-			error: function(err) {
+			error: function(model, err) {
 				barfr.barf('Error saving key for item: '+ err);
+				log.error('keychain: error saving: ', arguments);
 				this.remove(entry);
 				if(options.error) options.error(err);
 			}.bind(this)
@@ -73,7 +74,15 @@ var Keychain	=	SyncCollection.extend({
 		if(models.length > 0)
 		{
 			if(options.return_model) return models[0];
-			return tcrypt.key_to_bin(models[0].get('k'));
+			try
+			{
+				return tcrypt.key_to_bin(models[0].get('k'));
+			}
+			catch(e)
+			{
+				log.error('keychain: error deserializing key: ', models[0].id(), e);
+				return false;
+			}
 		}
 
 		if(options.disable_migrate) return false;
@@ -104,24 +113,6 @@ var Keychain	=	SyncCollection.extend({
 				if(options.error) options.error();
 			}
 		});
-	},
-
-	process_local_sync: function(keychain_data, model)
-	{
-		console.log('sync: keychain: db -> mem ('+ (keychain_data.deleted ? 'delete' : 'add/edit') +')');
-		if(keychain_data.deleted)
-		{
-			if(model) model.destroy({skip_local_sync: true, skip_remote_sync: true});
-		}
-		else if(model)
-		{
-			model.set(keychain_data);
-		}
-		else
-		{
-			var model	=	new KeychainEntry(keychain_data);
-			if(keychain_data.cid) model._cid = keychain_data.cid;
-			this.upsert(model);
-		}
 	}
 });
+

@@ -5,18 +5,31 @@ if(color) color = ['none','blue','red','green','purple','pink','brown','black'][
 <? if(color) { ?><span class="color <?=color?>"></span><? } ?>
 
 <div class="actions">
+	<a href="#edit" class="edit" title="Edit note (shortcut `e`)"><icon>&#9998;</icon></a>
+	<a href="#delete" class="delete" title="Delete note (shortcut `delete`)"><icon>&#59177;</icon></a>
+	<!--
 	<a class="menu" href="#menu" title="Note menu"><span>Note menu</span></a>
 	<ul class="dropdown">
 		<li><a href="#edit" class="edit" title="Edit note (shortcut `e`)"><span>Edit note</span></a></li>
 		<li><a href="#move" class="move" title="Move note to another board (shortcut `m`)"><span>Move note to another board</span></a></li>
 		<li><a href="#delete" class="delete" title="Delete note (shortcut `delete`)"><span>Delete note</span></a></li>
 	</ul>
+	-->
 </div>
-<? if(note.type != 'image') { ?><div class="content"><? } ?>
-	<? var tags = Template.render('notes/view/tags', { tags: note.tags }); ?>
-	<?=Template.render('notes/view/'+note.type, {
-		note: note,
-		tags: tags.clean()
-	})?>
+<?=Template.render('notes/note_file', {
+	has_file: has_file,
+	file_type: file_type,
+	note: note
+})?>
+<? if(note.type != 'image') { ?><div class="content clear"><? } ?>
+	<? if(!has_file && empty(note.title) && empty(note.url) && empty(note.text) && empty(note.embed)) { ?>
+		<p class="empty">(empty note)</p>
+	<? } else { ?>
+		<? var tags = Template.render('notes/view/tags', { tags: note.tags }); ?>
+		<?=Template.render('notes/view/'+note.type, {
+			note: note,
+			tags: tags.clean()
+		})?>
+	<? } ?>
 <? if(note.type != 'image') { ?></div><? } ?>
 

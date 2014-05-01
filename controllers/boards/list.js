@@ -89,11 +89,11 @@ var BoardListController = Composer.Controller.extend({
 		if(!e) return;
 		e.stop();
 		this.close_boards();
-		this.trigger('change-board');
 		var atag		=	next_tag_up('a', e.target);
 		var board_id	=	atag.href.replace(/^.*board-([0-9a-f]+).*?$/, '$1');
 		var board		=	this.collection.find_by_id(board_id);
 		if(board) this.profile.set_current_board(board);
+		this.trigger('change-board', board);
 	},
 
 	open_share: function(e)

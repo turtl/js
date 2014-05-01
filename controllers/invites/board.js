@@ -74,7 +74,12 @@ var InviteBoardController	=	Composer.Controller.extend({
 		// TODO: fix persona assumption
 		// TODO: add question/answer challenge
 		var from	=	turtl.user.get('personas').first();
-		var message	=	new Message({
+		var message	=	new Message();
+
+		// make sure we generate keys for this recipient
+		//message.add_recipient(from);
+		message.public_key	=	this.persona.get('pubkey');
+		message.set({
 			from: from.id(),
 			to: this.persona.id(),
 			notification: true,
@@ -86,10 +91,6 @@ var InviteBoardController	=	Composer.Controller.extend({
 			}
 		});
 
-		// make sure we generate keys for this recipient
-		//message.add_recipient(from);
-		message.add_recipient(this.persona);
-
 		turtl.loading(true);
 		var perms	=	2;
 		this.model.share_with(from, this.persona, perms, {
@@ -98,8 +99,8 @@ var InviteBoardController	=	Composer.Controller.extend({
 					success: function() {
 						turtl.loading(false);
 						barfr.barf('Invite sent.');
-
-						this.render();
+						this.trigger('sent');
+						this.release();
 					}.bind(this),
 					error: function() {
 						turtl.loading(false);

@@ -158,7 +158,7 @@ var NotesController = TrackController.extend({
 		turtl.keyboard.bind('a', this.open_add_note.bind(this), 'notes:shortcut:add_note');
 		turtl.keyboard.bind('enter', this.sub_view_note.bind(this), 'notes:shortcut:view_note');
 		turtl.keyboard.bind('e', this.sub_edit_note.bind(this), 'notes:shortcut:edit_note');
-		turtl.keyboard.bind('m', this.sub_move_note.bind(this), 'notes:shortcut:move_note');
+		//turtl.keyboard.bind('m', this.sub_move_note.bind(this), 'notes:shortcut:move_note');
 		turtl.keyboard.bind('delete', this.sub_delete_note.bind(this), 'notes:shortcut:delete_note');
 
 		// TODO: enable both to allow sorting again.
@@ -182,7 +182,7 @@ var NotesController = TrackController.extend({
 		turtl.keyboard.unbind('a', 'notes:shortcut:add_note')
 		turtl.keyboard.unbind('enter', 'notes:shortcut:view_note');
 		turtl.keyboard.unbind('e', 'notes:shortcut:edit_note');
-		turtl.keyboard.unbind('m', 'notes:shortcut:move_note');
+		//turtl.keyboard.unbind('m', 'notes:shortcut:move_note');
 		turtl.keyboard.unbind('delete', 'notes:shortcut:delete_note');
 		if(this.masonry) this.masonry.detach();
 		if(this.masonry_timer) this.masonry_timer.end = null;
@@ -193,7 +193,8 @@ var NotesController = TrackController.extend({
 	render: function()
 	{
 		var content = Template.render('notes/index', {
-			display_type: this.board.get('display_type')
+			display_type: this.board.get('display_type'),
+			enable_share: !this.board.get('shared')
 		});
 		this.html(content);
 
@@ -509,7 +510,7 @@ var NotesController = TrackController.extend({
 		var sub = this.sub_controller_index[model.id()];
 		if(sub)
 		{
-			sub.el.removeClass('hide');
+			if(sub.el) sub.el.removeClass('hide');
 		}
 		else
 		{
