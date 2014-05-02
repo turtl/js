@@ -123,7 +123,7 @@ var BoardsController = Composer.Controller.extend({
 			this.dropdown.setStyle('height', '');
 			(function() { 
 				var dcoord	=	this.dropdown.getCoordinates();
-				if(_popup_modal_wrap)
+				if(window._popup_modal_wrap)
 				{
 					var wcoord	=	_popup_modal_wrap.getCoordinates();
 					var wscroll	=	0;
