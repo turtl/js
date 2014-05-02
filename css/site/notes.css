@@ -1,5 +1,5 @@
 /*.notes div.note-actions {display: block; height: 40px; margin: 0 0 16px 0; padding: 7px 0 0 0;}*/
-.notes div.note-actions {z-index: 200; display: block; position: absolute; top: 0; height: 40px; margin: 0; padding: 5px 0 0 0;}
+.notes div.note-actions {z-index: 200; display: block; position: absolute; top: 1px; height: 40px; margin: 0; padding: 5px 0 0 0;}
 .notes div.note-actions a {display: block;}
 .notes div.note-actions a span {display: block;}
 .notes div.note-actions {margin-left: 15px;}
