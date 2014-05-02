@@ -133,6 +133,10 @@ var NotesController = TrackController.extend({
 			//this.setup_sort();
 		}.bind(this), 'notes:listing:update_display');
 
+		this.board.get('notes').bind(['math-render'], function() {
+			this.update_display_type();
+		}.bind(this), 'notes:listing:math-render');
+
 		this.board.get('notes').bind(['add', 'remove', 'reset', 'clear', 'misc'], function() {
 			if(this.board.get('notes').models().length == 0)
 			{
@@ -175,6 +179,7 @@ var NotesController = TrackController.extend({
 			this.board.unbind('change:display_type', 'notes:listing:display_type');
 			this.filter_list.unbind('reset', 'notes:listing:display_type');
 			this.filter_list.unbind(['add', 'remove', 'change'], 'notes:listing:update_display');
+			this.board.get('notes').unbind(['math-render'], 'notes:listing:math-render');
 			this.board.get('notes').unbind(['add', 'remove', 'reset', 'clear', 'misc'], 'notes:listing:show_display_buttons');
 			this.filter_list.detach();
 			this.release_subcontrollers();

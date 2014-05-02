@@ -65,6 +65,10 @@
 		<span class="clearMe">&nbsp;</span>
 
 		<div class="markdown-tutorial note-view content">
+			<p>
+				Turtl notes use Markdown, a format that's easy to read and write
+				and doesn't require a clunky editor.
+			</p>
 			<table>
 				<tr>
 					<td># One hash makes a large title</td>
@@ -112,6 +116,33 @@
 
 			<span class="markdown-link form-note">Read more about <a href="http://support.mashery.com/docs/customizing_your_portal/Markdown_Cheat_Sheet" target="_blank">markdown</a>.</span>
 			<br><br>
+
+			<p>
+				Turtl now also supports TeX math. Begin and end your equation(s)
+				with <code>$$</code>:
+			</p>
+			<table>
+				<tr>
+					<td>$$ P(E)   = {n \\choose k} p^k (1-p)^{ n-k} $$</td>
+					<td><pre class="math">P(E)   = {n \\choose k} p^k (1-p)^{ n-k}</pre></td>
+				</tr>
+				<tr>
+					<td>
+						$$<br>
+						\\begin{aligned}<br>
+						\\dot{x} &amp; = \\sigma(y-x) \\\\<br>
+						\\dot{y} &amp; = \\rho x - y - xz \\\\<br>
+						\\dot{z} &amp; = -\\beta z + xy<br>
+						\\end{aligned}<br>
+						$$
+					</td>
+					<td><pre class="math">\\begin{aligned}
+\\dot{x} & = \\sigma(y-x) \\\\
+\\dot{y} & = \\rho x - y - xz \\\\
+\\dot{z} & = -\\beta z + xy
+\\end{aligned}</pre></td>
+				</tr>
+			</table>
 		</div>
 
 		<span class="clearMe"></span>

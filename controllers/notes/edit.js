@@ -162,6 +162,14 @@ var NoteEditController = Composer.Controller.extend({
 		}
 		this.select_tab(this.note_copy.get('type'));
 		if(window.port) window.port.send('resize');
+
+		// render our math example in the Formatting tutorial by hijacking a
+		// note item controller.
+		var note_controller	=	new NoteItemController({model: this.note});
+		note_controller.el	=	this.el;
+		note_controller.render_math();
+		note_controller.el	=	null;
+		note_controller.release();
 	},
 
 	render_tags: function()

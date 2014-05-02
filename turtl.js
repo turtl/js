@@ -608,9 +608,6 @@ window.addEvent('domready', function() {
 	barfr	=	new Barfr('barfr', {});
 
 	// create markdown converter
-	markdown = new Markdown.Converter();
-	markdown.toHTML = markdown.makeHtml;
-	
 	turtl.load_controller('pages', PagesController);
 
 	(function() {
@@ -630,6 +627,15 @@ window.addEvent('domready', function() {
 
 		// prevent backspace from triggering if we're not in a form element
 		e.stop();
+	});
+
+	marked.setOptions({
+		renderer: new marked.Renderer(),
+		gfm: true,
+		tables: true,
+		pedantic: false,
+		sanitize: false,
+		smartLists: true
 	});
 
 	// init it LOL

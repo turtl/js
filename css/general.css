@@ -24,7 +24,7 @@ icon {display: inline-block; margin: 0 0 0 0; padding: 0; font-family: Entypo; f
 a icon {color: #222;}
 
 .content {line-height: 1.4em; text-align: left;}
-.content h2 {font-size: 17px;}
+.content h2 {margin-bottom: 8px; font-size: 17px;}
 .content h3 {font-size: 14px;}
 .content h4 {font-size: 12px;}
 .content h5 {font-size: 11px;}
@@ -42,6 +42,9 @@ a icon {color: #222;}
 .content pre {overflow-x: auto; margin: 0 0 16px 0; padding: 6px; font-family: monospace; color: #611; background-color: #f5f5f5;}
 .content code {display: inline-block; margin: 0 2px; padding: 1px 4px; font-family: monospace; color: #611; background-color: #f5f5f5;}
 .content kbd {padding: .1em .6em; font-size: .9em; background: #f7f7f7; border: 1px solid #ccc; border-radius: 3px; box-shadow: 0 1px 0px rgba(0, 0, 0, 0.2),0 0 0 2px #ffffff inset;}
+.content table {margin: 0 0 16px 0; border-collapse: collapse;}
+.content table th, td {padding: 6px 4px; border: 1px solid #ddd;}
+.content table th {background: #eee;}
 .content .warn {color: #922;}
 
 form.standard-form input[type=text] {width: 95%;}

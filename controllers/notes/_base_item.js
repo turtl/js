@@ -58,6 +58,30 @@ var BaseNoteItem = Composer.Controller.extend({
 		this.html(content);
 		if(has_file) className += ' file ';
 		this.el.className = className + ' ' + note_data.type;
+
+		// handle math junk
+		this.render_math();
+	},
+
+	render_math: function()
+	{
+		// handle math junk
+		var maths	=	this.el.getElements('pre.math');
+		if(maths.length > 0)
+		{
+			maths.each(function(math) {
+				// inject our mathjax script
+				var equ		=	math.get('html').replace(/&amp;/g, '&');
+				var script	=	new Element('script').setProperties({
+					type: 'math/tex; mode=display'
+				}).set('html', equ);
+				script.inject(math, 'after');
+				math.destroy();
+			}, this);
+			MathJax.Hub.Queue(['Process', MathJax.Hub, this.el, function() {
+				if(this.board) this.board.get('notes').trigger('math-render');
+			}.bind(this)]);
+		}
 	},
 
 	open_menu: function(e)

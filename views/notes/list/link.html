@@ -8,5 +8,5 @@ if(!title) title = note.url.replace(/^[\w]+:\/\/(www\.)?/i, '').replace(/([?&#])
 ?>
 <h1><a href="<?=link?>" target="_blank"><?=title?></a></h1>
 <? if(note.text && note.text != '') { ?>
-	<?=markdown.toHTML(note.text)?>
+	<?=view.note_body(note.text)?>
 <? } ?>
