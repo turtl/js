@@ -144,6 +144,7 @@ var BoardsController = Composer.Controller.extend({
 
 	close_boards: function(e)
 	{
+		if(!this.dropdown.hasClass('open')) return;
 		turtl.keyboard.attach();
 		if(this.add_controller) this.add_controller.release();
 		this.dropdown.removeClass('open');
