@@ -43,6 +43,11 @@ var BoardsController = Composer.Controller.extend({
 			}
 			this.render();
 		}.bind(this), 'boards:change:render');
+		if(!this.collection)
+		{
+			this.collection	=	this.profile.get('boards');
+		}
+		this.collection.bind('change:title', this.render.bind(this), 'boards:render:title');
 		turtl.keyboard.bind('b', this.open_boards.bind(this), 'boards:shortcut:open_boards');
 	},
 
@@ -51,6 +56,7 @@ var BoardsController = Composer.Controller.extend({
 		this.unbind('change-board');
 		turtl.profile.unbind('change:current_board', 'boards:change:render');
 		if(this.add_controller) this.add_controller.release();
+		this.collection.unbind('change:title', 'boards:render:title');
 		turtl.keyboard.unbind('b', 'boards:shortcut:open_boards');
 		this.parent.apply(this, arguments);
 	},
