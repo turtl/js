@@ -15,7 +15,7 @@
 					<? } ?>
 				</ul>
 			<? } ?>
-			<a class="board <? if(current.id == b.id) { ?>current<? } ?>" href="#board-<?=b.id?>">
+			<a class="board <? if(current && current.id == b.id) { ?>current<? } ?>" href="#board-<?=b.id?>">
 				<?=b.title?>
 			</a>
 		</li>
