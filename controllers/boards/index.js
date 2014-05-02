@@ -209,6 +209,7 @@ var BoardsController = Composer.Controller.extend({
 
 		if(e.key == 'esc')
 		{
+			e.stop();
 			if(this.inp_filter.value == '') this.close_boards();
 			this.list_controller.filter(null);
 			this.inp_filter.value	=	'';
@@ -217,10 +218,11 @@ var BoardsController = Composer.Controller.extend({
 
 		if(e.key == 'enter' && this.inp_filter.value != '')
 		{
+			e.stop();
 			this.list_controller.select_first_board();
 			this.list_controller.filter(null);
 			this.inp_filter.value	=	'';
-			return;
+			return false;
 		}
 
 		this.list_controller.filter(this.inp_filter.value);
