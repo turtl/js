@@ -78,12 +78,18 @@ var BoardListController = Composer.Controller.extend({
 		var board		=	this.collection.find_by_id(first_id);
 		if(!board) return false;
 		this.close_boards();
-		(function() { this.profile.set_current_board(board); }).delay(0, this);
+		this.do_change_board(board);
 	},
 
 	close_boards: function()
 	{
 		this.trigger('close-boards');
+	},
+
+	do_change_board: function(board)
+	{
+		this.trigger('change-board', board);
+		this.board		=	board;
 	},
 
 	change_board: function(e)
@@ -94,8 +100,7 @@ var BoardListController = Composer.Controller.extend({
 		var atag		=	next_tag_up('a', e.target);
 		var board_id	=	atag.href.replace(/^.*board-([0-9a-f]+).*?$/, '$1');
 		var board		=	this.collection.find_by_id(board_id);
-		this.trigger('change-board', board);
-		this.board		=	board;
+		this.do_change_board(board);
 	},
 
 	open_share: function(e)
