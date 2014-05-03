@@ -513,6 +513,14 @@ var NoteEditController = Composer.Controller.extend({
 			file_type: false
 		});
 		html_el.set('html', html);
+
+		// render any math
+		var note_controller	=	new NoteItemController({model: this.note});
+		note_controller.el	=	html_el;
+		note_controller.render_math();
+		note_controller.el	=	null;
+		note_controller.release();
+
 		html_el.getElement('.actions').dispose();
 		(function() {
 			if(window.port) window.port.send('resize');
