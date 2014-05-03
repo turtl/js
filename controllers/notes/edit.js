@@ -165,7 +165,7 @@ var NoteEditController = Composer.Controller.extend({
 
 		// render our math example in the Formatting tutorial by hijacking a
 		// note item controller.
-		var note_controller	=	new NoteItemController({model: this.note});
+		var note_controller	=	new NoteItemController({model: new Note()});
 		note_controller.el	=	this.el;
 		note_controller.render_math();
 		note_controller.el	=	null;
@@ -515,7 +515,7 @@ var NoteEditController = Composer.Controller.extend({
 		html_el.set('html', html);
 
 		// render any math
-		var note_controller	=	new NoteItemController({model: this.note});
+		var note_controller	=	new NoteItemController({model: new Note()});
 		note_controller.el	=	html_el;
 		note_controller.render_math();
 		note_controller.el	=	null;
