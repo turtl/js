@@ -114,7 +114,7 @@ ul.note_list .note.image .color {margin: 0;}*/
 .note-view ul.tags li:last-child {margin-right: 4px;} /* don't know why this doesn't line up, but here's the fix */
 .note-view ul.tags li span {color: #222;}
 .note-view.image {padding: 0; overflow: hidden; text-align: center; background: #000;}
-.note-view.image a.img {padding: 0; line-height: 0; text-align: center; background: #000;}
+.note-view.image a.img {padding: 0; line-height: 1em; text-align: center; background: #000;}
 .note-view.image .content {padding: 20px; margin-top: -2px; background: #fff;}
 
 /* add/edit */
