@@ -1,0 +1,4 @@
+.account ul.type {list-style: none; position: absolute; top: 32px; left: 380px;}
+.account ul.type li {float: left; display: inline-block; margin: 0 6px -1px 0; padding: 5px 10px; font-size: 12px; color: #73b8d1; text-transform: uppercase; cursor: pointer; border-radius: 4px;}
+.account ul.type li.sel {padding-top: 4px; color: #73b8d1; color: #111; border-top: 1px solid #ddd; background: #fff;}
+

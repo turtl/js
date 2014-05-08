@@ -8,7 +8,7 @@ var HeaderBarController = Composer.Controller.extend({
 
 	events: {
 		'click a.menu': 'toggle_menu',
-		'click li.bookmarklet a': 'bookmarklet',
+		'click li.account a': 'open_account',
 		'click li.persona a': 'open_personas',
 		'click li.invites a': 'open_invites',
 		'click li.wipe a': 'wipe_data',
@@ -77,10 +77,10 @@ var HeaderBarController = Composer.Controller.extend({
 		this.close_timer.stop();
 	},
 
-	bookmarklet: function(e)
+	open_account: function(e)
 	{
 		if(e) e.stop();
-		alert('Drag me to your bookmarks!');
+		new AccountController();
 	},
 
 	open_personas: function(e)
