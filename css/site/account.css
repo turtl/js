@@ -3,6 +3,12 @@
 .account ul.type li.sel {padding-top: 4px; color: #73b8d1; color: #111; border-top: 1px solid #ddd; background: #fff;}
 
 /* profile */
-.account-profile .size {border: 1px solid #222;}
-.account-profile .size .bar {padding: 8px 0; background: #ae8;}
+.account-profile .size {margin: 6px 0 24px 0; background: #eee; border: 1px solid #222;}
+.account-profile .size .bar {padding: 6px 0; white-space: nowrap; overflow: visible; background: #ae8;}
+.account-profile .promo {margin: 0 0 24px 0;}
+.account-profile .promo a {color: #228833; font-size: 1.1em; font-weight: bold;}
+.account-profile .promo .finvite {width: 49%; width: 100%; float: left; text-align: center;}
+.account-profile .promo .upgrade {display: none; width: 49%; float: right; text-align: center;}
+.account-profile ul.info {margin: 0 0 16px 4px; padding: 0; list-style: none;}
+.account-profile ul.info li {margin: 0 0 8px 0;}
 

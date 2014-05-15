@@ -59,7 +59,9 @@ var AccountController = Composer.Controller.extend({
 		if(e) e.stop();
 
 		var tab		=	e.target;
-		var tabname	=	tab.className;
+		var tabname	=	tab.className.replace(/\bsel\b/, '').clean();
+		if(tabname == this.tab) return;
+
 		this.tabs.getElements('li').each(function(el) {
 			el.removeClass('sel');
 		});
