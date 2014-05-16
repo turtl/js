@@ -1,22 +1,30 @@
 var AccountProfileController = Composer.Controller.extend({
 	elements: {
+		'.inviter': 'inviter'
 	},
 
 	events: {
+		'click a[href=#invite]': 'open_inviter'
 	},
 
 	init: function()
 	{
-		this.render();
+		this.render(true);
+		turtl.profile.bind('change:size', this.render.bind(this), 'account:profile:size:render:'+this.cid());
+		turtl.profile.calculate_size({always_trigger: true});
 	},
 
 	release: function()
 	{
+		turtl.profile.unbind('change:size', 'account:profile:size:render:'+this.cid());
 		return this.parent.apply(this, arguments);
 	},
 
-	render: function()
+	render: function(loading_profile_size)
 	{
+		var share_link	=	'https://turtl.it/'+turtl.user.get('invite_code');
+		var share_text	=	'Check out Turtl: '+ share_link;
+
 		var num_boards	=	0;
 		var num_notes	=	turtl.profile.get('boards').filter(function(b) {
 			return !b.get('shared');
@@ -41,8 +49,15 @@ var AccountProfileController = Composer.Controller.extend({
 		var member_since	=	months[date.getMonth()] + ' ' + date.getDay() + ', ' + date.getFullYear();
 		var member_days		=	((new Date().getTime() - date.getTime()) / (1000 * 86400));
 
+		var persona	=	turtl.user.get('personas').first();
+		var email	=	persona ? persona.get('email') : null;
+
 		var content	=	Template.render('account/profile', {
-			size: turtl.profile.get('size', 0),
+			email: email,
+			share_link: share_link,
+			share_text: share_text,
+			profile_size: turtl.profile.get('size', 0),
+			loading_profile_size: loading_profile_size,
 			storage: turtl.user.get('storage', 100 * 1024 * 1024),
 			num_notes: num_notes,
 			num_boards: num_boards,
@@ -52,6 +67,14 @@ var AccountProfileController = Composer.Controller.extend({
 			member_days: member_days
 		});
 		this.html(content);
+		this.inviter.set('slide', {duration: 200});
+		this.inviter.get('slide').hide();
+	},
+
+	open_inviter: function(e)
+	{
+		if(e) e.stop();
+		this.inviter.get('slide').toggle();
 	}
 });
 

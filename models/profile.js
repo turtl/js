@@ -330,6 +330,59 @@ var Profile = Composer.RelationalModel.extend({
 		});
 	},
 
+	calculate_size: function(options)
+	{
+		options || (options = {});
+
+		var profile_size		=	0;
+		var num_boards			=	0;
+		var boards_processed	=	0;
+
+		var finished	=	function()
+		{
+			boards_processed++;
+			if(boards_processed < num_boards) return;
+			if(options.success) options.success(profile_size);
+			if(options.always_trigger)
+			{
+				this.set({size: profile_size}, {silent: true});
+				this.trigger('change:size');
+			}
+			else
+			{
+				this.set({size: profile_size}, options);
+			}
+		}.bind(this);
+
+		turtl.db.boards.query('user_id').only(turtl.user.id()).execute()
+			.done(function(boards) {
+				num_boards	=	boards.length;
+				boards.each(function(board) {
+					turtl.db.notes.query('board_id').only(board.id).execute()
+						.done(function(notes) {
+							notes.each(function(note) {
+								profile_size	+=	note.body.length;
+								if(note.file && note.file.size)
+								{
+									profile_size	+=	note.file.size;
+								}
+							});
+							finished();
+						})
+						.fail(function(e) {
+							log.error('profile: calculate_size: problem grabbing notes for board: ', board.id, e);
+							if(options.error) options.error(e);
+						});
+				});
+			})
+			.fail(function(e) {
+				log.error('profile: calculate_size: problem grabbing user\'s boards: ', e);
+				if(options.error) options.error(e);
+			});
+		turtl.db.boards.query()
+		return profile_size;
+	},
+
 	get_current_board: function()
 	{
 		var cur	=	this.get('current_board', false);

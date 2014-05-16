@@ -56,8 +56,20 @@ var User	=	Protected.extend({
 			duration	=	30;
 		}
 
-		this.write_cookie({duration: duration});
-		if (!silent) this.trigger('login', this);
+		// now grab the user record by ID from the API.
+		// TODO: persist to local storage for offline mode.
+		turtl.api.set_auth(this.get_auth());
+		turtl.api.get('/users/'+this.id(), {}, {
+			success: function(user) {
+				this.set(user);
+				this.write_cookie({duration: duration});
+				if (!silent) this.trigger('login', this);
+			}.bind(this),
+			error: function(_, e) {
+				log.error('user: problem grabbing user record: ', e);
+			}
+		});
+		turtl.api.clear_auth();
 	},
 
 	login_from_auth: function(auth)
@@ -106,7 +118,7 @@ var User	=	Protected.extend({
 	{
 		options || (options = {});
 		turtl.api.post('/users', {data: {a: this.get_auth()}}, {
-			success: function() {
+			success: function(user) {
 				// once we have the user record, wait until the user is logged
 				// in. then we poll turtl.db until our local db object exists.
 				// once we're sure we have it, we save the new user record to
@@ -145,7 +157,8 @@ var User	=	Protected.extend({
 			id: this.id(),
 			k: tcrypt.key_to_string(key),
 			a: auth,
-			last_board: this.get('last_board')
+			invite_code: this.get('invite_code'),
+			storage: this.get('storage')
 		};
 		localStorage[config.user_cookie]	=	JSON.encode(save);
 	},
