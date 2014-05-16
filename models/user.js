@@ -117,8 +117,14 @@ var User	=	Protected.extend({
 	join: function(options)
 	{
 		options || (options = {});
-		turtl.api.post('/users', {data: {a: this.get_auth()}}, {
+		turtl.api.post('/users', {data: {a: this.get_auth()}, invited_by: localStorage.invited_by}, {
 			success: function(user) {
+				// once we have a successful signup with the invite code, wipe
+				// it out so we don't keep counting multiple signups to one
+				// user. the idea is that you get attribute for each *person*
+				// you invite, not each user account
+				delete localStorage.invited_by;
+
 				// once we have the user record, wait until the user is logged
 				// in. then we poll turtl.db until our local db object exists.
 				// once we're sure we have it, we save the new user record to
