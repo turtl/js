@@ -107,3 +107,6 @@ span.tooltip {display: inline; cursor: help; color: #73b8d1;}
 :-ms-input-placeholder { color: #777; }
 */
 
+/* go away... */
+#MathJax_Message {display: none !important;}
+
