@@ -2,7 +2,7 @@ var dashboard = {
 	load: function(board)
 	{
 		board = null;
-		if(!turtl.profile.profile_data)
+		if(!turtl.profile || !turtl.profile.profile_data)
 		{
 			turtl.controllers.pages.trigger('loaded');
 			return;
