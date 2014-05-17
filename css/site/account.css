@@ -13,7 +13,7 @@
 .account-profile .inviter p:first-child {}
 .account-profile .inviter .social {width: 43%; float: left; padding: 16px 0 0 0;}
 .account-profile .inviter .social ul {list-style: none; margin: 0; padding: 0;}
-.account-profile .inviter .social ul li {display: inline-block; margin: 0 2px; opacity: .85; transition: opacity .15s;}
+.account-profile .inviter .social ul li {display: inline-block; margin: 0 2px; opacity: .95; transition: opacity .15s;}
 .account-profile .inviter .social ul li:hover {opacity: 1;}
 .account-profile .inviter .social ul li a icon {color: #222; font-size: 2.8em;}
 .account-profile .inviter .social ul li a.tw icon {color: #55acee;}

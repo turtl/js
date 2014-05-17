@@ -525,7 +525,8 @@ var Sync = Composer.Model.extend({
 					note.meta.persona	=	board.meta.persona;
 				}
 
-				// make sure if we have file data, we have has_file = 1
+				// make sure if we have file data, we have has_file = 1 (and
+				// also size)
 				if(note && note.file && note.file.hash)
 				{
 					note.has_file	=	1;
@@ -534,6 +535,7 @@ var Sync = Composer.Model.extend({
 					var note_mem		=	turtl.profile.get('notes').find_by_id(note.id);
 					var has_data		=	note_mem && note_mem.get('file').get('has_data');
 					note.file.has_data	=	has_data || 0;
+					console.log('note: size: ', note.file.size);
 				}
 			});
 		}

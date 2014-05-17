@@ -7,21 +7,30 @@ var AccountProfileController = Composer.Controller.extend({
 		'click a[href=#invite]': 'open_inviter'
 	},
 
+	loading_size: false,
+
 	init: function()
 	{
-		this.render(true);
+		this.loading_size	=	true;
+		this.render();
 		turtl.profile.bind('change:size', this.render.bind(this), 'account:profile:size:render:'+this.cid());
+		turtl.user.bind('change:storage', this.render.bind(this), 'account:user:storage:render:'+this.cid());
 		turtl.profile.calculate_size({always_trigger: true});
 	},
 
 	release: function()
 	{
 		turtl.profile.unbind('change:size', 'account:profile:size:render:'+this.cid());
+		turtl.user.unbind('change:storage', 'account:user:storage:render:'+this.cid());
 		return this.parent.apply(this, arguments);
 	},
 
-	render: function(loading_profile_size)
+	render: function()
 	{
+		// show (loading) the first run
+		var loading_profile_size	=	this.loading_size;
+		this.loading_size			=	false;
+
 		var share_link	=	'https://turtl.it/'+turtl.user.get('invite_code');
 		var share_text	=	'Check out Turtl: '+ share_link;
 

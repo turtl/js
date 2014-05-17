@@ -22,7 +22,8 @@ var User	=	Protected.extend({
 	},
 
 	public_fields: [
-		'id'
+		'id',
+		'storage'
 	],
 
 	private_fields: [
