@@ -361,7 +361,6 @@ var Profile = Composer.RelationalModel.extend({
 					turtl.db.notes.query('board_id').only(board.id).execute()
 						.done(function(notes) {
 							notes.each(function(note) {
-								console.log('note (size): ', note.id, note.body.length, note.file);
 								profile_size	+=	note.body.length;
 								if(note.file && note.file.size)
 								{

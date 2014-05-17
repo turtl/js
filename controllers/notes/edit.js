@@ -318,6 +318,7 @@ var NoteEditController = Composer.Controller.extend({
 		}
 
 		var file_set	=	file.get('set');
+		var file_size	=	false;
 		if(isnew && file_set)
 		{
 			// let the view know we're encrypting, and remove the blob_url so it
@@ -342,6 +343,10 @@ var NoteEditController = Composer.Controller.extend({
 		var do_note_save	=	function(options)
 		{
 			options || (options = {});
+
+			// we have to manually set the file size here so it is persisted to
+			// the DB
+			if(file_size && file_set) file.set({size: file_size});
 
 			// save the note copy, and on success, set the resulting data back into
 			// the original note
@@ -418,6 +423,7 @@ var NoteEditController = Composer.Controller.extend({
 				// we're no longer encrypting
 				file.unset('encrypting');
 				this.note.get('file').unset('encrypting');
+				file_size	=	res.body.length;
 
 				// save the file contents into local db then save the note
 				filedata.save({
