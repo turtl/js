@@ -4,7 +4,8 @@ var KeychainEntry	=	Protected.extend({
 	public_fields: [
 		'id',
 		'type',
-		'item_id'
+		'item_id',
+		'user_id'
 	],
 
 	private_fields: [

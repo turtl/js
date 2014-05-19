@@ -164,42 +164,36 @@ var BoardsController = Composer.Controller.extend({
 			return false;
 		}
 
-		this.add_controller	=	new BoardEditController({
-			inject: this.add_container,
-			profile: this.profile,
-			bare: true
-		});
-
-		if(this.change_on_add)
+		if(this.add_container)
 		{
-			this.add_controller.bind('new-board', function(board) {
-				this.board	=	board;
-				this.trigger('change-board', board);
-			}.bind(this));
-		}
+			this.add_controller	=	new BoardEditController({
+				inject: this.add_container,
+				profile: this.profile,
+				bare: true
+			});
 
-		/*
-		if(this.add_bare)
+			if(this.change_on_add)
+			{
+				this.add_controller.bind('new-board', function(board) {
+					this.board	=	board;
+					this.trigger('change-board', board);
+				}.bind(this));
+			}
+
+			(function() {
+				this.add_container.slide('in');
+			}).delay(10, this);
+		}
+		else
 		{
-			this.el.setStyle('display', 'none');
-			this.add_controller.el.dispose().inject(this.el, 'after');
-			this.add_controller.bind('release', function() {
-				edit.unbind('boards:index:edit:release');
-				this.inject	=	parent;
-				this.el.setStyle('display', '');
-				this.render();
-			}.bind(this), 'boards:index:edit:release');
+			this.add_controller	=	new BoardEditController({
+				profile: this.profile
+			});
 		}
-		*/
-
-		(function() {
-			this.add_container.slide('in');
-		}).delay(10, this);
-
 		this.add_controller.bind('release', function() {
 			this.add_controller.unbind('release', 'board:edit:release');
 			this.add_controller	=	null;
-			this.add_container.slide('out');
+			if(this.add_container) this.add_container.slide('out');
 		}.bind(this), 'board:edit:release');
 	},
 
