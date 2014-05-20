@@ -874,7 +874,7 @@ var SyncCollection	=	Composer.Collection.extend({
 	sync_record_from_api: function(item)
 	{
 		var table	=	turtl.db[this.local_table];
-		if(_sync_debug_list.contains(this.local_table))
+		if(_sync_debug_list.contains(this.local_table) && item._sync)
 		{
 			log.info('sync: '+ this.local_table +': api -> db ('+ item._sync.action +')');
 		}
