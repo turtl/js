@@ -481,7 +481,7 @@ var NoteEditController = Composer.Controller.extend({
 		this.select_tab(typename);
 		if(this.preview.getStyle('display') == 'block')
 		{
-			this.preview_note();
+			this.open_preview();
 		}
 	},
 
