@@ -651,6 +651,8 @@ if(config.catch_global_errors)
 	{
 		if(!turtl.api || !enable_errlog) return;
 		log.error('remote error log: ', arguments);
+		// remove filesystem info
+		url	=	url.replace(/^.*\/data\/app/, '/data/app');
 		turtl.api.post('/log/error', {data: {client: config.client, version: config.version, msg: msg, url: url, line: line}}, {
 			error: function(err) {
 				log.error(err);
