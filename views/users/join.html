@@ -4,6 +4,14 @@
 		<input type="text" name="username" placeholder="Username" tabindex="4">
 		<input type="password" name="password" placeholder="Password" tabindex="5">
 		<input type="password" name="confirm" placeholder="Confirm password" tabindex="6">
+		<? if(enable_promo) { ?>
+			<? if(!promo) { ?>
+				<a class="open-promo" href="#open-promo">Have a promo code?</a>
+			<? } ?>
+			<div class="promo <? if(promo) { ?>open<? } ?>">
+				Promo code: <input type="text" name="promo" value="<?=promo?>" placeholder="Promo code" tabindex="7">
+			</div>
+		<? } ?>
 		<div class="content">
 			<p class="error">
 				You must <strong>remember your username/password</strong>.
@@ -18,7 +26,7 @@
 				<em>Make sure you keep your username and password in a safe place!</em>
 			</p>
 		</div>
-		<input type="submit" value="Join" tabindex="7">
+		<input type="submit" value="Join" tabindex="8">
 	</form>
 </div>
 

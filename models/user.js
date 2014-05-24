@@ -118,13 +118,33 @@ var User	=	Protected.extend({
 	join: function(options)
 	{
 		options || (options = {});
-		turtl.api.post('/users', {data: {a: this.get_auth()}, invited_by: localStorage.invited_by}, {
+		var data	=	{data: {a: this.get_auth()}};
+		if(localStorage.invited_by)
+		{
+			data.invited_by	=	localStorage.invited_by;
+		}
+
+		// grab the promo code, if we haven't already used it.
+		var used_promos	=	JSON.parse(localStorage.used_promos || '[]');
+		var promo		=	options.promo;
+		if(promo && !used_promos.contains(promo))
+		{
+			data.promo		=	promo;
+		}
+
+		turtl.api.post('/users', data, {
 			success: function(user) {
-				// once we have a successful signup with the invite code, wipe
-				// it out so we don't keep counting multiple signups to one
-				// user. the idea is that you get attribute for each *person*
-				// you invite, not each user account
+				if(data.promo)
+				{
+					// if we used a promo, track it to make sure this client
+					// doesn't use it again.
+					localStorage.used_promos	=	JSON.stringify(JSON.parse(localStorage.used_promos || '[]').push(data.promo));
+				}
+
+				// once we have a successful signup with the invite/promo, wipe
+				// them out so we don't keep counting multiple times.
 				delete localStorage.invited_by;
+				delete localStorage.promo;
 
 				// once we have the user record, wait until the user is logged
 				// in. then we poll turtl.db until our local db object exists.
