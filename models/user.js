@@ -127,7 +127,7 @@ var User	=	Protected.extend({
 		// grab the promo code, if we haven't already used it.
 		var used_promos	=	JSON.parse(localStorage.used_promos || '[]');
 		var promo		=	options.promo;
-		if(promo && !used_promos.contains(promo))
+		if(promo) //&& (!used_promos || !used_promos.contains(promo)))
 		{
 			data.promo		=	promo;
 		}
@@ -138,7 +138,7 @@ var User	=	Protected.extend({
 				{
 					// if we used a promo, track it to make sure this client
 					// doesn't use it again.
-					localStorage.used_promos	=	JSON.stringify(JSON.parse(localStorage.used_promos || '[]').push(data.promo));
+					//localStorage.used_promos	=	JSON.stringify(JSON.parse(localStorage.used_promos || '[]').push(data.promo));
 				}
 
 				// once we have a successful signup with the invite/promo, wipe
