@@ -16,7 +16,7 @@ var Sync = Composer.Model.extend({
 	sync_from_api_delay: 10000,
 
 	// consumer/subscriber delay
-	hustle_poll_delay: 500,
+	hustle_poll_delay: 1000,
 
 	// local model ID tracking (for preventing double syncs)
 	sync_ignore: {
@@ -38,6 +38,9 @@ var Sync = Composer.Model.extend({
 	// holds collections/models that monitor their respective local db table for
 	// local changes and sync those changes to the API
 	remote_trackers: [],
+
+	// holds local changes to be synced
+	local_changes: [],
 
 	// used to track local syncs
 	local_sync_id: 0,
@@ -188,22 +191,11 @@ var Sync = Composer.Model.extend({
 			this.ignore_on_next_sync(msg.sync_id, {type: 'local'});
 		}
 
-		var fail_count	=	0;
-		var notify	=	function()
-		{
-			turtl.hustle.Pubsub.publish('local-changes', msg, {
-				success: function() {
-					log.debug('sync: notify local: send: ', msg);
-				},
-				error: function(e) {
-					// this is what happens when you're not a *fucking* local
-					log.error('sync: notify local: error ', e);
-					fail_count++;
-					if(fail_count < 3) notify.delay(100, this);
-				}
-			})
-		};
-		notify();
+		// NOTE: we used to use hustle for pubsub here, but it's really an
+		// enormous CPU hog in NW so that's no longer an option.
+		this.local_changes.push(msg);
+		console.log('pushed: ', this.local_changes.length, turtl.sync.local_changes.length);
+		log.debug('sync: notify local: send: ', msg);
 	},
 
 	/**
@@ -282,20 +274,23 @@ var Sync = Composer.Model.extend({
 			}
 		}.bind(this);
 
-		var subscriber	=	new turtl.hustle.Pubsub.Subscriber('local-changes', function(msg) {
-			var track_obj	=	get_tracker(msg.data.type);
-			if(!track_obj) return;
-			log.debug('sync: notify local: recv: ', msg);
-			track_obj.tracker.sync_record_from_db(msg.data.data, msg.data);
-		}, {
-			delay: this.hustle_poll_delay,
-			enable_fn: function() {
-				return turtl.user.logged_in && this.enabled;
-			}.bind(this),
-			error: function(e) {
-				log.error('sync: sync_from_db: subscriber: error: ', e);
-			}
-		});
+		// NOTE: we used to use hustle for pubsub here, but it's really an
+		// enormous CPU hog in NW so that's no longer an option.
+		var poller	=	function()
+		{
+			if(!(turtl.user.logged_in && this.enabled)) return;
+
+			this.local_changes.each(function(msg) {
+				var track_obj	=	get_tracker(msg.type);
+				if(!track_obj) return;
+				log.debug('sync: notify local: recv: ', msg);
+				track_obj.tracker.sync_record_from_db(msg.data, msg);
+			});
+			this.local_changes	=	[];
+
+			poller.delay(500, this);
+		}.bind(this);
+		poller();
 	},
 
 	/**
