@@ -111,11 +111,6 @@ var PersonaEditController = Composer.Controller.extend({
 				{
 					this.collection.add(this.model);
 					barfr.barf('Persona added! You are now free to share with others.');
-					this.model.generate_rsa_key({
-						error: function(err) {
-							barfr.barf('Problem generating key for persona: '+ err);
-						}
-					});
 				}
 				this.model.trigger('saved');
 				if(this.join)
