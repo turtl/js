@@ -56,6 +56,14 @@ var BaseNoteItem = Composer.Controller.extend({
 		});
 		content = view.make_links(content);
 		this.html(content);
+		// fix bad links in the note content
+		this.el.getElements('.content a').each(function(el) {
+			if(!el.href || !el.href.match(/^[a-z]:\/\//))
+			{
+				el.href	=	'http://' + el.href;
+			}
+			el.target = '_blank';
+		});
 		if(has_file) className += ' file ';
 		this.el.className = className + ' ' + note_data.type;
 
