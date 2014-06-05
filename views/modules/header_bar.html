@@ -1,37 +1,45 @@
 <div class="actions">
 	<? if(user.id && !window._in_ext) { ?>
 		<a class="menu" href="#menu" alt="Menu"><icon>&#9881;</icon></a>
-		<ul class="menu">
-			<li class="account">
-				<a href="#account" title="Manage your Turtl account">
-					<icon>&#8962;</icon>
-					<span>Manage account</span>
-				</a>
-			</li>
-			<li class="persona">
-				<a href="#personas" title="Manage your identity">
-					<icon>&#128101;</icon>
-					<span>Personas</span>
-				</a>
-			</li>
-			<li class="invites">
-				<a href="#invites" title="See your invites">
-					<icon>&#128319;</icon>
-					<span>Invites</span>
-				</a>
-			</li>
-			<li class="wipe">
-				<a href="#wipe-data" title="Wipe all local data and log out">
-					<icon>&#128165;</icon>
-					<span>Wipe local data</span>
-				</a>
-			</li>
-			<li class="logout">
-				<a href="/users/logout" title="Sign out (shortcut `shift+L`)">
-					<icon>&#128274;</icon>
-					<span>Logout</span>
-				</a>
-			</li>
-		</ul>
+		<div class="menu">
+			<div class="top">
+				<div class="size-container"></div>
+				<? if(config.enable_promo) { ?>
+					<a href="#invite" class="invite">Invite friends to get more storage</a>
+				<? } ?>
+			</div>
+			<ul>
+				<li class="account">
+					<a href="#account" title="Manage your Turtl account">
+						<icon>&#8962;</icon>
+						<span>Account</span>
+					</a>
+				</li>
+				<li class="persona">
+					<a href="#personas" title="Manage your identity">
+						<icon>&#128101;</icon>
+						<span>Personas</span>
+					</a>
+				</li>
+				<li class="invites">
+					<a href="#invites" title="See your invites">
+						<icon>&#128319;</icon>
+						<span>Invites</span>
+					</a>
+				</li>
+				<li class="wipe">
+					<a href="#wipe-data" title="Wipe all local data and log out">
+						<icon>&#128165;</icon>
+						<span>Wipe local data</span>
+					</a>
+				</li>
+				<li class="logout">
+					<a href="/users/logout" title="Sign out (shortcut `shift+L`)">
+						<icon>&#128274;</icon>
+						<span>Logout</span>
+					</a>
+				</li>
+			</ul>
+		</div>
 	<? } ?>
 </div>

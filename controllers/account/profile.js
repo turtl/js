@@ -1,36 +1,29 @@
 var AccountProfileController = Composer.Controller.extend({
 	elements: {
-		'.inviter': 'inviter'
+		'.inviter': 'inviter',
+		'.size-container': 'size_container'
 	},
 
 	events: {
 		'click a[href=#invite]': 'open_inviter'
 	},
 
-	loading_size: false,
+	size_controller: null,
+	open_inviter_on_init: false,
 
 	init: function()
 	{
-		this.loading_size	=	true;
 		this.render();
-		turtl.profile.bind('change:size', this.render.bind(this), 'account:profile:size:render:'+this.cid());
-		turtl.user.bind('change:storage', this.render.bind(this), 'account:user:storage:render:'+this.cid());
-		turtl.profile.calculate_size({always_trigger: true});
 	},
 
 	release: function()
 	{
-		turtl.profile.unbind('change:size', 'account:profile:size:render:'+this.cid());
-		turtl.user.unbind('change:storage', 'account:user:storage:render:'+this.cid());
+		if(this.size_controller) this.size_controller.release();
 		return this.parent.apply(this, arguments);
 	},
 
 	render: function()
 	{
-		// show (loading) the first run
-		var loading_profile_size	=	this.loading_size;
-		this.loading_size			=	false;
-
 		var share_link	=	'https://turtl.it/'+turtl.user.get('invite_code');
 		var share_text	=	'Check out Turtl: '+ share_link;
 
@@ -65,9 +58,6 @@ var AccountProfileController = Composer.Controller.extend({
 			email: email,
 			share_link: share_link,
 			share_text: share_text,
-			profile_size: turtl.profile.get('size', 0),
-			loading_profile_size: loading_profile_size,
-			storage: turtl.user.get('storage', 100 * 1024 * 1024),
 			num_notes: num_notes,
 			num_boards: num_boards,
 			num_shared_boards: num_shared_boards,
@@ -76,8 +66,21 @@ var AccountProfileController = Composer.Controller.extend({
 			member_days: member_days
 		});
 		this.html(content);
-		this.inviter.set('slide', {duration: 200});
-		this.inviter.get('slide').hide();
+		this.size_controller	=	new AccountProfileSizeController({
+			inject: this.size_container
+		});
+		if(this.inviter)
+		{
+			this.inviter.set('slide', {duration: 200});
+			this.inviter.get('slide').hide();
+			if(this.open_inviter_on_init)
+			{
+				(function() {
+					this.inviter.get('slide').slideIn();
+				}).delay(250, this);
+				this.open_inviter_on_init	=	false;
+			}
+		}
 	},
 
 	open_inviter: function(e)

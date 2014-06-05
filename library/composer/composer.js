@@ -127,6 +127,19 @@
 		},
 
 		/**
+		 * Like bind(), but clears out the binding after one use.
+		 */
+		bind_once: function(ev, callback, callback_name)
+		{
+			var wrapped;
+			wrapped = function() {
+				this.unbind(ev, wrapped);
+				callback.apply(this, arguments);
+			}.bind(this);
+			this.bind(ev, wrapped, callback_name);
+		},
+
+		/**
 		 * Trigger an event for this object, which in turn runs all callbacks for that
 		 * event WITH all parameters passed in to this function.
 		 *

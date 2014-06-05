@@ -46,20 +46,18 @@ header div.loading {visibility: hidden; float: left; margin: 15px 16px 0 16px;}
 
 /* header menu */
 header div.actions {position: relative; float: right; margin: 0 4px 0 0;}
-header div.actions > ul {list-style: none; margin: 0 0 0 0;}
-header div.actions > ul li {display: block; margin: 0; float: left;}
-header div.actions > ul a {display: block; height: 40px; border-left: 1px solid #111;}
-header div.actions > ul a span {display: block; padding: 13px 8px; color: #ccc; font-weight: normal; text-transform: uppercase; font-size: 11px; line-height: 12px;}
-header div.actions > a.menu {display: inline-block; height: 36px; margin: 5px 0 0 0; opacity: .9;}
-header div.actions > a.menu icon {padding: 7px 0 0 0; font-size: 2.2em; color: #ddd;}
-header div.actions > a.menu:hover {opacity: 1;}
-header div.actions ul.menu {display: none; position: absolute; right: -4px; z-index: 10; width: 180px; margin: -1px 0 0 -220px; list-style: none; background: #202020;}
-header div.actions ul.menu.open {display: block;}
-header div.actions ul.menu li {display: block; float: none; margin: 0;}
-header div.actions ul.menu li:hover {background: #262626;}
-header div.actions ul.menu a {height: 30px; border-bottom: 1px solid #333;}
-header div.actions ul.menu a icon {float: right; margin: 9px 8px 0 0; font-size: 1.4em; color: #fff;}
-header div.actions ul.menu a span {padding: 9px 8px;}
+header div.actions a.menu {display: inline-block; height: 36px; margin: 5px 0 0 0; opacity: .9;}
+header div.actions a.menu icon {padding: 7px 0 0 0; font-size: 2.2em; color: #ddd;}
+header div.actions a.menu:hover {opacity: 1;}
+header div.actions div.menu {display: none; position: absolute; right: 0; z-index: 10; width: 220px; margin: -4px 0 0 -220px; padding: 10px; text-align: center; background: #fff; border-radius: 4px; box-shadow: 0 0 3px 2px rgba(0, 0, 0, .3);}
+header div.actions div.menu.open {display: block;}
+header div.actions div.menu .top {margin: 0 0 8px 0; padding: 6px 0 14px 0; border-bottom: 1px solid #eee;}
+header div.actions div.menu ul {list-style: none;}
+header div.actions div.menu ul li {display: inline-block; width: 44%; margin: 0 2%;}
+header div.actions div.menu ul a {display: block; height: 55px; padding: 3px 0; border: 1px solid #fff; border-radius: 3px;}
+header div.actions div.menu ul a:hover {background: #eee; border: 1px solid #ddd;}
+header div.actions div.menu ul a icon {display: block; color: #999; font-size: 2.0em; line-height: 1.4em;}
+header div.actions div.menu ul a span {color: #111;}
 
 #feedback {z-index: 3; position: fixed; right: -7px; top: 50%; margin-top: -63px;}
 #feedback img {border-radius: 6px;}

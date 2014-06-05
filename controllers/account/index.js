@@ -11,6 +11,7 @@ var AccountController = Composer.Controller.extend({
 
 	tab: 'profile',
 	sub_controller: null,
+	sub_controller_args: {},
 
 	init: function()
 	{
@@ -48,9 +49,11 @@ var AccountController = Composer.Controller.extend({
 		var controller		=	window['Account'+tabname+'Controller'];
 		if(controller)
 		{
-			this.sub_controller	=	new controller({
+			var args = Object.merge({}, this.sub_controller_args, {
 				inject: this.account_content
 			});
+			this.sub_controller			=	new controller(args);
+			this.sub_controller_args	=	{};
 		}
 	},
 
