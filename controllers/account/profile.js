@@ -43,7 +43,7 @@ var AccountProfileController = Composer.Controller.extend({
 		}).reduce(function(a, b) { return a+b });
 
 		var num_shared_boards	=	turtl.profile.get('boards').filter(function(b) {
-			return !b.get('shared') && Object.keys(b.get('privs')).length > 0;
+			return !b.get('shared') && Object.keys(b.get('privs') || {}).length > 0;
 		}).length;
 		var num_boards_shared	=	turtl.profile.get('boards').filter(function(b) {
 			return b.get('shared');

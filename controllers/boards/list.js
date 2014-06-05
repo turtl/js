@@ -118,6 +118,21 @@ var BoardListController = Composer.Controller.extend({
 		}
 	},
 
+	open_personas: function(e)
+	{
+		if(e) e.stop();
+		if(window._in_ext && window.port)
+		{
+			window.port.send('personas-add-open');
+		}
+		else
+		{
+			new PersonaEditController({
+				collection: turtl.user.get('personas')
+			});
+		}
+	},
+
 	open_edit: function(e)
 	{
 		if(!e) return;

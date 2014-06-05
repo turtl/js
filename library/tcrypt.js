@@ -110,8 +110,6 @@ var tcrypt = {
 		{
 			var cipher_index	=	desc_str.charCodeAt(0);
 			var block_index		=	desc_str.charCodeAt(1);
-			var cipher_index	=	desc_str.charCodeAt(0);
-			var block_index		=	desc_str.charCodeAt(1);
 			if(version <= 4)
 			{
 				var kdf_mode	=	desc_str.charCodeAt(3);
