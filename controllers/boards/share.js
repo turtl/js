@@ -7,7 +7,6 @@ var BoardShareController = Composer.Controller.extend({
 
 	events: {
 		'click .button.share': 'open_share',
-		'click a[href=#back]': 'open_manage',
 		'click a[href=#remove]': 'remove_user',
 		'click a[href=#cancel]': 'cancel_invite'
 	},
@@ -29,7 +28,7 @@ var BoardShareController = Composer.Controller.extend({
 		if(!this.from_persona)
 		{
 			barfr.barf('You must have a persona before being able to share your boards.');
-			this.open_manage();
+			modal.close();
 			return;
 		}
 
@@ -126,17 +125,6 @@ var BoardShareController = Composer.Controller.extend({
 			var search = this.el.getElement('.search input[type=text]');
 			if(search) search.focus();
 		}
-	},
-
-	open_manage: function(e)
-	{
-		if(e) e.stop();
-		modal.close();
-
-		// open management back up
-		new BoardManageController({
-			collection: turtl.profile.get('boards')
-		});
 	},
 
 	remove_user: function(e)

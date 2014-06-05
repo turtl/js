@@ -278,5 +278,18 @@ var view	=	{
 		text = text.replace(/([\w]+:\/\/)([\.\-\w_\/:\?\+\&~#=%,\(\)]+)/gi, '<a target="_blank" href="$1$2">$2</a>');
 		text = text.replace(/"([\w]+)::(\/\/([\.\-\w_\/:\?\+\&~#=%,\(\)]+))/gi, '"$1:$2"');
 		return text;
+	},
+
+	tex_math: function(body)
+	{
+		body	=	body.replace(/\$\$([\s\S]+?)\$\$/g, '<pre class="math">$1</pre>');
+		return body;
+	},
+
+	note_body: function(body)
+	{
+		body	=	view.tex_math(body);
+		body	=	marked(body);
+		return body;
 	}
 };

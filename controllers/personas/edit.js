@@ -23,9 +23,6 @@ var PersonaEditController = Composer.Controller.extend({
 	// whether or not this was opened after a join (shows a different interface)
 	join: false,
 
-	// if true, will return to board management instead of persona mgmt on close
-	return_to_manage: false,
-
 	init: function()
 	{
 		if(!this.collection) this.collection = turtl.user.get('personas');
@@ -66,8 +63,7 @@ var PersonaEditController = Composer.Controller.extend({
 	{
 		var content = Template.render('personas/edit', {
 			persona: toJSON(this.model),
-			was_join: this.join,
-			return_to_manage: this.return_to_manage
+			was_join: this.join
 		});
 		this.html(content);
 		(function() { this.inp_email.focus(); }).delay(1, this);
@@ -111,7 +107,11 @@ var PersonaEditController = Composer.Controller.extend({
 		this.model.save({
 			success: function() {
 				turtl.loading(false);
-				if(is_new) this.collection.add(this.model);
+				if(is_new)
+				{
+					this.collection.add(this.model);
+					barfr.barf('Persona added! You are now free to share with others.');
+				}
 				this.model.trigger('saved');
 				if(this.join)
 				{
@@ -216,19 +216,10 @@ var PersonaEditController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		this.release();
-		if(this.return_to_manage)
-		{
-			new BoardManageController({
-				collection: turtl.profile.get('boards')
-			});
-		}
-		else
-		{
-			new PersonasController({
-				inject: this.inject,
-				edit_in_modal: this.edit_in_modal
-			});
-		}
+		new PersonasController({
+			inject: this.inject,
+			edit_in_modal: this.edit_in_modal
+		});
 	},
 
 	do_close: function(e)

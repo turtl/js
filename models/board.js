@@ -34,7 +34,6 @@ var Board = Composer.RelationalModel.extend({
 		'keys',
 		'privs',
 		'personas',
-		'body',
 		'meta',
 		'shared'
 	],

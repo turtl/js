@@ -608,9 +608,6 @@ window.addEvent('domready', function() {
 	barfr	=	new Barfr('barfr', {});
 
 	// create markdown converter
-	markdown = new Markdown.Converter();
-	markdown.toHTML = markdown.makeHtml;
-	
 	turtl.load_controller('pages', PagesController);
 
 	(function() {
@@ -621,12 +618,28 @@ window.addEvent('domready', function() {
 		});
 	}).delay(100);
 
+	// prevent backspace from navigating back
+	$(document.body).addEvent('keydown', function(e) {
+		if(e.key != 'backspace') return;
+		var is_input	=	['input', 'textarea'].contains(e.target.get('tag'));
+		var is_button	=	is_input && ['button', 'submit'].contains(e.target.get('type'));
+		if(is_input && !is_button) return;
+
+		// prevent backspace from triggering if we're not in a form element
+		e.stop();
+	});
+
+	marked.setOptions({
+		renderer: new marked.Renderer(),
+		gfm: true,
+		tables: true,
+		pedantic: false,
+		sanitize: false,
+		smartLists: true
+	});
+
 	// init it LOL
 	turtl.init.delay(50, turtl);
-});
-
-window.addEvent('beforeunload', function() {
-	if(window.port) window.port.send('tab-unload');
 });
 
 // set up a global error handler that XHRs shit to the API so we know when bugs
@@ -638,6 +651,8 @@ if(config.catch_global_errors)
 	{
 		if(!turtl.api || !enable_errlog) return;
 		log.error('remote error log: ', arguments);
+		// remove filesystem info
+		url	=	url.replace(/^.*\/data\/app/, '/data/app');
 		turtl.api.post('/log/error', {data: {client: config.client, version: config.version, msg: msg, url: url, line: line}}, {
 			error: function(err) {
 				log.error(err);

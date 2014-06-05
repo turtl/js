@@ -24,7 +24,7 @@ var UserLoginController = Composer.Controller.extend({
 		// TODO: save redirect in JOIN link
 		var content = Template.render('users/login');
 		this.html(content);
-		this.inp_username.focus();
+		this.inp_username.focus.delay(100, this.inp_username);
 	},
 
 	do_login: function(e)

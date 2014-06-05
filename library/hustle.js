@@ -1,7 +1,7 @@
 (function(window, undefined) {
 	"use strict";
-	var version				=	'0.1.7';
-	var internal_db_version	=	4;
+	var version				=	'0.2.0';
+	var internal_db_version	=	5;
 
 	var indexedDB	=	window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.oIndexedDB || window.msIndexedDB;
 	var IDBKeyRange	=	window.IDBKeyRange || window.webkitIDBKeyRange
@@ -39,11 +39,8 @@
 		// database version. should change every time the tubes change
 		var db_version			=	qoptions.db_version ? qoptions.db_version : 1;
 
-		// how often we check for stale pubsub messages
+		// how often we do DB maintenance
 		var maintenance_delay	=	qoptions.maintenance_delay ? qoptions.maintenance_delay : 1000;
-
-		// how long pubsub messages live
-		var msg_lifetime		=	qoptions.message_lifetime ? qoptions.message_lifetime : 10000;
 
 		// define some system db vars
 		var db_name	=	qoptions.db_name ? qoptions.db_name : 'hustle';
@@ -53,8 +50,7 @@
 			ids: '_ids',
 			reserved: '_reserved',
 			delayed: '_delayed',
-			buried: '_buried',
-			pubsub: '_pubsub'
+			buried: '_buried'
 		};
 
 		// always add a default tube
@@ -154,13 +150,6 @@
 				});
 				update_table_schema(e, tbl.buried, {
 					indexes: { id: { unique: false } }
-				});
-				update_table_schema(e, tbl.pubsub, {
-					autoincrement: true,
-					indexes: {
-						channel: { index: 'channel', unique: false },
-						created: { index: 'created', unique: false }
-					}
 				});
 
 				for(var i = 0; i < tubes.length; i++)
@@ -851,164 +840,8 @@
 		};
 
 		// ---------------------------------------------------------------------
-		// pubsub functions
-		// ---------------------------------------------------------------------
-
-		/**
-		 * Publish a message into a channel
-		 */
-		var publish	=	function(channel, msg, options)
-		{
-			check_db();
-			options || (options = {});
-
-			var item	=	{
-				channel: channel,
-				data: msg,
-				created: new Date().getTime()
-			};
-
-			var trx			=	db.transaction(tbl.pubsub, 'readwrite');
-			trx.oncomplete	=	function(e) { if(options.success) options.success(item, e); };
-			trx.onerror		=	function(e) { if(options.error) options.error(e); }
-
-			var store		=	trx.objectStore(tbl.pubsub);
-			var req			=	store.add(item);
-			req.onsuccess	=	function(e)
-			{
-				item.id		=	e.target.result;
-			};
-		};
-
-		/**
-		 * Class to make subscribing to a channel easy. Calls the given function
-		 * for each message that comes through on the specified channel.
-		 *
-		 * Holds two public methods: start and stop (subscriber is started by
-		 * default).
-		 */
-		var Subscriber	=	function(channel, fn, soptions)
-		{
-			soptions || (soptions = {});
-
-			var delay			=	soptions.delay ? soptions.delay : 100;
-			var start_time		=	new Date().getTime();
-			var do_stop			=	false;
-			var seen_messages	=	{};
-
-			var maintenance	=	function()
-			{
-				// clean up seen_messages keys
-				var keys	=	Object.keys(seen_messages);
-				var curr	=	new Date().getTime();
-				keys.forEach(function(key) {
-					var time	=	seen_messages[key];
-					if(time < (curr - (msg_lifetime * 3))) delete seen_messages[key];
-				});
-			};
-
-			var poll	=	function(options)
-			{
-				options || (options = {});
-
-				if(do_stop || !db) return;
-				if(soptions.enable_fn)
-				{
-					var res	=	soptions.enable_fn();
-					if(!res)
-					{
-						do_stop	=	true;
-						return false;
-					}
-				}
-
-				maintenance();
-
-				var item	=	null;
-
-				var trx		=	db.transaction(tbl.pubsub, 'readonly');
-				trx.oncomplete	=	function(e) {
-					if(!item) return;
-					fn(item);
-				};
-				trx.onerror		=	function(e) { if(options.error) options.error(e); }
-
-				var store	=	trx.objectStore(tbl.pubsub);
-				var index	=	store.index('channel');
-				index.openCursor(IDBKeyRange.only(channel)).onsuccess	=	function(e)
-				{
-					var cursor	=	e.target.result;
-					if(cursor)
-					{
-						if(seen_messages[cursor.value.id] || cursor.value.created < start_time)
-						{
-							cursor.continue();
-						}
-						else
-						{
-							item	=	cursor.value;
-							seen_messages[item.id]	=	new Date().getTime();
-							// immediately check for more messages
-							setTimeout( function() { poll({skip_recurse: true}); }, 0 );
-						}
-					}
-				}
-
-				if(!options.skip_recurse) setTimeout(poll, delay);
-			};
-
-			var start	=	function()
-			{
-				if(!do_stop) return false;
-				do_stop	=	false;
-				setTimeout(poll, delay);
-				return true;
-			};
-
-			var stop	=	function()
-			{
-				if(do_stop) return false;
-				do_stop	=	true;
-				return true;
-			};
-
-			setTimeout(poll, delay);
-
-			this.start	=	start;
-			this.stop	=	stop;
-
-			return this;
-		};
-
-		// ---------------------------------------------------------------------
 		// maintenance/cleanup
 		// ---------------------------------------------------------------------
-
-		/**
-		 * remove old messages
-		 */
-		var cleanup_messages	=	function(options)
-		{
-			options || (options = {});
-
-			var trx			=	db.transaction(tbl.pubsub, 'readwrite');
-			trx.oncomplete	=	function(e) { if(options.success) options.success(e); };
-			trx.onerror		=	function(e) { if(options.error) options.error(e); }
-
-			var store	=	trx.objectStore(tbl.pubsub);
-			var index	=	store.index('created');
-			var bound	=	new Date().getTime() - msg_lifetime;
-			var range	=	IDBKeyRange.upperBound(bound);
-			index.openCursor(range).onsuccess	=	function(e)
-			{
-				var cursor	=	e.target.result;
-				if(cursor)
-				{
-					store.delete(cursor.value.id);
-					cursor.continue();
-				}
-			}
-		};
 
 		/**
 		 * move jobs in the delayed state into their respective tubes
@@ -1110,7 +943,6 @@
 			{
 				if(!db) return false;
 
-				cleanup_messages();
 				move_delayed_jobs_to_ready();
 				move_expired_jobs_to_ready();
 
@@ -1135,16 +967,11 @@
 			count_ready: count_ready,
 			Consumer: Consumer
 		};
-		var Pubsub	=	{
-			publish: publish,
-			Subscriber: Subscriber
-		}
 		this.open		=	open;
 		this.close		=	close;
 		this.is_open	=	function() { return !!db; };
 		this.wipe		=	wipe;
 		this.Error		=	Error;
-		this.Pubsub		=	Pubsub;
 		this.Queue		=	Queue;
 		this.promisify	=	function()
 		{
@@ -1172,7 +999,6 @@
 			this.Queue.kick_job		=	do_promisify(this.Queue.kick_job, 1);
 			this.Queue.touch		=	do_promisify(this.Queue.touch, 1);
 			this.Queue.count_ready	=	do_promisify(this.Queue.count_ready, 1);
-			this.Pubsub.publish		=	do_promisify(this.Pubsub.publish, 2);
 			return this;
 		}.bind(this);
 		this.debug		=	{

@@ -83,6 +83,9 @@ var DashboardController = Composer.Controller.extend({
 		this.sidebar_timer.end = this.resize_sidebar.bind(this);
 		this.sidebar_timer.start();
 
+		var sidebar	=	$E('.sidebar-bg');
+		if(sidebar) sidebar.setStyle('display', 'block');
+
 		this.profile.trigger('change:current_board');
 	},
 
@@ -102,6 +105,11 @@ var DashboardController = Composer.Controller.extend({
 		turtl.keyboard.unbind('S-/', 'dashboard:shortcut:open_help');
 		turtl.user.unbind('logout', 'dashboard:logout:clear_timer');
 		if(this.sidebar_timer && this.sidebar_timer.end) this.sidebar_timer.end = null;
+
+		// hide sidebar again
+		var sidebar	=	$E('.sidebar-bg');
+		if(sidebar) sidebar.setStyle('display', '');
+
 		this.parent.apply(this, arguments);
 	},
 

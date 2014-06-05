@@ -1,4 +1,5 @@
-.dashboard > .sidebar {float: left; position: absolute; top: 63px /* 22+40+1 */; width: 20%; height: 200px; overflow: auto;}
+.dashboard > .boards {position: relative; float: left; width: 19%;}
+.dashboard > .sidebar {float: left; position: absolute; top: 108px /* 29+16+22+40+1 */; width: 20%; height: 200px; overflow: auto;}
 /* fixes a chrome (and webkit?) performance issue with fixed divs */
 .dashboard > .sidebar {-webkit-transform: translateZ(0);}
 .dashboard > .menu {}

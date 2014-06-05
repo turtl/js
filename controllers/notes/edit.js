@@ -153,6 +153,8 @@ var NoteEditController = Composer.Controller.extend({
 				inject: this.board_container,
 				profile: turtl.profile,
 				add_bare: true,
+				show_actions: false,
+				switch_on_change: false,
 				change_on_add: true,
 				track_last_board: this.track_last_board,
 				board: board
@@ -160,6 +162,14 @@ var NoteEditController = Composer.Controller.extend({
 		}
 		this.select_tab(this.note_copy.get('type'));
 		if(window.port) window.port.send('resize');
+
+		// render our math example in the Formatting tutorial by hijacking a
+		// note item controller.
+		var note_controller	=	new NoteItemController({model: new Note()});
+		note_controller.el	=	this.el;
+		note_controller.render_math();
+		note_controller.el	=	null;
+		note_controller.release();
 	},
 
 	render_tags: function()
@@ -308,6 +318,7 @@ var NoteEditController = Composer.Controller.extend({
 		}
 
 		var file_set	=	file.get('set');
+		var file_size	=	false;
 		if(isnew && file_set)
 		{
 			// let the view know we're encrypting, and remove the blob_url so it
@@ -332,6 +343,10 @@ var NoteEditController = Composer.Controller.extend({
 		var do_note_save	=	function(options)
 		{
 			options || (options = {});
+
+			// we have to manually set the file size here so it is persisted to
+			// the DB
+			if(file_size && file_set) file.set({size: file_size});
 
 			// save the note copy, and on success, set the resulting data back into
 			// the original note
@@ -408,6 +423,7 @@ var NoteEditController = Composer.Controller.extend({
 				// we're no longer encrypting
 				file.unset('encrypting');
 				this.note.get('file').unset('encrypting');
+				file_size	=	res.body.length;
 
 				// save the file contents into local db then save the note
 				filedata.save({
@@ -471,7 +487,7 @@ var NoteEditController = Composer.Controller.extend({
 		this.select_tab(typename);
 		if(this.preview.getStyle('display') == 'block')
 		{
-			this.preview_note();
+			this.open_preview();
 		}
 	},
 
@@ -503,6 +519,14 @@ var NoteEditController = Composer.Controller.extend({
 			file_type: false
 		});
 		html_el.set('html', html);
+
+		// render any math
+		var note_controller	=	new NoteItemController({model: new Note()});
+		note_controller.el	=	html_el;
+		note_controller.render_math();
+		note_controller.el	=	null;
+		note_controller.release();
+
 		html_el.getElement('.actions').dispose();
 		(function() {
 			if(window.port) window.port.send('resize');

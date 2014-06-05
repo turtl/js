@@ -1,12 +1,14 @@
-.notes div.note-actions {display: block; height: 40px; margin: 0 0 16px 0; padding: 7px 0 0 0;}
+/*.notes div.note-actions {display: block; height: 40px; margin: 0 0 16px 0; padding: 7px 0 0 0;}*/
+.notes div.note-actions {z-index: 200; display: block; position: absolute; top: 1px; height: 40px; margin: 0; padding: 5px 0 0 0;}
 .notes div.note-actions a {display: block;}
 .notes div.note-actions a span {display: block;}
 .notes div.note-actions {margin-left: 15px;}
 /*.notes div.note-actions div.button.add.note {float: left; margin: -1px 0 0 0; padding: 1px 4px; border-radius: 3px;}*/
 .notes div.note-actions div.button {margin: 0 6px 0 0;}
-.notes div.note-actions .sort {display: inline-block; margin-left: 16px; color: #999; white-space: nowrap;}
+.notes div.note-actions div.button:hover {background: #1e1e1e;}
+.notes div.note-actions .sort {display: inline-block; margin-left: 16px; color: #ccc; white-space: nowrap;}
 .notes div.note-actions .sort a {display: inline;}
-.notes div.note-actions .sort a icon {display: none;}
+.notes div.note-actions .sort a icon {display: none; color: #ccc;}
 .notes div.note-actions .sort a.sel.asc icon.asc,
 .notes div.note-actions .sort a.sel.desc icon.desc {display: inline-block;}
 .notes div.note-actions ul {float: left; list-style: none; margin: -1px 0 0 32px;}
@@ -112,13 +114,12 @@ ul.note_list .note.image .color {margin: 0;}*/
 .note-view ul.tags li:last-child {margin-right: 4px;} /* don't know why this doesn't line up, but here's the fix */
 .note-view ul.tags li span {color: #222;}
 .note-view.image {padding: 0; overflow: hidden; text-align: center; background: #000;}
-.note-view.image a.img {padding: 0; line-height: 0; text-align: center; background: #000;}
+.note-view.image a.img {padding: 0; line-height: 1em; text-align: center; background: #000;}
 .note-view.image .content {padding: 20px; margin-top: -2px; background: #fff;}
 
 /* add/edit */
-.note-edit .boards {position: absolute; top: 22px; left: 160px;}
-.note-edit .boards .board-list {margin: 0; padding: 0; border: 0;}
-.note-edit .boards .board-list select {width: 120px;}
+.note-edit .boards {position: absolute; top: 0px; left: 160px; margin-top: -5px;}
+.note-edit .boards .board-list {width: 160px; margin: 0; padding: 0;}
 .note-edit .boards .board-list ul.actions li a {display: none;}
 .note-edit .boards .board-list ul.actions li a.add {margin: 5px 0 0 0; display: inline-block;}
 .note-edit ul.type {list-style: none; position: absolute; top: 32px; left: 380px;}
@@ -207,7 +208,7 @@ ul.note_list.list_masonry > li.image {width: 232px; padding: 0;}
 ul.note_list.list_masonry > li.image > div.gutter {padding: 0;}
 ul.note_list.list_masonry > li > div.gutter {max-height: 500px; overflow: hidden;}
 ul.note_list.list_masonry > li.image > div.gutter {width: 100%; overflow: hidden;}
-ul.note_list.list_masonry > li.image h2 {display: none; position: absolute; bottom: 0; width: 96%; height: 26px; padding: 6px 2% 0 2%; line-height: 1em; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background: url(../../images/site/trans_000_50.png) 0 0;}
+ul.note_list.list_masonry > li.image h2 {display: none; position: absolute; bottom: 0; width: 96%; height: 26px; margin: 0; padding: 6px 2% 0 2%; line-height: 1em; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background: url(../../images/site/trans_000_50.png) 0 0;}
 ul.note_list.list_masonry > li.image:hover h2 {display: block;}
 /* pretty impossible to sort masonry notes */
 ul.note_list.list_masonry > li div.actions a.sort {display: none;}
@@ -223,6 +224,8 @@ ul.note_list.list_masonry .note img {max-width: 100%;}
 ul.note_list.list_masonry .note a.img {display: block; width: 232px; line-height: 0; text-align: center; background: #000;}
 
 @media screen and (min-resolution: 250dpi), screen and (max-width: 1000px) {
-	.notes div.note-actions {z-index: 200; position: fixed; bottom: 0; width: 98%; margin: 0; padding: 9px 0 0 2%; background: #dfdfdf; border-top: 1px solid #bbb;}
+	.notes div.note-actions {z-index: 200; position: fixed; top: auto; bottom: 0; width: 98%; margin: 0; padding: 9px 0 0 2%; background: #dfdfdf; border-top: 1px solid #bbb;}
 }
+
+.notes .MathJax_Display {padding: 4px; overflow-x: auto;}
 

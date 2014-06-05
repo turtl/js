@@ -2,9 +2,15 @@
 	<? if(user.id && !window._in_ext) { ?>
 		<a class="menu" href="#menu" alt="Menu"><icon>&#9881;</icon></a>
 		<ul class="menu">
+			<li class="account">
+				<a href="#account" title="Manage your Turtl account">
+					<icon>&#8962;</icon>
+					<span>Manage account</span>
+				</a>
+			</li>
 			<li class="persona">
 				<a href="#personas" title="Manage your identity">
-					<icon>&#128100;</icon>
+					<icon>&#128101;</icon>
 					<span>Personas</span>
 				</a>
 			</li>
@@ -22,7 +28,7 @@
 			</li>
 			<li class="logout">
 				<a href="/users/logout" title="Sign out (shortcut `shift+L`)">
-					<icon>&#59201;</icon>
+					<icon>&#128274;</icon>
 					<span>Logout</span>
 				</a>
 			</li>

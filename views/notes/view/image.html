@@ -9,7 +9,7 @@
 		<? } ?>
 		<span class="clearMe"></span>
 		<? if(note.text && note.text != '') { ?>
-			<?=markdown.toHTML(note.text)?>
+			<?=view.note_body(note.text)?>
 		<? } ?>
 	</div>
 <? } ?>

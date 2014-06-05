@@ -1,36 +1,23 @@
-<div class="board-list">
-	<? if(boards.length > 0) { ?>
-		<select id="board_selector">
-			<? boards.each(function(p) { ?>
-				<option
-					value="<?=p.id?>"
-					<? if(current == p.id) { ?>selected<? } ?>>
-					<?=p.title?>
-				</option>
-			<? }); ?>
-		</select>
-		<ul class="actions">
-			<li>
-				<a href="#" class="add" title="Add a new board (shortcut `b`)">
-					<icon>&oplus;</icon>
-				</a>
-			</li>
-			<li>
-				<a href="#" class="manage" title="Manage your boards">
-					<img src="<?=img('/images/site/icons/manage_16x16_black.png')?>" alt="manage" width="16" height="16">
-				</a>
-			</li>
-		</ul>
-	<? } else { ?>
-		<ul class="actions">
-			<li>
-				<a href="#" class="add first" title="Add a new board (shortcut `b`)">
-					<icon>&oplus;</icon>
-					Add your first board
-				</a>
-			</li>
-		</ul>
-	<? } ?>
-	<?/* little trick i learned in nam */?>
-	<span style="clear:left;display:block;"></span>
-</div>
+<ul>
+	<? boards.each(function(b) { ?>
+		<?
+		var active_share	=	b.privs && Object.keys(b.privs).length > 0;
+		?>
+		<li>
+			<? if(show_actions) { ?>
+				<ul class="<?=b.id?>">
+					<? if(b.shared) { ?>
+						<li><a href="#leave" title="Leave this board"><icon>&#59201;</icon></a></li>
+					<? } else { ?>
+						<li <? if(active_share) { ?>class="active"<? } ?>><a href="#share" title="Share this board"><icon>&#59196;</icon></a></li>
+						<li><a href="#edit" title="Board settings"><icon>&#9881;</icon></a></li>
+						<!--<li><a href="#delete" title="Delete this board"><icon>&#59177;</icon></a></li>-->
+					<? } ?>
+				</ul>
+			<? } ?>
+			<a class="board <? if(current && current.id == b.id) { ?>current<? } ?>" href="#board-<?=b.id?>">
+				<?=b.title?>
+			</a>
+		</li>
+	<? }); ?>
+</ul>

@@ -89,8 +89,7 @@ var BoardManageController = Composer.Controller.extend({
 		{
 			this.release();
 			new PersonaEditController({
-				collection: turtl.user.get('personas'),
-				return_to_manage: true
+				collection: turtl.user.get('personas')
 			});
 		}
 	},
@@ -100,7 +99,6 @@ var BoardManageController = Composer.Controller.extend({
 		if(e) e.stop();
 		this.release();
 		new BoardEditController({
-			return_to_manage: true,
 			profile: turtl.profile
 		});
 	},
@@ -127,7 +125,6 @@ var BoardManageController = Composer.Controller.extend({
 		if(!board) return;
 		this.release();
 		new BoardEditController({
-			return_to_manage: true,
 			profile: turtl.profile,
 			board: board
 		});
