@@ -163,13 +163,13 @@ var BaseNoteItem = Composer.Controller.extend({
 				icon.src	=	icon_src;
 				atag.removeClass('decrypting');
 				atag.setProperties({title: ''});
-				console.log('decryption done!');
 
 				var url			=	URL.createObjectURL(blob);
 				var name		=	this.model.get('file').get('name');
 				var download	=	new Element('a')
 					.setStyles({visibility: 'hidden'})
 					.set('html', 'Download '+ name.safe())
+					.addClass('attachment')
 					.setProperties({
 						href: url,
 						download: name,
