@@ -438,15 +438,34 @@ var turtl	=	{
 			if(show)
 			{
 				this.stop_spinner = false;
-				var chars = ['/', '-', '\\', '|'];
+				var text = $E('span', overlay);
+				text.addClass('display');
+				var imghtml = '<img src="'+ img('/images/template/logo.svg') +'" width="40" height="40">';
+				text.set('html', imghtml + imghtml + imghtml);
+				var imgs = text.getElements('img');
 				var idx = 0;
-				var spinner = $E('.spin', overlay);
+				//var spinner = $E('.spin', overlay);
 				var spin = function()
 				{
-					if(this.stop_spinner || !spinner) return;
-					spinner.set('html', chars[idx]);
-					idx = (idx + 1) % chars.length;
-					spin.delay(100, this);
+					idx = (idx + 1) % 4;
+					imgs.each(function(img, i) {
+						if(i >= idx)
+						{
+							img.removeClass('show');
+							return;
+						}
+						if(!img.hasClass('show')) img.addClass('show');
+					});
+
+					if(text.hasClass('display'))
+					{
+						text.removeClass('display');
+					}
+					else
+					{
+						text.addClass('display');
+					}
+					spin.delay(750, this);
 				}.bind(this);
 				spin();
 			}
