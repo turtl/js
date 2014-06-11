@@ -58,7 +58,7 @@ var BaseNoteItem = Composer.Controller.extend({
 		this.html(content);
 		// fix bad links in the note content
 		this.el.getElements('.content a').each(function(el) {
-			if(!el.href || !el.href.match(/^[a-z]:\/\//))
+			if(!el.href || !el.href.match(/^[a-z]+:/))
 			{
 				el.href	=	'http://' + el.href;
 			}
