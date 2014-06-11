@@ -36,7 +36,7 @@ var HeaderBarController = Composer.Controller.extend({
 	{
 		turtl.user.unbind(['login', 'logout'], 'header_bar:user:render');
 		if(this.notifications) this.notifications.release();
-		if(this.size_container) this.size_container.release();
+		if(this.size_controller) this.size_controller.release();
 		this.close_timer.end = null;
 		this.parent.apply(this, arguments);
 	},
