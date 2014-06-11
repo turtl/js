@@ -48,6 +48,7 @@ var HeaderBarController = Composer.Controller.extend({
 		});
 		this.html(content);
 
+		if(this.size_controller) this.size_controller.release();
 		this.size_controller	=	new AccountProfileSizeController({
 			inject: this.size_container
 		});

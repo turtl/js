@@ -333,6 +333,8 @@ var Profile = Composer.RelationalModel.extend({
 
 	calculate_size: function(options)
 	{
+		if(!turtl.db) return false;
+
 		options || (options = {});
 
 		var profile_size		=	0;
