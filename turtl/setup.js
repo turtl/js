@@ -43,7 +43,14 @@ if(window.chrome && window.chrome.extension)
 
 if(window._in_desktop)
 {
-	config.version			=	gui.App.manifest.version;
+	if(window.gui)
+	{
+		config.version = gui.App.manifest.version;
+	}
+	else
+	{
+		config.version = 'buildme';
+	}
 	window.__api_url		=	config.api_url;
 	window._base_url		=	window.location.toString().replace(/^(.*)\/.*?$/, '$1/app');
 	window._disable_cookie	=	true;
