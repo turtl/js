@@ -1651,6 +1651,7 @@
 
 		options: {
 			redirect_initial: true,
+			route_base: '',
 			suppress_initial_route: false,
 			enable_cb: function() { return true; },
 			on_failure: function() {},
@@ -1701,7 +1702,7 @@
 				// it normally
 				if(this.options.redirect_initial && !(hash == '/' || hash == ''))
 				{
-					global.location	=	'/#!' + hash;
+					global.location	=	this.options.route_base + '/#!' + hash;
 				}
 
 				// SUCK ON THAT, HISTORY.JS!!!!
@@ -1749,11 +1750,11 @@
 		{
 			if(!History.enabled)
 			{
-				return '/' + new String(global.location.hash).toString().replace(/^[#!\/]+/, '');
+				return '/' + new String(global.location.hash).toString().replace(new RegExp('^'+this.options.route_base), '').replace(/^[#!\/]+/, '');
 			}
 			else
 			{
-				return new String(global.location.pathname+global.location.search).toString();
+				return new String(global.location.pathname+global.location.search).toString().replace(new RegExp('^'+this.options.route_base), '');
 			}
 		},
 
@@ -1782,8 +1783,8 @@
 			options || (options = {});
 			options.state || (options.state = {});
 
-			var href	=	'/' + url.trim().replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
-			var old		=	this.cur_path();
+			var href	=	this.options.route_base + '/' + url.trim().replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
+			var old		=	this.options.route_base + this.cur_path();
 			if(old == href)
 			{
 				if(History.enabled)
@@ -1827,6 +1828,8 @@
 		 */
 		_do_route: function(url, routes)
 		{
+			var re = new RegExp('^'+this.options.route_base);
+			url = url.replace(re, '');
 			if(!this.options.enable_cb(url))
 			{
 				return false;

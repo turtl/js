@@ -48,7 +48,7 @@ var BookmarkController = Composer.Controller.extend({
 
 		this.soft_release();
 
-		var savedstr	=	localStorage['bookmarker:note:saved'];
+		var savedstr	=	Tstorage['bookmarker:note:saved'];
 		var saved		=	savedstr && JSON.parse(savedstr);
 		if(saved && saved.url == this.linkdata.url)
 		{
@@ -66,7 +66,7 @@ var BookmarkController = Composer.Controller.extend({
 				}).delay(0, this);
 				return false;
 			}
-			window.localStorage.removeItem('bookmarker:note:saved');
+			window.Tstorage.removeItem('bookmarker:note:saved');
 			var note = new Note({
 				type: this.linkdata.type,
 				url: this.linkdata.url,
@@ -109,7 +109,7 @@ var BookmarkController = Composer.Controller.extend({
 
 		this.edit_controller.bind('saved', function() {
 			// remove the localStorage entry for this note
-			window.localStorage.removeItem('bookmarker:note:saved');
+			window.Tstorage.removeItem('bookmarker:note:saved');
 
 			this.profile.trigger('change:current_board');
 			if((window._in_ext || window._in_desktop) && window.port)
@@ -160,7 +160,7 @@ var BookmarkController = Composer.Controller.extend({
 			url: this.linkdata.url,
 			note: toJSON(note)
 		}
-		localStorage['bookmarker:note:saved']	=	JSON.encode(data);
+		Tstorage['bookmarker:note:saved']	=	JSON.encode(data);
 	},
 
 	get_height: function()

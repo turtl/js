@@ -22,7 +22,7 @@ var UserJoinController = Composer.Controller.extend({
 		// check for promo codes
 		var check_promo	=	function()
 		{
-			var promo	=	localStorage.promo;
+			var promo	=	Tstorage.promo;
 			if(promo && this.inp_promo.get('value') == '')
 			{
 				this.inp_promo.set('value', promo);
@@ -38,7 +38,7 @@ var UserJoinController = Composer.Controller.extend({
 	{
 		var content = Template.render('users/join', {
 			enable_promo: config.enable_promo,
-			promo: localStorage.promo
+			promo: Tstorage.promo
 		});
 		this.html(content);
 		if(this.promo_section && !this.promo_section.hasClass('open'))
@@ -94,7 +94,6 @@ var UserJoinController = Composer.Controller.extend({
 				});
 				turtl.user.login(data);
 				turtl.loading(false);
-				turtl.route('/');
 			}.bind(this),
 			error: function() {
 				turtl.loading(false);

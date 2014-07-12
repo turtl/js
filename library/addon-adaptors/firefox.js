@@ -1,24 +1,28 @@
-var FirefoxAddonPort	=	new Class({
-	comm: false,
-
-	initialize: function(comm_object)
+var FirefoxDesktopPort = new Class({
+	initialize: function()
 	{
-		this.comm	=	comm_object;
 	},
 
-	send: function(ev, args)
+	send: function(ev, _)
 	{
-		this.comm.emit.apply(this.comm.emit, arguments);
+		var args = Array.prototype.slice.call(arguments, 1);
+		var el = document.createElement('blast');
+		el.setAttribute('data', JSON.stringify({ev: ev, args: args}));
+		document.documentElement.appendChild(el);
+
+		var evt = document.createEvent('Events');
+		evt.initEvent('comm', true, false);
+		el.dispatchEvent(evt);
 	},
 
 	bind: function(ev, cb)
 	{
-		this.comm.on(ev, cb);
+
 	},
 
 	unbind: function()
 	{
-		this.comm.removeListener.apply(this.comm, arguments);
+
 	}
 });
 

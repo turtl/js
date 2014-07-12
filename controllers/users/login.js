@@ -10,18 +10,13 @@ var UserLoginController = Composer.Controller.extend({
 		'submit form': 'do_login'
 	},
 
-	redirect: '/',
-
 	init: function()
 	{
-		var qs = parse_querystring();
-		if(qs.redirect) this.redirect = Base64.decode(qs.redirect);
 		this.render();
 	},
 
 	render: function()
 	{
-		// TODO: save redirect in JOIN link
 		var content = Template.render('users/login');
 		this.html(content);
 		this.inp_username.focus.delay(100, this.inp_username);
@@ -48,7 +43,6 @@ var UserLoginController = Composer.Controller.extend({
 				});
 				turtl.user.login(data);
 				turtl.loading(false);
-				turtl.route(this.redirect);
 			}.bind(this),
 			error: function(e) {
 				barfr.barf('Login failed.');

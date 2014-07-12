@@ -6,5 +6,7 @@ config.routes	=	{
 
 	'/bookmark': ['bookmark', 'index'],
 
-	'/': ['dashboard', 'load']
+	'/': ['dashboard', 'load'],
+	// FF stupidness
+	'/turtl.xul': ['dashboard', 'load']
 }

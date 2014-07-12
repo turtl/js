@@ -47,9 +47,16 @@ if(window._in_desktop)
 	{
 		config.version = gui.App.manifest.version;
 	}
-	else
+	else if(window._firefox)
 	{
 		config.version = 'buildme';
+		window.port = new FirefoxDesktopPort();
+		window._route_base = '/content';
+		log.setLevel(log.levels.DEBUG);
+		window.do_reload = function()
+		{
+			window.location = 'chrome://turtl/content/data/index.html';
+		};
 	}
 	window.__api_url		=	config.api_url;
 	window._base_url		=	window.location.toString().replace(/^(.*)\/.*?$/, '$1/app');

@@ -85,7 +85,7 @@ var User	=	Protected.extend({
 
 	login_from_cookie: function()
 	{
-		var cookie	=	localStorage[config.user_cookie];
+		var cookie	=	Tstorage[config.user_cookie];
 		if(cookie == null)
 		{
 			return false;
@@ -119,13 +119,13 @@ var User	=	Protected.extend({
 	{
 		options || (options = {});
 		var data	=	{data: {a: this.get_auth()}};
-		if(localStorage.invited_by)
+		if(Tstorage.invited_by)
 		{
-			data.invited_by	=	localStorage.invited_by;
+			data.invited_by	=	Tstorage.invited_by;
 		}
 
 		// grab the promo code, if we haven't already used it.
-		var used_promos	=	JSON.parse(localStorage.used_promos || '[]');
+		var used_promos	=	JSON.parse(Tstorage.used_promos || '[]');
 		var promo		=	options.promo;
 		if(promo) //&& (!used_promos || !used_promos.contains(promo)))
 		{
@@ -138,13 +138,13 @@ var User	=	Protected.extend({
 				{
 					// if we used a promo, track it to make sure this client
 					// doesn't use it again.
-					//localStorage.used_promos	=	JSON.stringify(JSON.parse(localStorage.used_promos || '[]').push(data.promo));
+					//Tstorage.used_promos	=	JSON.stringify(JSON.parse(Tstorage.used_promos || '[]').push(data.promo));
 				}
 
 				// once we have a successful signup with the invite/promo, wipe
 				// them out so we don't keep counting multiple times.
-				delete localStorage.invited_by;
-				delete localStorage.promo;
+				delete Tstorage.invited_by;
+				delete Tstorage.promo;
 
 				// once we have the user record, wait until the user is logged
 				// in. then we poll turtl.db until our local db object exists.
@@ -187,7 +187,7 @@ var User	=	Protected.extend({
 			invite_code: this.get('invite_code'),
 			storage: this.get('storage')
 		};
-		localStorage[config.user_cookie]	=	JSON.encode(save);
+		Tstorage[config.user_cookie]	=	JSON.encode(save);
 	},
 
 	logout: function()
@@ -196,7 +196,7 @@ var User	=	Protected.extend({
 		this.key = null;
 		this.logged_in	=	false;
 		this.clear();
-		delete localStorage[config.user_cookie];
+		delete Tstorage[config.user_cookie];
 		this.unbind_relational('personas', ['saved'], 'user:track_personas');
 		this.unbind_relational('personas', ['destroy'], 'user:track_personas:destroy');
 		this.unbind_relational('settings', ['change'], 'user:save_settings');

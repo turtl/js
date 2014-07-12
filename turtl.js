@@ -160,11 +160,11 @@ var turtl	=	{
 
 			// setup invites and move invites from local storage into collection
 			if(!turtl.invites) turtl.invites = new Invites();
-			if(localStorage.invites)
+			if(Tstorage.invites)
 			{
-				turtl.invites.reset(Object.values(JSON.parse(localStorage.invites)));
+				turtl.invites.reset(Object.values(JSON.parse(Tstorage.invites)));
 			}
-			localStorage.invites	=	'{}';	// wipe local storage
+			Tstorage.invites	=	'{}';	// wipe local storage
 			if(window.port) window.port.bind('invites-populate', function(invite_data) {
 				turtl.invites.reset(Object.values(invite_data));
 			}.bind(this));
@@ -186,10 +186,12 @@ var turtl	=	{
 							turtl.last_url = '';
 							turtl.search.reindex();
 							var initial_route	=	options.initial_route || '';
+							log.debug('initial route: ', initial_route);
 							if(initial_route.match(/^\/users\//)) initial_route = '/';
 							if(initial_route.match(/index.html/)) initial_route = '/';
 							if(initial_route.match(/background.html/)) initial_route = '/';
-							if(!window._in_background) turtl.route(initial_route);
+							if(initial_route.match(/turtl.xul/)) initial_route = '/';
+							turtl.route(initial_route);
 							turtl.setup_syncing();
 							turtl.setup_background_panel();
 							if(window.port) window.port.send('profile-load-complete');
@@ -236,7 +238,7 @@ var turtl	=	{
 			turtl.api.clear_auth();
 			modal.close();
 
-			localStorage.invites	=	'{}';	// wipe local storage
+			Tstorage.invites	=	'{}';	// wipe local storage
 
 			// local storage is for logged in people only
 			if(turtl.db)
@@ -498,6 +500,9 @@ var turtl	=	{
 				// we'll process our own QS, THXLOLOLOLOLOLOLOLOLOLOLOLOLOLOL!!!
 				process_querystring: false,
 
+				//redirect_initial: false,
+				route_base: window._route_base || '',
+
 				// we'll do our own first route
 				suppress_initial_route: true,
 
@@ -507,7 +512,8 @@ var turtl	=	{
 				}.bind(this),
 				on_failure: function(obj)
 				{
-					console.log('route failed:', obj.url, obj);
+					log.error('route failed:', obj.url, obj);
+					console.trace();
 				}.bind(this)
 			}, options);
 			this.router	=	new Composer.Router(config.routes, options);
@@ -546,6 +552,7 @@ var turtl	=	{
 		{
 			url = '/users/login';
 		}
+		log.debug('route: ', url, options);
 		this.router.route(url, options);
 	},
 
@@ -657,6 +664,8 @@ window.addEvent('domready', function() {
 		smartLists: true
 	});
 
+	if(!window.Tstorage) window.Tstorage = window.localStorage;
+
 	// init it LOL
 	turtl.init.delay(50, turtl);
 });
@@ -682,4 +691,6 @@ if(config.catch_global_errors)
 		});
 	};
 }
+
+(function() { window.port.send('remote', {ev: 'ping'}); }).delay( 100, this );
 
