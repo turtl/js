@@ -186,7 +186,7 @@ var turtl	=	{
 							turtl.last_url = '';
 							turtl.search.reindex();
 							var initial_route	=	options.initial_route || '';
-							log.debug('initial route: ', initial_route);
+							//log.debug('initial route: ', initial_route);
 							if(initial_route.match(/^\/users\//)) initial_route = '/';
 							if(initial_route.match(/index.html/)) initial_route = '/';
 							if(initial_route.match(/background.html/)) initial_route = '/';
@@ -509,11 +509,6 @@ var turtl	=	{
 				enable_cb: function(url)
 				{
 					return this.loaded;
-				}.bind(this),
-				on_failure: function(obj)
-				{
-					log.error('route failed:', obj.url, obj);
-					console.trace();
 				}.bind(this)
 			}, options);
 			this.router	=	new Composer.Router(config.routes, options);
@@ -532,10 +527,14 @@ var turtl	=	{
 					return true;
 				}
 			});
-			this.router.register_callback(this.route_callback.bind(this));
+			this.router.bind('route', this.route_callback.bind(this));
 			this.router.bind('preroute', function(url) {
 				this.controllers.pages.trigger('preroute', url);
 			}.bind(this));
+			this.router.bind('fail', function(obj) {
+				log.error('route failed:', obj.url, obj);
+				console.trace();
+			});
 		}
 	},
 
@@ -691,6 +690,4 @@ if(config.catch_global_errors)
 		});
 	};
 }
-
-(function() { window.port.send('remote', {ev: 'ping'}); }).delay( 100, this );
 

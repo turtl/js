@@ -71,7 +71,7 @@ var NotesController = TrackController.extend({
 		var board_id	=	this.board.id();
 		this.filter_list	=	new NotesFilter(this.board.get('notes'), {
 			sort_event: true,
-			refresh_on_change: false,
+			refresh_on_change: true, //false,
 			filter: function(note)
 			{
 				if(!this.last_search) return true;
@@ -95,7 +95,7 @@ var NotesController = TrackController.extend({
 		});
 
 		// Main search event
-		this.board.bind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], function() {
+		this.board.get('tags').bind(['change:filters', 'change:selected', 'change:excluded'], function() {
 			var start		=	performance.now();
 			var selected	=	this.board.get_selected_tags().map(function(t) { return t.get('name'); });
 			var excluded	=	this.board.get_excluded_tags().map(function(t) { return '!'+t.get('name'); });
@@ -119,7 +119,7 @@ var NotesController = TrackController.extend({
 			this.filter_list.refresh({diff_events: true, silent: 'reset'});
 			this.finish_fragment(this.note_list);
 
-			//console.log('note filter time: ', performance.now() - start);
+			log.debug('note filter time: ', performance.now() - start);
 			this.setup_masonry();
 			//this.setup_sort();
 		}.bind(this), 'notes:listing:track_filters');

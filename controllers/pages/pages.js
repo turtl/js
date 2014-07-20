@@ -28,8 +28,10 @@ var PagesController	=	Composer.Controller.extend({
 	{
 	},
 
-	pre_route: function(url)
+	pre_route: function(boxed)
 	{
+		var url = boxed.path;
+
 		// scroll to the top of the window (but ONLY if we're not in a modal).
 		var last	=	(turtl.last_url || window.location.pathname).replace(/\-\-.*/, '');
 		var cur		=	url.replace(/\-\-.*/, '');
