@@ -1,4 +1,4 @@
-var KeychainEntry	=	Protected.extend({
+var KeychainEntry	=	Composer.RelationalModel.extend({
 	base_url: '/keychain',
 
 	public_fields: [
@@ -20,7 +20,7 @@ var KeychainEntry	=	Protected.extend({
 	}
 });
 
-var Keychain	=	SyncCollection.extend({
+var Keychain	=	Composer.Collection.extend({
 	model: KeychainEntry,
 	local_table: 'keychain',
 

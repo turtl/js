@@ -144,10 +144,6 @@ var PagesController	=	Composer.Controller.extend({
 	 */
 	release_current: function()
 	{
-		// clear title so it doesn't persist across pages when the target page
-		// doesn't set it
-		turtl.set_title('');
-
 		if(!this.cur_controller) return false;
 		this.cur_controller.release();
 		this.cur_controller	=	false;

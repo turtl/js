@@ -1,4 +1,4 @@
-var User	=	Protected.extend({
+var User	=	Composer.RelationalModel.extend({
 	base_url: '/users',
 	local_table: 'user',
 
@@ -280,7 +280,7 @@ var User	=	Protected.extend({
 });
 
 // we don't actually use this collection for anything but syncing
-var Users	=	SyncCollection.extend({
+var Users	=	Composer.Collection.extend({
 	model: User,
 	local_table: 'user',
 

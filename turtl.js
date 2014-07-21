@@ -19,9 +19,6 @@ var cid_match	=	/^z\.[0-9a-f]+\.c[0-9]+$/;
 var turtl	=	{
 	site_url: null,
 
-	// base window title
-	base_window_title: 'Turtl',
-
 	// holds the user model
 	user: null,
 
@@ -42,17 +39,6 @@ var turtl	=	{
 
 	loaded: false,
 	router: false,
-
-	// tells the pages controller whether or not to scroll to the top of the
-	// window after a page load
-	scroll_to_top: true,
-
-	// whether or not to sync data w/ server
-	do_sync: true,
-	do_remote_sync: true,
-
-	// if true, tells the app to mirror data to local storage
-	mirror: false,
 
 	// -------------------------------------------------------------------------
 	// Data section
@@ -181,31 +167,24 @@ var turtl	=	{
 
 			turtl.show_loading_screen(true);
 
-			// sets up local storage (indexeddb)
-			turtl.setup_local_db({
+			turtl.profile.populate({
 				complete: function() {
-					// database is setup, populate the profile
-					turtl.profile.populate({
-						complete: function() {
-							// move keys from the user's settings into the keychain
-							turtl.show_loading_screen(false);
-							turtl.controllers.pages.release_current();
-							turtl.last_url = '';
-							turtl.search.reindex();
-							var initial_route	=	options.initial_route || '';
-							//log.debug('initial route: ', initial_route);
-							if(initial_route.match(/^\/users\//)) initial_route = '/';
-							if(initial_route.match(/index.html/)) initial_route = '/';
-							if(initial_route.match(/background.html/)) initial_route = '/';
-							if(initial_route.match(/turtl.xul/)) initial_route = '/';
-							turtl.route(initial_route);
-							turtl.setup_syncing();
-							turtl.setup_background_panel();
-							if(window.port) window.port.send('profile-load-complete');
-						}.bind(turtl)
-					});
-
-				}.bind(this)
+					// move keys from the user's settings into the keychain
+					turtl.show_loading_screen(false);
+					turtl.controllers.pages.release_current();
+					turtl.last_url = '';
+					turtl.search.reindex();
+					var initial_route	=	options.initial_route || '';
+					//log.debug('initial route: ', initial_route);
+					if(initial_route.match(/^\/users\//)) initial_route = '/';
+					if(initial_route.match(/index.html/)) initial_route = '/';
+					if(initial_route.match(/background.html/)) initial_route = '/';
+					if(initial_route.match(/turtl.xul/)) initial_route = '/';
+					turtl.route(initial_route);
+					turtl.setup_syncing();
+					turtl.setup_background_panel();
+					if(window.port) window.port.send('profile-load-complete');
+				}.bind(turtl)
 			});
 
 			// logout shortcut
@@ -275,38 +254,6 @@ var turtl	=	{
 		}.bind(turtl));
 	},
 
-	setup_local_db: function(options)
-	{
-		options || (options = {});
-
-		// hijack the complete function to set our shiny new database into the
-		// turtl scope.
-		var complete		=	options.complete || function() {};
-		options.complete	=	function(server)
-		{
-			turtl.db	=	server;
-			if(turtl.db && turtl.hustle) complete(server);
-		};
-
-		var hustle	=	new Hustle({
-			tubes: ['incoming', 'outgoing', 'files'],
-			db_name: 'hustle_user_'+turtl.user.id(),
-			db_version: 2,
-			maintenance_delay: 5000
-		});
-		hustle.open({
-			success: function() {
-				turtl.hustle	=	hustle;
-				if(turtl.db && turtl.hustle) complete(turtl.db);
-			},
-			error: function(e) {
-				console.error('problem opening Hustle: ', e);
-			}
-		});
-
-		return database.setup(options);
-	},
-
 	wipe_local_db: function(options)
 	{
 		options || (options = {});
@@ -317,24 +264,9 @@ var turtl	=	{
 			console.log('window.indexedDB.deleteDatabase("turtl.<userid>")');
 			return false;
 		}
-		turtl.sync.stop();
-		if(turtl.db) turtl.db.close();
-		window.indexedDB.deleteDatabase('turtl.'+turtl.user.id());
-		if(turtl.hustle) turtl.hustle.wipe();
-		turtl.db		=	null;
-		turtl.hustle	=	null;
-		if(options.restart)
-		{
-			turtl.setup_local_db({
-				complete: function() {
-					if(options.complete) options.complete();
-				}
-			});
-		}
-		else
-		{
-			if(options.complete) options.complete();
-		}
+		turtl.remote.send('wipe-local-db', {}, {
+			success: options.complete
+		});
 	},
 
 	setup_header_bar: function()
@@ -364,61 +296,6 @@ var turtl	=	{
 			if(show)	el.setStyle('visibility', 'visible');
 			else		el.setStyle('visibility', '');
 		});
-	},
-
-	setup_syncing: function()
-	{
-		// enable syncing
-		turtl.sync.start();
-
-		// register our tracking for local syncing (db => in-mem)
-		//
-		// NOTE: order matters here! since the keychain holds keys in its data,
-		// it's important that it runs before everything else, or you may wind
-		// up with data that doesn't get decrypted properly. next is the
-		// personas, followed by boards, and lastly notes.
-		turtl.sync.register_local_tracker('user', new Users());
-		turtl.sync.register_local_tracker('keychain', turtl.profile.get('keychain'));
-		turtl.sync.register_local_tracker('personas', turtl.profile.get('personas'));
-		turtl.sync.register_local_tracker('boards', turtl.profile.get('boards'));
-		turtl.sync.register_local_tracker('notes', turtl.profile.get('notes'));
-
-		// always sync from local db => in-mem models, even if syncing is
-		// disabled. this not only keeps memory synchronized with what's being
-		// stored, it allows us to sync changes between pieces of turtl client-
-		// side. for instance, we can save data in an app tab, and a second
-		// later it will be synced to our background process.
-		turtl.sync.sync_from_db();
-
-		// only sync against the remote DB if we're in the standalone app OR if
-		// we're in the background thread of an addon
-		if(turtl.do_sync && (!window._in_ext || window._in_background) && !window._in_app)
-		{
-			var notes	=	new Notes();
-			notes.start();	// poll for note recrods without files
-
-			// note that our remote trackers use brand new instances of the
-			// models/collections we'll be tracking. this enforces a nice
-			// separation between remote syncing and local syncing (and
-			// encourages all data changes to flow through the local db).
-			turtl.sync.register_remote_tracker('user', new Users());
-			turtl.sync.register_remote_tracker('keychain', new Keychain());
-			turtl.sync.register_remote_tracker('personas', new Personas());
-			turtl.sync.register_remote_tracker('boards', new Boards());
-			turtl.sync.register_remote_tracker('notes', notes);
-			turtl.sync.register_remote_tracker('files', new Files());
-
-			// start API -> local db sync process. calls POST /sync, which grabs
-			// all the latest changes for our profile, which are then applied to
-			// our local db.
-			turtl.sync.sync_from_api();
-
-			// start the local db -> API sync process.
-			turtl.sync.sync_to_api();
-
-			// handles all file jobs (download mainly)
-			turtl.files.start_consumer();
-		}
 	},
 
 	setup_background_panel: function()
@@ -566,23 +443,6 @@ var turtl	=	{
 	{
 		this.last_url	=	url + window.location.search;
 		this.controllers.pages.trigger('route', url);
-	},
-
-	set_title: function(title)
-	{
-		var regex	=	new RegExp('(\\s*\\|\\s*'+(turtl.base_window_title).escapeRegExp()+')*(\\s*\\|)?$', 'g');
-		title		=	title.clean().replace(regex, '');
-		if(title == '') title = this.base_window_title;
-		else title = title + ' | ' + this.base_window_title;
-		document.title	=	title;
-	},
-
-	prepend_title: function(prepend)
-	{
-		prepend	=	prepend.clean();
-		if(prepend == '') return false;
-		title	=	document.title;
-		document.title	=	prepend + ' | ' + title;
 	}
 };
 
@@ -597,7 +457,6 @@ window.addEvent('domready', function() {
 	window.__api_key		=	window.__api_key || '';
 	window._base_url		=	window._base_url || '';
 	turtl.site_url			=	__site_url || '';
-	turtl.base_window_title	=	document.title.replace(/.*\|\s*/, '');
 	turtl.api				=	new Api(
 		__api_url || '',
 		__api_key || '',

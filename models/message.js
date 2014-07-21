@@ -1,4 +1,4 @@
-var Message = ProtectedShared.extend({
+var Message = Composer.RelationalModel.extend({
 	base_url: '/messages',
 
 	body_key: 'data',

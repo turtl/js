@@ -1,4 +1,4 @@
-var NoteFile = Protected.extend({
+var NoteFile = Composer.RelationalModel.extend({
 	base_url: '/files',
 
 	defaults: {
@@ -80,7 +80,7 @@ var NoteFile = Protected.extend({
 	}
 });
 
-var FileData = ProtectedThreaded.extend({
+var FileData = Composer.RelationalModel.extend({
 	base_url: '/files',
 
 	public_fields: [
@@ -307,7 +307,7 @@ var FileData = ProtectedThreaded.extend({
 	}
 });
 
-var Files = SyncCollection.extend({
+var Files = Composer.Collection.extend({
 	model: FileData,
 	local_table: 'files',
 

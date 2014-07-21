@@ -1,4 +1,4 @@
-var Note = Protected.extend({
+var Note = Composer.RelationalModel.extend({
 	base_url: '/notes',
 
 	relations: {
@@ -333,7 +333,7 @@ var Note = Protected.extend({
 	}
 });
 
-var Notes = SyncCollection.extend({
+var Notes = Composer.Collection.extend({
 	model: Note,
 	local_table: 'notes',
 

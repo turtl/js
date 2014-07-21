@@ -379,9 +379,9 @@ var Board = Composer.RelationalModel.extend({
 	{
 		return tag ? tag.get('excluded') : false;
 	}
-}, Protected);
+});
 
-var Boards = SyncCollection.extend({
+var Boards = Composer.Collection.extend({
 	model: Board,
 	local_table: 'boards',
 

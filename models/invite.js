@@ -18,7 +18,7 @@ var Invite = Composer.Model.extend({
 		var encrypting_pass	=	tcrypt.uuid();
 		var encrypting_key	=	tcrypt.key(encrypting_pass, salt, {key_size: 32, iterations: 400});
 
-		// don't do encryption directly, use the Protected model.
+		// don't do encryption directly, use the Composer.RelationalModel model.
 		var keymodel		=	new InviteKey({key: tcrypt.key_to_string(key)});
 		keymodel.key		=	encrypting_key;
 		return {
@@ -46,7 +46,7 @@ var Invite = Composer.Model.extend({
 		var salt			=	(secret || '') + ':throw the NSA down the well';
 		var encrypting_key	=	tcrypt.key(encrypting_pass, salt, {key_size: 32, iterations: 400});
 
-		// don't do encryption directly, use the Protected model.
+		// don't do encryption directly, use the Composer.RelationalModel model.
 		var keymodel		=	new InviteKey();
 		keymodel.key		=	encrypting_key;
 		keymodel.set({body: encrypted_key});
@@ -104,7 +104,7 @@ var Invite = Composer.Model.extend({
 	}
 });
 
-var InviteKey = Protected.extend({
+var InviteKey = Composer.RelationalModel.extend({
 	private_fields: ['key']
 });
 

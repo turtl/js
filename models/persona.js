@@ -1,4 +1,4 @@
-var Persona = Protected.extend({
+var Persona = Composer.RelationalModel.extend({
 	base_url: '/personas',
 
 	public_fields: [
@@ -265,7 +265,7 @@ var Persona = Protected.extend({
 	*/
 });
 
-var Personas = SyncCollection.extend({
+var Personas = Composer.Collection.extend({
 	model: Persona,
 	local_table: 'personas'
 });
