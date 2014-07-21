@@ -25,6 +25,27 @@ var extend_error	=	function(extend, errname)
 }
 
 /**
+ * CSPRNG
+ */
+var random_number = function()
+{
+	return window.crypto.getRandomValues(new Uint32Array(1))[0] / (Math.pow(2, 32) - 1);
+};
+
+/**
+ * Generate a *random* UUID.
+ */
+var uuid = function()
+{
+	// taken from stackoverflow.com, modified to use tcrypt's random generator
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+		var r = random_number()*16|0;
+		var v = c == 'x' ? r : (r&0x3|0x8);
+		return v.toString(16);
+	});
+};
+
+/**
  * HACK: Mootools internals!
  * Allows using this.parent() async
  *
@@ -34,6 +55,7 @@ var extend_error	=	function(extend, errname)
  * after:
  *   get_parent(this).apply(this, arguments);
  */
+/*
 function get_parent(obj)
 {
 	var name	=	obj.$caller.$name,
@@ -42,6 +64,7 @@ function get_parent(obj)
 	if (!previous) throw new Error('The method "' + name + '" has no parent.');
 	return previous;
 }
+*/
 
 /**
  * convert a Uint8Array to a binary string

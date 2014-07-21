@@ -31,4 +31,3 @@ var DesktopAddonPort	=	new Class({
 	}
 });
 
-

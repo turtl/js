@@ -25,6 +25,12 @@ var turtl	=	{
 	// holds the user model
 	user: null,
 
+	// create a app-wide event bus
+	events: new Composer.Event(),
+
+	// an object for communicating remotely (with the core)
+	remote: null,
+
 	// holds the DOM object that turtl does all of its operations within
 	main_container_selector: '#main',
 
@@ -91,8 +97,9 @@ var turtl	=	{
 			return false;
 		}
 
-		// setup the API tracker (for addon API requests)
-		turtl.api.tracker.attach();
+		// create our js <--> core comm object
+		if(!window.port) throw new Error('window.port not present (required for turtl to work)!');
+		turtl.remote = new RemoteHandler(comm);
 
 		if(History.enabled)
 		{

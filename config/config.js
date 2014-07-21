@@ -18,4 +18,5 @@ var config = {
 
 	// enable things like INVITE TO GET MOAR STORAGE
 	enable_promo: true
-}
+};
+
