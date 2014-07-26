@@ -19,6 +19,8 @@ var RemoteHandler = Composer.Event.extend({
 	 */
 	send: function(evname, data, options)
 	{
+		options || (options = {});
+
 		var id = uuid();
 		var ev = {id: id, ev: evname, data: data};
 		if(options.success || options.error)
