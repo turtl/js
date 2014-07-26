@@ -32,8 +32,6 @@ var User = Composer.RelationalModel.extend({
 
 	logged_in: false,
 
-	auth: null,
-
 	init: function()
 	{
 		this.logged_in = false;
@@ -151,11 +149,11 @@ var User = Composer.RelationalModel.extend({
 
 	logout: function()
 	{
-		this.auth = null;
-		this.key = null;
 		this.logged_in = false;
 		this.clear();
 		delete Tstorage[config.user_cookie];
+		turtl.remote.send('do-logout');
+		/*
 		this.unbind_relational('personas', ['saved'], 'user:track_personas');
 		this.unbind_relational('personas', ['destroy'], 'user:track_personas:destroy');
 		this.unbind_relational('settings', ['change'], 'user:save_settings');
@@ -164,10 +162,11 @@ var User = Composer.RelationalModel.extend({
 		var personas = this.get('personas');
 		if(personas) personas.each(function(p) {
 			p.unbind();
-			p.destroy({silent: true, skip_remote_sync: true, skip_local_sync: true});
+			p.destroy({silent: true, skip_sync: true});
 		});
 		this.get('personas').unbind().clear();
 		this.get('settings').unbind().clear();
+		*/
 		this.trigger('logout', this);
 	},
 
