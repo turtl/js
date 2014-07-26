@@ -3,9 +3,6 @@
 var $E = function(selector, filter){ return ($(filter) || document).getElement(selector); };
 var $ES = function(selector, filter){ return ($(filter) || document).getElements(selector); };
 
-// we need CBC for backwards compat
-sjcl.beware['CBC mode is dangerous because it doesn\'t protect message integrity.']();
-
 // make our client IDs such that they are always sorted *after* real,
 // server-generated IDs ('z.') and they are chronologically sortable from each
 // other. Also, append in the original cid() at the end for easier debugging.
@@ -49,20 +46,6 @@ var turtl	=	{
 	// holds persona/board/note data for the user (ie, the user's profile)
 	profile: null,
 
-	// holds the search model
-	search: null,
-
-	// holds our sync model, responsible for coordinating synchronizing of data
-	// between in-memory models, the local DB, and the API
-	sync: null,
-
-	// this is our local storage DB "server" (right now an IndexedDB abstraction
-	// which stores files and notes locally).
-	db: null,
-
-	// holds our queue/messaging library
-	hustle: null,
-
 	// Files collection, used to track file uploads/downloads
 	files: null,
 
@@ -85,7 +68,7 @@ var turtl	=	{
 
 		// create our js <--> core comm object
 		if(!window.port) throw new Error('window.port not present (required for turtl to work)!');
-		turtl.remote = new RemoteHandler(comm);
+		turtl.remote = new RemoteHandler(window.port.comm);
 
 		if(History.enabled)
 		{
@@ -107,88 +90,53 @@ var turtl	=	{
 		this.user	=	new User();
 
 		this.setup_profile({initial_route: initial_route});
-
-		// if a user exists, log them in
-		if(window._in_ext)
-		{
-			this.user.login_from_auth(window._auth);
-			window._auth	=	null;	// clear, because i'm paranoid
-		}
-		else if(!window._disable_cookie)
-		{
-			this.user.login_from_cookie();
-		}
-
 		this.setup_header_bar();
 
 		this.loaded	=	true;
 		if(window.port) window.port.send('loaded');
-		if(!window._in_ext) this.route(initial_route);
+		this.route(initial_route);
 	},
 
 	setup_profile: function(options)
 	{
 		options || (options = {});
 
-		// update the user_profiles collection on login
-		this.user.bind('login', function() {
-			// init our feedback
-			if(!window._in_background)
-			{
-				this.load_controller('feedback', FeedbackButtonController);
-			}
+		turtl.remote.bind('profile-loading', function() {
+			turtl.show_loading_screen(true);
+		});
+		turtl.remote.bind('profile-loading-progress', function(data) {
+			turtl.show_loading_screen(data);
+		});
+		turtl.remote.bind('profile-loaded', function() {
+			turtl.show_loading_screen(false);
+			if(!turtl.profile) turtl.profile = new Profile();
+			(function() { turtl.profile.trigger('loaded'); }).delay(100);
+		});
 
-			// if the user is logged in, we'll put their auth info into the api object
-			if(!window._in_ext && !window._disable_cookie)
-			{
-				turtl.user.bind('change', turtl.user.write_cookie.bind(turtl.user), 'user:write_changes_to_cookie');
-			}
-			turtl.api.set_auth(turtl.user.get_auth());
+		turtl.user.bind('login', function() {
 			turtl.controllers.pages.release_current();
-			turtl.sync		=	new Sync();
-			turtl.messages	=	new Messages();
-			turtl.profile	=	new Profile();
-			turtl.search	=	new Search();
-			turtl.files		=	new Files();
 
-			// setup invites and move invites from local storage into collection
+			if(!turtl.profile) turtl.profile = new Profile();
 			if(!turtl.invites) turtl.invites = new Invites();
+			turtl.messages = new Messages();
+			turtl.search = new Search();
+			turtl.files = new Files();
 			if(Tstorage.invites)
 			{
 				turtl.invites.reset(Object.values(JSON.parse(Tstorage.invites)));
 			}
-			Tstorage.invites	=	'{}';	// wipe local storage
 			if(window.port) window.port.bind('invites-populate', function(invite_data) {
 				turtl.invites.reset(Object.values(invite_data));
-			}.bind(this));
+			});
 
-			// init our sync interface (shows updates on syncing/uploads/downloads)
-			this.load_controller('sync', SyncController);
-
-			turtl.show_loading_screen(true);
-
-			turtl.profile.populate({
-				complete: function() {
-					// move keys from the user's settings into the keychain
-					turtl.show_loading_screen(false);
-					turtl.controllers.pages.release_current();
-					turtl.last_url = '';
-					turtl.search.reindex();
-					var initial_route	=	options.initial_route || '';
-					//log.debug('initial route: ', initial_route);
-					if(initial_route.match(/^\/users\//)) initial_route = '/';
-					if(initial_route.match(/index.html/)) initial_route = '/';
-					if(initial_route.match(/background.html/)) initial_route = '/';
-					if(initial_route.match(/turtl.xul/)) initial_route = '/';
-					turtl.route(initial_route);
-					turtl.setup_syncing();
-					turtl.setup_background_panel();
-					if(window.port) window.port.send('profile-load-complete');
-				}.bind(turtl)
+			turtl.profile.bind_once('loaded', function() {
+				// profile is loaded, load the boards view
+				turtl.last_url = '';
+				turtl.route('/');
 			});
 
 			// logout shortcut
-			turtl.keyboard.bind('S-l', function() {
+			turtl.keyboard.bind_once('S-l', function() {
 				turtl.route('/users/logout');
 			}, 'dashboard:shortcut:logout');
 
@@ -199,39 +147,15 @@ var turtl	=	{
 				});
 				if(window.port) window.port.send('num-messages', num_messages.length);
 			}, 'turtl:messages:counter');
-			turtl.user.bind_relational('personas', ['add', 'remove', 'reset'], function() {
-				var num_personas	=	turtl.user.get('personas').models().length;
-				if(window.port) window.port.send('num-personas', num_personas);
-			}, 'turtl:personas:counter');
-		}.bind(turtl));
+		});
+
 		turtl.user.bind('logout', function() {
-			// stop syncing
-			turtl.sync.stop();
-
-			// remove feedback button
-			if(turtl.controllers.feedback)
-			{
-				turtl.controllers.feedback.release();
-				delete turtl.controllers.feedback;
-			}
-
 			turtl.controllers.pages.release_current();
 			turtl.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
 			turtl.messages.unbind(['add', 'remove', 'reset', 'change'], 'turtl:messages:counter');
-			turtl.user.unbind_relational('personas', ['add', 'remove', 'reset'], 'turtl:personas:counter');
-			turtl.show_loading_screen(false);
-			turtl.user.unbind('change', 'user:write_changes_to_cookie');
-			turtl.api.clear_auth();
 			modal.close();
 
 			Tstorage.invites	=	'{}';	// wipe local storage
-
-			// local storage is for logged in people only
-			if(turtl.db)
-			{
-				turtl.db.close();
-				turtl.db	=	null;
-			}
 
 			// clear out invites
 			turtl.invites.clear();
@@ -244,14 +168,12 @@ var turtl	=	{
 			turtl.setup_header_bar();
 			turtl.profile.destroy();
 			turtl.profile	=	null;
-			turtl.search.destroy();
-			turtl.search	=	false;
 			turtl.files		=	false;
 
 			turtl.route('/');
 
 			if(window.port) window.port.send('logout');
-		}.bind(turtl));
+		});
 	},
 
 	wipe_local_db: function(options)
@@ -260,11 +182,11 @@ var turtl	=	{
 
 		if(!turtl.user.logged_in)
 		{
-			console.log('wipe_local_db only works when logged in. if you know the users ID, you can wipe via:');
-			console.log('window.indexedDB.deleteDatabase("turtl.<userid>")');
+			log.error('wipe_local_db only works when logged in. if you know the users ID, you can wipe via:');
+			log.error('window.indexedDB.deleteDatabase("turtl.<userid>")');
 			return false;
 		}
-		turtl.remote.send('wipe-local-db', {}, {
+		turtl.remote.send('cmd', {name: 'wipe-local-db'}, {
 			success: options.complete
 		});
 	},
@@ -298,80 +220,54 @@ var turtl	=	{
 		});
 	},
 
-	setup_background_panel: function()
-	{
-		if(!window.port) return false;
-
-		window.port.bind('addon-controller-open', function(controller_name, params) {
-			var controller	=	turtl.controllers.pages.load(window[controller_name], params);
-		});
-
-		window.port.bind('get-height', function() {
-			var height	=	$('background_content').getCoordinates().height + 10;
-			window.port.send('set-height', height);
-		});
-	},
-
-	stop_spinner: false,
-
-	show_loading_screen: function(show, delay)
+	show_loading_screen: function(show)
 	{
 		var overlay = $('loading-overlay');
 		if(!overlay) return;
-		var do_show	=	function()
+
+		overlay.setStyle('display', show ? 'table' : '');
+		if(show === true)
 		{
-			overlay.setStyle('display', show ? 'table' : '');
-			if(show)
+			var text = overlay.getElement('span');
+			var imghtml = '<img src="'+ img('/images/template/logo.svg') +'" width="40" height="40">';
+			text.set('html', imghtml + imghtml + imghtml);
+			var imgs = text.getElements('img');
+			var idx = 0;
+			var spin = function()
 			{
-				this.stop_spinner = false;
-				var text = $E('span', overlay);
-				text.addClass('display');
-				var imghtml = '<img src="'+ img('/images/template/logo.svg') +'" width="40" height="40">';
-				text.set('html', imghtml + imghtml + imghtml);
-				var imgs = text.getElements('img');
-				var idx = 0;
-				//var spinner = $E('.spin', overlay);
-				var spin = function()
-				{
-					idx = (idx + 1) % 4;
-					imgs.each(function(img, i) {
-						if(i >= idx)
-						{
-							img.removeClass('show');
-							return;
-						}
-						if(!img.hasClass('show')) img.addClass('show');
-					});
-
-					if(text.hasClass('display'))
+				idx = (idx + 1) % 4;
+				imgs.each(function(img, i) {
+					if(i >= idx)
 					{
-						text.removeClass('display');
+						img.removeClass('show');
+						return;
 					}
-					else
-					{
-						text.addClass('display');
-					}
-					spin.delay(750, this);
-				}.bind(this);
-				spin();
-			}
-			else
+					if(!img.hasClass('show')) img.addClass('show');
+				});
+			}.bind(this);
+			turtl.show_loading_screen._interval = setInterval(spin, 750);
+		}
+		else if(show.length !== undefined)
+		{
+			var desc = overlay.getElement('p');
+			if(!desc) return;
+			var action = show[0];
+			var item = show[1];
+			var str = '';
+			switch(action)
 			{
-				this.stop_spinner = true;
+			case 'populate': str += 'Populating '+ item; break;
+			case 'index': str += 'Indexing profile'; break;
 			}
-		};
-
-		if(delay && delay > 0) do_show.delay(delay);
-		else do_show();
-	},
-
-	unload: function()
-	{
-		this.loaded			=	false;
-		Object.each(this.controllers, function(controller) {
-			controller.release();
-		});
-		this.controllers	=	{};
+			desc.set('html', str);
+		}
+		else if(turtl.show_loading_screen._interval)
+		{
+			var desc = overlay.getElement('p');
+			if(desc) desc.set('html', '&nbsp;');
+			clearInterval(turtl.show_loading_screen._interval);
+			turtl.show_loading_screen._interval = null;
+		}
 	},
 
 	setup_router: function(options)
@@ -384,8 +280,7 @@ var turtl	=	{
 				// we'll process our own QS, THXLOLOLOLOLOLOLOLOLOLOLOLOLOLOL!!!
 				process_querystring: false,
 
-				//redirect_initial: false,
-				route_base: window._route_base || '',
+				base: window._route_base || '',
 
 				// we'll do our own first route
 				suppress_initial_route: true,
@@ -400,14 +295,7 @@ var turtl	=	{
 				filter_trailing_slash: true,
 				do_state_change: function(a_tag)
 				{
-					path			=	new String(a_tag.get('href'));
-					path.rewrite	=	function(str) {
-						this._string_value	=	str;
-					}.bind(path);
-					path.rewrite(null);
 					turtl.controllers.pages.trigger('onroute', path);
-					//turtl.controllers.pages.on_route(path);
-					//if(path._string_value) a_tag.set('href', path._string_value);
 					return true;
 				}
 			});
@@ -451,28 +339,6 @@ var barfr		=	null;
 var markdown	=	null;
 
 window.addEvent('domready', function() {
-	window.port				=	window.port || false;
-	window.__site_url		=	window.__site_url || '';
-	window.__api_url		=	window.__api_url || '';
-	window.__api_key		=	window.__api_key || '';
-	window._base_url		=	window._base_url || '';
-	turtl.site_url			=	__site_url || '';
-	turtl.api				=	new Api(
-		__api_url || '',
-		__api_key || '',
-		function(cb_success, cb_fail) {
-			return function(data)
-			{
-				if(typeof(data) == 'string')
-				{
-					data	=	JSON.decode(data);
-				}
-				if(data.__error) cb_fail(data.__error);
-				else cb_success(data);
-			};
-		}
-	);
-
 	// make sure inline templates are loaded
 	Template.initialize();
 
@@ -505,7 +371,7 @@ window.addEvent('domready', function() {
 		if(window.port) window.port.bind('debug', function(code) {
 			if(!window._debug_mode) return false;
 			var res	=	eval(code);
-			console.log('turtl: debug: ', res);
+			log.debug('turtl: debug: ', res);
 		});
 	}).delay(100);
 
@@ -529,8 +395,6 @@ window.addEvent('domready', function() {
 		smartLists: true
 	});
 
-	if(!window.Tstorage) window.Tstorage = window.localStorage;
-
 	// init it LOL
 	turtl.init.delay(50, turtl);
 });
@@ -546,7 +410,8 @@ if(config.catch_global_errors)
 		log.error('remote error log: ', arguments);
 		// remove filesystem info
 		url	=	url.replace(/^.*\/data\/app/, '/data/app');
-		turtl.api.post('/log/error', {data: {client: config.client, version: config.version, msg: msg, url: url, line: line}}, {
+		if(!turtl.remote) return;
+		turtl.remote.send('ui-error', {data: {client: config.client, version: config.version, msg: msg, url: url, line: line}}, {
 			error: function(err) {
 				log.error(err);
 				// error posting, disable log for 30s

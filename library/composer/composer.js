@@ -23,7 +23,9 @@
 
 	var global = this;
 	if(!global.Composer) global.Composer = {
-		export: function(obj)
+		// note: this used to be "export" but IE is a whiny little bitch, so now
+		// we're sup3r 1337 h4x0r5
+		exp0rt: function(obj)
 		{
 			Object.keys(obj).forEach(function(key) {
 				global.Composer[key] = obj[key];
@@ -70,6 +72,9 @@
 		if ( a === b ) return true;
 		if(a instanceof Function) return false;
 		if(typeof(a) != typeof(b)) return false;
+		if((a && a.constructor) && !b || !b.constructor) return false;
+		if((b && b.constructor) && !a || !a.constructor) return false;
+		if(a && b && a.constructor != b.constructor) return false;
 		if(a instanceof Array)
 		{
 			if(a.length != b.length) return false;
@@ -82,7 +87,6 @@
 		}
 		else if(a instanceof Object)
 		{
-			if ( a.constructor !== b.constructor ) return false;
 			for( var p in b )
 			{
 				if( b.hasOwnProperty(p) && ! a.hasOwnProperty(p) ) return false;
@@ -163,7 +167,7 @@
 		}
 	};
 
-	Composer.export({
+	Composer.exp0rt({
 		sync: sync,
 		cid: cid,
 		wrap_error: wrap_error,
@@ -571,7 +575,7 @@
     Class.errors = errors;
     Class.version = "1.1.0";
 
-	Composer.export({ Class: Class });
+	Composer.exp0rt({ Class: Class });
 }());
 
 /**
@@ -767,7 +771,7 @@
 	});
 
 	Event._make_lookup_name = make_lookup_name;
-	Composer.export({ Event: Event });
+	Composer.exp0rt({ Event: Event });
 }).apply((typeof exports != 'undefined') ? exports : this);
 
 /**
@@ -883,7 +887,7 @@
 		}
 	});
 
-	Composer.export({ Base: Base });
+	Composer.exp0rt({ Base: Base });
 })();
 
 /**
@@ -1288,7 +1292,7 @@
 		}
 	});
 
-	Composer.export({ Model: Model });
+	Composer.exp0rt({ Model: Model });
 })();
 
 /**
@@ -1885,7 +1889,7 @@
 			this.trigger.apply(this, arguments);
 		}
 	});
-	Composer.export({ Collection: Collection });
+	Composer.exp0rt({ Collection: Collection });
 }).apply((typeof exports != 'undefined') ? exports : this);
 
 /**
@@ -1911,34 +1915,49 @@
 
 	var global = this;
 
+	var has_sizzle = !!global.Sizzle;
 	var has_jquery = !!global.jQuery;
 	var has_slick = !!global.Slick;
 	var has_moo = !!global.MooTools;
 
 	var find = (function() {
-		if(has_jquery)
+		if(has_sizzle)
 		{
 			return function(context, selector) {
 				context || (context = document);
-				return jQuery(context).find(selector)[0];
+				return Sizzle.select(selector, context)[0];
 			};
 		}
 		else if(has_slick)
 		{
 			return function(context, selector) {
 				context || (context = document);
-				return Slick.find(context, selector)
+				return Slick.find(context, selector);
+			};
+		}
+		else if(has_jquery)
+		{
+			return function(context, selector) {
+				context || (context = document);
+				return jQuery(context).find(selector)[0];
+			};
+		}
+		else if(has_moo)
+		{
+			return function(context, selector) {
+				context || (context = document);
+				return document.id(context).getElement(selector);
 			};
 		}
 		throw new Error('No selector engine present. Include Sizzle/jQuery or Slick/Mootools before loading composer.');
 	})();
 
 	var match = (function() {
-		if(has_jquery)
+		if(has_sizzle)
 		{
 			return function(element, selector) {
 				element || (element = document);
-				return jQuery(element).is(selector);
+				return Sizzle.matchesSelector(element, selector);
 			};
 		}
 		else if(has_slick)
@@ -1946,6 +1965,13 @@
 			return function(element, selector) {
 				element || (element = document);
 				return Slick.match(element, selector);
+			};
+		}
+		else if(has_jquery)
+		{
+			return function(element, selector) {
+				element || (element = document);
+				return jQuery(element).is(selector);
 			};
 		}
 		throw new Error('No selector engine present. Include Sizzle/jQuery or Slick/Mootools before loading composer.');
@@ -1968,8 +1994,8 @@
 					_fn.apply(this, arguments);
 				};
 
-				if(selector) return el.addEvent(ev+':relay('+selector+')', fn);
-				else return el.addEvent(ev, fn);
+				if(selector) return document.id(el).addEvent(ev+':relay('+selector+')', fn);
+				else return document.id(el).addEvent(ev, fn);
 			};
 		}
 		else
@@ -1994,6 +2020,27 @@
 		}
 	})();
 
+	var remove_event = (function() {
+		if(has_jquery)
+		{
+			return function(el, ev, fn) {
+				jQuery(el).off(ev, fn);
+			};
+		}
+		else if(has_moo)
+		{
+			return function(el, ev, fn) {
+				document.id(el).removeEvent(ev, fn);
+			};
+		}
+		else
+		{
+			return function(el, ev, fn) {
+				el.removeEventListener(ev, fn, false);
+			};
+		}
+	})();
+
 	var fire_event = (function() {
 		/**
 		 * NOTE: taken from http://stackoverflow.com/a/2381862/236331
@@ -2007,6 +2054,11 @@
 		 */
 		return function(node, eventName, options) {
 			options || (options = {});
+
+			if(eventName == 'click' && node.click)
+			{
+				return node.click();
+			}
 
 			// Make sure we use the ownerDocument from the provided node to avoid cross-window problems
 			var doc;
@@ -2052,21 +2104,7 @@
 
 				var bubbles = true;
 				var event = doc.createEvent(eventClass);
-
-				switch(eventClass)
-				{
-				case 'KeyboardEvent':
-					var key = options.key || 0;
-					event.initKeyEvent(eventName, bubbles, true, document.defaultView, false, false, false, false, key, key);
-				case 'MouseEvents':
-				case 'UIEvents':
-					event.initUIEvent(eventName, bubbles, true, global, 1); // All events created as bubbling and cancelable.
-					break;
-				default:
-					event.initEvent(eventName, bubbles, true); // All events created as bubbling and cancelable.
-					break;
-				}
-
+				event.initEvent(eventName, bubbles, true); // All events created as bubbling and cancelable.
 				event.synthetic = true; // allow detection of synthetic events
 				// The second parameter says go ahead with the default action
 				node.dispatchEvent(event, true);
@@ -2079,27 +2117,6 @@
 		};
 	})();
 
-	var remove_event = (function() {
-		if(has_jquery)
-		{
-			return function(el, ev, fn) {
-				jQuery(el).off(ev, fn);
-			};
-		}
-		else if(has_moo)
-		{
-			return function(el, ev, fn) {
-				el.removeEvent(ev, fn);
-			};
-		}
-		else
-		{
-			return function(el, ev, fn) {
-				el.removeEventListener(ev, fn, false);
-			};
-		}
-	})();
-
 	var find_parent = function(selector, element)
 	{
 		if(match(element, selector)) return element;
@@ -2107,7 +2124,7 @@
 		return find_parent(selector, par);
 	};
 
-	Composer.export({
+	Composer.exp0rt({
 		find: find,
 		match: match,
 		add_event: add_event,
@@ -2151,6 +2168,9 @@
 
 		// holds events bound with with_bind
 		_bound_events: [],
+
+		// tracks sub-controllers
+		_subcontrollers: {},
 
 		// the DOM element to tie this controller to (a container element)
 		el: false,
@@ -2196,7 +2216,7 @@
 
 			if(this.className)
 			{
-				this.el.addClass(this.className);
+				this.el.className += ' ' + this.className;
 			}
 
 			this.refresh_elements();
@@ -2266,6 +2286,24 @@
 		},
 
 		/**
+		 * keep track of a sub controller that will release when this controller
+		 * does
+		 */
+		track_subcontroller: function(name, create_fn)
+		{
+			// if we have an existing controller with the same name, release and
+			// remove it.
+			if(this._subcontrollers[name])
+			{
+				this._subcontrollers[name].release();
+				delete this._subcontrollers[name];
+			}
+			var instance = create_fn();
+			this._subcontrollers[name] = instance;
+			return instance;
+		},
+
+		/**
 		 * make sure el is defined as an HTML element
 		 */
 		_ensure_el: function() {
@@ -2302,10 +2340,31 @@
 			});
 			this._bound_events = [];
 
+			// auto-release/remove sub-controllers
+			Object.keys(this._subcontrollers).forEach(function(key) {
+				this._subcontrollers[key].release();
+			}.bind(this));
+			this._subcontrollers = {};
+
 			this.fire_event('release', options, this);
 
 			// remove all events from controller
 			if(!options.keep_events) this.unbind();
+		},
+
+		/**
+		 * replace this controller's container element (this.el) with another element.
+		 * also refreshes the events/elements associated with the controller
+		 */
+		replace: function(element)
+		{
+			if(this.el.parentNode) this.el.parentNode.replaceChild(element, this.el);
+			this.el	=	element;
+
+			this.refresh_elements();
+			this.delegate_events();
+
+			return element;
 		},
 
 		/**
@@ -2357,7 +2416,7 @@
 
 	Composer.merge_extend(Controller, ['events', 'elements']);
 
-	Composer.export({ Controller: Controller });
+	Composer.exp0rt({ Controller: Controller });
 })();
 
 /**
@@ -2407,7 +2466,8 @@
 		options: {
 			suppress_initial_route: false,
 			enable_cb: function(url) { return true; },
-			process_querystring: false
+			process_querystring: false,
+			base: false
 		},
 
 		/**
@@ -2445,7 +2505,7 @@
 			if(!this.options.suppress_initial_route)
 			{
 				// run the initial route
-				History.Adapter.trigger(global, 'statechange', [global.location.pathname]);
+				History.Adapter.trigger(global, 'statechange', [this.cur_path()]);
 			}
 		},
 
@@ -2460,22 +2520,39 @@
 			this.unbind();
 		},
 
+		debasify: function(path)
+		{
+			if(this.options.base && path.indexOf(this.options.base) == 0)
+			{
+				path = path.substr(this.options.base.length);
+			}
+			return path;
+		},
+
 		/**
 		 * get the current url path
 		 */
 		cur_path: function()
 		{
-			return new String(global.location.pathname+global.location.search).toString();
+			if(History.emulated.pushState)
+			{
+				var path = '/' + new String(global.location.hash).toString().replace(/^[#!\/]+/, '');
+			}
+			else
+			{
+				var path = global.location.pathname+global.location.search;
+			}
+			return this.debasify(path);
 		},
 
 		/**
 		 * Get a value (by key) out of the current query string
 		 */
-		get_param: function(key)
+		get_param: function(search, key)
 		{
 			key = key.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
 			var regex = new RegExp("[\\?&]" + key + "=([^&#]*)");
-			var results = regex.exec(location.search);
+			var results = regex.exec(search);
 			return results == null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
 		},
 
@@ -2493,10 +2570,21 @@
 			options || (options = {});
 			options.state || (options.state = {});
 
-			var href = '/' + url.trim().replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
-			var old = this.cur_path();
+			var base = (this.options.base || '');
+			var href = base + '/' + url.trim().replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
+			var old = base + this.cur_path();
 			if(old == href)
 			{
+				this.trigger('statechange', href, true);
+			}
+			else if(History.emulated.pushState)
+			{
+				// we're using hashbangs, which are async (if we use
+				// History.pushState). we really want sync behavior so let's
+				// fool History into thinking it already routed this hash (so it
+				// doesn't double-fire) then trigger the event manually.
+				History.saveHash(url);		// makes History.js not fire on hash
+				window.location.hash = '#'+href;
 				this.trigger('statechange', href, true);
 			}
 			else
@@ -2589,7 +2677,8 @@
 		state_change: function(path, force)
 		{
 			if(path && path.stop != undefined) path = false;
-			path || (path = this.cur_path());
+			if(path) path = this.debasify(path);
+			if(!path) path = this.cur_path();
 			force = !!force;
 
 			// check if we are routing to the same exact page. if we are, return
@@ -2643,6 +2732,12 @@
 				var a = Composer.find_parent('a', e.target);
 				var button = typeof(e.button) != 'undefined' ? e.button : e.event.button;
 
+				if(a.href.match(/^javascript:/)) return false;
+				if(History.emulated.pushState && a.href.replace(/^.*?#/, '') == '')
+				{
+					return false;
+				}
+
 				// don't trap links that are meant to open new windows, and don't
 				// trap middle mouse clicks (or anything more than left click)
 				if(a.target == '_blank' || button > 0) return;
@@ -2692,7 +2787,7 @@
 		}
 	});
 
-	Composer.export({ Router: Router });
+	Composer.exp0rt({ Router: Router });
 }).apply((typeof exports != 'undefined') ? exports : this);
 
 /**
@@ -2964,7 +3059,7 @@
 				{
 					obj[path] = {};
 				}
-				else if(typeOf(obj[path]) != 'object')
+				else if(typeof(obj) != 'object' || obj instanceof Array)
 				{
 					obj[path] = {};
 				}
@@ -2997,7 +3092,7 @@
 
 	Composer.merge_extend(RelationalModel, ['relations']);
 
-	Composer.export({
+	Composer.exp0rt({
 		HasOne: -1,		// no longer used but needed for backwards compat
 		HasMany: -1,	// " "
 		RelationalModel: RelationalModel
@@ -3058,7 +3153,7 @@
 		options: {
 			forward_all_events: false,
 			refresh_on_change: false,	// performance hit, but needed for backward compat
-			sort_event: false,			// if true, fires a 'sort' event instead of 'reset' when sorting
+			sort_event: false			// if true, fires a 'sort' event instead of 'reset' when sorting
 		},
 
 		initialize: function(master, options)
@@ -3159,7 +3254,7 @@
 				return this.filter(model, this);
 			}.bind(this));
 			this.sort({silent: true});
-			if(this.limit) this._models.splice(this.limit);
+			if(this.limit) this._models.splice(this.limit, this._models.length);
 			if(options.diff_events)
 			{
 				var arrdiff = function(arr1, arr2) { return arr1.filter(function(el) { return arr2.indexOf(el) < 0; }); };
@@ -3398,5 +3493,5 @@
 		}
 	});
 
-	Composer.export({ FilterCollection: FilterCollection });
+	Composer.exp0rt({ FilterCollection: FilterCollection });
 })();

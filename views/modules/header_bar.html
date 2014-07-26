@@ -1,5 +1,5 @@
 <div class="actions">
-	<? if(user.id && !window._in_ext) { ?>
+	<? if(user.id) { ?>
 		<a class="menu" href="#menu" alt="Menu"><icon>&#9881;</icon></a>
 		<div class="menu">
 			<div class="top">
@@ -31,6 +31,12 @@
 					<a href="#wipe-data" title="Wipe all local data and log out">
 						<icon>&#128165;</icon>
 						<span>Wipe local data</span>
+					</a>
+				</li>
+				<li class="feedback">
+					<a href="#feedback" title="Give feedback!">
+						<icon>&#128227;</icon>
+						<span>Give feedback</span>
 					</a>
 				</li>
 				<li class="logout">

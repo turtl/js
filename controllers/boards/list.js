@@ -8,7 +8,7 @@ var BoardListController = Composer.Controller.extend({
 		'click .dropdown ul li a.board': 'change_board',
 		'click .dropdown ul li ul li a[href=#share]': 'open_share',
 		'click .dropdown ul li ul li a[href=#edit]': 'open_edit',
-		'click .dropdown ul li ul li a[href=#leave]': 'leave_board',
+		'click .dropdown ul li ul li a[href=#leave]': 'leave_board'
 	},
 
 	profile: null,

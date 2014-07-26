@@ -2,7 +2,7 @@ var NoteEditFileController = Composer.Controller.extend({
 	elements: {
 		'.upload-preview': 'upload_preview',
 		'a.remove': 'upload_remove',
-		'input[name=file]': 'inp_file',
+		'input[name=file]': 'inp_file'
 	},
 
 	events: {

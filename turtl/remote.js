@@ -33,9 +33,10 @@ var RemoteHandler = Composer.Event.extend({
 				{
 					if(options.success) options.success(ev);
 				}
+				if(options.complete) options.complete(ev);
 			};
 		}
-		this.comm.send('core-send', ev);
+		this.comm.trigger('core-send', ev);
 	},
 
 	/**

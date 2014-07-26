@@ -13,7 +13,7 @@ var BoardsController = Composer.Controller.extend({
 		'click .button.add': 'add_board',
 		'keydown input[name=filter]': 'filter_boards_pre',
 		'keyup input[name=filter]': 'filter_boards',
-		'click .dropdown a[href=#add-persona]': 'open_personas',
+		'click .dropdown a[href=#add-persona]': 'open_personas'
 	},
 
 	profile: null,

@@ -1,6 +1,6 @@
 var PersonasController = Composer.Controller.extend({
 	elements: {
-		'div.personas-list': 'personas_list',
+		'div.personas-list': 'personas_list'
 	},
 
 	events: {

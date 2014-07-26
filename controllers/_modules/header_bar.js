@@ -14,6 +14,7 @@ var HeaderBarController = Composer.Controller.extend({
 		'click li.persona a': 'open_personas',
 		'click li.invites a': 'open_invites',
 		'click li.wipe a': 'wipe_data',
+		'click li.feedback a': 'open_feedback',
 		'mouseenter div.menu': 'cancel_close_menu',
 		'mouseleave div.menu': 'close_menu'
 	},
@@ -117,5 +118,11 @@ var HeaderBarController = Composer.Controller.extend({
 				turtl.user.logout();
 			}
 		});
+	},
+
+	open_feedback: function(e)
+	{
+		if(e) e.stop();
+		new FeedbackController();
 	}
 });

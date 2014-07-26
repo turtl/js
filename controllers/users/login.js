@@ -27,27 +27,20 @@ var UserLoginController = Composer.Controller.extend({
 		if(e) e.stop();
 		var username = this.inp_username.get('value');
 		var password = this.inp_password.get('value');
-		var user = new User({
+
+		turtl.loading(true);
+		turtl.user.set({
 			username: username,
 			password: password
 		});
-
-		turtl.loading(true);
-		user.test_auth({
-			success: function(id) {
-				var data = user.toJSON();
-				data.id = id;
-				turtl.user.set({
-					username: user.get('username'),
-					password: user.get('password')
-				});
-				turtl.user.login(data);
+		turtl.user.login({
+			complete: function() {
 				turtl.loading(false);
-			}.bind(this),
-			error: function(e) {
+			},
+			error: function(ev) {
 				barfr.barf('Login failed.');
-				turtl.loading(false);
-			}.bind(this)
+				turtl.user.clear();
+			}
 		});
 	}
 });

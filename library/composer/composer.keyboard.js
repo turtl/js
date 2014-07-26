@@ -76,5 +76,5 @@
 		}
 	});
 
-	Composer.export({ Keyboard: Keyboard });
+	Composer.exp0rt({ Keyboard: Keyboard });
 })();

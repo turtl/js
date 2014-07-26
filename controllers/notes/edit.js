@@ -218,7 +218,7 @@ var NoteEditController = Composer.Controller.extend({
 				// only other option is text for now
 				note.set({
 					type: 'text',
-					text: val,
+					text: val
 				});
 			}
 			if(!options.set_type) note.set({type: 'quick'});

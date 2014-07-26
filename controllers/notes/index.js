@@ -9,7 +9,7 @@ var NotesController = TrackController.extend({
 		'click div.button.note.add': 'open_add_note',
 		'click div.button.note.share': 'share_board',
 		'click .sort a': 'change_sort',
-		'click ul.list-type a': 'change_list_type',
+		'click ul.list-type a': 'change_list_type'
 	},
 
 	board: null,

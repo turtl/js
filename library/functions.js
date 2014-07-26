@@ -20,7 +20,7 @@ var extend_error	=	function(extend, errname)
 
 		return this;
 	};
-	err.prototype	=	Object.create(extend.prototype, { constructor: { value: err } });
+	//err.prototype	=	Object.create(extend.prototype, { constructor: { value: err } });
 	return err;
 }
 

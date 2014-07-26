@@ -9,7 +9,7 @@ var NoteItemController = BaseNoteItem.extend({
 		'mouseenter': 'select_note',
 		'mouseleave': 'unselect_note',
 		'click .actions a.sort': 'cancel',
-		'click .actions a.open': 'view_note',
+		'click .actions a.open': 'view_note'
 	},
 
 	model: null,

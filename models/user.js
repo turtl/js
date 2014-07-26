@@ -1,4 +1,4 @@
-var User	=	Composer.RelationalModel.extend({
+var User = Composer.RelationalModel.extend({
 	base_url: '/users',
 	local_table: 'user',
 
@@ -36,70 +36,29 @@ var User	=	Composer.RelationalModel.extend({
 
 	init: function()
 	{
-		this.logged_in		=	false;
+		this.logged_in = false;
 
 		// whenever the user settings change, automatically save them (encrypted).
 		this.bind_relational('settings', ['change'], this.save_settings.bind(this), 'user:save_settings');
 	},
 
-	login: function(data, remember, silent)
+	login: function(options)
 	{
-		(remember === true) || (remember = false);
-		(silent === true) || (silent = false);
-		this.set(data, {ignore_body: this.key ? false : true});
-		this.get_auth();
-		this.unset('username');
-		this.unset('password');
-		this.logged_in	=	true;
-		var duration	=	1;
-		if(remember)
-		{
-			duration	=	30;
-		}
-
-		// now grab the user record by ID from the API.
-		// TODO: persist to local storage for offline mode.
-		turtl.api.set_auth(this.get_auth());
-		turtl.api.get('/users/'+this.id(), {}, {
-			success: function(user) {
-				this.set(user);
-				this.write_cookie({duration: duration});
-				if (!silent) this.trigger('login', this);
+		turtl.remote.send('do-login', {
+			username: this.get('username'),
+			password: this.get('password')
+		}, {
+			success: function(ev) {
+				this.set(ev.data);
+				this.unset('username');
+				this.unset('password');
+				this.logged_in = true;
+				this.trigger('login', options);
+				if(options.success) options.success();
 			}.bind(this),
-			error: function(_, e) {
-				log.error('user: problem grabbing user record: ', e);
-			}
+			complete: options.complete,
+			error: options.error
 		});
-		turtl.api.clear_auth();
-	},
-
-	login_from_auth: function(auth)
-	{
-		if(!auth) return false;
-		this.set({id: auth.uid});
-		this.auth		=	auth.auth;
-		this.key		=	tcrypt.key_to_bin(auth.key);
-		this.logged_in	=	true;
-		this.trigger('login', this);
-	},
-
-	login_from_cookie: function()
-	{
-		var cookie	=	Tstorage[config.user_cookie];
-		if(cookie == null)
-		{
-			return false;
-		}
-		var userdata	=	JSON.decode(cookie);
-		var key			=	tcrypt.key_to_bin(userdata.k);
-		var auth		=	userdata.a;
-		delete userdata.k;
-		delete userdata.a;
-		this.key	=	key;
-		this.auth	=	auth;
-		this.set(userdata);
-		this.logged_in	=	true;
-		this.trigger('login', this);
 	},
 
 	/**
@@ -118,18 +77,18 @@ var User	=	Composer.RelationalModel.extend({
 	join: function(options)
 	{
 		options || (options = {});
-		var data	=	{data: {a: this.get_auth()}};
+		var data = {data: {a: this.get_auth()}};
 		if(Tstorage.invited_by)
 		{
-			data.invited_by	=	Tstorage.invited_by;
+			data.invited_by = Tstorage.invited_by;
 		}
 
 		// grab the promo code, if we haven't already used it.
-		var used_promos	=	JSON.parse(Tstorage.used_promos || '[]');
-		var promo		=	options.promo;
+		var used_promos = JSON.parse(Tstorage.used_promos || '[]');
+		var promo = options.promo;
 		if(promo) //&& (!used_promos || !used_promos.contains(promo)))
 		{
-			data.promo		=	promo;
+			data.promo = promo;
 		}
 
 		turtl.api.post('/users', data, {
@@ -138,7 +97,7 @@ var User	=	Composer.RelationalModel.extend({
 				{
 					// if we used a promo, track it to make sure this client
 					// doesn't use it again.
-					//Tstorage.used_promos	=	JSON.stringify(JSON.parse(Tstorage.used_promos || '[]').push(data.promo));
+					//Tstorage.used_promos = JSON.stringify(JSON.parse(Tstorage.used_promos || '[]').push(data.promo));
 				}
 
 				// once we have a successful signup with the invite/promo, wipe
@@ -152,7 +111,7 @@ var User	=	Composer.RelationalModel.extend({
 				// the local db.
 				this.bind('login', function() {
 					this.unbind('login', 'user:join:add_local_record');
-					var check_db	=	function()
+					var check_db = function()
 					{
 						if(!turtl.db)
 						{
@@ -175,26 +134,26 @@ var User	=	Composer.RelationalModel.extend({
 	write_cookie: function(options)
 	{
 		options || (options = {});
-		var duration	=	options.duration ? options.duration : 30;
-		var key			=	this.get_key();
-		var auth		=	this.get_auth();
+		var duration = options.duration ? options.duration : 30;
+		var key = this.get_key();
+		var auth = this.get_auth();
 		if(!key || !auth) return false;
 
-		var save		=	{
+		var save = {
 			id: this.id(),
 			k: tcrypt.key_to_string(key),
 			a: auth,
 			invite_code: this.get('invite_code'),
 			storage: this.get('storage')
 		};
-		Tstorage[config.user_cookie]	=	JSON.encode(save);
+		Tstorage[config.user_cookie] = JSON.encode(save);
 	},
 
 	logout: function()
 	{
 		this.auth = null;
 		this.key = null;
-		this.logged_in	=	false;
+		this.logged_in = false;
 		this.clear();
 		delete Tstorage[config.user_cookie];
 		this.unbind_relational('personas', ['saved'], 'user:track_personas');
@@ -202,7 +161,7 @@ var User	=	Composer.RelationalModel.extend({
 		this.unbind_relational('settings', ['change'], 'user:save_settings');
 
 		// clear user data
-		var personas	=	this.get('personas');
+		var personas = this.get('personas');
 		if(personas) personas.each(function(p) {
 			p.unbind();
 			p.destroy({silent: true, skip_remote_sync: true, skip_local_sync: true});
@@ -254,15 +213,15 @@ var User	=	Composer.RelationalModel.extend({
 
 		var user_record = tcrypt.hash(password) +':'+ username;
 		// use username as salt/initial vector
-		var key	=	this.get_key();
-		var iv	=	tcrypt.iv(username+'4c281987249be78a');	// make sure IV always has 16 bytes
+		var key = this.get_key();
+		var iv = tcrypt.iv(username+'4c281987249be78a');	// make sure IV always has 16 bytes
 
 		// note we serialize with version 0 (the original Turtl serialization
 		// format) for backwards compat
-		var auth	=	tcrypt.encrypt(key, user_record, {iv: iv, version: 0});
+		var auth = tcrypt.encrypt(key, user_record, {iv: iv, version: 0});
 
 		// save auth
-		this.auth	=	auth;
+		this.auth = auth;
 
 		return auth;
 	},
@@ -270,7 +229,13 @@ var User	=	Composer.RelationalModel.extend({
 	test_auth: function(options)
 	{
 		options || (options = {});
-		turtl.api.set_auth(this.get_auth());
+		turtl.remote.send('do-login', {
+			username: this.get('username'),
+			password: this.get('password')
+		}, {
+			success: options.success,
+			error: options.error
+		});
 		turtl.api.post('/auth', {}, {
 			success: options.success,
 			error: options.error
@@ -280,7 +245,7 @@ var User	=	Composer.RelationalModel.extend({
 });
 
 // we don't actually use this collection for anything but syncing
-var Users	=	Composer.Collection.extend({
+var Users = Composer.Collection.extend({
 	model: User,
 	local_table: 'user',
 
@@ -296,7 +261,7 @@ var Users	=	Composer.Collection.extend({
 	{
 		// make sure item.key is set so the correct record updates in the DB
 		// (since we only ever get one user object synced: ours)
-		item.key		=	'user';
+		item.key = 'user';
 		return this.parent.apply(this, arguments);
 	}
 });
