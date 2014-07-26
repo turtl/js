@@ -680,7 +680,7 @@
 				this.unbind(event_name, wrapped_function)
 				fn.apply(this, arguments);
 			}.bind(this);
-			this.bind(event_name, wrapped_function, bind_name);
+			return this.bind(event_name, wrapped_function, bind_name);
 		},
 
 		/**
@@ -705,14 +705,14 @@
 			var is_fn = function_or_name instanceof Function;
 			var lookup_name = is_fn ? null : make_lookup_name(event_name, function_or_name);
 			var fn = is_fn ?  function_or_name : this._handler_names[lookup_name];
-			if(!fn) return false;
+			if(!fn) return this;
 			if(!is_fn) delete this._handler_names[lookup_name];
 
 			var idx = this._handlers[event_name].indexOf(fn);
-			if(idx < 0) return false;
+			if(idx < 0) return this;
 
 			this._handlers[event_name].splice(idx, 1);
-			return true;
+			return this;
 		},
 
 		/**
@@ -721,6 +721,7 @@
 		unbind_all: function(event_name)
 		{
 			delete this._handlers[event_name];
+			return this;
 		},
 
 		/**
@@ -734,6 +735,7 @@
 			this._handler_names = {};
 
 			if(!options.preserve_forwards) this._forwards = [];
+			return this;
 		},
 
 		/**
@@ -767,6 +769,7 @@
 					}
 				});
 			}
+			return this;
 		}
 	});
 
@@ -2004,17 +2007,17 @@
 				if(selector)
 				{
 					el.addEventListener(ev, function(event) {
-						fn.apply(this, [event].concat(event.params || []));
-					}, false);
-				}
-				else
-				{
-					el.addEventListener(ev, function(event) {
 						var target = event.target || event.srcElement;
 						if(event.__composer_handled || !match(target, selector)) return false;
 						event.__composer_handled = true;
 						fn.apply(this, [event].concat(event.params || []));
 					});
+				}
+				else
+				{
+					el.addEventListener(ev, function(event) {
+						fn.apply(this, [event].concat(event.params || []));
+					}, false);
 				}
 			};
 		}
