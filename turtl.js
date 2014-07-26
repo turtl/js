@@ -292,12 +292,7 @@ var turtl	=	{
 			}, options);
 			this.router	=	new Composer.Router(config.routes, options);
 			this.router.bind_links({
-				filter_trailing_slash: true,
-				do_state_change: function(a_tag)
-				{
-					turtl.controllers.pages.trigger('onroute', path);
-					return true;
-				}
+				filter_trailing_slash: true
 			});
 			this.router.bind('route', this.route_callback.bind(this));
 			this.router.bind('preroute', function(url) {
