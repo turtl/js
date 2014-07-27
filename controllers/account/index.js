@@ -36,24 +36,24 @@ var AccountController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var content	=	Template.render('account/index', {
+		var content = Template.render('account/index', {
 			curtab: this.tab
 		});
 		this.html(content);
 
 		if(this.sub_controller) this.sub_controller.release();
-		this.sub_controller	=	null;
+		this.sub_controller = null;
 
 		// turn 'profile' into 'Profile', 'export-import' into 'Export', ...
-		var tabname			=	this.tab[0].toUpperCase() + this.tab.slice(1).replace(/-.*/, '');
-		var controller		=	window['Account'+tabname+'Controller'];
+		var tabname = this.tab[0].toUpperCase() + this.tab.slice(1).replace(/-.*/, '');
+		var controller = window['Account'+tabname+'Controller'];
 		if(controller)
 		{
 			var args = Object.merge({}, this.sub_controller_args, {
 				inject: this.account_content
 			});
-			this.sub_controller			=	new controller(args);
-			this.sub_controller_args	=	{};
+			this.sub_controller = new controller(args);
+			this.sub_controller_args = {};
 		}
 	},
 
@@ -61,15 +61,15 @@ var AccountController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 
-		var tab		=	e.target;
-		var tabname	=	tab.className.replace(/\bsel\b/, '').clean();
+		var tab = e.target;
+		var tabname = tab.className.replace(/\bsel\b/, '').clean();
 		if(tabname == this.tab) return;
 
 		this.tabs.getElements('li').each(function(el) {
 			el.removeClass('sel');
 		});
 		tab.addClass('sel');
-		this.tab	=	tabname;
+		this.tab = tabname;
 		this.render();
 	}
 });

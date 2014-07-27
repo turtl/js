@@ -23,7 +23,7 @@ var $ES = function(selector, filter) {return ($(filter) || document).getElements
  * 
  * @author		Jeff and Andrew Lyon <jeff@lyonbros.com>
  */
-var Barfr	=	new Class({
+var Barfr = new Class({
 	/**
 	 * Configurable options - these are safe to tweak and change
 	 */
@@ -82,20 +82,20 @@ var Barfr	=	new Class({
 
 		// set up the parameters
 		for(x in options)
-			this.options[x]	=	options[x];
+			this.options[x] = options[x];
 		
 
 		// default to not attaching to links unless we specify
-		var attach_links	=	this.options.attach_links;
+		var attach_links = this.options.attach_links;
 
 		// create all of our needed divs/objects and inject them into the DOM (only if we haven't already tho)
 		
-		var el	=	$(element);
+		var el = $(element);
 		if(!this.objects.container && !el)
 		{
-			this.objects.container	=	new Element('div');
-			this.objects.container.id			=	element;
-			this.objects.container.className	=	'barfr';
+			this.objects.container = new Element('div');
+			this.objects.container.id = element;
+			this.objects.container.className = 'barfr';
 			this.objects.container.setStyles({
 			//	display: 'none'
 			});
@@ -103,15 +103,15 @@ var Barfr	=	new Class({
 		}
 		else if(el)
 		{
-			this.objects.container	=	el;
+			this.objects.container = el;
 		}
 		
-		var el	=	$('barfr-ul');
+		var el = $('barfr-ul');
 		if(!this.objects.list && !el)
 		{
 			// create the list container, holds all the barf messages
-			this.objects.list		=	new Element('ul');
-			this.objects.list.id	=	'barfr-ul';
+			this.objects.list = new Element('ul');
+			this.objects.list.id = 'barfr-ul';
 			this.objects.list.setStyles({
 				display: 'none'
 			});
@@ -122,7 +122,7 @@ var Barfr	=	new Class({
 		}
 		else if(el)
 		{
-			this.objects.list	=	el;
+			this.objects.list = el;
 		}
 	},
 
@@ -130,14 +130,14 @@ var Barfr	=	new Class({
 	{
 		options || (options = {});
 
-		var msg	=	msg.replace(/<\/?script(.*?)>/ig, '');
+		var msg = msg.replace(/<\/?script(.*?)>/ig, '');
 		var merged_options = {};
 
 		for (x in this.options)
-			merged_options[x]	=	this.options[x];
+			merged_options[x] = this.options[x];
 
 		for(x in options)
-			merged_options[x]	=	options[x];
+			merged_options[x] = options[x];
 
 		if (this.options.prevent_duplicates && this.most_recent_barf_id && this.barfs[this.most_recent_barf_id] && this.barfs[this.most_recent_barf_id].msg == msg)
 			return false;

@@ -20,13 +20,13 @@ var UserJoinController = Composer.Controller.extend({
 		this.render();
 
 		// check for promo codes
-		var check_promo	=	function()
+		var check_promo = function()
 		{
-			var promo	=	Tstorage.promo;
+			var promo = Tstorage.promo;
 			if(promo && this.inp_promo.get('value') == '')
 			{
 				this.inp_promo.set('value', promo);
-				var open	=	this.el.getElement('a.open-promo');
+				var open = this.el.getElement('a.open-promo');
 				if(open) open.click();
 			}
 			check_promo.delay(500, this);
@@ -52,10 +52,10 @@ var UserJoinController = Composer.Controller.extend({
 	do_join: function(e)
 	{
 		if(e) e.stop();
-		var username	=	this.inp_username.get('value');
-		var password	=	this.inp_password.get('value');
-		var pconfirm	=	this.inp_confirm.get('value');
-		var promo		=	this.inp_promo.get('value');
+		var username = this.inp_username.get('value');
+		var password = this.inp_password.get('value');
+		var pconfirm = this.inp_confirm.get('value');
+		var promo = this.inp_promo.get('value');
 
 		if(password != pconfirm)
 		{

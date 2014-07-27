@@ -17,7 +17,7 @@ var AccountExportController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var content	=	Template.render('account/export', {
+		var content = Template.render('account/export', {
 		});
 		this.html(content);
 	}

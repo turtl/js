@@ -54,7 +54,7 @@ var Profile = Composer.RelationalModel.extend({
 
 	get_current_board: function()
 	{
-		var cur	=	this.get('current_board', false);
+		var cur = this.get('current_board', false);
 		if(!cur) cur = this.get('boards').first();
 		return cur;
 	},

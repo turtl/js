@@ -54,7 +54,7 @@ var BoardShareController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var content	=	Template.render('boards/share', {
+		var content = Template.render('boards/share', {
 			title: this.board.get('title')
 		});
 		this.html(content);
@@ -66,22 +66,22 @@ var BoardShareController = Composer.Controller.extend({
 	render_personas: function()
 	{
 		// grab board data without serializing notes
-		var _notes	=	this.board.get('notes');
+		var _notes = this.board.get('notes');
 		this.board.unset('notes', {silent: true});
-		var board	=	toJSON(this.board);
+		var board = toJSON(this.board);
 		this.board.set({notes: _notes}, {silent: true});
 
-		var privs		=	this.board.get('privs');
-		var personas	=	this.board.get('personas').map(function(p) {
-			p		=	toJSON(p);
-			p.privs	=	privs[p.id];
+		var privs = this.board.get('privs');
+		var personas = this.board.get('personas').map(function(p) {
+			p = toJSON(p);
+			p.privs = privs[p.id];
 			return p;
 		});
 
-		var invites	=	[];
+		var invites = [];
 		Object.each(privs, function(entry, id) {
 			if(!entry || !entry.email) return;
-			var invite	=	{
+			var invite = {
 				id: id,
 				email: entry.email,
 				p: entry.perms
@@ -89,7 +89,7 @@ var BoardShareController = Composer.Controller.extend({
 			invites.push(invite);
 		});
 
-		var content	=	Template.render('boards/share_personas', {
+		var content = Template.render('boards/share_personas', {
 			board: board,
 			personas: personas,
 			invites: invites
@@ -134,9 +134,9 @@ var BoardShareController = Composer.Controller.extend({
 
 		if(!confirm('Really UNshare the board with this user?')) return false;
 
-		var pid		=	next_tag_up('li', next_tag_up('li', e.target).getParent()).className.replace(/^.*persona_([0-9a-f-]+).*?$/, '$1');
+		var pid = next_tag_up('li', next_tag_up('li', e.target).getParent()).className.replace(/^.*persona_([0-9a-f-]+).*?$/, '$1');
 		if(!pid) return false;
-		var persona	=	this.board.get('personas').find_by_id(pid);
+		var persona = this.board.get('personas').find_by_id(pid);
 		if(!persona) return false;
 		turtl.loading(true);
 		this.board.share_with(this.from_persona, persona, 0, {
@@ -159,8 +159,8 @@ var BoardShareController = Composer.Controller.extend({
 
 		if(!confirm('Really cancel this invite?')) return false;
 
-		var iid		=	next_tag_up('li', next_tag_up('li', e.target).getParent()).className.replace(/^.*invite_([0-9a-f-]+).*?$/, '$1');
-		var invite	=	new BoardInvite({id: iid});
+		var iid = next_tag_up('li', next_tag_up('li', e.target).getParent()).className.replace(/^.*invite_([0-9a-f-]+).*?$/, '$1');
+		var invite = new BoardInvite({id: iid});
 		invite.cancel(this.board, {
 			success: function() {
 			},

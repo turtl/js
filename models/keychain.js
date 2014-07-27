@@ -1,4 +1,4 @@
-var KeychainEntry	=	Composer.RelationalModel.extend({
+var KeychainEntry = Composer.RelationalModel.extend({
 	base_url: '/keychain',
 
 	public_fields: [
@@ -20,7 +20,7 @@ var KeychainEntry	=	Composer.RelationalModel.extend({
 	}
 });
 
-var Keychain	=	Composer.Collection.extend({
+var Keychain = Composer.Collection.extend({
 	model: KeychainEntry,
 	local_table: 'keychain',
 
@@ -30,8 +30,8 @@ var Keychain	=	Composer.Collection.extend({
 	add_key: function(item_id, item_type, key, options)
 	{
 		options || (options = {});
-		var entry	=	this.find_key(item_id, {disable_migrate: true, return_model: true});
-		var key		=	tcrypt.key_to_string(key);
+		var entry = this.find_key(item_id, {disable_migrate: true, return_model: true});
+		var key = tcrypt.key_to_string(key);
 		if(entry && entry.get('type') == item_type)
 		{
 			// item exists! update it
@@ -40,7 +40,7 @@ var Keychain	=	Composer.Collection.extend({
 		else
 		{
 			// new entry
-			entry	=	new KeychainEntry({
+			entry = new KeychainEntry({
 				type: item_type,
 				item_id: item_id,
 				k: key
@@ -69,7 +69,7 @@ var Keychain	=	Composer.Collection.extend({
 	{
 		options || (options = {});
 
-		var models	=	this.filter(function(m) {
+		var models = this.filter(function(m) {
 			return m.get('item_id') == item_id;
 		});
 		if(models.length > 0)
@@ -90,10 +90,10 @@ var Keychain	=	Composer.Collection.extend({
 
 		// search the user data, and run a migration from user settings into the
 		// keychain if an entry is found.
-		var user_keys	=	turtl.user.get('settings').get_by_key('keys').value();
+		var user_keys = turtl.user.get('settings').get_by_key('keys').value();
 		if(!user_keys || !user_keys[item_id]) return false;
-		var key		=	tcrypt.key_to_bin(user_keys[item_id]);
-		var model	=	this.add_key(item_id, 'board', key, {force_add: true})
+		var key = tcrypt.key_to_bin(user_keys[item_id]);
+		var model = this.add_key(item_id, 'board', key, {force_add: true})
 		if(options.return_model) return model;
 		return tcrypt.key_to_bin(model.get('k'));
 	},
@@ -105,7 +105,7 @@ var Keychain	=	Composer.Collection.extend({
 	{
 		options || (options = {});
 
-		var model	=	this.find_key(item_id, {return_model: true});
+		var model = this.find_key(item_id, {return_model: true});
 		if(!model) return false;
 		model.destroy({
 			success: options.success,

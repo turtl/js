@@ -33,7 +33,7 @@ var BoardsController = Composer.Controller.extend({
 		this.render();
 		turtl.profile.bind('change:current_board', function() {
 			if(!this.switch_on_change) return;
-			this.board	=	this.profile.get_current_board();
+			this.board = this.profile.get_current_board();
 			this.render();
 		}.bind(this), 'boards:change:render');
 		this.bind('change-board', function(board) {
@@ -45,7 +45,7 @@ var BoardsController = Composer.Controller.extend({
 		}.bind(this), 'boards:change:render');
 		if(!this.collection)
 		{
-			this.collection	=	this.profile.get('boards');
+			this.collection = this.profile.get('boards');
 		}
 		this.collection.bind('change:title', this.render.bind(this), 'boards:render:title');
 		turtl.keyboard.bind('b', this.open_boards.bind(this), 'boards:shortcut:open_boards');
@@ -63,9 +63,9 @@ var BoardsController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var current	=	this.board;
-		var is_open	=	this.dropdown && this.dropdown.hasClass('open');
-		var content	=	Template.render('boards/index', {
+		var current = this.board;
+		var is_open = this.dropdown && this.dropdown.hasClass('open');
+		var content = Template.render('boards/index', {
 			num_boards: this.profile.get('boards').models().length,
 			current: current ? toJSON(current) : null,
 			num_personas: turtl.user.get('personas').models().length,
@@ -75,7 +75,7 @@ var BoardsController = Composer.Controller.extend({
 
 		// set up our listing sub-controller
 		if(this.list_controller) this.list_controller.release();
-		this.list_controller	=	new BoardListController({
+		this.list_controller = new BoardListController({
 			inject: this.boards_sub,
 			profile: this.profile,
 			board: this.board,
@@ -89,7 +89,7 @@ var BoardsController = Composer.Controller.extend({
 				{
 					turtl.user.get('settings').get_by_key('last_board').value(board.id());
 				}
-				this.board	=	board;
+				this.board = board;
 			}
 			this.trigger('change-board', board);
 		}.bind(this));
@@ -117,23 +117,23 @@ var BoardsController = Composer.Controller.extend({
 			turtl.keyboard.detach();
 			this.dropdown.addClass('open');
 			this.board_list.addClass('open');
-			var focus	=	function () { this.inp_filter.focus(); }.bind(this);
+			var focus = function () { this.inp_filter.focus(); }.bind(this);
 			focus();
 			focus.delay(10, this);
 			this.dropdown.setStyle('height', '');
 			(function() { 
-				var dcoord	=	this.dropdown.getCoordinates();
+				var dcoord = this.dropdown.getCoordinates();
 				if(window._popup_modal_wrap)
 				{
-					var wcoord	=	_popup_modal_wrap.getCoordinates();
-					var wscroll	=	0;
+					var wcoord = _popup_modal_wrap.getCoordinates();
+					var wscroll = 0;
 				}
 				else
 				{
-					var wcoord	=	window.getCoordinates();
-					var wscroll	=	window.getScroll().y;
+					var wcoord = window.getCoordinates();
+					var wscroll = window.getScroll().y;
 				}
-				var height	=	dcoord.height - ((dcoord.bottom - (wcoord.bottom + wscroll)) + 50);
+				var height = dcoord.height - ((dcoord.bottom - (wcoord.bottom + wscroll)) + 50);
 				if(dcoord.bottom > wcoord.bottom)
 				{
 					this.dropdown.setStyles({ height: height });
@@ -157,7 +157,7 @@ var BoardsController = Composer.Controller.extend({
 		if(modal.is_open) return false;
 		if(e) e.stop();
 
-		var parent	=	this.el.getParent();
+		var parent = this.el.getParent();
 		if(this.add_controller)
 		{
 			this.add_controller.inp_title.focus();
@@ -166,7 +166,7 @@ var BoardsController = Composer.Controller.extend({
 
 		if(this.add_container)
 		{
-			this.add_controller	=	new BoardEditController({
+			this.add_controller = new BoardEditController({
 				inject: this.add_container,
 				profile: this.profile,
 				bare: true
@@ -175,7 +175,7 @@ var BoardsController = Composer.Controller.extend({
 			if(this.change_on_add)
 			{
 				this.add_controller.bind('new-board', function(board) {
-					this.board	=	board;
+					this.board = board;
 					this.trigger('change-board', board);
 				}.bind(this));
 			}
@@ -186,13 +186,13 @@ var BoardsController = Composer.Controller.extend({
 		}
 		else
 		{
-			this.add_controller	=	new BoardEditController({
+			this.add_controller = new BoardEditController({
 				profile: this.profile
 			});
 		}
 		this.add_controller.bind('release', function() {
 			this.add_controller.unbind('release', 'board:edit:release');
-			this.add_controller	=	null;
+			this.add_controller = null;
 			if(this.add_container) this.add_container.slide('out');
 		}.bind(this), 'board:edit:release');
 	},
@@ -215,7 +215,7 @@ var BoardsController = Composer.Controller.extend({
 			e.stop();
 			if(this.inp_filter.value == '') this.close_boards();
 			this.list_controller.filter(null);
-			this.inp_filter.value	=	'';
+			this.inp_filter.value = '';
 			return false;
 		}
 
@@ -224,7 +224,7 @@ var BoardsController = Composer.Controller.extend({
 			e.stop();
 			this.list_controller.select_first_board();
 			this.list_controller.filter(null);
-			this.inp_filter.value	=	'';
+			this.inp_filter.value = '';
 			return false;
 		}
 

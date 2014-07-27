@@ -5,7 +5,7 @@ var AccountProfileSizeController = Composer.Controller.extend({
 	init: function()
 	{
 		if(!turtl.profile) return false;
-		this.loading_size	=	true;
+		this.loading_size = true;
 		this.render();
 		turtl.profile.bind('change:size', this.render.bind(this), 'account:profile:size:render:'+this.cid());
 		turtl.user.bind('change:storage', this.render.bind(this), 'account:user:storage:render:'+this.cid());
@@ -34,10 +34,10 @@ var AccountProfileSizeController = Composer.Controller.extend({
 		if(!turtl.profile) return false;
 
 		// show (loading) the first run
-		var loading_profile_size	=	this.loading_size;
-		this.loading_size			=	false;
+		var loading_profile_size = this.loading_size;
+		this.loading_size = false;
 
-		var content	=	Template.render('account/size', {
+		var content = Template.render('account/size', {
 			profile_size: turtl.profile.get('size', 0),
 			loading_profile_size: loading_profile_size,
 			storage: turtl.user.get('storage', 100 * 1024 * 1024)

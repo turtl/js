@@ -1,4 +1,4 @@
-var InviteBoardController	=	Composer.Controller.extend({
+var InviteBoardController = Composer.Controller.extend({
 	elements: {
 		'div.challenge': 'challenge_box',
 		'div.challenge .inner': 'challenge_inner',
@@ -23,7 +23,7 @@ var InviteBoardController	=	Composer.Controller.extend({
 	{
 		if(!this.model) return false;
 		if(!this.invite) this.invite = new BoardInvite({email: this.email});
-		this.persona	=	new Persona(this.persona_data ? this.persona_data : {});
+		this.persona = new Persona(this.persona_data ? this.persona_data : {});
 
 		this.render();
 	},
@@ -37,7 +37,7 @@ var InviteBoardController	=	Composer.Controller.extend({
 
 	render: function()
 	{
-		var content	=	Template.render('invites/board', {
+		var content = Template.render('invites/board', {
 			invite: toJSON(this.invite),
 			persona: toJSON(this.persona),
 			board: toJSON(this.model)
@@ -52,7 +52,7 @@ var InviteBoardController	=	Composer.Controller.extend({
 	send_invite: function(e)
 	{
 		if(e) e.stop();
-		this.inp_submit.disabled	=	true;
+		this.inp_submit.disabled = true;
 		if(this.persona.is_new())
 		{
 			this.send_invite_email();
@@ -73,12 +73,12 @@ var InviteBoardController	=	Composer.Controller.extend({
 
 		// TODO: fix persona assumption
 		// TODO: add question/answer challenge
-		var from	=	turtl.user.get('personas').first();
-		var message	=	new Message();
+		var from = turtl.user.get('personas').first();
+		var message = new Message();
 
 		// make sure we generate keys for this recipient
 		//message.add_recipient(from);
-		message.public_key	=	this.persona.get('pubkey');
+		message.public_key = this.persona.get('pubkey');
 		message.set({
 			from: from.id(),
 			to: this.persona.id(),
@@ -92,7 +92,7 @@ var InviteBoardController	=	Composer.Controller.extend({
 		});
 
 		turtl.loading(true);
-		var perms	=	2;
+		var perms = 2;
 		this.model.share_with(from, this.persona, perms, {
 			success: function() {
 				from.send_message(message, {
@@ -111,25 +111,25 @@ var InviteBoardController	=	Composer.Controller.extend({
 			error: function(err) {
 				turtl.loading(false);
 				barfr.barf('There was a problem sharing this board: '+ err);
-				this.inp_submit.disabled	=	false;
+				this.inp_submit.disabled = false;
 			}.bind(this)
 		});
 	},
 
 	send_invite_email: function()
 	{
-		var question	=	this.inp_question.get('value');
-		var secret		=	this.inp_answer.get('value');
-		var secure		=	this.inp_secure.checked;
+		var question = this.inp_question.get('value');
+		var secret = this.inp_answer.get('value');
+		var secure = this.inp_secure.checked;
 
 		if(!secure)
 		{
-			question	=	'';
-			secret		=	'';
+			question = '';
+			secret = '';
 		}
 
 		// TODO: fix persona assumption
-		var persona		=	turtl.user.get('personas').first();
+		var persona = turtl.user.get('personas').first();
 		turtl.loading(true);
 		this.invite.send(persona, this.model, question, secret, {
 			success: function() {
@@ -147,7 +147,7 @@ var InviteBoardController	=	Composer.Controller.extend({
 
 	toggle_secure: function(e)
 	{
-		var show	=	this.inp_secure.checked;
+		var show = this.inp_secure.checked;
 		this.challenge_inner.setStyle('display', 'block');
 		if(show)
 		{

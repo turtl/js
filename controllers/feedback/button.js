@@ -13,10 +13,10 @@ var FeedbackButtonController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var contents	=	Template.render('feedback/button');
+		var contents = Template.render('feedback/button');
 		this.html(contents);
 
-		this.el.id	=	'feedback';
+		this.el.id = 'feedback';
 
 		// manual injection
 		this.el.remove();

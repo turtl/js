@@ -92,8 +92,8 @@ var Board = Composer.RelationalModel.extend({
 
 		this.bind('destroy', function() {
 			// remove the project's sort from the user data
-			var sort		=	Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
-			sort[this.id()]	=	99999;
+			var sort = Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
+			sort[this.id()] = 99999;
 			turtl.user.get('settings').get_by_key('board_sort').value(sort);
 		}.bind(this));
 
@@ -105,7 +105,7 @@ var Board = Composer.RelationalModel.extend({
 			if(this.get('shared', false))
 			{
 				// board was UNshared from us
-				var persona	=	this.get_shared_persona({privs_only: true});
+				var persona = this.get_shared_persona({privs_only: true});
 				if(!persona)
 				{
 					barfr.barf('The board "'+ this.get('title') + '" is no longer shared with you.');
@@ -115,8 +115,8 @@ var Board = Composer.RelationalModel.extend({
 			else
 			{
 				// this is our board, but let's make the personas match the privs
-				var privs		=	this.get('privs');
-				var personas	=	this.get('personas').filter(function(p) {
+				var privs = this.get('privs');
+				var personas = this.get('personas').filter(function(p) {
 					return privs[p.id()] && !privs[p.id()].deleted && privs[p.id()].perms > 0;
 				});
 				this.get('personas').reset(personas);
@@ -128,8 +128,8 @@ var Board = Composer.RelationalModel.extend({
 		if(!turtl.profile.get('keychain').find_key(this.id(true)) && !this.is_new() && this.key)
 		{
 			turtl.profile.get('keychain').add_key(this.id(true), 'board', this.key);
-			var keys	=	this.get('keys').toJSON();
-			keys		=	keys.filter(function(k) {
+			var keys = this.get('keys').toJSON();
+			keys = keys.filter(function(k) {
 				return k.u != turtl.user.id();
 			});
 			this.set({keys: keys});
@@ -169,15 +169,15 @@ var Board = Composer.RelationalModel.extend({
 		options || (options = {});
 
 		// must be 0-2
-		permissions	=	parseInt(permissions);
+		permissions = parseInt(permissions);
 
 		turtl.api.put('/boards/'+this.id()+'/invites/persona/'+to_persona.id(), {
 			permissions: permissions,
 			from_persona: from_persona.id()
 		}, {
 			success: function(priv) {
-				var privs	=	Object.clone(this.get('privs', {}));
-				privs[to_persona.id()]	=	priv;
+				var privs = Object.clone(this.get('privs', {}));
+				privs[to_persona.id()] = priv;
 				this.set({privs: privs});
 				this.get('personas').add(to_persona);
 				if(options.success) options.success.apply(this, arguments);
@@ -191,14 +191,14 @@ var Board = Composer.RelationalModel.extend({
 	from_share: function(board_data)
 	{
 		// add this project to the end of the user's list
-		var sort		=	Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
-		sort[this.id()]	=	99999;
+		var sort = Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
+		sort[this.id()] = 99999;
 		turtl.user.get('settings').get_by_key('board_sort').value(sort);
 		turtl.profile.get('keychain').add_key(this.id(), 'board', this.key);
 
-		var _notes	=	board_data.notes;
+		var _notes = board_data.notes;
 		delete board_data.notes;
-		board_data.shared	=	true;
+		board_data.shared = true;
 		this.set(board_data);
 
 		turtl.profile.get('boards').add(this);
@@ -208,7 +208,7 @@ var Board = Composer.RelationalModel.extend({
 				// save the notes into the board (really, this just adds them to the
 				// global turtl.profile.notes collection). once done, we *make sure*
 				// the notes are persisted to the local db
-				_notes	=	turtl.sync.process_data({notes: _notes}).notes;
+				_notes = turtl.sync.process_data({notes: _notes}).notes;
 				this.update_notes(_notes, {
 					complete: function() {
 						this.get('notes').each(function(note) {
@@ -291,25 +291,25 @@ var Board = Composer.RelationalModel.extend({
 
 		if(!options.privs_only)
 		{
-			var meta	=	this.get('meta');
+			var meta = this.get('meta');
 			if(meta && meta.persona)
 			{
-				var persona	=	turtl.user.get('personas').find_by_id(meta.persona);
+				var persona = turtl.user.get('personas').find_by_id(meta.persona);
 			}
 			if(persona) return persona;
 		}
 
-		persona			=	false;
-		var privs		=	this.get('privs');
-		var high_priv	=	0;
+		persona = false;
+		var privs = this.get('privs');
+		var high_priv = 0;
 		if(!privs) return false;
 		turtl.user.get('personas').each(function(p) {
 			if(!privs[p.id()]) return;
-			var this_privs	=	privs[p.id()].perms;
+			var this_privs = privs[p.id()].perms;
 			if(this_privs > high_priv)
 			{
-				persona		=	p;
-				high_priv	=	this_privs;
+				persona = p;
+				high_priv = this_privs;
 			}
 		});
 		return persona;
@@ -317,8 +317,8 @@ var Board = Composer.RelationalModel.extend({
 
 	share_enabled: function()
 	{
-		var shared	=	false;
-		var privs	=	this.get('privs');
+		var shared = false;
+		var privs = this.get('privs');
 		Object.each(privs, function(v, k) {
 			if(v && v.perms > 0 && !v.deleted) shared = true;
 		});
@@ -327,9 +327,9 @@ var Board = Composer.RelationalModel.extend({
 
 	destroy_submodels: function()
 	{
-		var notes	=	this.get('notes');
-		var tags	=	this.get('tags');
-		var cats	=	this.get('categories');
+		var notes = this.get('notes');
+		var tags = this.get('tags');
+		var cats = this.get('categories');
 
 		notes.each(function(n) { n.destroy({skip_remote_sync: true, force_save: true}); n.unbind(); });
 		tags.each(function(t) { t.destroy({skip_remote_sync: true}); t.unbind(); });
@@ -388,10 +388,10 @@ var Boards = Composer.Collection.extend({
 	/*
 	sortfn: function(a, b)
 	{
-		var psort	=	turtl.user.get('settings').get_by_key('board_sort').value() || {};
-		var a_sort	=	psort[a.id()] || psort[a.id()] === 0 ? psort[a.id()] : 99999;
-		var b_sort	=	psort[b.id()] || psort[b.id()] === 0 ? psort[b.id()] : 99999;
-		var sort	=	a_sort - b_sort;
+		var psort = turtl.user.get('settings').get_by_key('board_sort').value() || {};
+		var a_sort = psort[a.id()] || psort[a.id()] === 0 ? psort[a.id()] : 99999;
+		var b_sort = psort[b.id()] || psort[b.id()] === 0 ? psort[b.id()] : 99999;
+		var sort = a_sort - b_sort;
 		if(sort != 0)
 		{
 			return sort;
@@ -424,7 +424,7 @@ var Boards = Composer.Collection.extend({
 
 	process_local_sync: function(board_data, model, msg)
 	{
-		var action	=	msg.action;
+		var action = msg.action;
 		if(_sync_debug_list.contains(this.local_table))
 		{
 			//log.debug('sync: process_local_sync: '+ this.local_table +': '+ msg.id+ ' ' + action, board_data, model);
@@ -436,8 +436,8 @@ var Boards = Composer.Collection.extend({
 		// this way until the board is posted to the API and gets a real ID. we
 		// need to sniff out this situation and flip the cid to an id for the
 		// board key (if detected)
-		var keychain	=	turtl.profile.get('keychain');
-		var key			=	keychain.find_key(board_data.cid);
+		var keychain = turtl.profile.get('keychain');
+		var key = keychain.find_key(board_data.cid);
 		if(key && board_data.id && !board_data.deleted)
 		{
 			log.debug('board: got CID key, adding ID key (and removing CID key)');
@@ -451,7 +451,7 @@ var Boards = Composer.Collection.extend({
 		}
 		else if(action == 'refresh')
 		{
-			var current	=	turtl.profile.get_current_board();
+			var current = turtl.profile.get_current_board();
 			if(current && model.id() == current.id())
 			{
 				current.get('notes').refresh();
@@ -463,7 +463,7 @@ var Boards = Composer.Collection.extend({
 			{
 				if(board_data.user_id && board_data.user_id != turtl.user.id())
 				{
-					board_data.shared	=	true;
+					board_data.shared = true;
 				}
 				model.set(board_data);
 				model.trigger('change:privs');
@@ -477,8 +477,8 @@ var Boards = Composer.Collection.extend({
 			// board.privs.does_not_contain(any_of_my_personas).
 			if(board_data.shared)
 			{
-				var persona_ids		=	turtl.user.get('personas').map(function(p) { return p.id(); });
-				var has_my_persona	=	false;
+				var persona_ids = turtl.user.get('personas').map(function(p) { return p.id(); });
+				var has_my_persona = false;
 				Object.keys(board_data.privs).each(function(pid) {
 					if(persona_ids.contains(pid)) has_my_persona = true;
 				});
@@ -489,7 +489,7 @@ var Boards = Composer.Collection.extend({
 				// break and skip out on this one
 				if(!has_my_persona) return false;
 			}
-			var model	=	new Board(board_data);
+			var model = new Board(board_data);
 			if(board_data.cid) model._cid = board_data.cid;
 			this.upsert(model);
 		}

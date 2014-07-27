@@ -19,10 +19,10 @@ var NoteFile = Composer.RelationalModel.extend({
 
 	find_key: function()
 	{
-		var note	=	this && this.get_parent && this.get_parent();
+		var note = this && this.get_parent && this.get_parent();
 		if(note)
 		{
-			this.key	=	note.key;
+			this.key = note.key;
 			return this.key;
 		}
 		return this.parent.apply(this, arguments);
@@ -46,16 +46,16 @@ var NoteFile = Composer.RelationalModel.extend({
 					this.set({has_data: 0});
 					return false;
 				}
-				var file	=	new FileData();
-				file.key	=	this.key;
+				var file = new FileData();
+				file.key = this.key;
 				file.set(filedata, {
 					async_success: function() {
-						var data	=	file.get('data');
-						var buffer	=	new ArrayBuffer(data.length);
-						var array	=	new Uint8Array(buffer);
+						var data = file.get('data');
+						var buffer = new ArrayBuffer(data.length);
+						var array = new Uint8Array(buffer);
 						for(var i = 0, n = data.length; i < n; i++)
 						{
-							array[i]	=	data.charCodeAt(i);
+							array[i] = data.charCodeAt(i);
 						}
 						if(options.success) options.success(array);
 					}.bind(this)
@@ -72,7 +72,7 @@ var NoteFile = Composer.RelationalModel.extend({
 
 		return this.to_array({
 			success: function(array) {
-				var blob	=	new Blob([array.buffer], {type: this.get('type')});
+				var blob = new Blob([array.buffer], {type: this.get('type')});
 				if(options.success) options.success(blob);
 			}.bind(this),
 			error: options.error
@@ -100,43 +100,43 @@ var FileData = Composer.RelationalModel.extend({
 
 		if(options.api_save)
 		{
-			var save_fn	=	get_parent(this);
+			var save_fn = get_parent(this);
 			turtl.db.files.get(this.id()).done(function(filedata) {
 				if(!filedata)
 				{
 					log.error('files: save: missing file: ', this.id());
 					return options.error('missing file locally');
 				}
-				var data	=	filedata;
+				var data = filedata;
 				// don't try to upload until we have a real note id
 				if(!data.note_id || !data.note_id.match(/[0-9a-f]+/)) return false;
-				var body	=	data.body;
-				var data	=	{
+				var body = data.body;
+				var data = {
 					hash: data.id,
 					cid: this.cid()
 				};
 
 				// convert body to Uint8Array
-				var raw	=	new Uint8Array(body.length);
+				var raw = new Uint8Array(body.length);
 				for(var i = 0, n = body.length; i < n; i++)
 				{
-					raw[i]	=	body.charCodeAt(i);
+					raw[i] = body.charCodeAt(i);
 				}
 
 				// mark the save as raw and fire it off
-				options.rawUpload	=	true;
-				options.data		=	raw;
-				options.args		=	data;
-				this.url			=	'/notes/'+this.get('note_id')+'/file';
-				options.uploadprogress	=	function(ev) {
+				options.rawUpload = true;
+				options.data = raw;
+				options.args = data;
+				this.url = '/notes/'+this.get('note_id')+'/file';
+				options.uploadprogress = function(ev) {
 					console.log('progress: ', ev);
 				};
 				turtl.db.notes.get(this.get('note_id')).done(function(note_data) {
 					if(!note_data) return false;
-					var persona_id	=	false;
+					var persona_id = false;
 					if(note_data.meta && note_data.meta.persona)
 					{
-						options.args.persona	=	note_data.meta.persona;
+						options.args.persona = note_data.meta.persona;
 					}
 					turtl.files.upload(this, save_fn, options);
 				}.bind(this));
@@ -154,20 +154,20 @@ var FileData = Composer.RelationalModel.extend({
 
 		if(options.api_save)
 		{
-			var parent_fn	=	get_parent(this);
+			var parent_fn = get_parent(this);
 			turtl.db.notes.get(this.get('note_id')).done(function(note_data) {
 				if(!note_data) note_data = {};
-				var persona_id	=	false;
+				var persona_id = false;
 				if(!options.args) options.args = {};
 				if(note_data.meta && note_data.meta.persona)
 				{
-					options.args.persona	=	note_data.meta.persona;
+					options.args.persona = note_data.meta.persona;
 				}
 
-				var _url	=	this.url;
-				this.url	=	'/notes/'+this.get('note_id')+'/file';
+				var _url = this.url;
+				this.url = '/notes/'+this.get('note_id')+'/file';
 				parent_fn.call(this, options);
-				this.url	=	_url;
+				this.url = _url;
 			}.bind(this));
 		}
 		else
@@ -182,14 +182,14 @@ var FileData = Composer.RelationalModel.extend({
 	 */
 	_do_download: function(options)
 	{
-		var args	=	{hash: this.get('id')};
+		var args = {hash: this.get('id')};
 		if(options.persona) args.persona = options.persona;
 
 		if(window._in_desktop || window.firefox || window.chrome)
 		{
 			// we're in desktop/FF. 302 redirect won't work, so we do it by hand
 			// by asking the api to just send the URL for the file back.
-			var do_download	=	function(url)
+			var do_download = function(url)
 			{
 				new Request({
 					url: url,
@@ -197,11 +197,11 @@ var FileData = Composer.RelationalModel.extend({
 					responseType: 'arraybuffer',
 					onSuccess: options.success,
 					onProgress: function(event, xhr) {
-						var progress	=	{total: event.total, loaded: event.loaded};
+						var progress = {total: event.total, loaded: event.loaded};
 						if(options.progress) options.progress(progress, xhr);
 					},
 					onFailure: function(xhr) {
-						var err	=	uint8array_to_string(xhr.response);
+						var err = uint8array_to_string(xhr.response);
 						if(options.error) options.error(xhr);
 					}
 				}).send();
@@ -209,7 +209,7 @@ var FileData = Composer.RelationalModel.extend({
 
 			// chrome/firefox are both being really bitchy about a very simple 302
 			// redirect, so we essentially just do it ourselves here.
-			args.disable_redirect	=	1;
+			args.disable_redirect = 1;
 			turtl.api.get('/notes/'+this.get('note_id')+'/file', args, {
 				success: do_download,
 				error: options.error
@@ -237,21 +237,21 @@ var FileData = Composer.RelationalModel.extend({
 		if(!this.get('note_id') || !this.get('id')) return false;
 		turtl.db.notes.get(this.get('note_id')).done(function(note_data) {
 			if(!note_data) return false;
-			var persona_id	=	false;
+			var persona_id = false;
 			if(note_data.meta && note_data.meta.persona)
 			{
-				persona_id	=	note_data.meta.persona;
+				persona_id = note_data.meta.persona;
 			}
 
 			this._do_download({
 				persona: persona_id,
 				success: function(res) {
-					var body	=	uint8array_to_string(res);
+					var body = uint8array_to_string(res);
 
 					this.set({data: body});
 
-					var hash	=	this.id();
-					var data	=	{
+					var hash = this.id();
+					var data = {
 						id: hash,
 						note_id: this.get('note_id'),
 						body: body,
@@ -260,7 +260,7 @@ var FileData = Composer.RelationalModel.extend({
 					};
 
 					// clear out extra files
-					var note	=	new Note({id: this.get('note_id')});
+					var note = new Note({id: this.get('note_id')});
 					note.clear_files({ exclude: [hash] });
 
 					// save the file data into the db
@@ -272,12 +272,12 @@ var FileData = Composer.RelationalModel.extend({
 								.only(this.get('note_id'))
 								.modify({
 									file: function(n) {
-										n.file.hash		=	hash;
+										n.file.hash = hash;
 										// increment has_file. this notifies the in-mem
 										// model to reload.
-										var has_data	=	(n.file.has_data && n.file.has_data > 0 && n.file.has_data) || 0;
+										var has_data = (n.file.has_data && n.file.has_data > 0 && n.file.has_data) || 0;
 										console.log('file: download: has_data: ', has_data);
-										n.file.has_data	=	has_data < 1 ? 1 : has_data + 1;
+										n.file.has_data = has_data < 1 ? 1 : has_data + 1;
 										return n.file;
 									},
 									has_file: 2
@@ -324,12 +324,12 @@ var Files = Composer.Collection.extend({
 		// poll for blank file records and queue them for download
 		turtl.sync.register_poller(this.queue_download_blank_files.bind(this))
 
-		this.queue_consumer	=	new turtl.hustle.Queue.Consumer(function(job) {
+		this.queue_consumer = new turtl.hustle.Queue.Consumer(function(job) {
 			log.debug('files: job: ', job);
 			switch(job.data.type)
 			{
 			case 'download':
-				var model		=	this.create_remote_model(job.data.filedata);
+				var model = this.create_remote_model(job.data.filedata);
 				turtl.files.download(model, model.download, {
 					success: function() {
 					},
@@ -378,8 +378,8 @@ var Files = Composer.Collection.extend({
 		// we already have an id (the hash) AND the object we're attaching to
 		// (teh note) must always have an id before uploading. so instead, we're
 		// going to update the model data into the note's [file] object.
-		var note_id	=	modeldata.note_id;
-		var hash	=	modeldata.id;
+		var note_id = modeldata.note_id;
+		var hash = modeldata.id;
 		turtl.db.files
 			.query()
 			.only(hash)
@@ -392,8 +392,8 @@ var Files = Composer.Collection.extend({
 					.modify({
 						file: function(note) {
 							if(!note.file) note.file = {};
-							note.file.hash		=	hash;
-							note.file.has_data	=	(note.file.has_data || 0) + 1;
+							note.file.hash = hash;
+							note.file.has_data = (note.file.has_data || 0) + 1;
 							return note.file;
 						},
 					})
@@ -428,8 +428,8 @@ var Files = Composer.Collection.extend({
 			.done(function(res) {
 				res.each(function(filedata) {
 					if(!filedata.note_id) return false;
-					var failues	=	0;
-					var do_add_queue_item	=	function()
+					var failues = 0;
+					var do_add_queue_item = function()
 					{
 						log.debug('files: queue for download: ', filedata.id);
 						turtl.hustle.Queue.put({type: 'download', filedata: filedata}, {
@@ -458,7 +458,7 @@ var Files = Composer.Collection.extend({
 	{
 		if(!item.file || !item.file.hash) return false;
 
-		var filedata	=	{
+		var filedata = {
 			_sync: item._sync,
 			id: item.file.hash,
 			note_id: item.id,
@@ -475,33 +475,33 @@ var Files = Composer.Collection.extend({
 		if(this[type][track_id]) return false;
 
 		// track it
-		this[type][track_id]	=	true;
+		this[type][track_id] = true;
 
 		// hijack our completion functions so we can track the download
-		var success			=	options.success;
-		var progress		=	options.progress;
-		var uploadprogress	=	options.progress;
-		var error			=	options.error;
+		var success = options.success;
+		var progress = options.progress;
+		var uploadprogress = options.progress;
+		var error = options.error;
 
 		this.trigger(type+'-start', track_id);
 
-		options.success	=	function()
+		options.success = function()
 		{
 			delete this[type][track_id];
 			if(success) success.apply(this, arguments);
 			this.trigger(type+'-success', track_id);
 		}.bind(this);
-		options.progress	=	function(ev)
+		options.progress = function(ev)
 		{
 			if(progress) progress.apply(this, arguments);
 			this.trigger(type+'-progress', track_id, ev);
 		}.bind(this);
-		options.uploadprogress	=	function(ev)
+		options.uploadprogress = function(ev)
 		{
 			if(uploadprogress) uploadprogress.apply(this, arguments);
 			this.trigger(type+'-progress', track_id, ev);
 		}.bind(this);
-		options.error	=	function(e, xhr)
+		options.error = function(e, xhr)
 		{
 			try
 			{

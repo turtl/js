@@ -22,8 +22,8 @@ var BaseNoteItem = Composer.Controller.extend({
 		this.model.bind('destroy', this.release.bind(this), 'note:item:destroy:release');
 		this.model.bind_relational('file', 'change', this.render.bind(this), 'note:file:encrypting');
 
-		this.menu_close_timer		=	new Timer(200);
-		this.menu_close_timer.end	=	this.do_close_menu.bind(this);
+		this.menu_close_timer = new Timer(200);
+		this.menu_close_timer.end = this.do_close_menu.bind(this);
 	},
 
 	release: function()
@@ -31,24 +31,24 @@ var BaseNoteItem = Composer.Controller.extend({
 		this.model.unbind('change', 'note:item:change:render');
 		this.model.unbind('destroy', 'note:item:destroy:release');
 		this.model.unbind_relational('file', 'change', 'note:file:encrypting');
-		this.menu_close_timer.end	=	null;
+		this.menu_close_timer.end = null;
 		this.parent.apply(this, arguments);
 	},
 
 	render: function(type, className)
 	{
-		var note_data	=	toJSON(this.model);
+		var note_data = toJSON(this.model);
 		if(!note_data.text && !note_data.url && !note_data.embed && note_data.file && note_data.file.blob_url && note_data.file.type.match(/^image/))
 		{
-			note_data.type	=	'image';
-			note_data.url	=	note_data.file.blob_url;
-			note_data.file.blob_url	=	null;
+			note_data.type = 'image';
+			note_data.url = note_data.file.blob_url;
+			note_data.file.blob_url = null;
 		}
 
-		var file		=	note_data.file || {};
-		var ext			=	(file.name || '').replace(/^.*\./, '');
-		var file_type	=	this.get_file_type(ext, {blank: true});
-		var has_file	=	(file.hash || file.name || file.encrypting)
+		var file = note_data.file || {};
+		var ext = (file.name || '').replace(/^.*\./, '');
+		var file_type = this.get_file_type(ext, {blank: true});
+		var has_file = (file.hash || file.name || file.encrypting)
 		var content = Template.render('notes/'+type+'/index', {
 			note: note_data,
 			has_file: has_file,
@@ -60,7 +60,7 @@ var BaseNoteItem = Composer.Controller.extend({
 		this.el.getElements('.content a').each(function(el) {
 			if(!el.href || !el.href.match(/^[a-z]+:/))
 			{
-				el.href	=	'http://' + el.href;
+				el.href = 'http://' + el.href;
 			}
 			el.target = '_blank';
 		});
@@ -74,13 +74,13 @@ var BaseNoteItem = Composer.Controller.extend({
 	render_math: function()
 	{
 		// handle math junk
-		var maths	=	this.el.getElements('pre.math');
+		var maths = this.el.getElements('pre.math');
 		if(maths.length > 0)
 		{
 			maths.each(function(math) {
 				// inject our mathjax script
-				var equ		=	math.get('html').replace(/&amp;/g, '&');
-				var script	=	new Element('script').setProperties({
+				var equ = math.get('html').replace(/&amp;/g, '&');
+				var script = new Element('script').setProperties({
 					type: 'math/tex; mode=display'
 				}).set('html', equ);
 				script.inject(math, 'after');
@@ -150,23 +150,23 @@ var BaseNoteItem = Composer.Controller.extend({
 	download_attachment: function(e)
 	{
 		if(e) e.stop();
-		var atag	=	next_tag_up('a', e.target);
+		var atag = next_tag_up('a', e.target);
 		if(atag.hasClass('decrypting')) return false;
 
 		atag.addClass('decrypting');
 		atag.setProperties({title: 'Decrypting, this can take a while.'});
-		var icon		=	this.attachment.getElement('img');
-		var icon_src	=	icon.src;
-		icon.src		=	img('/images/site/icons/load_16x16.gif');
+		var icon = this.attachment.getElement('img');
+		var icon_src = icon.src;
+		icon.src = img('/images/site/icons/load_16x16.gif');
 		this.model.get('file').to_blob({
 			success: function(blob) {
-				icon.src	=	icon_src;
+				icon.src = icon_src;
 				atag.removeClass('decrypting');
 				atag.setProperties({title: ''});
 
-				var url			=	URL.createObjectURL(blob);
-				var name		=	this.model.get('file').get('name');
-				var download	=	new Element('a')
+				var url = URL.createObjectURL(blob);
+				var name = this.model.get('file').get('name');
+				var download = new Element('a')
 					.setStyles({visibility: 'hidden'})
 					.set('html', 'Download '+ name.safe())
 					.addClass('attachment')
@@ -191,7 +191,7 @@ var BaseNoteItem = Composer.Controller.extend({
 	{
 		options || (options = {});
 
-		var known_file_types	=	{
+		var known_file_types = {
 			aac: 'aac',
 			ai: 'ai',
 			aiff: 'aiff',
@@ -251,7 +251,7 @@ var BaseNoteItem = Composer.Controller.extend({
 			yml: 'yml',
 			zip: 'zip'
 		};
-		var type	=	known_file_types[ext];
+		var type = known_file_types[ext];
 		if(!type && options.blank) type = '_blank';
 		return type;
 	}

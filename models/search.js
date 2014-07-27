@@ -1,4 +1,4 @@
-var Search	=	Composer.Model.extend({
+var Search = Composer.Model.extend({
 	init: function()
 	{
 	},

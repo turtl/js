@@ -50,14 +50,14 @@ var HeaderBarController = Composer.Controller.extend({
 		this.html(content);
 
 		if(this.size_controller) this.size_controller.release();
-		this.size_controller	=	new AccountProfileSizeController({
+		this.size_controller = new AccountProfileSizeController({
 			inject: this.size_container
 		});
 
 		if(!window._in_ext)
 		{
 			if(this.notifications) this.notifications.release();
-			this.notifications	=	new NotificationsController({
+			this.notifications = new NotificationsController({
 				button: document.getElement('header h1'),
 				inject: document.getElement('header')
 			});

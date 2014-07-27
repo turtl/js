@@ -1411,6 +1411,14 @@
 		},
 
 		/**
+		 * get the number of models in the collection
+		 */
+		length: function()
+		{
+			return this.models().length;
+		},
+
+		/**
 		 * add a model to this collection, and hook up the correct wire in doing so
 		 * (events and setting the model's collection).
 		 */
@@ -2362,7 +2370,7 @@
 		replace: function(element)
 		{
 			if(this.el.parentNode) this.el.parentNode.replaceChild(element, this.el);
-			this.el	=	element;
+			this.el = element;
 
 			this.refresh_elements();
 			this.delegate_events();
@@ -2931,6 +2939,26 @@
 
 			// call Model.get()
 			return this.parent(key, def);
+		},
+
+		/**
+		 * clear this model's data *and* its related sub-objects
+		 */
+		clear: function(options)
+		{
+			options || (options = {});
+
+			if(this.relations && !options.skip_relational)
+			{
+				Composer.object.each(this.relations, function(relation, k) {
+					var obj = this._get_key(this.relation_data, k);
+					if(typeof(obj) == 'undefined') return;
+					if(obj.clear && typeof(obj.clear) == 'function') obj.clear();
+				}, this);
+			}
+
+			// call Model.clear()
+			return this.parent.apply(this, arguments);
 		},
 
 		/**

@@ -17,7 +17,7 @@ var AccountPasswordController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var content	=	Template.render('account/password', {
+		var content = Template.render('account/password', {
 		});
 		this.html(content);
 	}

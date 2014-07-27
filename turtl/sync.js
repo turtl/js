@@ -1,13 +1,13 @@
 // extend_error is in functions.js
-var SyncError	=	extend_error(Error, 'SyncError');
+var SyncError = extend_error(Error, 'SyncError');
 
 // helps us track local changes so we don't double-apply
-var local_sync_id	=	0;
+var local_sync_id = 0;
 
 /**
  * Default sync function, persists items to the local DB
  */
-Composer.sync	=	function(method, model, options)
+Composer.sync = function(method, model, options)
 {
 	options || (options = {});
 	if(options.skip_local_sync && method == 'delete')
@@ -17,7 +17,7 @@ Composer.sync	=	function(method, model, options)
 	}
 
 	// derive the table name from the model's base_url field.
-	var table	=	options.table || model.get_url().replace(/^\/(.*?)(\/|$).*/, '$1');
+	var table = options.table || model.get_url().replace(/^\/(.*?)(\/|$).*/, '$1');
 	if(table == 'users') table = 'user';	// kind of a hack. oh well.
 
 	// some debugging, can make tracking down sync issues easier
@@ -27,7 +27,7 @@ Composer.sync	=	function(method, model, options)
 		log.info('save: '+ table +': mem -> db ('+ action +')');
 	}
 
-	var error	=	options.error || function() {};
+	var error = options.error || function() {};
 	if(!turtl.db)
 	{
 		return error('DB not open.');
@@ -37,10 +37,10 @@ Composer.sync	=	function(method, model, options)
 		throw new SyncError('Bad db.js table: '+ table);
 	}
 
-	var modeldata	=	null;
+	var modeldata = null;
 
 	// define some callbacks for our indexeddb queries
-	var success	=	function(res)
+	var success = function(res)
 	{
 		if(['create', 'update', 'delete'].contains(method))
 		{
@@ -56,7 +56,7 @@ Composer.sync	=	function(method, model, options)
 
 		if(res instanceof Array && res.length == 1)
 		{
-			res	=	res[0];
+			res = res[0];
 		}
 		if(options.success) options.success(res);
 	};
@@ -64,7 +64,7 @@ Composer.sync	=	function(method, model, options)
 	if(method != 'read')
 	{
 		// serialize our model, and add in any extra data needed
-		modeldata	=	model.toJSON();
+		modeldata = model.toJSON();
 		if(options.args) modeldata.meta = options.args;
 	}
 
@@ -72,7 +72,7 @@ Composer.sync	=	function(method, model, options)
 	// filled in here.
 	if(table == 'user')
 	{
-		modeldata.key	=	'user';
+		modeldata.key = 'user';
 	}
 
 	log.debug('save: '+ table +': '+ method, modeldata);
@@ -88,8 +88,8 @@ Composer.sync	=	function(method, model, options)
 		// added to the API but the response (with the ID) doesn't update in the
 		// local db (becuase of the client being closed, for instance, or the
 		// server handling the request crashing after the record is added)
-		model._cid		=	model.cid();
-		modeldata.id	=	model.cid();
+		model._cid = model.cid();
+		modeldata.id = model.cid();
 
 		turtl.db[table].add(modeldata).then(success, error);
 		break;
@@ -108,62 +108,62 @@ Composer.sync	=	function(method, model, options)
 /**
  * This is the sync function used by the sync process to save data to the API.
  */
-var api_sync	=	function(method, model, options)
+var api_sync = function(method, model, options)
 {
 	options || (options = {});
 
 	switch(method)
 	{
 	case 'create':
-		var method	=	'post'; break;
+		var method = 'post'; break;
 	case 'read':
-		var method	=	'get'; break;
+		var method = 'get'; break;
 	case 'update':
-		var method	=	'put'; break;
+		var method = 'put'; break;
 	case 'delete':
-		var method	=	'_delete'; break;
+		var method = '_delete'; break;
 	default:
 		throw new SyncError('Bad method passed to Composer.sync: '+ method);
 	}
 
 	log.debug('API: '+ method.toUpperCase().replace(/_/g, '') +' '+ model.base_url);
 
-	var headers	=	{};
-	var args	=	options.args;
-	var url		=	model.get_url();
+	var headers = {};
+	var args = options.args;
+	var url = model.get_url();
 	args || (args = {});
 	if(options.rawUpload)
 	{
 		// we're sending raw/binary data.
-		args.cid	=	model.cid();
-		url			=	url + '?' + Object.toQueryString(args);
-		args		=	options.data;
-		headers['Content-Type']	=	'application/octet-stream';
+		args.cid = model.cid();
+		url = url + '?' + Object.toQueryString(args);
+		args = options.data;
+		headers['Content-Type'] = 'application/octet-stream';
 	}
 	else
 	{
 		// don't want to send all data over a GET or DELETE
 		if(method != 'get' && method != '_delete')
 		{
-			var data	=	model.toJSON();
-			data.cid	=	model.cid();
+			var data = model.toJSON();
+			data.cid = model.cid();
 			if(data.keys && data.keys.length == 0)
 			{
 				// empty string gets converted to empty array by the API for the keys
 				// type (this is the only way to serialize an empty array via 
 				// mootools' Request AJAX class)
-				data.keys	=	'';
+				data.keys = '';
 			}
 			/*
 			if(options.subset)
 			{
-				var newdata	=	{};
+				var newdata = {};
 				for(x in data)
 				{
 					if(!options.subset.contains(x)) continue;
-					newdata[x]	=	data[x];
+					newdata[x] = data[x];
 				}
-				data	=	newdata;
+				data = newdata;
 			}
 			*/
 			args.data = data;

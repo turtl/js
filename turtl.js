@@ -9,11 +9,11 @@ var $ES = function(selector, filter){ return ($(filter) || document).getElements
 //
 // NOTE: *DO NOT* change the cid scheme without updating the cid_match regex
 // below!
-var _cid		=	Composer.cid;
-Composer.cid	=	function() { return 'z.' + (new Date().getTime()).toString(16) + '.' + _cid(); };
-var cid_match	=	/^z\.[0-9a-f]+\.c[0-9]+$/;
+var _cid = Composer.cid;
+Composer.cid = function() { return 'z.' + (new Date().getTime()).toString(16) + '.' + _cid(); };
+var cid_match = /^z\.[0-9a-f]+\.c[0-9]+$/;
 
-var turtl	=	{
+var turtl = {
 	site_url: null,
 
 	// holds the user model
@@ -65,12 +65,12 @@ var turtl	=	{
 		turtl.remote = new RemoteHandler(window.port.comm);
 
 		// load the global keyboard handler
-		this.keyboard	=	new Composer.Keyboard({meta_bind: true});
+		this.keyboard = new Composer.Keyboard({meta_bind: true});
 
 		this.setup_profile();
 		this.setup_header_bar();
 
-		this.loaded	=	true;
+		this.loaded = true;
 		if(window.port) window.port.send('loaded');
 		this.route('/');
 	},
@@ -112,7 +112,7 @@ var turtl	=	{
 
 			// notify addon of message changes
 			turtl.messages.bind(['add', 'remove', 'reset', 'change'], function() {
-				var num_messages	=	turtl.messages.map(function(msg) {
+				var num_messages = turtl.messages.map(function(msg) {
 					return msg.id();
 				});
 				if(window.port) window.port.send('num-messages', num_messages.length);
@@ -125,7 +125,7 @@ var turtl	=	{
 			turtl.messages.unbind(['add', 'remove', 'reset', 'change'], 'turtl:messages:counter');
 			modal.close();
 
-			Tstorage.invites	=	'{}';	// wipe local storage
+			Tstorage.invites = '{}';	// wipe local storage
 
 			// this should give us a clean slate
 			turtl.messages.clear();
@@ -173,7 +173,7 @@ var turtl	=	{
 		if(this.controllers[name]) return this.controllers[name];
 
 		// lol this is my comment.
-		this.controllers[name]	=	new controller(params, options);
+		this.controllers[name] = new controller(params, options);
 		return this.controllers[name];
 	},
 
@@ -244,7 +244,7 @@ var turtl	=	{
 
 		if(!this.router)
 		{
-			options	=	Object.merge({
+			options = Object.merge({
 				// we'll process our own QS, THXLOLOLOLOLOLOLOLOLOLOLOLOLOLOL!!!
 				process_querystring: false,
 
@@ -258,7 +258,7 @@ var turtl	=	{
 					return this.loaded;
 				}.bind(this)
 			}, options);
-			this.router	=	new Composer.Router(config.routes, options);
+			this.router = new Composer.Router(config.routes, options);
 			this.router.bind_links({
 				filter_trailing_slash: true
 			});
@@ -292,21 +292,21 @@ var turtl	=	{
 
 	route_callback: function(url)
 	{
-		this.last_url	=	url + window.location.search;
+		this.last_url = url + window.location.search;
 		this.controllers.pages.trigger('route', url);
 	}
 };
 
-var modal		=	null;
-var barfr		=	null;
-var markdown	=	null;
+var modal = null;
+var barfr = null;
+var markdown = null;
 
 window.addEvent('domready', function() {
 	// make sure inline templates are loaded
 	Template.initialize();
 
 	// create the modal object
-	modal	=	new modal_interface({
+	modal = new modal_interface({
 		width: 750,
 		// stick it in #wrap instead of body, which fixes various problems with
 		// controllers expecting wrap to be there (for instance, the Likes
@@ -325,7 +325,7 @@ window.addEvent('domready', function() {
 	});
 
 	// create the barfr
-	barfr	=	new Barfr('barfr', {});
+	barfr = new Barfr('barfr', {});
 
 	// create markdown converter
 	turtl.load_controller('pages', PagesController);
@@ -333,7 +333,7 @@ window.addEvent('domready', function() {
 	(function() {
 		if(window.port) window.port.bind('debug', function(code) {
 			if(!window._debug_mode) return false;
-			var res	=	eval(code);
+			var res = eval(code);
 			log.debug('turtl: debug: ', res);
 		});
 	}).delay(100);
@@ -341,8 +341,8 @@ window.addEvent('domready', function() {
 	// prevent backspace from navigating back
 	$(document.body).addEvent('keydown', function(e) {
 		if(e.key != 'backspace') return;
-		var is_input	=	['input', 'textarea'].contains(e.target.get('tag'));
-		var is_button	=	is_input && ['button', 'submit'].contains(e.target.get('type'));
+		var is_input = ['input', 'textarea'].contains(e.target.get('tag'));
+		var is_button = is_input && ['button', 'submit'].contains(e.target.get('type'));
 		if(is_input && !is_button) return;
 
 		// prevent backspace from triggering if we're not in a form element
@@ -366,19 +366,19 @@ window.addEvent('domready', function() {
 // are cropping up
 if(config.catch_global_errors)
 {
-	var enable_errlog	=	true;
-	window.onerror	=	function(msg, url, line)
+	var enable_errlog = true;
+	window.onerror = function(msg, url, line)
 	{
 		if(!turtl.api || !enable_errlog) return;
 		log.error('remote error log: ', arguments);
 		// remove filesystem info
-		url	=	url.replace(/^.*\/data\/app/, '/data/app');
+		url = url.replace(/^.*\/data\/app/, '/data/app');
 		if(!turtl.remote) return;
 		turtl.remote.send('ui-error', {data: {client: config.client, version: config.version, msg: msg, url: url, line: line}}, {
 			error: function(err) {
 				log.error(err);
 				// error posting, disable log for 30s
-				enable_errlog	=	false;
+				enable_errlog = false;
 				(function() { enable_errlog = true; }).delay(30000);
 			}
 		});

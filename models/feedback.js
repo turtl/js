@@ -9,7 +9,7 @@ var Feedback = Composer.Model.extend({
 	initialize: function()
 	{
 		// don't use the local DB for feedback!
-		this.sync	=	api_sync;
+		this.sync = api_sync;
 
 		return this.parent.apply(this, arguments);
 	}
