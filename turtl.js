@@ -46,61 +46,37 @@ var turtl	=	{
 	// holds persona/board/note data for the user (ie, the user's profile)
 	profile: null,
 
-	// Files collection, used to track file uploads/downloads
-	files: null,
-
-	// holds all non-messaged invites (for instance, once we get via the addon
+	// holds all non-messaged invites (for instance, ones we get via the addon
 	// or desktop invite page scraping)
 	invites: null,
 	// -------------------------------------------------------------------------
 
 	init: function()
 	{
-		this.initial_load();
-	},
+		if(this.loaded) return false;
 
-	initial_load: function()
-	{
-		if(this.loaded)
-		{
-			return false;
-		}
+		this.messages = new Messages();
+		this.profile = new Profile();
+		this.invites = new Invites();
+		this.user = new User();
 
 		// create our js <--> core comm object
 		if(!window.port) throw new Error('window.port not present (required for turtl to work)!');
 		turtl.remote = new RemoteHandler(window.port.comm);
 
-		if(History.enabled)
-		{
-			var initial_route	=	window.location.pathname+window.location.search;
-			if(initial_route == '/' && window.location.hash.match(/^#!\//))
-			{
-				initial_route	=	new String(window.location.hash).replace(/^[#!]+/, '');
-			}
-		}
-		else
-		{
-			var initial_route	=	window.location.hash != '' ? window.location.hash : window.location.pathname;
-		}
-
 		// load the global keyboard handler
 		this.keyboard	=	new Composer.Keyboard({meta_bind: true});
 
-		// set up our user object
-		this.user	=	new User();
-
-		this.setup_profile({initial_route: initial_route});
+		this.setup_profile();
 		this.setup_header_bar();
 
 		this.loaded	=	true;
 		if(window.port) window.port.send('loaded');
-		this.route(initial_route);
+		this.route('/');
 	},
 
-	setup_profile: function(options)
+	setup_profile: function()
 	{
-		options || (options = {});
-
 		turtl.remote.bind('profile-loading', function() {
 			turtl.show_loading_screen(true);
 		});
@@ -109,18 +85,12 @@ var turtl	=	{
 		});
 		turtl.remote.bind('profile-loaded', function() {
 			turtl.show_loading_screen(false);
-			if(!turtl.profile) turtl.profile = new Profile();
-			(function() { turtl.profile.trigger('loaded'); }).delay(100);
+			turtl.profile.load();
 		});
 
 		turtl.user.bind('login', function() {
 			turtl.controllers.pages.release_current();
 
-			if(!turtl.profile) turtl.profile = new Profile();
-			if(!turtl.invites) turtl.invites = new Invites();
-			turtl.messages = new Messages();
-			turtl.search = new Search();
-			turtl.files = new Files();
 			if(Tstorage.invites)
 			{
 				turtl.invites.reset(Object.values(JSON.parse(Tstorage.invites)));
@@ -157,18 +127,16 @@ var turtl	=	{
 
 			Tstorage.invites	=	'{}';	// wipe local storage
 
-			// clear out invites
-			turtl.invites.clear();
-			turtl.invites.unbind();
-
 			// this should give us a clean slate
+			turtl.messages.clear();
+			turtl.profile.clear();
+			turtl.invites.clear();
+			turtl.user.clear();
+
+			turtl.messages.unbind();
+			turtl.profile.unbind();
+			turtl.invites.unbind();
 			turtl.user.unbind();
-			turtl.user	=	new User();
-			turtl.setup_profile();
-			turtl.setup_header_bar();
-			turtl.profile.destroy();
-			turtl.profile	=	null;
-			turtl.files		=	false;
 
 			turtl.route('/');
 

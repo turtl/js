@@ -4,7 +4,6 @@ var DashboardController = Composer.Controller.extend({
 	elements: {
 		'.sidebar': 'sidebar',
 		'.boards': 'boards',
-		'.categories': 'categories',
 		'.tags': 'tags',
 		'.notes': 'notes',
 		'.menu': 'menu'
@@ -16,7 +15,6 @@ var DashboardController = Composer.Controller.extend({
 	current_board: null,
 
 	boards_controller: null,
-	categories_controller: null,
 	tags_controller: null,
 
 	sidebar_timer: null,
@@ -30,18 +28,18 @@ var DashboardController = Composer.Controller.extend({
 		var do_load = function() {
 			var current = this.profile.get_current_board();
 
-			this.categories_controller = new CategoriesController({
-				inject: this.categories,
-				board: current
-			});
-			this.tags_controller = new TagsController({
-				inject: this.tags,
-				board: current
-			});
-			this.notes_controller = new NotesController({
-				inject: this.notes,
-				board: current
-			});
+			this.track_subcontroller('Tags', function() {
+				return new TagsController({
+					inject: this.tags,
+					board: current
+				});
+			}.bind(this));
+			this.track_cubsontroller('Notes', function() {
+				return new NotesController({
+					inject: this.notes,
+					board: current
+				});
+			}.bind(this));
 
 			turtl.controllers.pages.trigger('loaded');
 		}.bind(this);
@@ -91,7 +89,6 @@ var DashboardController = Composer.Controller.extend({
 
 	soft_release: function()
 	{
-		if(this.categories_controller) this.categories_controller.release();
 		if(this.tags_controller) this.tags_controller.release();
 		if(this.notes_controller) this.notes_controller.release();
 	},
