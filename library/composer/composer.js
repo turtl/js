@@ -1413,7 +1413,7 @@
 		/**
 		 * get the number of models in the collection
 		 */
-		length: function()
+		size: function()
 		{
 			return this.models().length;
 		},
