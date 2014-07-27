@@ -14,7 +14,7 @@ var bookmark = {
 			return false;
 		}
 
-		if(!turtl.profile.profile_data)
+		if(!turtl.profile.profile_loaded)
 		{
 			return false;
 		}

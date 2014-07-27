@@ -10,7 +10,7 @@ var AccountProfileSizeController = Composer.Controller.extend({
 		turtl.profile.bind('change:size', this.render.bind(this), 'account:profile:size:render:'+this.cid());
 		turtl.user.bind('change:storage', this.render.bind(this), 'account:user:storage:render:'+this.cid());
 
-		if(turtl.profile.profile_data)
+		if(turtl.profile.profile_loaded)
 		{
 			turtl.profile.calculate_size({always_trigger: true});
 		}

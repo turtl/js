@@ -23,7 +23,7 @@ var Profile = Composer.RelationalModel.extend({
 	},
 
 	// stores whether or not all profile data has been downloaded
-	profile_data: false,
+	profile_loaded: false,
 
 	init: function()
 	{
