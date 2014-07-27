@@ -8,10 +8,10 @@ var RemoteHandler = Composer.Event.extend({
 	/**
 	 * latch our comm and listen for incoming core events
 	 */
-	initialize: function(comm)
+	initialize: function(port)
 	{
-		this.comm = comm;
-		this.comm.bind('core-recv', this.recv.bind(this));
+		this.comm = port.comm;
+		this.comm.bind('core-recv', this.recv.bind(this), port.ctx);
 	},
 
 	/**

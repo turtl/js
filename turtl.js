@@ -62,7 +62,8 @@ var turtl = {
 
 		// create our js <--> core comm object
 		if(!window.port) throw new Error('window.port not present (required for turtl to work)!');
-		turtl.remote = new RemoteHandler(window.port.comm);
+		turtl.remote = new RemoteHandler(window.port);
+		turtl.remote.send('do-logout');
 
 		// load the global keyboard handler
 		this.keyboard = new Composer.Keyboard({meta_bind: true});

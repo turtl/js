@@ -1,5 +1,6 @@
 var DesktopAddonPort = new Class({
 	comm: false,
+	ctx: false,
 
 	initialize: function(options)
 	{
@@ -8,6 +9,7 @@ var DesktopAddonPort = new Class({
 		// if a comm object was specified, use it instead of the background comm
 		// object.
 		if(options.comm) this.comm = options.comm;
+		if(options.ctx) this.ctx = options.ctx;
 	},
 
 	_comm: function()
