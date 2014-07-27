@@ -245,23 +245,12 @@ var turtl = {
 		if(!this.router)
 		{
 			options = Object.merge({
-				// we'll process our own QS, THXLOLOLOLOLOLOLOLOLOLOLOLOLOLOL!!!
-				process_querystring: false,
-
 				base: window._route_base || '',
-
-				// we'll do our own first route
-				suppress_initial_route: true,
-
-				enable_cb: function(url)
-				{
-					return this.loaded;
-				}.bind(this)
+				suppress_initial_route: true,  // we'll do our own first route
+				enable_cb: function(url) { return this.loaded; }.bind(this)
 			}, options);
 			this.router = new Composer.Router(config.routes, options);
-			this.router.bind_links({
-				filter_trailing_slash: true
-			});
+			this.router.bind_links({ filter_trailing_slash: true });
 			this.router.bind('route', this.route_callback.bind(this));
 			this.router.bind('preroute', function(url) {
 				this.controllers.pages.trigger('preroute', url);
@@ -279,9 +268,7 @@ var turtl = {
 		this.setup_router(options);
 		if(
 			!this.user.logged_in &&
-			!url.match(/\/users\/login/) &&
-			!url.match(/\/users\/join/) &&
-			!url.match(/\/bookmark/)
+			!url.match(/\/users\/login/)
 		)
 		{
 			url = '/users/login';
@@ -312,16 +299,7 @@ window.addEvent('domready', function() {
 		// controllers expecting wrap to be there (for instance, the Likes
 		// controller).
 		entry_element: '#wrap',
-		overlay: true,
-		load_icon: img('/images/site/icons/load_42x11.gif')	// not that it's needed anymore...
-	});
-	modal.addEvent('complete', function() {
-		var footer = $E('#footer');
-		if(footer) footer.setStyle('visibility', 'hidden');
-	});
-	modal.addEvent('close', function () {
-		var footer = $E('#footer');
-		if(footer) footer.setStyle('visibility', '');
+		overlay: true
 	});
 
 	// create the barfr
@@ -329,14 +307,6 @@ window.addEvent('domready', function() {
 
 	// create markdown converter
 	turtl.load_controller('pages', PagesController);
-
-	(function() {
-		if(window.port) window.port.bind('debug', function(code) {
-			if(!window._debug_mode) return false;
-			var res = eval(code);
-			log.debug('turtl: debug: ', res);
-		});
-	}).delay(100);
 
 	// prevent backspace from navigating back
 	$(document.body).addEvent('keydown', function(e) {
