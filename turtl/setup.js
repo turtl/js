@@ -10,13 +10,9 @@ if(window._in_desktop)
 	else if(window._firefox)
 	{
 		config.version = 'buildme';
-		window.port = new FirefoxDesktopPort();
+		window.port = new DesktopAddonPort();
 		window._route_base = '/content';
 		log.setLevel(log.levels.DEBUG);
-		window.do_reload = function()
-		{
-			window.location = 'chrome://turtl/content/data/index.html';
-		};
 	}
 	window._base_url = window.location.toString().replace(/^(.*)\/.*?$/, '$1/app');
 	window._disable_cookie = true;
