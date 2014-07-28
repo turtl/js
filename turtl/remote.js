@@ -23,7 +23,7 @@ var RemoteHandler = Composer.Event.extend({
 
 		var id = uuid();
 		var ev = {id: id, ev: evname, data: data};
-		if(options.success || options.error)
+		if(options.success || options.error || options.complete)
 		{
 			this.reqres[id] = function(ev)
 			{

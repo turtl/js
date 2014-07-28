@@ -46,9 +46,10 @@ var Profile = Composer.RelationalModel.extend({
 	 */
 	load: function()
 	{
-		turtl.remote.send('get-profile', {}, {
+		turtl.remote.send('grab-profile', {}, {
 			success: function(ev) {
-			}
+				this.set(ev.data);
+			}.bind(this)
 		});
 	},
 
