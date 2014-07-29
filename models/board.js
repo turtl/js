@@ -6,10 +6,6 @@ var Board = Composer.RelationalModel.extend({
 			type: Composer.HasMany,
 			collection: 'Tags'
 		},
-		categories: {
-			type: Composer.HasMany,
-			collection: 'Categories'
-		},
 		notes: {
 			type: Composer.HasMany,
 			filter_collection: 'NotesFilter',
@@ -76,19 +72,6 @@ var Board = Composer.RelationalModel.extend({
 		this.bind_relational('notes', 'change', function(note) {
 			this.trigger('note_change');
 		}.bind(this), 'board:model:notes:change');
-
-		// make category tags auto-update when tags do
-		this.bind_relational('tags', 'update', function() {
-			if(!this._track_tags) return false;
-			var cats = this.get('categories');
-			var tags = this.get('tags');
-			cats.each(function(c) {
-				if(c.update_tags(tags))
-				{
-					c.trigger('update');
-				}
-			});
-		}.bind(this));
 
 		this.bind('destroy', function() {
 			// remove the project's sort from the user data
@@ -329,14 +312,11 @@ var Board = Composer.RelationalModel.extend({
 	{
 		var notes = this.get('notes');
 		var tags = this.get('tags');
-		var cats = this.get('categories');
 
 		notes.each(function(n) { n.destroy({skip_remote_sync: true, force_save: true}); n.unbind(); });
 		tags.each(function(t) { t.destroy({skip_remote_sync: true}); t.unbind(); });
-		cats.each(function(c) { c.destroy({skip_remote_sync: true}); c.unbind(); });
 		notes.clear();
 		tags.clear();
-		cats.clear();
 	},
 
 	destroy: function(options)
