@@ -12,28 +12,6 @@ var Note = Composer.RelationalModel.extend({
 		}
 	},
 
-	public_fields: [
-		'id',
-		'user_id',
-		'board_id',
-		'file',
-		'has_file',
-		'keys',
-		'meta',
-		'sort',
-		'mod'
-	],
-
-	private_fields: [
-		'type',
-		'title',
-		'tags',
-		'url',
-		'text',
-		'embed',
-		'color',
-	],
-
 	// bad hack to fix annoying problem: when note data is set, the NoteFile sub
 	// object doesn't have the note's key. by the time the key is set, the file
 	// data has already came and left, leaving a false body in its wake. this
@@ -121,28 +99,6 @@ var Note = Composer.RelationalModel.extend({
 			if(this.disable_file_monitoring) return false;
 			this.clear_files();
 		}.bind(this));
-	},
-
-	ensure_key_exists: function()
-	{
-		var key = this.parent.apply(this, arguments);
-		if(key)
-		{
-			this.get('file').key = key;
-			if(this._tmp_file_data)
-			{
-				this.set({file: this._tmp_file_data});
-				this._tmp_file_data = false;
-			}
-		}
-		return key;
-	},
-
-	generate_key: function()
-	{
-		var key = this.parent.apply(this, arguments);
-		this.get('file').key = key;
-		return key;
 	},
 
 	set: function(data)
@@ -338,6 +294,22 @@ var Notes = Composer.Collection.extend({
 	local_table: 'notes',
 
 	sortfn: function(a, b) { return a.id().localeCompare(b.id()); },
+
+	search: function(search, options)
+	{
+		search || (search = {});
+		options || (options = {});
+
+		turtl.remote.send('search-notes', search, {
+			success: function(res) {
+				this.reset(res.notes);
+				this.trigger('tag-gray', res.tags);
+				this.trigger('search-complete');
+				if(options.success) options.success();
+			}.bind(this),
+			error: options.error
+		});
+	},
 
 	/*
 	// used for tracking batch note saves

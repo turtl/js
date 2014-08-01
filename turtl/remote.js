@@ -33,7 +33,7 @@ var RemoteHandler = Composer.Event.extend({
 				}
 				else
 				{
-					if(options.success) options.success(ev);
+					if(options.success) options.success(ev.data, ev);
 				}
 				if(options.complete) options.complete(ev);
 			};

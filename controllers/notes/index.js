@@ -14,130 +14,68 @@ var NotesController = TrackController.extend({
 
 	board: null,
 	filter_list: null,
-	note_item_controllers: [],
 
-	masonry: null,
-	masonry_timer: null,
-	sort_notes: null,
-	sorting: false,			// used to track whether sorting or not for edge scrolling
 	last_search: false,		// used to store results of tag searches
-	search_text: null,
-	search_timer: null,
+	limit: 300,
+	sort_order: null,
 
 	init: function()
 	{
 		if(!this.board) return false;
-		if(!this.board.get('display_type')) this.board.set({display_type: 'masonry'});
 
 		this.render();
 
-		// direction: 0 is ASC, 1 is DESC
-		var create_sort = function(field, direction)
-		{
-			var def = 99999999999;
-			var type = 'int';
-			if(field == 'id')
-			{
-				def = 'zzzzzzzzzzzzzzz';
-				type = 'str';
-			}
-
-			var do_sort = function(a, b)
-			{
-				var sort_a = a.get(field, def);
-				var sort_b = b.get(field, def);
-				if(type == 'int')
-				{
-					var sort = sort_a - sort_b;
-				}
-				else
-				{
-					var sort = sort_a.localeCompare(sort_b);
-				}
-
-				if(sort != 0) return sort;
-				return a.id().localeCompare(b.id());
-			};
-			if(direction === 0)
-			{
-				return function(a, b) { return do_sort(a, b); };
-			}
-			else
-			{
-				return function(a, b) { return do_sort(b, a); };
-			}
-		};
-
+		var tags = this.board.get('tags');
+		var notes = this.board.get('notes');
 		var board_id = this.board.id();
-		this.filter_list = new NotesFilter(this.board.get('notes'), {
-			sort_event: true,
-			refresh_on_change: true, //false,
-			filter: function(note)
-			{
-				if(!this.last_search) return true;
-				if(this.last_search.contains(note.id())) return true;
-				return false;
-			}.bind(this),
-
-			sortfn: create_sort('id', 0)
-		});
-
-		// we don't want to use forward_events:true on our filter collection
-		// (its too resource intensive) BUTBUTBUT we can simulate it for the one
-		// case we need it: sorting on sync
-		this.board.bind_relational('notes', 'change:sort', function(note) {
-			this.filter_list.trigger('change', note);
-		}.bind(this), 'notes:sync:sort');
-
-		// prevent unneccesary batch saving by pre-setting sort values
-		this.filter_list.each(function(note, idx) {
-			note.set({sort: idx}, {silent: true});
-		});
+		this.filter_list = new NotesFilter(this.board.get('notes'), {});
 
 		// Main search event
-		this.board.get('tags').bind(['change:filters', 'change:selected', 'change:excluded'], function() {
+		var run_search = function()
+		{
 			var start = performance.now();
-			var selected = this.board.get_selected_tags().map(function(t) { return t.get('name'); });
-			var excluded = this.board.get_excluded_tags().map(function(t) { return '!'+t.get('name'); });
-			if(selected.length == 0 && excluded.length == 0 && (!this.search_text || this.search_text.clean().length == 0))
+			var get_tag_type = function(type)
 			{
-				this.last_search = false;
-			}
-			else
+				return tags
+					.filter(function(t) { return t.get(type); })
+					.map(function(t) { return t.get('name'); });
+			};
+			var selected = get_tag_type('selected');
+			var excluded = get_tag_type('excluded');
+			var searchtxt = tags.get('search');
+			var limit = this.limit;
+			var sort = this.sort_order || ['id', 'asc'];
+
+			var search = {
+				board_id: board_id,
+				limit: limit,
+				sort: sort[0] + '-' + sort[1]
+			};
+
+			if(searchtxt) search.search_string = searchtxt;
+			if(selected || excluded)
 			{
-				this.last_search = turtl.search.search({
-					text: this.search_text,
-					boards: this.board.id(),
-					tags: selected.append(excluded)
-				});
+				var tags = '';
+				tags += selected.join(' ');
+				tags += ' -'+excluded.join(' -');
+				search.tags = tags;
 			}
-			//console.log('note search time: ', performance.now() - start);
+
 			var start = performance.now();
 
 			// do the actual filtering
 			this.render_to_fragment();
-			this.filter_list.refresh({diff_events: true, silent: 'reset'});
-			this.finish_fragment(this.note_list);
+			notes.search(search, {
+				success: function() {
+					this.finish_fragment(this.note_list);
+					log.debug('note filter time: ', performance.now() - start);
+					this.setup_masonry();
+				}.bind(this)
+			});
+		}.bind(this);
 
-			log.debug('note filter time: ', performance.now() - start);
-			this.setup_masonry();
-			//this.setup_sort();
-		}.bind(this), 'notes:listing:track_filters');
-
-		this.board.bind('change:display_type', this.update_display_type.bind(this), 'notes:listing:display_type');
-		this.filter_list.bind('reset', function() {
-			this.update_display_type.delay(10, this);
-		}.bind(this), 'notes:listing:display_type');
-		this.filter_list.bind(['add', 'remove', 'change'], function() {
-			this.update_display_type();
-			//this.setup_sort();
-		}.bind(this), 'notes:listing:update_display');
-
-		this.board.get('notes').bind(['math-render'], function() {
-			this.update_display_type();
-		}.bind(this), 'notes:listing:math-render');
-
-		this.board.get('notes').bind(['add', 'remove', 'reset', 'clear', 'misc'], function() {
+		this.with_bind(tags, ['change:search', 'change:filters', 'change:selected', 'change:excluded'], run_search);
+		this.with_bind(notes, ['add', 'remove', 'reset', 'clear', 'misc'], function() {
 			if(this.board.get('notes').models().length == 0)
 			{
 				this.display_actions.addClass('hidden');
@@ -148,51 +86,20 @@ var NotesController = TrackController.extend({
 				this.display_actions.removeClass('hidden');
 				this.sort_actions.removeClass('hidden');
 			}
-		}.bind(this), 'notes:listing:show_display_buttons');
+		}.bind(this));
 
+		this.bind('set-limit', run_search);
 		this.bind('sort-change', function(field, direction) {
-			this.filter_list.sortfn = create_sort(field, direction);
-			this.filter_list.trigger('sort');
-			this.update_display_type();
+			this.sort_order = [field, direction];
 		}.bind(this));
 
 		// track all changes to our sub-controllers
 		this.setup_tracking(this.filter_list);
 
-		turtl.keyboard.bind('a', this.open_add_note.bind(this), 'notes:shortcut:add_note');
-		turtl.keyboard.bind('enter', this.sub_view_note.bind(this), 'notes:shortcut:view_note');
-		turtl.keyboard.bind('e', this.sub_edit_note.bind(this), 'notes:shortcut:edit_note');
-		//turtl.keyboard.bind('m', this.sub_move_note.bind(this), 'notes:shortcut:move_note');
-		turtl.keyboard.bind('delete', this.sub_delete_note.bind(this), 'notes:shortcut:delete_note');
-
-		// TODO: enable both to allow sorting again.
-		this.update_display_type();
-		//this.setup_sort();
-	},
-
-	release: function()
-	{
-		if(this.board)
-		{
-			this.board.unbind_relational('notes', 'change:sort', 'notes:sync:sort');
-			this.board.unbind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], 'notes:listing:track_filters');
-			this.board.unbind('change:display_type', 'notes:listing:display_type');
-			this.filter_list.unbind('reset', 'notes:listing:display_type');
-			this.filter_list.unbind(['add', 'remove', 'change'], 'notes:listing:update_display');
-			this.board.get('notes').unbind(['math-render'], 'notes:listing:math-render');
-			this.board.get('notes').unbind(['add', 'remove', 'reset', 'clear', 'misc'], 'notes:listing:show_display_buttons');
-			this.filter_list.detach();
-			this.release_subcontrollers();
-		}
-		turtl.keyboard.unbind('a', 'notes:shortcut:add_note')
-		turtl.keyboard.unbind('enter', 'notes:shortcut:view_note');
-		turtl.keyboard.unbind('e', 'notes:shortcut:edit_note');
-		//turtl.keyboard.unbind('m', 'notes:shortcut:move_note');
-		turtl.keyboard.unbind('delete', 'notes:shortcut:delete_note');
-		if(this.masonry) this.masonry.detach();
-		if(this.masonry_timer) this.masonry_timer.end = null;
-		if(this.search_timer) this.search_timer.end = null;
-		this.parent.apply(this, arguments);
+		this.with_bind(turtl.keyboard, 'a', this.open_add_note.bind(this));
+		this.with_bind(turtl.keyboard, 'enter', this.sub_view_note.bind(this));
+		this.with_bind(turtl.keyboard, 'e', this.sub_edit_note.bind(this));
+		this.with_bind(turtl.keyboard, 'delete', this.sub_delete_note.bind(this));
 	},
 
 	render: function()
@@ -313,194 +220,6 @@ var NotesController = TrackController.extend({
 		}
 		var direction = a.className.match(/\basc\b/) ? 0 : 1;
 		this.trigger('sort-change', sort, direction);
-	},
-
-	change_list_type: function(e)
-	{
-		if(!e) return;
-		e.stop()
-
-		var a = next_tag_up('a', e.target);
-		var type = a.className.replace(/sel/g, '').clean().toLowerCase();
-		if(type == '') return;
-		this.board.set({display_type: type});
-	},
-
-	update_display_type: function()
-	{
-		var type = this.board.get('display_type', 'grid');
-		this.note_list.className = this.note_list.className.replace(/list_[\w]+/g, '');
-		this.note_list.addClass('list_'+type);
-		$ES('li a', this.display_actions).each(function(a) {
-			a.removeClass('sel');
-		});
-		$E('li a.'+this.board.get('display_type', 'grid')).addClass('sel');
-		if(type == 'masonry')
-		{
-			this.setup_masonry();
-		}
-		else
-		{
-			if(this.masonry) this.masonry.detach()
-			this.masonry = null;
-			this.note_list.setStyles({position: '', height: ''});
-			this.note_list.getElements('> li').each(function(li) {
-				li.setStyles({
-					position: '',
-					left: '',
-					top: ''
-				});
-			});
-		}
-		//this.setup_sort();
-	},
-
-	setup_masonry: function()
-	{
-		var do_masonry = function()
-		{
-			if(this.board.get('display_type') != 'masonry') return;
-
-			var start = performance.now();
-			if(this.masonry)
-			{
-				this.masonry.detach();
-				this.masonry = null;
-			}
-			this.masonry = this.note_list.masonry({
-				singleMode: true,
-				resizeable: true,
-				itemSelector: '> li.note:not(.hide)'
-			});
-			var images = this.note_list.getElements('> li.note:not(.hide) > .gutter img');
-			images.each(function(img) {
-				if(img.complete || (img.naturalWidth && img.naturalWidth > 0)) return;
-				img.onload = function() {
-					img.onload = null;
-					this.setup_masonry();
-				}.bind(this);
-			}.bind(this));
-			//console.log('masonry time: ', performance.now() - start);
-		}.bind(this);
-
-		if(!this.masonry_timer)
-		{
-			this.masonry_timer = new Timer(5, 5);
-			this.masonry_timer.end = do_masonry;
-		}
-		this.masonry_timer.start();
-	},
-
-	edge_check: null,
-	setup_sort: function()
-	{
-		if(!this.edge_check)
-		{
-			var mousey = null;
-			this.edge_check = function(e)
-			{
-				if(!this.sorting) return false;
-				if(e) mousey = e.page.y;
-				if(!mousey) return false;
-
-				var coords = $(window).getCoordinates();
-				var scroll = $(window).getScrollTop();
-				if(mousey > (scroll + coords.bottom) - 200)
-				{
-					window.scrollTo(null, scroll + 10);
-				}
-				else if(mousey < (scroll + 200))
-				{
-					window.scrollTo(null, scroll - 10);
-				}
-			}.bind(this);
-		}
-		if(this.sort_notes) this.sort_notes.detach();
-		$(window).removeEvent('mousemove', this.edge_check);
-
-		if(this.board.get('display_type') == 'masonry') return false;
-
-		var note_being_sorted_el = null;
-		this.sort_notes = new Sortables(this.note_list, {
-			clone: true,
-			opacity: .5,
-			handle: '.actions a.sort span',
-			onStart: function(note_el) {
-				note_being_sorted_el = note_el;
-				this.sorting = true;
-			}.bind(this),
-			onComplete: function() {
-				this.sorting = false;
-				var sorted_el = note_being_sorted_el;
-				var prev_el = sorted_el.getPrevious();
-				var next_el = sorted_el.getNext();
-				var get_id = function(classname)
-				{
-					return classname.replace(/^.*id_([0-9a-f-]+).*?$/, '$1').clean();
-				};
-
-				note_being_sorted_el = null;
-
-				var ids = this.note_list.getElements('> li.note').map(function(el) {
-					return get_id(el.className);
-				});
-
-				/*
-				var notes_collection = this.board.get('notes');
-
-				var sorted_id = get_id(sorted_el.className);
-				var prev_id = prev_el ? get_id(prev_el.className) : null;
-				var next_id = next_el ? get_id(next_el.className) : null;
-				var sorted = notes_collection.find_by_id(sorted_id);
-				var prev = notes_collection.find_by_id(prev_id);
-				var next = notes_collection.find_by_id(next_id);
-
-				if(prev && next)
-				{
-					// manwich
-					var sortval = prev.get('sort') + ((next.get('sort') - prev.get('sort')) / 2);
-				}
-				else if(next)
-				{
-					// sorted item was put at beginning
-					var sortval = next.get('sort') - 1;
-				}
-				else if(prev)
-				{
-					// sorted item was put at end
-					var sortval = prev.get('sort') + 1;
-				}
-				else
-				{
-					// sorted item is ...alone?
-					return;
-				}
-
-				//console.log('prev:', prev.get('sort'));
-				//console.log('next: ', next.get('sort'));
-				//console.log('sort: ', sortval);
-				//return;
-				sorted.set({sort: sortval});
-				sorted.save();
-				*/
-
-				// save all note sorts as a batch
-				var notes_collection = this.board.get('notes');
-				notes_collection.start_batch_save();
-				notes_collection.each(function(note) {
-					if(!ids.contains(note.id())) return;
-					var sortval = ids.indexOf(note.id()) + 1;
-					console.log('sort: ', sortval, note.get('text'));
-					note.set({sort: sortval});
-				});
-				notes_collection.finish_batch_save({
-					shared: this.board.get('shared'),
-					persona: this.board.get_shared_persona()
-				});
-			}.bind(this)
-		});
-
-		$(window).addEvent('mousemove', this.edge_check);
 	},
 
 	// -------------------------------------------------------------------------

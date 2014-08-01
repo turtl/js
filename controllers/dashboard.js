@@ -14,9 +14,6 @@ var DashboardController = Composer.Controller.extend({
 
 	current_board: null,
 
-	boards_controller: null,
-	tags_controller: null,
-
 	sidebar_timer: null,
 
 	init: function()
@@ -28,13 +25,13 @@ var DashboardController = Composer.Controller.extend({
 		var do_load = function() {
 			var current = this.profile.get_current_board();
 
-			this.track_subcontroller('Tags', function() {
+			this.track_subcontroller('tags', function() {
 				return new TagsController({
 					inject: this.tags,
 					board: current
 				});
 			}.bind(this));
-			this.track_cubsontroller('Notes', function() {
+			this.track_subcontroller('notes', function() {
 				return new NotesController({
 					inject: this.notes,
 					board: current
@@ -46,35 +43,27 @@ var DashboardController = Composer.Controller.extend({
 
 		turtl.loading(true);
 		var has_load = false;
-		this.profile.bind('change:current_board', function() {
-			this.soft_release();
-			var current = this.profile.get_current_board();
-			if(current && !has_load)
-			{
-				has_load = true;
-				current.bind('notes_updated', function() {
-					turtl.loading(false);
-					current.unbind('notes_updated', 'board:loading:notes_updated');
-				}, 'board:loading:notes_updated');
-			}
-			do_load();
-		}.bind(this), 'dashboard:change_board');
 
-		this.profile.bind_relational('boards', 'remove', function() {
+		this.with_bind(this.profile, ['board-loaded', 'change:current_board'], do_load);
+
+		this.with_bind(turtl.profile.get('boards'), 'remove', function() {
 			if(this.profile.get('boards').models().length > 0) return;
 			this.profile.trigger('change:current_board');
 		}.bind(this), 'dashboard:boards:remove');
 
-		this.boards_controller = new BoardsController({
-			el: this.boards,
-			profile: this.profile
-		});
-		this.boards_controller.bind('change-board', function(board) {
-			this.tags_controller.clear_filters();
-			this.profile.set_current_board(board);
-		}.bind(this), 'dashboard:boards:change-board');
+		this.track_subcontroller('boards', function() {
+			var con = new BoardsController({
+				el: this.boards,
+				profile: this.profile
+			});
+			con.bind('change-board', function(board) {
+				this.get_subcontroller('tags').clear_filters();
+				this.profile.set_current_board(board);
+			}.bind(this), 'dashboard:boards:change-board');
+			return con;
+		}.bind(this));
 
-		turtl.keyboard.bind('S-/', this.open_help.bind(this), 'dashboard:shortcut:open_help');
+		this.with_bind(turtl.keyboard, 'S-/', this.open_help.bind(this));
 
 		// monitor sidebar size changes
 		this.sidebar_timer = new Timer(50);
@@ -84,30 +73,22 @@ var DashboardController = Composer.Controller.extend({
 		var sidebar = $E('.sidebar-bg');
 		if(sidebar) sidebar.setStyle('display', 'block');
 
-		this.profile.trigger('change:current_board');
-	},
-
-	soft_release: function()
-	{
-		if(this.tags_controller) this.tags_controller.release();
-		if(this.notes_controller) this.notes_controller.release();
+		do_load();
 	},
 
 	release: function()
 	{
-		this.soft_release();
-		if(this.boards_controller) this.boards_controller.release();
-		this.profile.unbind('change:current_board', 'dashboard:change_board');
-		this.profile.unbind_relational('boards', 'remove', 'dashboard:boards:remove');
-		turtl.keyboard.unbind('S-/', 'dashboard:shortcut:open_help');
-		turtl.user.unbind('logout', 'dashboard:logout:clear_timer');
-		if(this.sidebar_timer && this.sidebar_timer.end) this.sidebar_timer.end = null;
+		if(this.sidebar_timer)
+		{
+			this.sidebar_timer.stop();
+			this.sidebar_timer.end = null;
+		}
 
 		// hide sidebar again
 		var sidebar = $E('.sidebar-bg');
 		if(sidebar) sidebar.setStyle('display', '');
 
-		this.parent.apply(this, arguments);
+		return this.parent.apply(this, arguments);
 	},
 
 	render: function()

@@ -1,19 +1,15 @@
 var Profile = Composer.RelationalModel.extend({
 	relations: {
 		keychain: {
-			type: Composer.HasMany,
 			collection: 'Keychain'
 		},
 		personas: {
-			type: Composer.HasMany,
 			collection: 'Personas'
 		},
 		boards: {
-			type: Composer.HasMany,
 			collection: 'Boards'
 		},
 		notes: {
-			type: Composer.HasMany,
 			collection: 'Notes',
 			options: {
 				forward_all_events: true,
@@ -39,6 +35,21 @@ var Profile = Composer.RelationalModel.extend({
 				this.set_current_board(board);
 			}
 		}.bind(this));
+		this.bind('change:current_board', function(board) {
+			this.get('boards').each(function(b) { b.unload(); });
+			var board = this.get_current_board();
+			if(board) board.load({
+				success: function() {
+					this.trigger('board-loaded');
+				}.bind(this)
+			});
+		}.bind(this));
+		this.bind('loaded', function() {
+			this.profile_loaded = true;
+		}.bind(this));
+		this.bind('clear', function() {
+			this.profile_loaded = false;
+		}.bind(this));
 	},
 
 	/**
@@ -47,8 +58,9 @@ var Profile = Composer.RelationalModel.extend({
 	load: function()
 	{
 		turtl.remote.send('grab-profile', {}, {
-			success: function(ev) {
-				this.set(ev.data);
+			success: function(data) {
+				this.set(data);
+				this.trigger('loaded');
 			}.bind(this)
 		});
 	},

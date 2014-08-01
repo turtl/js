@@ -11,8 +11,7 @@ var User = Composer.RelationalModel.extend({
 				filter: function(p) {
 					return p.get('user_id') == turtl.user.id();
 				}
-			},
-			delayed_init: true
+			}
 		},
 
 		settings: {
@@ -46,8 +45,8 @@ var User = Composer.RelationalModel.extend({
 			username: this.get('username'),
 			password: this.get('password')
 		}, {
-			success: function(ev) {
-				this.set(ev.data);
+			success: function(data) {
+				this.set(data);
 				this.unset('username');
 				this.unset('password');
 				this.logged_in = true;

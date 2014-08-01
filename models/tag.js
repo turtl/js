@@ -1,6 +1,6 @@
 var Tag = Composer.Model.extend({
 	defaults: {
-		count: 1	// the number of notes referencing this tag
+		count: 0
 	},
 
 	initialize: function(data, options)
@@ -12,12 +12,9 @@ var Tag = Composer.Model.extend({
 		return this.parent.apply(this, [data, options]);
 	},
 
-	count: function(inc, options)
+	disabled: function()
 	{
-		options || (options = {});
-		var newcount = this.get('count') + inc;
-		this.set({count: newcount}, options);
-		return newcount;
+		return this.get('count', 0) === 0;
 	},
 
 	toJSON: function()
@@ -36,6 +33,15 @@ var Tag = Composer.Model.extend({
 
 var Tags = Composer.Collection.extend({
 	model: Tag,
+
+	count_reset: function(tagobj)
+	{
+		var arr = [];
+		Object.each(tagobj, function(count, tag) {
+			arr.push({tag: tag, count: count});
+		});
+		this.reset(arr);
+	},
 
 	find_by_name: function(tagname)
 	{

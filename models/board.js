@@ -3,23 +3,12 @@ var Board = Composer.RelationalModel.extend({
 
 	relations: {
 		tags: {
-			type: Composer.HasMany,
 			collection: 'Tags'
 		},
 		notes: {
-			type: Composer.HasMany,
-			filter_collection: 'NotesFilter',
-			master: function() { return turtl.profile.get('notes'); },
-			options: {
-				filter: function(model, notesfilter) {
-					return model.get('board_id') == notesfilter.get_parent().id();
-				},
-				forward_all_events: true,
-				refresh_on_change: false
-			}
+			collection: 'Notes'
 		},
 		personas: {
-			type: Composer.HasMany,
 			collection: 'Personas'
 		}
 	},
@@ -38,43 +27,19 @@ var Board = Composer.RelationalModel.extend({
 		'title'
 	],
 
-	defaults: {
-	},
-
-	_track_tags: true,
-
 	init: function()
 	{
-		this.bind_relational('notes', 'add', function(note) {
-			if(!this._track_tags) return false;
-			this.get('tags').add_tags_from_note(note);
-			this.get('tags').trigger('update');
-			this.trigger('note_change');
-		}.bind(this), 'board:model:notes:add');
-		this.bind_relational('notes', 'remove', function(note) {
-			if(!this._track_tags) return false;
-			this.get('tags').remove_tags_from_note(note);
-			this.get('tags').trigger('update');
-			this.trigger('note_change');
-		}.bind(this), 'board:model:notes:remove');
-		this.bind_relational('notes', 'reset', function() {
-			if(!this._track_tags) return false;
-			this.get('tags').refresh_from_notes(this.get('notes'));
-			this.get('tags').trigger('update');
-			this.trigger('note_change');
-		}.bind(this), 'board:model:notes:reset');
-		this.bind_relational('notes', 'change:tags', function(note) {
-			if(!this._track_tags) return false;
-			this.get('tags').diff_tags_from_note(note);
-			this.get('tags').trigger('update');
-			this.trigger('note_change');
-		}.bind(this), 'board:model:notes:change:tags');
 		this.bind_relational('notes', 'change', function(note) {
 			this.trigger('note_change');
 		}.bind(this), 'board:model:notes:change');
 
+		this.bind_relational('notes', 'tag-gray', function(tagcount) {
+			var tags = this.get('tags');
+			tags.count_reset(tagcount);
+		}.bind(this), 'board:model:notes:gray-tags');
+
 		this.bind('destroy', function() {
-			// remove the project's sort from the user data
+			// remove the board's sort from the user data
 			var sort = Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
 			sort[this.id()] = 99999;
 			turtl.user.get('settings').get_by_key('board_sort').value(sort);
@@ -105,46 +70,26 @@ var Board = Composer.RelationalModel.extend({
 				this.get('personas').reset(personas);
 			}
 		}.bind(this));
-
-		// MIGRATE: move board user keys into user data. this code should exist
-		// as long as the database has ANY records with board.keys.u
-		if(!turtl.profile.get('keychain').find_key(this.id(true)) && !this.is_new() && this.key)
-		{
-			turtl.profile.get('keychain').add_key(this.id(true), 'board', this.key);
-			var keys = this.get('keys').toJSON();
-			keys = keys.filter(function(k) {
-				return k.u != turtl.user.id();
-			});
-			this.set({keys: keys});
-			this.save();
-		}
 	},
 
-	track_tags: function(yesno)
-	{
-		this._track_tags = yesno;
-	},
-
-	/**
-	 * Given a set of note data, reset this board's notes, async, with said
-	 * data.
-	 */
-	update_notes: function(note_data, options)
+	load: function(options)
 	{
 		options || (options = {});
+
+		// load the notes in the board (also grabs the tags as well)
+		this.get('notes').search({board_id: this.id()}, {
+			success: function() {
+				this.trigger('notes-loaded');
+				if(options.success) options.success();
+			}.bind(this),
+			error: options.error
+		});
+	},
+
+	unload: function()
+	{
 		this.get('notes').clear();
-		this.track_tags(false);
-		this.get('notes').reset_async(note_data, {
-			silent: true,
-			complete: function() {
-				this.get('notes').trigger('reset');
-				this.track_tags(true);
-				this.get('tags').refresh_from_notes(this.get('notes'), {silent: true});
-				this.get('tags').trigger('reset');
-				this.trigger('notes_updated');
-				if(options.complete) options.complete();
-			}.bind(this)
-		})
+		this.get('tags').clear();
 	},
 
 	share_with: function(from_persona, to_persona, permissions, options)
@@ -329,35 +274,6 @@ var Board = Composer.RelationalModel.extend({
 			if(success) success.apply(this, arguments);
 		}.bind(this);
 		return this.parent.apply(this, [options]);
-	},
-
-	get_selected_tags: function()
-	{
-		return this.get('tags').select(function(tag) {
-			return this.is_tag_selected(tag);
-		}.bind(this));
-	},
-
-	get_excluded_tags: function()
-	{
-		return this.get('tags').select(function(tag) {
-			return this.is_tag_excluded(tag);
-		}.bind(this));
-	},
-
-	get_tag_by_name: function(tagname)
-	{
-		return this.get('tags').find(function(tag) { return tag.get('name') == tagname; });
-	},
-
-	is_tag_selected: function(tag)
-	{
-		return tag ? tag.get('selected') : false;
-	},
-
-	is_tag_excluded: function(tag)
-	{
-		return tag ? tag.get('excluded') : false;
 	}
 });
 
@@ -475,3 +391,4 @@ var Boards = Composer.Collection.extend({
 		}
 	}
 });
+

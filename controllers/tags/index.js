@@ -1,4 +1,4 @@
-var TagsController = Composer.Controller.extend({
+var TagsController = TrackController.extend({
 	elements: {
 		'ul.tags': 'tag_list',
 		'div.filters': 'filters',
@@ -26,37 +26,23 @@ var TagsController = Composer.Controller.extend({
 			tag.unset('disabled', {silent: true});
 		});
 
-		this.tags = new TagsFilter(this.board.get('tags'), {
+		this.tags = new Tags(this.board.get('tags'), {
 			sort_event: true,
 			refresh_on_change: false
 		});
-		this.board.bind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], function() {
+		this.with_bind(this.board.get('tags'), ['change:filters', 'change:selected', 'change:excluded'], function() {
 			this.gray_tags.delay(1, this);
-		}.bind(this), 'tags:listing:gray_disabled');
-		this.tags.bind('change:count', function() {
+		}.bind(this));
+		this.with_bind(this.tags, 'change:count', function() {
 			this.tags.sort();
-		}.bind(this), 'tags:listing:monitor_sort');
-		this.board.bind_relational('notes', ['add', 'remove', 'reset'], this.update_filters.bind(this), 'tags:listing:update_filters');
+		}.bind(this));
+		this.with_bind(this.board.get('notes'), ['add', 'remove', 'reset'], this.update_filters.bind(this));
 
-		turtl.keyboard.bind('/', function() { this.inp_search.focus(); }.bind(this), 'notes:shortcut:search_focus');
-		turtl.keyboard.bind('x', this.clear_filters.bind(this), 'notes:shortcut:clear_filters');
+		this.with_bind(turtl.keyboard, '/', function() { this.inp_search.focus(); }.bind(this));
+		this.with_bind(turtl.keyboard, 'x', this.clear_filters.bind(this));
 
 		// track all changes to our sub-controllers
 		this.setup_tracking(this.tags);
-	},
-
-	release: function()
-	{
-		if(this.tags)
-		{
-			this.board.unbind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], 'tags:listing:gray_disabled');
-			this.tags.unbind('change:count', 'tags:listing:monitor_sort');
-			this.board.unbind_relational('notes', ['add', 'remove', 'reset'], 'tags:listing:update_filters');
-			this.tags.detach();
-		}
-		turtl.keyboard.unbind('x', 'notes:shortcut:clear_filters');
-		turtl.keyboard.unbind('/', 'notes:shortcut:search_focus');
-		this.parent.apply(this, arguments);
 	},
 
 	render: function()
@@ -76,30 +62,10 @@ var TagsController = Composer.Controller.extend({
 
 	gray_tags: function()
 	{
-		var start = performance.now();
-		var notes = turtl.controllers.pages.cur_controller.notes_controller.filter_list;
-		if(!notes) return;
-
-		notes = notes
-			.map(function(n) { return n.id(); })
-			.sort(function(a, b) { return a.localeCompare(b); });
-		var tags = this.tags.models();
-		var change = [];
-
-		// for each tag, intersect the search index with the currently enabled
-		// notes. an empty list means the tag has no notes.
-		tags.each(function(tag) {
-			var enabled = !tag.get('disabled', false);
-			var note_list = turtl.search.index_tags[tag.get('name')];
-			var tag_enable = turtl.search.intersect(notes, note_list).length > 0;
-
-			if(tag_enable != enabled)
-			{
-				tag.set({disabled: !tag_enable}, {silent: true});
-				tag.trigger('gray');
-			}
+		this.tags.each(function(tag) {
+			tag.set({disabled: (tag.get('count', 0) === 0)}, {silent: true});
+			tag.trigger('gray');
 		});
-		//console.log('gray time: ', performance.now() - start);
 	},
 
 	do_text_search: function(e)
@@ -110,7 +76,7 @@ var TagsController = Composer.Controller.extend({
 			// and instead of using a central filtering model, we just set the
 			// search text into the notes controller manually and trigger a filter
 			// change. not the best way to do it.
-			var notes_controller = turtl.controllers.pages.cur_controller.notes_controller;
+			var notes_controller = turtl.controllers.pages.cur_controller.get_subcontroller('notes');
 			notes_controller.search_text = this.inp_search.get('value');
 			this.board.get('tags').trigger('change:filters');
 		}.bind(this);
@@ -148,7 +114,7 @@ var TagsController = Composer.Controller.extend({
 		// as noted above, it's stupid to have controllers holding search state.
 		// don't worry, I'm aware. but this is a quick.dirty way to get things
 		// moving
-		var notes_controller = turtl.controllers.pages.cur_controller.notes_controller;
+		var notes_controller = turtl.controllers.pages.cur_controller.get_subcontroller('notes');
 		notes_controller.search_text = '';
 
 		this.inp_search.set('value', '');
@@ -171,4 +137,4 @@ var TagsController = Composer.Controller.extend({
 		if(num_notes > 0) this.filters.setStyle('display', 'block');
 		else this.filters.setStyle('display', 'none');
 	}
-}, TrackController);
+});

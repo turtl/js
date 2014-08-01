@@ -90,6 +90,7 @@ var turtl = {
 		});
 
 		turtl.user.bind('login', function() {
+			turtl.loading(true);
 			turtl.controllers.pages.release_current();
 
 			if(Tstorage.invites)
