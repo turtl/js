@@ -18,6 +18,8 @@ var NotesController = TrackController.extend({
 	last_search: false,		// used to store results of tag searches
 	limit: 300,
 	sort_order: null,
+	masonry: null,
+	masonry_timer: null,
 
 	init: function()
 	{
@@ -100,6 +102,20 @@ var NotesController = TrackController.extend({
 		this.with_bind(turtl.keyboard, 'enter', this.sub_view_note.bind(this));
 		this.with_bind(turtl.keyboard, 'e', this.sub_edit_note.bind(this));
 		this.with_bind(turtl.keyboard, 'delete', this.sub_delete_note.bind(this));
+
+		// masonry stuff
+		this.with_bind(this.filter_list, ['reset', 'add', 'remove', 'change'], this.setup_masonry.bind(this));
+		this.with_bind(notes, ['math-render'], this.setup_masonry.bind(this));
+		this.note_list.addClass('list_masonry');
+		this.setup_masonry();
+	},
+
+	release: function()
+	{
+		this.filter_list.detach();
+		if(this.masonry) this.masonry.detach();
+		if(this.masonry_timer) this.masonry_timer.stop();
+		return this.parent.apply(this, arguments);
 	},
 
 	render: function()
@@ -112,6 +128,38 @@ var NotesController = TrackController.extend({
 
 		// make sure display type buttons show up
 		(function() { this.board.get('notes').trigger('misc'); }).delay(10, this);
+	},
+
+	setup_masonry: function()
+	{
+		var do_masonry = function()
+		{
+			if(this.masonry)
+			{
+				this.masonry.detach();
+				this.masonry = null;
+			}
+			this.masonry = this.note_list.masonry({
+				//itemSelector: '> li.note:not(.hide)',
+				singleMode: true,
+				resizeable: true
+			});
+			var images = this.note_list.getElements('> li.note:not(.hide) > .gutter img');
+			images.each(function(img) {
+				if(img.complete || (img.naturalWidth && img.naturalWidth > 0)) return;
+				img.onload = function() {
+					img.onload = null;
+					this.setup_masonry();
+				}.bind(this);
+			}.bind(this));
+		}.bind(this);
+
+		if(!this.masonry_timer)
+		{
+			this.masonry_timer = new Timer(5, 5);
+			this.masonry_timer.end = do_masonry;
+		}
+		this.masonry_timer.start();
 	},
 
 	open_add_note: function(e)
