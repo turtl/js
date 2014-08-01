@@ -2323,6 +2323,14 @@
 		},
 
 		/**
+		 * get a tracked subcontroller by name
+		 */
+		get_subcontroller: function(name)
+		{
+			return this._subcontrollers[name] || false;
+		},
+
+		/**
 		 * make sure el is defined as an HTML element
 		 */
 		_ensure_el: function() {
