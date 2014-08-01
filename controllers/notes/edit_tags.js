@@ -20,7 +20,7 @@ var NoteEditTagController = Composer.Controller.extend({
 
 		var load_suggestions = function()
 		{
-			this.suggested_tags = toJSON(this.board.get('tags'))
+			this.suggested_tags = this.board.get('tags').toJSON()
 				.sort(function(a, b) {
 					var diff = b.count - a.count;
 					// secondary alpha sort
@@ -45,7 +45,7 @@ var NoteEditTagController = Composer.Controller.extend({
 	render: function()
 	{
 		var content = Template.render('notes/edit_tags', {
-			note: toJSON(this.note),
+			note: this.note.toJSON(),
 			suggested_tags: this.suggested_tags.slice(0, 20)
 		});
 		this.html(content);

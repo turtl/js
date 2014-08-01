@@ -68,7 +68,7 @@ var NoteEditController = Composer.Controller.extend({
 
 		if(!this.note) this.note = new Note({type: 'quick'});
 		// clone the note so any changes to it pre-save don't show up in the listings.
-		this.note_copy = new Note(toJSON(this.note));
+		this.note_copy = new Note(this.note.toJSON());
 		this.note_copy.key = this.note.key;
 		this.note_copy.get('file').key = this.note.key;
 		this.note_copy.get('file').set({blob_url: null});
@@ -123,8 +123,8 @@ var NoteEditController = Composer.Controller.extend({
 	{
 		var content = Template.render('notes/edit', {
 			title: this.title,
-			note: toJSON(this.note_copy),
-			board: toJSON(this.board),
+			note: this.note_copy.toJSON(),
+			board: this.board.toJSON(),
 			show_tabs: this.show_tabs
 		});
 		this.html(content);
@@ -326,7 +326,7 @@ var NoteEditController = Composer.Controller.extend({
 			var setnote = this.note_copy.toJSON();
 			delete setnote.file;
 			this.note.set(setnote);
-			this.note.set({file: toJSON(file)});
+			this.note.set({file: file.toJSON()});
 			this.note.get('file').set({encrypting: true}, {silent: true});
 
 			// display a note stub to let the user know we're encrypting the
@@ -335,7 +335,7 @@ var NoteEditController = Composer.Controller.extend({
 		}
 		else if(file_set)
 		{
-			var filedata = toJSON(file);
+			var filedata = file.toJSON();
 			filedata.encrypting = true;
 			this.note.get('file').set(filedata);
 		}
@@ -514,7 +514,7 @@ var NoteEditController = Composer.Controller.extend({
 			set_type: true
 		});
 		var html = Template.render('notes/view/index', {
-			note: toJSON(preview_note),
+			note: preview_note.toJSON(),
 			has_file: false,
 			file_type: false
 		});

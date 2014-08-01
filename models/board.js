@@ -35,7 +35,7 @@ var Board = Composer.RelationalModel.extend({
 
 		this.bind_relational('notes', 'tag-gray', function(tagcount) {
 			var tags = this.get('tags');
-			tags.count_reset(tagcount);
+			tags.count_update(tagcount);
 		}.bind(this), 'board:model:notes:gray-tags');
 
 		this.bind('destroy', function() {

@@ -1,4 +1,5 @@
 var Tag = Composer.Model.extend({
+	id_key: 'name',
 	defaults: {
 		count: 0
 	},
@@ -9,25 +10,22 @@ var Tag = Composer.Model.extend({
 		{
 			data = {name: data};
 		}
+		this.bind('change:count', function() {
+			if(this.get('count', 0) == 0)
+			{
+				this.set({disabled: true});
+			}
+			else
+			{
+				this.unset('disabled');
+			}
+		}.bind(this));
 		return this.parent.apply(this, [data, options]);
 	},
 
 	disabled: function()
 	{
 		return this.get('count', 0) === 0;
-	},
-
-	toJSON: function()
-	{
-		var data = this.parent.apply(this, arguments);
-		if(window._toJSON_disable_protect)
-		{
-			return data;
-		}
-		else
-		{
-			return data.name;
-		}
 	}
 });
 
@@ -38,9 +36,16 @@ var Tags = Composer.Collection.extend({
 	{
 		var arr = [];
 		Object.each(tagobj, function(count, tag) {
-			arr.push({tag: tag, count: count});
+			arr.push({name: tag, count: count});
 		});
 		this.reset(arr);
+	},
+
+	count_update: function(tagobj)
+	{
+		Object.each(tagobj, function(count, tagname) {
+			this.upsert(new Tag({name: tagname, count: count}));
+		}.bind(this));
 	},
 
 	find_by_name: function(tagname)
@@ -59,7 +64,7 @@ var Tags = Composer.Collection.extend({
 		}
 		else
 		{
-			var json = toJSON(tag);
+			var json = tag.toJSON();
 			json.count = 1;
 			var copy = new Tag(json);
 			this.add(copy, options);

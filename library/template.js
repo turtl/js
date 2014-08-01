@@ -164,7 +164,15 @@ var Template = {
 		}
 
 		// great success!
-		var view = tpl_fn(data);
+		try
+		{
+			var view = tpl_fn(data);
+		}
+		catch(e)
+		{
+			console.error('Template: error: ', name, e);
+			throw e;
+		}
 		if(options.filter_scripts || Template.filter_scripts)
 		{
 			// remove inline scripts from generated content. yes, you should do

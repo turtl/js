@@ -48,7 +48,7 @@ var PersonasController = Composer.Controller.extend({
 	render: function()
 	{
 		var personas = this.collection.map(function(persona) {
-			var data = toJSON(persona);
+			var data = persona.toJSON();
 			data.has_key = persona.has_keypair();
 			return data;
 		});

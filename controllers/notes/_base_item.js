@@ -37,7 +37,7 @@ var BaseNoteItem = Composer.Controller.extend({
 
 	render: function(type, className)
 	{
-		var note_data = toJSON(this.model);
+		var note_data = this.model.toJSON();
 		if(!note_data.text && !note_data.url && !note_data.embed && note_data.file && note_data.file.blob_url && note_data.file.type.match(/^image/))
 		{
 			note_data.type = 'image';

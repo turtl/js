@@ -58,7 +58,7 @@ var BoardListController = Composer.Controller.extend({
 		var current = this.board;
 		var content = Template.render('boards/list', {
 			boards: this.filtered_boards,
-			current: current ? toJSON(current) : null,
+			current: current ? current.toJSON() : null,
 			show_actions: this.show_actions
 		});
 		this.html(content);

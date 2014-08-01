@@ -52,7 +52,7 @@ var BoardEditController = Composer.Controller.extend({
 	render: function()
 	{
 		var content = Template.render('boards/edit', {
-			board: toJSON(this.board),
+			board: this.board.toJSON(),
 			bare: this.bare,
 			title: this.title,
 			show_settings: this.show_settings

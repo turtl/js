@@ -1,11 +1,3 @@
-function toJSON(object)
-{
-	window._toJSON_disable_protect = true;
-	var ret = object.toJSON();
-	window._toJSON_disable_protect = false;
-	return ret;
-}
-
 /**
  * Allow javascript's Error class to be extended
  */
@@ -43,6 +35,18 @@ var uuid = function()
 		var v = c == 'x' ? r : (r&0x3|0x8);
 		return v.toString(16);
 	});
+};
+
+var recss = function() {
+    var i, a, s;
+    a = document.getElementsByTagName('link');
+    for (i = 0; i < a.length; i++) {
+        s = a[i];
+        if (s.rel.toLowerCase().indexOf('stylesheet') >= 0 && s.href) {
+            var h = s.href.replace(/(&|\?)forceReload=\d+/, '');
+            s.href = h + (h.indexOf('?') >= 0 ? '&' : '?') + 'forceReload=' + (new Date().valueOf())
+        }
+    }
 };
 
 /**

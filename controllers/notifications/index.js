@@ -73,12 +73,12 @@ var NotificationsController = Composer.Controller.extend({
 	{
 		/*
 		var notifications = turtl.messages.select({notification: true}).map(function(n) {
-			return toJSON(n);
+			return n.toJSON();
 		});
 
 		var content = Template.render('notifications/index', {
 			notifications: notifications,
-			invites: toJSON(turtl.invites),
+			invites: turtl.invites.toJSON(),
 			is_open: this.is_open,
 		});
 		this.html(content);

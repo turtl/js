@@ -158,7 +158,7 @@ var BookmarkController = Composer.Controller.extend({
 		var note = this.edit_controller.note_copy;
 		var data = {
 			url: this.linkdata.url,
-			note: toJSON(note)
+			note: note.toJSON()
 		}
 		Tstorage['bookmarker:note:saved'] = JSON.encode(data);
 	},

@@ -62,7 +62,7 @@ var PersonaEditController = Composer.Controller.extend({
 	render: function()
 	{
 		var content = Template.render('personas/edit', {
-			persona: toJSON(this.model),
+			persona: this.model.toJSON(),
 			was_join: this.join
 		});
 		this.html(content);

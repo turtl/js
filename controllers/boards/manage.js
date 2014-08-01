@@ -44,7 +44,7 @@ var BoardManageController = Composer.Controller.extend({
 		var boards = this.collection.map(function(b) {
 			var _notes = b.get('notes');
 			b.unset('notes', {silent: true});
-			var ret = toJSON(b);
+			var ret = b.toJSON();
 			b.set({notes: _notes}, {silent: true});
 			ret.share_enabled = b.share_enabled();;
 			return ret;

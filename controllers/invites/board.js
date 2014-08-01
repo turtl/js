@@ -38,9 +38,9 @@ var InviteBoardController = Composer.Controller.extend({
 	render: function()
 	{
 		var content = Template.render('invites/board', {
-			invite: toJSON(this.invite),
-			persona: toJSON(this.persona),
-			board: toJSON(this.model)
+			invite: this.invite.toJSON(),
+			persona: this.persona.toJSON(),
+			board: this.model.toJSON()
 		});
 		this.html(content);
 		if(this.persona.is_new())

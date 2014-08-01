@@ -68,12 +68,12 @@ var BoardShareController = Composer.Controller.extend({
 		// grab board data without serializing notes
 		var _notes = this.board.get('notes');
 		this.board.unset('notes', {silent: true});
-		var board = toJSON(this.board);
+		var board = this.board.toJSON();
 		this.board.set({notes: _notes}, {silent: true});
 
 		var privs = this.board.get('privs');
 		var personas = this.board.get('personas').map(function(p) {
-			p = toJSON(p);
+			p = p.toJSON();
 			p.privs = privs[p.id];
 			return p;
 		});

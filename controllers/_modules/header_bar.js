@@ -45,7 +45,7 @@ var HeaderBarController = Composer.Controller.extend({
 	render: function()
 	{
 		var content = Template.render('modules/header_bar', {
-			user: toJSON(turtl.user)
+			user: turtl.user.toJSON()
 		});
 		this.html(content);
 

@@ -39,7 +39,7 @@ var NoteMoveController = Composer.Controller.extend({
 		});
 		//boards.sort(function(a, b) { return a.title.localeCompare(b.title); });
 		var content = Template.render('notes/move', {
-			note: toJSON(this.note),
+			note: this.note.toJSON(),
 			boards: boards
 		});
 		this.html(content);

@@ -15,7 +15,7 @@ var NotesController = TrackController.extend({
 	board: null,
 	filter_list: null,
 
-	last_search: false,		// used to store results of tag searches
+	searchtxt: false,
 	limit: 300,
 	sort_order: null,
 	masonry: null,
@@ -44,7 +44,7 @@ var NotesController = TrackController.extend({
 			};
 			var selected = get_tag_type('selected');
 			var excluded = get_tag_type('excluded');
-			var searchtxt = tags.get('search');
+			var searchtxt = this.searchtxt;
 			var limit = this.limit;
 			var sort = this.sort_order || ['id', 'asc'];
 
@@ -54,13 +54,13 @@ var NotesController = TrackController.extend({
 				sort: sort[0] + '-' + sort[1]
 			};
 
-			if(searchtxt) search.search_string = searchtxt;
+			if((searchtxt || '').trim()) search.search_string = searchtxt.trim();
 			if(selected || excluded)
 			{
-				var tags = '';
-				tags += selected.join(' ');
-				tags += ' -'+excluded.join(' -');
-				search.tags = tags;
+				var tagsearch = '';
+				tagsearch += selected.join(' ');
+				if(excluded.length > 0) tagsearch += ' -'+excluded.join(' -');
+				search.tagsearch = tagsearch;
 			}
 
 			var start = performance.now();
@@ -76,7 +76,7 @@ var NotesController = TrackController.extend({
 			});
 		}.bind(this);
 
-		this.with_bind(tags, ['change:search', 'change:filters', 'change:selected', 'change:excluded'], run_search);
+		this.with_bind(tags, ['search', 'change:filters', 'change:selected', 'change:excluded'], run_search);
 		this.with_bind(notes, ['add', 'remove', 'reset', 'clear', 'misc'], function() {
 			if(this.board.get('notes').models().length == 0)
 			{

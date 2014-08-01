@@ -26,13 +26,10 @@ var TagsController = TrackController.extend({
 			tag.unset('disabled', {silent: true});
 		});
 
-		this.tags = new Tags(this.board.get('tags'), {
+		this.tags = new TagsFilter(this.board.get('tags'), {
 			sort_event: true,
 			refresh_on_change: false
 		});
-		this.with_bind(this.board.get('tags'), ['change:filters', 'change:selected', 'change:excluded'], function() {
-			this.gray_tags.delay(1, this);
-		}.bind(this));
 		this.with_bind(this.tags, 'change:count', function() {
 			this.tags.sort();
 		}.bind(this));
@@ -57,14 +54,6 @@ var TagsController = TrackController.extend({
 		return new TagItemController({
 			inject: this.tag_list,
 			model: tag
-		});
-	},
-
-	gray_tags: function()
-	{
-		this.tags.each(function(tag) {
-			tag.set({disabled: (tag.get('count', 0) === 0)}, {silent: true});
-			tag.trigger('gray');
 		});
 	},
 

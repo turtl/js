@@ -40,7 +40,7 @@ var NoteEditFileController = Composer.Controller.extend({
 			});
 		}
 		var content = Template.render('notes/edit_file', {
-			file: toJSON(this.model.get('file')),
+			file: this.model.get('file').toJSON(),
 			blob_url: file.get('blob_url')
 		});
 		this.html(content);

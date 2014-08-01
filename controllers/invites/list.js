@@ -57,7 +57,7 @@ var InvitesListController = Composer.Controller.extend({
 	{
 		var content = Template.render('invites/list', {
 			invites: this.collection.toJSON(),
-			messages: toJSON(turtl.messages),
+			messages: turtl.messages.toJSON(),
 			num_personas: turtl.user.get('personas').models().length
 		});
 		this.html(content);

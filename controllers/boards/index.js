@@ -67,7 +67,7 @@ var BoardsController = Composer.Controller.extend({
 		var is_open = this.dropdown && this.dropdown.hasClass('open');
 		var content = Template.render('boards/index', {
 			num_boards: this.profile.get('boards').models().length,
-			current: current ? toJSON(current) : null,
+			current: current ? current.toJSON() : null,
 			num_personas: turtl.user.get('personas').models().length,
 			is_open: is_open
 		});
