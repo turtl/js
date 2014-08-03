@@ -66,7 +66,7 @@ var TagsController = TrackController.extend({
 			// search text into the notes controller manually and trigger a filter
 			// change. not the best way to do it.
 			var notes_controller = turtl.controllers.pages.cur_controller.get_subcontroller('notes');
-			notes_controller.search_text = this.inp_search.get('value');
+			notes_controller.searchtxt = this.inp_search.get('value');
 			this.board.get('tags').trigger('change:filters');
 		}.bind(this);
 
@@ -80,7 +80,7 @@ var TagsController = TrackController.extend({
 
 		if(!this.search_timer)
 		{
-			this.search_timer = new Timer(100);
+			this.search_timer = new Timer(250);
 			this.search_timer.end = do_search;
 		}
 		this.search_timer.start();
@@ -104,7 +104,7 @@ var TagsController = TrackController.extend({
 		// don't worry, I'm aware. but this is a quick.dirty way to get things
 		// moving
 		var notes_controller = turtl.controllers.pages.cur_controller.get_subcontroller('notes');
-		notes_controller.search_text = '';
+		notes_controller.searchtxt = '';
 
 		this.inp_search.set('value', '');
 		this.board.get('tags').each(function(t) {
@@ -123,7 +123,7 @@ var TagsController = TrackController.extend({
 		if(!this.filters) return false;
 
 		var num_notes = this.board.get('notes').models().length;
-		if(num_notes > 0) this.filters.setStyle('display', 'block');
-		else this.filters.setStyle('display', 'none');
+		//if(num_notes > 0) this.filters.setStyle('display', 'block');
+		//else this.filters.setStyle('display', 'none');
 	}
 });

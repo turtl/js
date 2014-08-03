@@ -10,14 +10,8 @@ var TagItemController = Composer.Controller.extend({
 	init: function()
 	{
 		if(!this.model) return false;
-		this.model.bind('change', this.render.bind(this), 'tag:item:change:render');
+		this.with_bind(this.model, 'change', this.render.bind(this));
 		this.render();
-	},
-
-	release: function()
-	{
-		this.model.unbind('change', 'tag:item:change:render');
-		this.parent.apply(this, arguments);
 	},
 
 	render: function()

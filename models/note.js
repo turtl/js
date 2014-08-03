@@ -302,9 +302,9 @@ var Notes = Composer.Collection.extend({
 
 		turtl.remote.send('search-notes', search, {
 			success: function(res) {
-				this.reset(res.notes);
-				this.trigger('tag-gray', res.tags);
-				this.trigger('search-complete');
+				this.reset(res.notes || [], options);
+				this.trigger('tag-gray', res.tags, options);
+				this.trigger('search-complete', options);
 				if(options.success) options.success();
 			}.bind(this),
 			error: options.error

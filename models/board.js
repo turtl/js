@@ -33,9 +33,17 @@ var Board = Composer.RelationalModel.extend({
 			this.trigger('note_change');
 		}.bind(this), 'board:model:notes:change');
 
-		this.bind_relational('notes', 'tag-gray', function(tagcount) {
+		this.bind_relational('notes', 'tag-gray', function(tagcount, options) {
+			options || (options = {});
 			var tags = this.get('tags');
-			tags.count_update(tagcount);
+			if(options.initial)
+			{
+				tags.count_reset(tagcount);
+			}
+			else
+			{
+				tags.count_update(tagcount);
+			}
 		}.bind(this), 'board:model:notes:gray-tags');
 
 		this.bind('destroy', function() {
@@ -77,7 +85,8 @@ var Board = Composer.RelationalModel.extend({
 		options || (options = {});
 
 		// load the notes in the board (also grabs the tags as well)
-		this.get('notes').search({board_id: this.id()}, {
+		this.get('notes').search({board_id: this.id(),}, {
+			initial: true,
 			success: function() {
 				this.trigger('notes-loaded');
 				if(options.success) options.success();

@@ -10,8 +10,8 @@ var Tag = Composer.Model.extend({
 		{
 			data = {name: data};
 		}
-		this.bind('change:count', function() {
-			if(this.get('count', 0) == 0)
+		this.bind('change:tmpcount', function() {
+			if(this.get('tmpcount') === 0)
 			{
 				this.set({disabled: true});
 			}
@@ -21,11 +21,6 @@ var Tag = Composer.Model.extend({
 			}
 		}.bind(this));
 		return this.parent.apply(this, [data, options]);
-	},
-
-	disabled: function()
-	{
-		return this.get('count', 0) === 0;
 	}
 });
 
@@ -44,7 +39,9 @@ var Tags = Composer.Collection.extend({
 	count_update: function(tagobj)
 	{
 		Object.each(tagobj, function(count, tagname) {
-			this.upsert(new Tag({name: tagname, count: count}));
+			var tag = this.find_by_id(tagname);
+			if(!tag) return;
+			tag.set({tmpcount: count});
 		}.bind(this));
 	},
 
@@ -136,10 +133,21 @@ var Tags = Composer.Collection.extend({
 var TagsFilter = Composer.FilterCollection.extend({
 	filter: function(m) { return true; },
 	sortfn: function(a, b) {
+		/*
+		var getsel = function(t)
+		{
+			if(t.get('selected')) return 3;
+			if(t.get('excluded')) return 2;
+			return 0;
+		};
+		var selval = getsel(b) - getsel(a);
+		if(selval !== 0) return selval;
+		*/
+
 		var diff = b.get('count') - a.get('count');
-		// secondary alpha sort
-		if(diff == 0) diff = a.get('name').localeCompare(b.get('name'));
-		return diff;
+		if(diff !== 0) return diff;
+
+		return a.get('name').localeCompare(b.get('name'));
 	},
 	forward_all_events: false,
 	refresh_on_change: false

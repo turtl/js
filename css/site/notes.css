@@ -194,7 +194,7 @@ ul.note_list .note span.break {font-size: 1px;}
 
 /* masonry */
 ul.note_list.list_masonry > li {
-	position: absolute;		/* makes masonry JS a bit faster */
+	/*position: absolute;		[> makes masonry JS a bit faster <]*/
 	float: left;
 	display: block;
 	width: 232px;

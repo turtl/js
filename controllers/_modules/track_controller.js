@@ -114,6 +114,7 @@ var TrackController = Composer.Controller.extend({
 	{
 		// find all subcontrollers that hold this model
 		var sub = this.sub_controller_index[model.id()];
+		if(!sub) return;
 
 		// release the matching subcontrollers
 		sub.release();
@@ -140,7 +141,15 @@ var TrackController = Composer.Controller.extend({
 
 	refresh_subcontrollers: function()
 	{
-		this.release_subcontrollers();
+		if(this.fragment)
+		{
+			this.fragment.release = this.sub_controllers.slice(0);
+		}
+		else
+		{
+			this.release_subcontrollers();
+		}
+
 		this.collection.each(function(model) {
 			this.add_subcontroller(model);
 		}.bind(this));
@@ -149,15 +158,20 @@ var TrackController = Composer.Controller.extend({
 	render_to_fragment: function()
 	{
 		this.fragment = document.createDocumentFragment();
-		this.sub_controllers.each(function(c) {
-			this.fragment.appendChild(c.el.dispose());
-		}.bind(this));
 	},
 
 	finish_fragment: function(element)
 	{
 		if(!this.fragment) return false;
+		if(this.fragment.release)
+		{
+			this.fragment.release.each(function(c) {
+				if(c.model) delete this.sub_controller_index[c.model.id()];
+				c.release();
+			}.bind(this));
+		}
 		element.appendChild(this.fragment);
+		delete this.fragment.release;
 		this.fragment = null;
 	}
 });

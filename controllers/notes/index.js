@@ -47,6 +47,7 @@ var NotesController = TrackController.extend({
 			var searchtxt = this.searchtxt;
 			var limit = this.limit;
 			var sort = this.sort_order || ['id', 'asc'];
+			console.log('sort : ', sort);
 
 			var search = {
 				board_id: board_id,
@@ -54,13 +55,11 @@ var NotesController = TrackController.extend({
 				sort: sort[0] + '-' + sort[1]
 			};
 
-			if((searchtxt || '').trim()) search.search_string = searchtxt.trim();
-			if(selected || excluded)
+			if((searchtxt || '').trim()) search.search = searchtxt.trim();
+			if(selected.length || excluded.length)
 			{
-				var tagsearch = '';
-				tagsearch += selected.join(' ');
-				if(excluded.length > 0) tagsearch += ' -'+excluded.join(' -');
-				search.tagsearch = tagsearch;
+				var tagsearch = selected.concat(excluded.map(function(e) { return '-'+e; }));
+				search.tags = tagsearch;
 			}
 
 			var start = performance.now();
@@ -93,6 +92,7 @@ var NotesController = TrackController.extend({
 		this.bind('set-limit', run_search);
 		this.bind('sort-change', function(field, direction) {
 			this.sort_order = [field, direction];
+			run_search();
 		}.bind(this));
 
 		// track all changes to our sub-controllers
@@ -225,7 +225,7 @@ var NotesController = TrackController.extend({
 	create_subcontroller: function(note)
 	{
 		return new NoteItemController({
-			inject: this.note_list,
+			inject: this.fragment || this.note_list,
 			board: this.board,
 			model: note,
 			display_type: this.board.get('display_type')
@@ -266,57 +266,8 @@ var NotesController = TrackController.extend({
 				a.addClass('sel').addClass('asc');
 			}
 		}
-		var direction = a.className.match(/\basc\b/) ? 0 : 1;
+		var direction = a.className.match(/\basc\b/) ? 'asc' : 'desc';
 		this.trigger('sort-change', sort, direction);
-	},
-
-	// -------------------------------------------------------------------------
-	// NOTE:
-	// the following two functions override the TrackController's versions
-	// specifically for performance enhancements. Instead of removing the
-	// sub controllers from the DOM, they are simply given the class "hide"
-	// which saves performance, but achieves the same goal.
-
-	add_subcontroller: function(model)
-	{
-		var sub = this.sub_controller_index[model.id()];
-		if(sub)
-		{
-			if(sub.el) sub.el.removeClass('hide');
-		}
-		else
-		{
-			sub = this.create_subcontroller(model);
-			this.sub_controllers.push(sub);
-			this.sub_controller_index[model.id()] = sub;
-			sub.bind('release', function() {
-				this.do_remove_subcontroller(sub, model.id());
-			}.bind(this));
-		}
-	},
-
-	remove_subcontroller: function(model)
-	{
-		//this.parent.apply(this, arguments);
-		if(this.board.get('notes').models().length == 0)
-		{
-			this.display_actions.addClass('hidden');
-		}
-
-		var sub = this.sub_controller_index[model.id()];
-		if(!sub) return;
-		if(!sub.el)
-		{
-			delete this.sub_controller_index[model.id()];
-			this.sub_controllers = this.sub_controllers.filter(function(s) {
-				if(s == sub) return false;
-				return true;
-			});
-			this.setup_masonry();
-			return;
-		}
-		sub.el.addClass('hide');
 	}
-	// -------------------------------------------------------------------------
 });
 
