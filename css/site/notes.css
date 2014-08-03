@@ -194,24 +194,20 @@ ul.note_list .note span.break {font-size: 1px;}
 
 /* masonry */
 ul.note_list.list_masonry > li {
-	/*position: absolute;		[> makes masonry JS a bit faster <]*/
 	float: left;
 	display: block;
 	width: 232px;
-	margin: 0 16px 16px 0;
+	margin: 0 4px 4px 0;
 	padding: 0;
 	background: #fff;
+	border: 1px solid #dedede;
+	border-radius: 2px;
 }
-ul.note_list.list_masonry > li > .gutter {padding: 16px;}
-ul.note_list.list_masonry > li.empty > .gutter {}
-ul.note_list.list_masonry > li.image {width: 232px; padding: 0;}
-ul.note_list.list_masonry > li.image > div.gutter {padding: 0;}
-ul.note_list.list_masonry > li > div.gutter {max-height: 500px; overflow: hidden;}
-ul.note_list.list_masonry > li.image > div.gutter {width: 100%; overflow: hidden;}
-ul.note_list.list_masonry > li.image h2 {display: none; position: absolute; bottom: 0; width: 96%; height: 26px; margin: 0; padding: 6px 2% 0 2%; line-height: 1em; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background: url(../../images/site/trans_000_50.png) 0 0;}
-ul.note_list.list_masonry > li.image:hover h2 {display: block;}
+ul.note_list.list_masonry > li:hover {border-color: #ccc;}
+ul.note_list.list_masonry > li > div.gutter {max-height: 500px; padding: 16px 16px 10px 16px; overflow: hidden;}
 /* pretty impossible to sort masonry notes */
 ul.note_list.list_masonry > li div.actions a.sort {display: none;}
+ul.note_list.list_masonry > li.image h2 {margin: 8px 0 0 0;}
 
 ul.note_list.list_masonry li.note.empty .gutter {display: none;}
 ul.note_list.list_masonry .note h1 {margin-bottom: 6px;}
@@ -221,6 +217,6 @@ ul.note_list.list_masonry .note ol {margin: 0 0 16px 32px;}
 ul.note_list.list_masonry .note p {padding: 0 0 16px 0;}
 ul.note_list.list_masonry .note p:first-child {padding: 0 0 0 0; margin: 0;}
 ul.note_list.list_masonry .note img {max-width: 100%;}
-ul.note_list.list_masonry .note a.img {display: block; width: 232px; line-height: 0; text-align: center; background: #000;}
+ul.note_list.list_masonry .note a.img {display: block; width: 200px; line-height: 0; text-align: center; background: #000;}
 
 .notes .MathJax_Display {padding: 4px; overflow-x: auto;}
