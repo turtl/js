@@ -2906,19 +2906,20 @@
 		 * extension of Model.toJSON() that also serializes the child
 		 * (relational) objects
 		 */
-		toJSON: function()
+		toJSON: function(options)
 		{
-			// modify the underlying data to match the data of the relational models
-			if(!this.skip_relational_serialize)
+			options || (options = {});
+
+			var data = this.parent();
+
+			if(this.skip_relational_serialize || options.skip_relational)
 			{
-				Composer.object.each(this.relations, function(relation, k) {
-					var obj = this._get_key(this.relation_data, k);
-					if(obj) this._set_key(this.data, k, obj.toJSON());
-				}, this);
+				Object.keys(this.relations).forEach(function(key) {
+					delete data[key];
+				});
 			}
 
-			// call Model.toJSON()
-			return this.parent();
+			return data;
 		},
 
 		/**
