@@ -1,8 +1,5 @@
 var Profile = Composer.RelationalModel.extend({
 	relations: {
-		keychain: {
-			collection: 'Keychain'
-		},
 		personas: {
 			collection: 'Personas'
 		},
