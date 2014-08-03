@@ -68,12 +68,13 @@ var BaseNoteItem = Composer.Controller.extend({
 		this.el.className = className + ' ' + note_data.type;
 
 		// handle math junk
-		this.render_math();
+		(function() { this.render_math(); }.bind(this)).delay(100);
 	},
 
 	render_math: function()
 	{
 		// handle math junk
+		if(!this.el) return false;
 		var maths = this.el.getElements('pre.math');
 		if(maths.length > 0)
 		{
