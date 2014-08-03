@@ -293,7 +293,7 @@ var Notes = Composer.Collection.extend({
 	model: Note,
 	local_table: 'notes',
 
-	sortfn: function(a, b) { return a.id().localeCompare(b.id()); },
+	sortfn: function(a, b) { return a.get('_sort') - b.get('_sort'); },
 
 	search: function(search, options)
 	{
@@ -302,7 +302,11 @@ var Notes = Composer.Collection.extend({
 
 		turtl.remote.send('search-notes', search, {
 			success: function(res) {
-				this.reset(res.notes || [], options);
+				var notes = res.notes || [];
+				var sort = 0;
+				console.log('notes! ', notes);
+				notes.forEach(function(n) { n._sort = sort++; });
+				this.reset(notes, options);
 				this.trigger('tag-gray', res.tags, options);
 				this.trigger('search-complete', options);
 				if(options.success) options.success();
@@ -402,6 +406,5 @@ var Notes = Composer.Collection.extend({
 	}
 });
 
-var NotesFilter = Composer.FilterCollection.extend({
-});
+var NotesFilter = Composer.FilterCollection.extend({});
 
