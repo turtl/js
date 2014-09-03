@@ -139,12 +139,11 @@ var NotesController = TrackController.extend({
 				this.masonry.detach();
 				this.masonry = null;
 			}
-			this.masonry = this.note_list.masonry({
-				//itemSelector: '> li.note:not(.hide)',
+			this.masonry = new MasonryClass(this.note_list, {
 				singleMode: true,
 				resizeable: true
 			});
-			var images = this.note_list.getElements('> li.note:not(.hide) > .gutter img');
+			var images = this.note_list.getElements('> li.note > .gutter img');
 			images.each(function(img) {
 				if(img.complete || (img.naturalWidth && img.naturalWidth > 0)) return;
 				img.onload = function() {
