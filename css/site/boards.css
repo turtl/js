@@ -22,7 +22,7 @@
 .board-list .dropdown .actions {margin: 0 0 6px 0; padding: 0 0 5px 0; color: #666;}
 .board-list .dropdown .actions input[type=text] {width: 98%; font-size: 16px;}
 .board-list .dropdown ul {list-style: none;}
-.board-list .dropdown ul li ul {float: right;}
+.board-list .dropdown ul li ul {float: right; margin: 9px 0 0 0;}
 .board-list .dropdown ul li ul li {display: inline-block;}
 .board-list .dropdown ul li ul li icon {opacity: .16; margin-top: 0;}
 .board-list .dropdown ul li ul li.active icon {opacity: .4; margin-top: 0; color: #060;}

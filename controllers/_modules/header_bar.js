@@ -2,22 +2,25 @@ var HeaderBarController = Composer.Controller.extend({
 	inject: 'header',
 
 	elements: {
-		'ul.menu': 'menu',
-		'div.apps': 'apps_container'
+		'div.menu': 'menu',
+		'div.apps': 'apps_container',
+		'.size-container': 'size_container'
 	},
 
 	events: {
 		'click a.menu': 'toggle_menu',
+		'click a[href=#invite]': 'open_account',
 		'click li.account a': 'open_account',
 		'click li.persona a': 'open_personas',
 		'click li.invites a': 'open_invites',
 		'click li.wipe a': 'wipe_data',
-		'mouseenter ul.menu': 'cancel_close_menu',
-		'mouseleave ul.menu': 'close_menu'
+		'mouseenter div.menu': 'cancel_close_menu',
+		'mouseleave div.menu': 'close_menu'
 	},
 
 	close_timer: null,
 	notifications: null,
+	size_controller: null,
 
 	init: function()
 	{
@@ -33,6 +36,7 @@ var HeaderBarController = Composer.Controller.extend({
 	{
 		turtl.user.unbind(['login', 'logout'], 'header_bar:user:render');
 		if(this.notifications) this.notifications.release();
+		if(this.size_controller) this.size_controller.release();
 		this.close_timer.end = null;
 		this.parent.apply(this, arguments);
 	},
@@ -43,6 +47,11 @@ var HeaderBarController = Composer.Controller.extend({
 			user: toJSON(turtl.user)
 		});
 		this.html(content);
+
+		if(this.size_controller) this.size_controller.release();
+		this.size_controller	=	new AccountProfileSizeController({
+			inject: this.size_container
+		});
 
 		if(!window._in_ext)
 		{
@@ -80,7 +89,11 @@ var HeaderBarController = Composer.Controller.extend({
 	open_account: function(e)
 	{
 		if(e) e.stop();
-		new AccountController();
+		var invite = false;
+		if(e.target && e.target.hasClass('invite')) invite = true;
+		new AccountController({
+			sub_controller_args: {open_inviter_on_init: invite}
+		});
 	},
 
 	open_personas: function(e)

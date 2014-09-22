@@ -16,5 +16,6 @@ var config = {
 	// if true, any uncaught errors will be logged to the API for processing
 	catch_global_errors: false,
 
+	// enable things like INVITE TO GET MOAR STORAGE
 	enable_promo: true
 }

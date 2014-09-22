@@ -85,6 +85,7 @@ var Profile = Composer.RelationalModel.extend({
 
 				// once we have all our data, populate the profile with it
 				this.load_from_data(profile_data, options);
+				this.trigger('populated');
 			}.bind(this);
 
 			// populate the user data separately
@@ -332,6 +333,8 @@ var Profile = Composer.RelationalModel.extend({
 
 	calculate_size: function(options)
 	{
+		if(!turtl.db) return false;
+
 		options || (options = {});
 
 		var profile_size		=	0;
