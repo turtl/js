@@ -61,12 +61,9 @@
 		};
 	};
 
-	// Composer equality function. It replaces _.eq, which wasn't able to tell
-	// non-equality between {key1: 3} and {key1: 3, key2: 5} (said they were
-	// equal). This was causing some events to not fire in Composer, prompting
-	// me to write our own equality function. It might have just been the release
-	// we were using, but I'm too lazy to go in and re-update _.eq to not have
-	// other _ dependencies. Writing our own is a bit easier.
+	// Composer equality function. Does deep-inpection and is able to tell the
+	// difference between {key: 3} and {key: 3, key2: 4} (_.eq had problems with
+	// this back in the day).
 	var eq = function(a, b)
 	{
 		if ( a === b ) return true;
@@ -175,6 +172,45 @@
 		}
 	};
 
+	var promisify = function()
+	{
+		var create_converter = function(type)
+		{
+			return function(key)
+			{
+				var options = arguments[1] || {};
+				var options_idx = options.options_idx || 0;
+				var names = options.names || ['success', 'error'];
+
+				var _old = Composer[type].prototype[key];
+				Composer[type].prototype[key] = function()
+				{
+					var args = Array.prototype.slice.call(arguments, 0);
+					if(args.length < options_idx)
+					{
+						var _tmp = new Array(options_idx);
+						args.forEach(function(item, i) { _tmp[i] = item; });
+						args = _tmp;
+					}
+					if(!args[options_idx]) args[options_idx] = {};
+					var _self = this;
+					var options = args[options_idx];
+					if(options.promisified) return _old.apply(_self, args);
+					return new Promise(function(resolve, reject) {
+						if(names[0]) options[names[0]] = resolve;
+						if(names[1]) options[names[1]] = function(_, err) { reject(err); };
+						options.promisified = true;
+						_old.apply(_self, args);
+					});
+				};
+			};
+		}
+		var convert_collection_fn = create_converter('Collection');
+		['fetch', 'save', 'destroy'].forEach(create_converter('Model'));
+		['fetch'].forEach(convert_collection_fn);
+		convert_collection_fn('reset_async', {options_idx: 1, names: ['complete']});
+	};
+
 	Composer.exp0rt({
 		sync: sync,
 		cid: cid,
@@ -182,409 +218,179 @@
 		eq: eq,
 		merge_extend: merge_extend,
 		array: array,
-		object: object
+		object: object,
+		promisify: promisify
 	});
 }).apply((typeof exports != 'undefined') ? exports : this);
 
 /**
  * class.js
  *
- * Defines a class system for Composer.
+ * Defines the base class system used by Composer (can be standlone as well)
+ * -----------------------------------------------------------------------------
  *
- * NOTE: the below has been modified (search for __static) to make it so that on
- * instantiation, non-function members are created as shallow *copies* of their
- * prototype counterparts. This eliminates shared state between different
- * instantiations of the same class.
+ * Composer.js is an MVC framework for creating and organizing javascript
+ * applications. For documentation, please visit:
+ *
+ *     http://lyonbros.github.com/composer.js/
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (c) 2011, Lyon Bros Enterprises, LLC. (http://www.lyonbros.com)
+ *
+ * Licensed under The MIT License.
+ * Redistributions of files must retain the above copyright notice.
  */
+(function() {
+	"use strict";
 
-/*--------------------------------------------*
- * Info: https://github.com/kilhage/class.js
- *--------------------------------------------*
- * Copyright 2011, Emil Kilhage
- * Released under the MIT License
- *--------------------------------------------*
- * Environment-release: js
- * Last Update: 2011-04-29 18:10:51
- * Version 1.1.0
- *--------------------------------------------*/
-/*jslint forin: true, onevar: true, debug: false, indent: 4
-   white: true, strict: true, undef: true, newcap: true
-   maxlen: 85, evil: false, nomen: false, regexp: false
-   browser: true */
-(function (undefined) {
-    "use strict";
+	var global = this;
 
-    var initializing = false,
-        prefix = "Class",
+	/**
+	 * like typeof, but returns if it's an array or null
+	 */
+	var typeOf = function(obj)
+	{
+		if(obj == null) return 'null';
+		var type = typeof(obj);
+		if(type != 'object') return type;
+		if(Array.isArray && Array.isArray(obj)) return 'array';
+		else if(Object.prototype.toString.call(obj) === '[object Array]') return 'array';
+		return type;
+	};
 
-        __self__ = prefix + (new Date()).getTime(),
-        
-        testFn = function () {
-            this.parent();
-        },
+	/**
+	 * Merge object `from` into `into`
+	 */
+	var merge = function(into, from, options)
+	{
+		options || (options = {});
+		for(var k in from)
+		{
+			if(!from.hasOwnProperty(k)) continue;
+			if(options.transform) options.transform(into, from, k);
+			into[k] = from[k];
+		}
+		return into;
+	};
 
-        fnSearch = /\bparent\b/,
-        parentFnSearch = fnSearch.test(testFn) ? (/\bparent\b\./) : fnSearch = /.*/,
-        
-        toString = Object.prototype.toString,
-        hasOwn = Object.prototype.hasOwnProperty,
+	/**
+	 * Wraps an overriding method to track its state so get_parent() can pull
+	 * out the right function.
+	 */
+	var wrapfn = function(origfn, k)
+	{
+		return function()
+		{
+			if(!this.$state.levels[k]) this.$state.levels[k] = 0;
+			this.$state.levels[k]++;
+			this.$state.fn.unshift(k);
+			var val = origfn.apply(this, arguments);
+			this.$state.fn.shift();
+			this.$state.levels[k]--;
+			return val;
+		};
+	};
 
-        functionToString = toString.call(testFn),
-        objectToString = toString.call({}),
-        StdError = Error,
-        
-        tmpProto,
+	/**
+	 * Takes care of "parentizing" overridden methods when merging prototypes
+	 */
+	var do_extend = function(to_prototype, from_prototype)
+	{
+		return merge(to_prototype, from_prototype, {
+			transform: function(into, from, k) {
+				if(typeof into[k] != 'function' || into[k].prototype.$parent || typeof from[k] != 'function' || from[k].prototype.$parent) return false;
+				from[k] = wrapfn(from[k], k);
+				from[k].$parent = into[k];
+			}
+		});
+	};
 
-        errors = {};
+	/**
+	 * Given an object, copy the subobjects/subarrays recursively
+	 */
+	var copy = function(obj)
+	{
+		for(var k in obj)
+		{
+			var val = obj[k];
+			switch(typeOf(val))
+			{
+			case 'object':
+				obj[k] = copy(merge({}, val));
+				break;
+			case 'array':
+				obj[k] = val.slice(0);
+				break;
+			}
+		}
+		return obj;
+	}
 
-    /* Define some used Errors */
+	/**
+	 * Create a new class prototype from the given base class.
+	 */
+	var create = function(base)
+	{
+		base.$initializing = true;
+		var prototype = new base();
+		delete base.$initializing;
 
-    /**
-     * This is thrown whenever the input in any of the class building
-     * functions conatins something wiered.
-     */
-    function InvalidClassDefinition(msg) {
-        StdError.apply(this, arguments);
-        this.message = prefix + "::" + msg;
-    }
+		var cls = function Omni()
+		{
+			copy(this);
+			if(cls.$initializing) return this;
+			this.$state = {levels: {}, fn: []};
+			if(this.initialize) return this.initialize.apply(this, arguments);
+			else return this;
+		};
+		cls.$constructor = prototype.$constructor = cls;
+		cls.prototype = prototype;
+		cls.prototype.$parent = base;
 
-    tmpProto = InvalidClassDefinition.prototype = new StdError();
-    errors[tmpProto.name = "InvalidClassDefinition"] = InvalidClassDefinition;
+		return cls;
+	};
 
-    /**
-     * Gets thrown when someone calls a parent method that don't exists
-     */
-    function InvalidParentMethodCall(name) {
-        StdError.apply(this, arguments);
-        this.message = prefix + "::Parent Class doesn't have the method: " + name;
-    }
+	/**
+	 * Once base to rule them all (and in the darkness bind them)
+	 */
+	var Base = function() {};
 
-    tmpProto = InvalidParentMethodCall.prototype = new StdError();
-    errors[tmpProto.name = "InvalidParentMethodCall"] = InvalidParentMethodCall;
+	/**
+	 * Main extension method, creates a new class from the given object
+	 */
+	Base.extend = function(obj)
+	{
+		var base = this;
+		var cls = create(base);
+		do_extend(cls.prototype, obj);
+		cls.extend = Base.extend;
 
-    /**
-     * The base Class implementation that all 
-     * classes created by this library will be extended from
-     */
-    function Base() {}
-    
-    /**
-     * Simple JavaScript Inheritance
-     * By John Resig http://ejohn.org/
-     * MIT Licensed.
-     * 
-     * @param <object> prop: The prototype that you want the object to have
-     * @return <function>: Created class
-     */
-    function Class(properties) {
-        return Base.extend(properties);
-    }
+		cls.prototype.get_parent = function()
+		{
+			var key = this.$state.fn[0];
+			if(!key) return false;
+			var level = this.$state.levels[key];
+			var parent = cls.prototype[key]; for(var i = 0; i < level && parent; i++) { parent = parent.$parent; }
+			return parent || false;
+		};
+		cls.prototype.parent = function()
+		{
+			var fn = this.get_parent();
+			if(fn) return fn.apply(this, arguments);
+			throw 'Class.js: Bad parent method: '+ this.$state.fn[0];
+		};
 
-    /**
-     * @param <mixed> fn
-     * @return <boolean>: if fn is created by this library
-     */
-    function is(fn) {
-        return !!(fn && fn.extend === Base.extend);
-    }
+		return cls;
+	};
 
-    /**
-     * makeClass - By John Resig (MIT Licensed)
-     * http://ejohn.org/
-     *
-     * Makes it possible to instantiate a
-     * class both with or without the new keyword.
-     * It also moves the constructor to a function
-     * on the prototype called "initialize"
-     * 
-     * @return <function>
-     */
-    function makeClass() {
-        // The constructor will be cached 
-        // here and updated each time it changes
-        var initialize;
-        function Awesome(args) {
-            var self = this;
-			Object.keys(self.__static).forEach(function(prop) {
-				var val = self.__static[prop];
-				if(val instanceof Function) return;
+	// wrap base class so we can call it directly or as .extend()
+	function Class(obj) { return Base.extend(obj); };
+	Class.extend = Class;
 
-				// perform shallow array/object copies
-				if(val instanceof Array)
-				{
-					val = val.slice(0);
-				}
-				else if(val instanceof Object)
-				{
-					var _val = {};
-					Object.keys(val).forEach(function(key) { _val[key] = val[key]; });
-					val = _val;
-				}
-				self[prop] = val;
-			});
-            // Where the new keyword used?
-            if (self instanceof Awesome) {
-                if (initializing === false) {
-                    // Have the constructor property changed since
-                    // last time a new instance where made?
-                    if (initialize !== self.initialize) {
-                        // Is the constructor property a function?
-                        if ("initialize" in self &&
-                                toString.call(self.initialize) === functionToString) {
-                            // Update the cached constructor.
-                            initialize = self.initialize;
-                        } else {
-                            // The not a valid constructor.
-                            initialize = undefined;
-                        }
-                    }
-                    if (initialize !== undefined) {
-                        // Call the "real" constructor and apply the arguments
-                        initialize.apply(self, args && args.callee === Awesome ? 
-                                                        args : arguments);
-                    }
-                }
-            } else {
-                // Instantiate the class and pass the aruments
-                return new Awesome(arguments);
-            }
-        }
-
-        return Awesome;
-    }
-
-    function rewrite(name, current, parent, populator) {
-            // Should this.parent be 
-            // populated with any properties 
-            // from the parent class?
-        var populate = parentFnSearch.test(current),
-        
-            setSelf = populate,
-
-             // Needed to wrap the original function 
-             // inside a new function to avoid adding
-             // properties to the original function 
-             // when calling 'this.parent.<method name>()'
-            realParent = toString.call(parent) === functionToString ? function () {
-                return parent.apply(this, arguments);
-            } : // Make sure to throw an error 
-                // when calling a method that don't exists
-                function () {
-                    throw new InvalidParentMethodCall(name);
-                };
-
-        return function () {
-            var self = this,
-                // Store the content in the .parent property 
-                // so we can revert the object after 
-                // we're done if it's needed
-                tmp = self.parent,
-                ret,
-                name,
-                fns;
-
-            // Add a new .parent() method that points to the parent 
-            // class's method with the same name
-            self.parent = realParent;
-
-            if (setSelf) {
-                // Add the parent class's methods to 
-                // 'this.parent' which enables you 
-                // to call 'this.parent<method name>()'
-                if (populate) {
-                    // We only need to do this once
-                    populate = false;
-                    // Get the parent functions and add'em
-                    fns = populator();
-                    for (name in fns) {
-                        if (hasOwn.call(fns, name)) {
-                            // Add the parent functions
-                            realParent[name] = fns[name];
-                        }
-                    }
-                }
-                // Save a reference to the class instance on the parent
-                // function so the other methods from the 
-                // instance parent class can be called.
-                // Only do this when needed, to optimize the performace
-                realParent[__self__] = self;
-            }
-
-            // Execute the original function
-            ret = current.apply(self, arguments);
-
-            // Restore the context
-            self.parent = tmp;
-
-            return ret;
-        };
-    }
-
-    function rewriteFn(fn) {
-        return function () {
-            return fn.apply(this[__self__], arguments);
-        };
-    }
-
-    function addProperties(from, reference, target) {
-        var name, current, fns,
-            populator = function () {
-                if (fns === undefined) {
-                    var key;
-                    fns = {};
-                    for (key in reference) {
-                        if (toString.call(reference[key]) === functionToString) {
-                            fns[key] = rewriteFn(reference[key]);
-                        }
-                    }
-                }
-                return fns;
-            };
-
-        if (target === undefined) {
-            target = reference;
-        }
-
-		target.__static = Composer.object.clone(reference.__static || {});
-
-        for (name in from) {
-            if (hasOwn.call(from, name)) {
-                current = from[name];
-				if(	!(current instanceof Function) ||
-					(reference && reference.__static && !(reference.__static[name] instanceof Function)))
-				{
-					target.__static[name] = current;
-				}
-                target[name] = toString.call(current) === functionToString && 
-                    fnSearch.test(current) ?
-                    rewrite(name, current, reference[name], populator) : current;
-            }
-        }
-    }
-
-    /**
-     * Creates a new class based on the current class
-     * 
-     * @param properties
-     * @return <function>
-     */
-    Base.extend = function (properties) {
-            // Create the new class
-        var Awesome = makeClass(), name, Src = this, 
-            prototype, parent = Src.prototype, m;
-            
-        if (!properties || toString.call(properties) !== objectToString) {
-            m = "Unable to " + (Src === Base ? "extend" : "create") + " class";
-            throw new InvalidClassDefinition(m);
-        }
-
-        // Move all static properties
-        for (name in Src) {
-            if (hasOwn.call(Src, name)) {
-                Awesome[name] = Src[name];
-            }
-        }
-        
-        /**
-         * Does the input contains any static properties that should be added?
-         */
-        if (properties.hasOwnProperty("prototype")) {
-            prototype = properties.prototype;
-            if (prototype && toString.call(prototype) === objectToString) {
-                delete properties.prototype;
-                addProperties(properties, Src, Awesome);
-                properties = properties.prototype = prototype;
-            } else {
-                m = "Invalid type on properties.prototype(" +
-                    prototype + "), literal object expected";
-                throw new InvalidClassDefinition(m);
-            }
-        }
-
-        // Create a shallow copy of the source prototype
-        initializing = true;
-        prototype = new Src();
-        initializing = false;
-
-        // Copy the properties over onto the new prototype
-        addProperties(properties, parent, prototype);
-
-        // Enforce the constructor to be what we expect
-        Awesome.constructor = prototype.constructor = Awesome;
-
-        // Add the final prototype to the created class
-        Awesome.prototype = prototype;
-
-        /**
-         * Checks if a class inherits from another class
-         * 
-         * @param <function> parent
-         * @return <boolean>
-         */
-        Awesome.inherits = function (parent) {
-            return parent === Src || Src.inherits(parent);
-        };
-
-        return Awesome;
-    };
-
-    Base.inherits = function () {
-        return false;
-    };
-
-    /**
-     * Adds properties to a Class
-     * @param <object> prop
-     */
-    Base.addMethods = function (properties, proto, own_proto) {
-        if (properties && toString.call(properties) === objectToString) {
-            proto = properties.prototype;
-            own_proto = this.prototype;
-
-            if (proto && toString.call(proto) === objectToString) {
-                addProperties(proto, own_proto);
-
-                delete properties.prototype;
-                addProperties(properties, this);
-                properties.prototype = proto;
-
-            } else {
-                addProperties(properties, own_proto);
-            }
-        } else {
-            throw new InvalidClassDefinition("Unable to add methods to class");
-        }
-    };
-
-    /**
-     * A default function on all classes that are created.
-     *
-     * Makes in possible to extend already initalized
-     * objects in an easy way
-     * 
-     * @param <object> properties
-     */
-    Base.prototype.addMethods = function (properties) {
-        if (properties && toString.call(properties) === objectToString) {
-            addProperties(properties, this);
-        } else {
-            throw new InvalidClassDefinition("Unable to add methods to instance");
-        }
-    };
-
-    // Public helper methods
-    Class.is = is;
-    Class.makeClass = makeClass;
-
-    // These are exposed to simplify the unit-testing
-    // I will probably remove them later...
-    Class.fnSearch = fnSearch;
-    Class.parentFnSearch = parentFnSearch;
-    Class.errors = errors;
-    Class.version = "1.1.0";
-
-	Composer.exp0rt({ Class: Class });
-}());
+	if(global.Composer) global.Composer.exp0rt({ Class: Class });
+	global.Class = Class;
+}).apply((typeof exports != 'undefined') ? exports : this);
 
 /**
  * event.js
@@ -1642,10 +1448,7 @@
 
 			for(var i = 0; i < this._models.length; i++)
 			{
-				if(this.sortfn(this._models[i], model) > 0)
-				{
-					return i;
-				}
+				if(this.sortfn(this._models[i], model) > 0) return i;
 			}
 			var index = this._models.indexOf(model);
 			if(index == this._models.length - 1) return index;
@@ -1685,14 +1488,8 @@
 		 */
 		find: function(callback, sortfn)
 		{
-			if(sortfn)
-			{
-				var models = this.models().slice(0).sort(sortfn);
-			}
-			else
-			{
-				var models = this.models();
-			}
+			var models = this.models();
+			if(sortfn) models = models.slice(0).sort(sortfn);
 
 			for(var i = 0; i < models.length; i++)
 			{
@@ -1823,8 +1620,7 @@
 		{
 			var result = this.select(selector);
 
-			if (result.length)
-				return result[0];
+			if(result.length) return result[0];
 
 			return null;
 		},
@@ -1940,7 +1736,21 @@
 	var has_moo = !!global.MooTools;
 
 	var find = (function() {
-		if(has_sizzle)
+		if(has_moo)
+		{
+			return function(context, selector) {
+				context || (context = document);
+				return document.id(context).getElement(selector);
+			};
+		}
+		else if(has_jquery)
+		{
+			return function(context, selector) {
+				context || (context = document);
+				return jQuery(context).find(selector)[0];
+			};
+		}
+		else if(has_sizzle)
 		{
 			return function(context, selector) {
 				context || (context = document);
@@ -1952,20 +1762,6 @@
 			return function(context, selector) {
 				context || (context = document);
 				return Slick.find(context, selector);
-			};
-		}
-		else if(has_jquery)
-		{
-			return function(context, selector) {
-				context || (context = document);
-				return jQuery(context).find(selector)[0];
-			};
-		}
-		else if(has_moo)
-		{
-			return function(context, selector) {
-				context || (context = document);
-				return document.id(context).getElement(selector);
 			};
 		}
 		throw new Error('No selector engine present. Include Sizzle/jQuery or Slick/Mootools before loading composer.');
@@ -2071,73 +1867,22 @@
 		 * @param {HTMLNode} node The node to fire the event handler on.
 		 * @param {String} eventName The name of the event without the "on" (e.g., "focus")
 		 */
-		return function(node, eventName, options) {
+		return function(el, type, options) {
 			options || (options = {});
 
-			if(eventName == 'click' && node.click)
+			if(type == 'click' && el.click)
 			{
-				return node.click();
+				return el.click();
 			}
 
-			// Make sure we use the ownerDocument from the provided node to avoid cross-window problems
-			var doc;
-			if (node.ownerDocument) {
-				doc = node.ownerDocument;
-			} else if (node.nodeType == 9){
-				// the node may be the document itself, nodeType 9 = DOCUMENT_NODE
-				doc = node;
-			} else {
-				throw new Error("Invalid node passed to fireEvent: " + node.id);
-			}
-
-			if (node.dispatchEvent) {
-				// Gecko-style approach (now the standard) takes more work
-				var eventClass = "";
-
-				// Different events have different event classes.
-				// If this switch statement can't map an eventName to an eventClass,
-				// the event firing is going to fail.
-				switch (eventName) {
-				case "click": // Dispatching of 'click' appears to not work correctly in Safari. Use 'mousedown' or 'mouseup' instead.
-				case "mousedown":
-				case "mouseup":
-					eventClass = "MouseEvents";
-					break;
-
-				case "focus":
-				case "change":
-				case "blur":
-				case "select":
-					eventClass = "HTMLEvents";
-					break;
-
-				case "keyup":
-				case "keydown":
-					eventClass = "KeyboardEvent";
-					break;
-
-				default:
-					throw "fireEvent: Couldn't find an event class for event '" + eventName + "'.";
-					break;
-				}
-
-				var bubbles = true;
-				var event = doc.createEvent(eventClass);
-				event.initEvent(eventName, bubbles, true); // All events created as bubbling and cancelable.
-				event.synthetic = true; // allow detection of synthetic events
-				// The second parameter says go ahead with the default action
-				node.dispatchEvent(event, true);
-			} else  if (node.fireEvent) {
-				// IE-old school style
-				var event = doc.createEventObject();
-				event.synthetic = true; // allow detection of synthetic events
-				node.fireEvent("on" + eventName, event);
-			}
+			var ev = new CustomEvent(type, options.args);
+			el.dispatchEvent(ev);
 		};
 	})();
 
 	var find_parent = function(selector, element)
 	{
+		if(!element) return false;
 		if(match(element, selector)) return element;
 		var par = element.parentNode;
 		return find_parent(selector, par);
@@ -2301,6 +2046,17 @@
 		{
 			name || (name = false);
 			object.bind(ev, fn, name);
+			this._bound_events.push([object, ev, fn]);
+		},
+
+		/**
+		 * bind a event that the controller tracks and unbinds on release or
+		 * that unbinds itself once it fires once
+		 */
+		with_bind_once: function(object, ev, fn, name)
+		{
+			name || (name = false);
+			object.bind_once(ev, fn, name);
 			this._bound_events.push([object, ev, fn]);
 		},
 
@@ -2748,6 +2504,19 @@
 		{
 			options || (options = {});
 
+			// bind all <a>'s
+			var selector = 'a';
+			if(options.selector)
+			{
+				// use specified selector
+				selector = options.selector;
+			}
+			else if(options.exclude_class)
+			{
+				// exclude <a> tags with given classname
+				selector = 'a:not([class~="'+options.exclude_class+'"])';
+			}
+
 			// bind our heroic pushState to the <a> tags we specified. this
 			// hopefully be that LAST event called for any <a> tag because it's
 			// so high up the DOM chain. this means if a composer event wants to
@@ -2756,60 +2525,38 @@
 			{
 				if(e.control || e.shift || e.alt) return;
 
-				var a = Composer.find_parent('a', e.target);
+				var a = Composer.find_parent(selector, e.target);
 				var button = typeof(e.button) != 'undefined' ? e.button : e.event.button;
-
-				if(a.href.match(/^javascript:/)) return false;
-				if(History.emulated.pushState && a.href.replace(/^.*?#/, '') == '')
-				{
-					return false;
-				}
 
 				// don't trap links that are meant to open new windows, and don't
 				// trap middle mouse clicks (or anything more than left click)
 				if(a.target == '_blank' || button > 0) return;
 
-				var curhost = new String(global.location).replace(/[a-z]+:\/\/(.*?)\/.*/i, '$1');
-				var linkhost = a.href.match(/^[a-z]+:\/\//) ? a.href.replace(/[a-z]+:\/\/(.*?)\/.*/i, '$1') : curhost;
-				if(
-					curhost != linkhost ||
-					(typeof(options.do_state_change) == 'function' && !options.do_state_change(a))
-				)
-				{
-					return;
-				}
+				// don't run JS links
+				if(a.href.match(/^javascript:/)) return;
 
-				if(e) e.stop();
+				// this is an <a href="#"> link, ignore it
+				if(History.emulated.pushState && a.href.replace(/^.*?#/, '') == '') return;
+
+				var curhost = global.location.host;
+				var linkhost = a.href.match(/^[a-z]+:\/\//) ? a.href.replace(/[a-z]+:\/\/(.*?)\/.*/i, '$1') : curhost;
+
+				// if we're routing to a different domain/host, don't trap the click
+				if(curhost != linkhost) return;
+
+				// if our do_state_change exists and returns false, bail
+				if(options.do_state_change && !options.do_state_change(a)) return;
+
+				if(e) e.preventDefault();
 
 				var href = a.href.replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
 				if(options.filter_trailing_slash) href = href.replace(/\/$/, '');
 				href = '/'+href;
 
 				this.route(href, {state: options.global_state});
-				return false;
+				return;
 			}.bind(this);
 
-			// build a selector that works for YOU.
-			if(options.selector)
-			{
-				// specific selector......specified. use it.
-				var selector = options.selector;
-			}
-			else
-			{
-				// create a CUSTOM selector tailored to your INDIVIDUAL needs.
-				if(options.exclude_class)
-				{
-					// exclusion classname exists, make sure to not listen to <a>
-					// tags with that class
-					var selector = 'a:not([class~="'+options.exclude_class+'"])';
-				}
-				else
-				{
-					// bind all <a>'s
-					var selector = 'a';
-				}
-			}
 			Composer.add_event(document.body, 'click', route_link, selector);
 		}
 	});

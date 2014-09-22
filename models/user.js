@@ -1,6 +1,5 @@
 var User = Composer.RelationalModel.extend({
 	base_url: '/users',
-	local_table: 'user',
 
 	relations: {
 		personas: {

@@ -304,7 +304,6 @@ var Notes = Composer.Collection.extend({
 			success: function(res) {
 				var notes = res.notes || [];
 				var sort = 0;
-				console.log('notes! ', notes);
 				notes.forEach(function(n) { n._sort = sort++; });
 				this.reset(notes, options);
 				this.trigger('tag-gray', res.tags, options);

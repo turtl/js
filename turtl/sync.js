@@ -26,7 +26,7 @@ Composer.sync = function(method, model, options)
 	switch(method)
 	{
 	case 'read':
-		turtl.remote.send('item:'+method, {table: table, id: model.id()}, opts);
+		turtl.remote.send('sync:ui', {method: method, table: table, id: model.id()}, opts);
 		break;
 	case 'create':
 		// set the CID into the ID field. the API will ignore this field, except
@@ -38,13 +38,13 @@ Composer.sync = function(method, model, options)
 		model._cid = model.cid();
 		modeldata.id = model.cid();
 
-		turtl.remote.send('item:'+method, {table: table, data: modeldata}, opts);
+		turtl.remote.send('sync:ui', {method: method, table: table, data: modeldata}, opts);
 		break;
 	case 'update':
-		turtl.remote.send('item:'+method, {table: table, data: modeldata}, opts)
+		turtl.remote.send('sync:ui', {method: method, table: table, data: modeldata}, opts)
 		break;
 	case 'delete':
-		turtl.remote.send('item:'+method, {table: table, id: model.id()}, opts);
+		turtl.remote.send('sync:ui', {method: method, table: table, id: model.id()}, opts);
 		break;
 	default:
 		throw new SyncError('Bad method passed to Composer.sync: '+ method);
