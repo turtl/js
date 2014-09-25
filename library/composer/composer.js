@@ -13,22 +13,22 @@
  */
 (function() {
 	"use strict";
-	var Composer	=	{};
-	var global	=	typeof(global) != 'undefined' ? global :
+	var Composer = {};
+	var global = typeof(global) != 'undefined' ? global :
 						typeof(window) != 'undefined' ? window : this;
 
 	/**
 	 * You must override this function in your app.
 	 */
-	Composer.sync	=	function(method, model, options) { return options.success(); };
+	Composer.sync = function(method, model, options) { return options.success(); };
 
 	// an option to suppress those annoying warnings when overriding initialize and extend methods
 	Composer.suppress_warnings = false;
 
 	// a closure that returns incrementing integers. these will be unique across
 	// the entire app since only one counter is instantiated
-	Composer.cid	=	(function() {
-		var counter	=	1;
+	Composer.cid = (function() {
+		var counter = 1;
 		return function(inc) { return 'c'+counter++; };
 	})();
 
@@ -74,7 +74,7 @@
 	 * controller to monitor changes on collections of items instead of each item
 	 * individually.
 	 */
-	var Events	=	new Class({
+	var Events = new Class({
 		_events: {},
 		_named_events: {},
 
@@ -102,13 +102,13 @@
 			if(callback_name)
 			{
 				// prepend event type to callback name
-				callback_name	=	ev+':'+callback_name;
+				callback_name = ev+':'+callback_name;
 
 				if(!this._named_events[callback_name])
 				{
 					// assign the callback into the named collection so it can be retrieved
 					// later by name if required.
-					this._named_events[callback_name]	=	callback;
+					this._named_events[callback_name] = callback;
 				}
 				else
 				{
@@ -154,7 +154,7 @@
 		 */
 		trigger: function(ev)
 		{
-			var args	=	Array.prototype.slice.call(arguments, 0);
+			var args = Array.prototype.slice.call(arguments, 0);
 			[ev, 'all'].each(function(type) {
 				if(!this._events[type]) return;
 				Array.clone(this._events[type]).each(function(callback) {
@@ -181,8 +181,8 @@
 			if(typeof(ev) == 'undefined')
 			{
 				// no event passed, unbind everything
-				this._events		=	{};
-				this._named_events	=	{};
+				this._events = {};
+				this._named_events = {};
 				return this;
 			}
 
@@ -197,7 +197,7 @@
 				// no callback specified, remove all events of the given type
 				Object.each(this._named_events, function(cb, ev_key) {
 					// clear out all named events for this event type
-					var match	=	ev_key.substr(0, ev.length + 1);
+					var match = ev_key.substr(0, ev.length + 1);
 					if(ev+':' != match) return;
 					delete this._named_events[ev_key];
 				}, this);
@@ -210,10 +210,10 @@
 				{
 					// load the function we assigned the name to and assign it to "callback",
 					// also removing the named reference after we're done.
-					callback	=	ev+':'+callback;
-					var fn		=	this._named_events[callback];
+					callback = ev+':'+callback;
+					var fn = this._named_events[callback];
 					delete this._named_events[callback];
-					var callback	=	fn;
+					var callback = fn;
 				}
 
 				// remove all callback matches for the event type ev
@@ -228,7 +228,7 @@
 	 * The base class is inherited by models, collections, and controllers. It
 	 * provides some nice common functionality.
 	 */
-	var Base	=	new Class({
+	var Base = new Class({
 		/**
 		 * Track this object's type. Useful for debugging, mainly
 		 */
@@ -255,9 +255,9 @@
 		 */
 		fire_event: function()
 		{
-			var args	=	Array.prototype.slice.call(arguments, 0);
-			var evname	=	args.shift();
-			var options	=	args.shift();
+			var args = Array.prototype.slice.call(arguments, 0);
+			var evname = args.shift();
+			var options = args.shift();
 
 			options || (options = {});
 
@@ -294,13 +294,13 @@
 	 * collections all do this differently, it is up to each to have their own
 	 * extend function and call this one for validation.
 	 */
-	Base.extend	=	function(obj, base)
+	Base.extend = function(obj, base)
 	{
 		obj || (obj = {});
 		base || (base = null);
 		if(obj.initialize && !Composer.suppress_warnings)
 		{
-			var str	=	'You are creating a Composer object with an "initialize" method/' +
+			var str = 'You are creating a Composer object with an "initialize" method/' +
 						'parameter, which is reserved. Unless you know what you\'re doing ' +
 						'(and call this.parent.apply(this, arguments)), please rename ' +
 						'your parameter to something other than "initialize"! Perhaps you' +
@@ -312,7 +312,7 @@
 
 		if(obj.extend && !Composer.suppress_warnings)
 		{
-			var str	=	'You are creating a Composer object with an "extend" method/' +
+			var str = 'You are creating a Composer object with an "extend" method/' +
 						'parameter, which is reserved. Unless you know what you\'re doing ' +
 						'(and call this.parent.apply(this, arguments)), please rename ' +
 						'your parameter to something other than "extend"!';
@@ -334,7 +334,7 @@
 	 * They also tie in with the Composer.sync function to provide a central place
 	 * for saving/updating information with a server.
 	 */
-	var Model	=	new Class({
+	var Model = new Class({
 		Extends: Base,
 		Implements: [Events],
 
@@ -380,7 +380,7 @@
 		initialize: function(data, options)
 		{
 			data || (data = {});
-			var _data	=	{};
+			var _data = {};
 
 			// merge in the defaults/data
 			var merge_fn = function(v, k) { _data[k] = v; };
@@ -388,7 +388,7 @@
 			Object.each(data, merge_fn);
 
 			// assign the unique app id
-			this._cid	=	Composer.cid();
+			this._cid = Composer.cid();
 
 			// set the data into the model (but don't trigger any events)
 			this.set(_data, options);
@@ -408,7 +408,7 @@
 		 */
 		get: function(key, def)
 		{
-			if(typeof(def) == 'undefined') def	=	null;
+			if(typeof(def) == 'undefined') def = null;
 			if(typeof(this.data[key]) == 'undefined')
 			{
 				return def;
@@ -421,7 +421,7 @@
 		 */
 		escape: function(key)
 		{
-			var data	=	this.get(key);
+			var data = this.get(key);
 			if(data == null || typeof(data) != 'string')
 			{
 				return data;
@@ -468,13 +468,13 @@
 
 			if(!options.silent && !this.perform_validation(data, options)) return false;
 
-			var already_changing	=	this.changing;
-			this.changing			=	true;
+			var already_changing = this.changing;
+			this.changing = true;
 			Object.each(data, function(val, key) {
 				if(!Composer.eq(val, this.data[key]))
 				{
-					this.data[key]	=	val;
-					this._changed	=	true;
+					this.data[key] = val;
+					this._changed = true;
 					this.fire_event('change:'+key, options, this, val, options);
 				}
 			}.bind(this));
@@ -482,10 +482,10 @@
 			if(!already_changing && this._changed)
 			{
 				this.fire_event('change', options, this, options, data);
-				this._changed	=	false;
+				this._changed = false;
 			}
 
-			this.changing	=	false;
+			this.changing = false;
 			return this;
 		},
 
@@ -497,15 +497,15 @@
 			if(!(key in this.data)) return this;
 			options || (options = {});
 
-			var obj		=	{};
-			obj[key]	=	void(0);
+			var obj = {};
+			obj[key] = void(0);
 			if(!options.silent && !this.perform_validation(obj, options)) return false;
 
 			delete this.data[key];
-			this._changed	=	true;
+			this._changed = true;
 			this.fire_event('change:'+key, options, this, void 0, options);
 			this.fire_event('change', options, this, options);
-			this._changed	=	false;
+			this._changed = false;
 			return this;
 		},
 
@@ -516,24 +516,24 @@
 		{
 			options || (options = {});
 
-			var old		=	this.data;
-			var obj		=	{};
+			var old = this.data;
+			var obj = {};
 			for(var key in old) obj[key] = void(0);
 			if(!options.silent && !this.perform_validation(obj, options)) return false;
 
-			this.data	=	{};
+			this.data = {};
 			if(!options.silent)
 			{
 				for(var key in old)
 				{
-					this._changed	=	true;
+					this._changed = true;
 					this.fire_event('change'+key, options, this, void 0, options);
 				}
 
 				if(this._changed)
 				{
 					this.fire_event('change', options, this, options);
-					this._changed	=	false;
+					this._changed = false;
 				}
 			}
 			return this;
@@ -546,13 +546,13 @@
 		{
 			options || (options = {});
 
-			var success	=	options.success;
-			options.success	=	function(res)
+			var success = options.success;
+			options.success = function(res)
 			{
 				this.set(this.parse(res), options);
 				if(success) success(this, res);
 			}.bind(this);
-			options.error	=	wrap_error(options.error ? options.error.bind(this) : null, this, options).bind(this);
+			options.error = wrap_error(options.error ? options.error.bind(this) : null, this, options).bind(this);
 			return (this.sync || Composer.sync).call(this, 'read', this, options);
 		},
 
@@ -566,13 +566,13 @@
 
 			if(!this.perform_validation(this.data, options)) return false;
 
-			var success	=	options.success;
-			options.success	=	function(res)
+			var success = options.success;
+			options.success = function(res)
 			{
 				if(!this.set(this.parse(res), options)) return false;
 				if(success) success(this, res);
 			}.bind(this);
-			options.error	=	wrap_error(options.error ? options.error.bind(this) : null, this, options).bind(this);
+			options.error = wrap_error(options.error ? options.error.bind(this) : null, this, options).bind(this);
 			return (this.sync || Composer.sync).call(this, (this.is_new() ? 'create' : 'update'), this, options);
 		},
 
@@ -583,8 +583,8 @@
 		{
 			options || (options = {});
 
-			var success	=	options.success;
-			options.success	=	function(res)
+			var success = options.success;
+			options.success = function(res)
 			{
 				this.fire_event('destroy', options, this, this.collections, options);
 				if(success) success(this, res);
@@ -593,7 +593,7 @@
 			// if the model isn't saved yet, just mark it a success
 			if(this.is_new() && !options.force) return options.success();
 
-			options.error	=	wrap_error(options.error ? options.error.bind(this) : null, this, options).bind(this);
+			options.error = wrap_error(options.error ? options.error.bind(this) : null, this, options).bind(this);
 			return (this.sync || Composer.sync).call(this, 'delete', this, options);
 		},
 
@@ -614,7 +614,7 @@
 		{
 			if(typeof(no_cid) != 'boolean') no_cid = false;
 
-			var id	=	this.get(this.id_key);
+			var id = this.get(this.id_key);
 			if(id) return id;
 			if(no_cid) return false;
 			return this.cid();
@@ -662,7 +662,7 @@
 		{
 			if(typeof(this.validate) != 'function') return true;
 
-			var error	=	this.validate(data, options);
+			var error = this.validate(data, options);
 			if(error)
 			{
 				if(options.error)
@@ -684,7 +684,7 @@
 		 */
 		highest_priority_collection: function()
 		{
-			var collections	=	shallow_array_clone(this.collections);
+			var collections = shallow_array_clone(this.collections);
 			collections.sort( function(a, b) { return b.priority - a.priority; } );
 			return collections.length ? collections[0] : false;
 		},
@@ -708,25 +708,25 @@
 
 				// We need to check that there actually IS a collection...
 				if (collection)
-					var base_url	=	collection.get_url();
+					var base_url = collection.get_url();
 				else
-					var base_url	=	'';
+					var base_url = '';
 			}
 
 			// create a /[base url]/[model id] url.
-			var id	=	this.id(true);
+			var id = this.id(true);
 			if(id) id = '/'+id;
 			else id = '';
-			var url	=	base_url ? '/' + base_url.replace(/^\/+/, '').replace(/\/+$/, '') + id : id;
+			var url = base_url ? '/' + base_url.replace(/^\/+/, '').replace(/\/+$/, '') + id : id;
 			return url;
 
 		}
 	});
-	Model.extend	=	function(obj, base)
+	Model.extend = function(obj, base)
 	{
 		obj || (obj = {});
 		base || (base = this);
-		obj	=	Base.extend.call(this, obj, base);
+		obj = Base.extend.call(this, obj, base);
 		return this._do_extend(obj, base);
 	};
 
@@ -741,7 +741,7 @@
 	 * notified, and anybody listinging to the collection (ie, a controller) can
 	 * react to that event (re-display the view, for instance).
 	 */
-	var Collection	=	new Class({
+	var Collection = new Class({
 		Extends: Base,
 		Implements: [Events],
 
@@ -779,18 +779,18 @@
 			params || (params = {});
 			for(var x in params)
 			{
-				this[x]	=	params[x];
+				this[x] = params[x];
 			}
 
 			// assign the unique app id
-			this._cid	=	Composer.cid();
+			this._cid = Composer.cid();
 
 			// allow Collection.model to be a string so load-order dependencies can be
 			// kept to a minimum. here, we convert the string to an object on collection
 			// instantiation and store it back into Collection.model.
 			//
 			// NOTE: this happens before the initial reset =]
-			this.model	=	typeof(this.model) == 'string' ? global[this.model] : this.model;
+			this.model = typeof(this.model) == 'string' ? global[this.model] : this.model;
 
 			if(models)
 			{
@@ -821,9 +821,9 @@
 		toJSONAsync: function(finish_cb)
 		{
 			// clone models
-			var models	=	this.models().slice(0);
-			var results	=	[];
-			var local_finish_cb	=	function(obj)
+			var models = this.models().slice(0);
+			var results = [];
+			var local_finish_cb = function(obj)
 			{
 				results.push(obj);
 				if(results.length >= models.length)
@@ -868,20 +868,20 @@
 			options || (options = {});
 
 			// if we are passing raw data, create a new model from data
-			var model	=	data.__composer_type == 'model' ? data : new this.model(data, options);
+			var model = data.__composer_type == 'model' ? data : new this.model(data, options);
 
 			// reference this collection to the model
 			if(!model.collections.contains(this))
 			{
 				model.collections.push(this);
-				options.is_new	=	true;
+				options.is_new = true;
 			}
 
 			if(this.sortfn)
 			{
 				// if we have a sorting function, get the index the model should exist at
 				// and add it to that position
-				var index	=	options.at ? parseInt(options.at) : this.sort_index(model);
+				var index = options.at ? parseInt(options.at) : this.sort_index(model);
 				this._models.splice(index, 0, model);
 			}
 			else
@@ -916,7 +916,7 @@
 			model.collections.erase(this);
 
 			// save to trigger change event if needed
-			var num_rec	=	this._models.length;
+			var num_rec = this._models.length;
 
 			// remove hte model
 			this._models.erase(model);
@@ -939,11 +939,11 @@
 		{
 			options || (options = {});
 
-			var existing	=	this.find_by_id(model.id(), options);
+			var existing = this.find_by_id(model.id(), options);
 			if(existing)
 			{
 				// reposition the model if necessary
-				var existing_idx	=	this.index_of(existing);
+				var existing_idx = this.index_of(existing);
 				if(typeof(options.at) == 'number' && existing_idx != options.at)
 				{
 					this._models.splice(existing_idx, 1);
@@ -971,7 +971,7 @@
 			options || (options = {});
 
 			// save to trigger change event if needed
-			var num_rec	=	this._models.length;
+			var num_rec = this._models.length;
 
 			/*
 			 * AL - What was I thinking?
@@ -989,7 +989,7 @@
 			*/
 
 			this.remove(this._models, options);
-			this._models	=	[];
+			this._models = [];
 
 			// if the number actually change, trigger our change event
 			if(this._models.length != num_rec)
@@ -1139,16 +1139,16 @@
 		{
 			if(sortfn)
 			{
-				var models	=	shallow_array_clone(this.models()).sort(sortfn);
+				var models = shallow_array_clone(this.models()).sort(sortfn);
 			}
 			else
 			{
-				var models	=	this.models();
+				var models = this.models();
 			}
 
 			for(var i = 0; i < models.length; i++)
 			{
-				var rec	=	models[i];
+				var rec = models[i];
 				if(callback(rec))
 				{
 					return rec;
@@ -1202,7 +1202,7 @@
 		 */
 		index_of: function(model_or_id)
 		{
-			var id	=	model_or_id.__composer_type == 'model' ? model_or_id.id() : model_or_id;
+			var id = model_or_id.__composer_type == 'model' ? model_or_id.id() : model_or_id;
 			for(var i = 0; i < this._models.length; i++)
 			{
 				if(this._models[i].id() == id)
@@ -1255,15 +1255,15 @@
 		{
 			if(typeof(selector) == 'object')
 			{
-				var qry	=	[];
+				var qry = [];
 				for(var key in selector)
 				{
-					var val	=	selector[key];
+					var val = selector[key];
 					if(typeof(val) == 'string') val = '"'+val+'"';
 					qry.push('data.get("'+key+'") == ' + val);
 				}
-				var fnstr	=	'if(' + qry.join('&&') + ') { return true; }';
-				selector	=	new Function('data', fnstr);
+				var fnstr = 'if(' + qry.join('&&') + ') { return true; }';
+				selector = new Function('data', fnstr);
 			}
 			return this._models.filter(selector);
 		},
@@ -1287,7 +1287,7 @@
 		 */
 		first: function(n)
 		{
-			var models	=	this.models();
+			var models = this.models();
 			return (typeof(n) != 'undefined' && parseInt(n) != 0) ? models.slice(0, n) : models[0];
 		},
 
@@ -1297,7 +1297,7 @@
 		 */
 		last: function(n)
 		{
-			var models	=	this.models();
+			var models = this.models();
 			return (typeof(n) != 'undefined' && parseInt(n) != 0) ? models.slice(models.length - n) : models[models.length - 1];
 		},
 
@@ -1307,7 +1307,7 @@
 		 */
 		at: function(n)
 		{
-			var model	=	this._models[n];
+			var model = this._models[n];
 			return (model || false);
 		},
 
@@ -1318,13 +1318,13 @@
 		{
 			options || (options = {});
 
-			var success	=	options.success;
-			options.success	=	function(res)
+			var success = options.success;
+			options.success = function(res)
 			{
 				this.reset(this.parse(res), options);
 				if(success) success(this, res);
 			}.bind(this);
-			options.error	=	wrap_error(options.error ? options.error.bind(this) : null, this, options).bind(this);
+			options.error = wrap_error(options.error ? options.error.bind(this) : null, this, options).bind(this);
 			return (this.sync || Composer.sync).call(this, 'read', this, options);
 		},
 
@@ -1360,11 +1360,11 @@
 			this.trigger.apply(this, arguments);
 		}
 	});
-	Collection.extend	=	function(obj, base)
+	Collection.extend = function(obj, base)
 	{
 		obj || (obj = {});
 		base || (base = this);
-		obj	=	Base.extend.call(this, obj, base);
+		obj = Base.extend.call(this, obj, base);
 		return this._do_extend(obj, base);
 	};
 
@@ -1374,7 +1374,7 @@
 	 * Controllers bind events to your data objects and update views when the data
 	 * changes. Controllers are also responsible for rendering views.
 	 */
-	var Controller	=	new Class({
+	var Controller = new Class({
 		Extends: Base,
 		Implements: [Events],
 
@@ -1414,11 +1414,11 @@
 
 			for(var x in params)
 			{
-				this[x]	=	params[x];
+				this[x] = params[x];
 			}
 
 			// assign the unique app id
-			this._cid	=	Composer.cid();
+			this._cid = Composer.cid();
 
 			// make sure we have an el
 			this._ensure_el();
@@ -1483,7 +1483,7 @@
 			// make sure we have an el
 			this._ensure_el();
 
-			var container	=	typeof(this.inject) == 'string' ?
+			var container = typeof(this.inject) == 'string' ?
 									document.getElement(this.inject):
 									$(this.inject);
 			if(!container)
@@ -1532,7 +1532,7 @@
 				}
 			}
 
-			this.el	=	false;
+			this.el = false;
 			this.fire_event('release', options, this);
 
 			// remove all events from controller
@@ -1549,7 +1549,7 @@
 			{
 				element.replaces(this.el);
 			}
-			this.el	=	element;
+			this.el = element;
 
 			this.refresh_elements();
 			this.delegate_events();
@@ -1566,17 +1566,17 @@
 			// setup the events given
 			for(var ev in this.events)
 			{
-				var fn			=	this[this.events[ev]];
+				var fn = this[this.events[ev]];
 				if(typeof(fn) != 'function')
 				{
 					// easy, easy, whoa, you gotta calm down there, chuck
 					continue;
 				}
-				fn	=	fn.bind(this);
+				fn = fn.bind(this);
 
-				var match		=	ev.match(this.event_splitter);
-				var evname		=	match[1].trim();
-				var selector	=	match[2].trim();
+				var match = ev.match(this.event_splitter);
+				var evname = match[1].trim();
+				var selector = match[2].trim();
 
 				if(selector == '')
 				{
@@ -1598,30 +1598,30 @@
 			// setup given elements as instance variables
 			for(var selector in this.elements)
 			{
-				var iname	=	this.elements[selector];
-				this[iname]	=	this.el.getElement(selector);
+				var iname = this.elements[selector];
+				this[iname] = this.el.getElement(selector);
 			}
 		}
 	});
-	Controller.extend	=	function(obj, base)
+	Controller.extend = function(obj, base)
 	{
 		obj || (obj = {});
 		base || (base = this);
-		obj	=	Base.extend.call(this, obj, base);
+		obj = Base.extend.call(this, obj, base);
 
 		// have to do some annoying trickery here to get the actual events/elements
-		var base_events		=	base.events || {};
-		var base_elements	=	base.elements || {};
+		var base_events = base.events || {};
+		var base_elements = base.elements || {};
 
 		// extend the base object's events and elements
 		// NOTE: the first {} in the object is there because the merge is destructive
 		//       to the first argument (we don't want that).
-		obj.events		=	Object.merge({}, base_events, obj.events);
-		obj.elements	=	Object.merge({}, base_elements, obj.elements);
+		obj.events = Object.merge({}, base_events, obj.events);
+		obj.elements = Object.merge({}, base_elements, obj.elements);
 
-		var cls			=	this._do_extend(obj, base);
-		cls.events		=	obj.events;
-		cls.elements	=	obj.elements;
+		var cls = this._do_extend(obj, base);
+		cls.events = obj.events;
+		cls.elements = obj.elements;
 		return cls;
 	};
 
@@ -1637,7 +1637,7 @@
 	 *
 	 *   https://github.com/balupton/History.js/
 	 */
-	var Router	=	new Class({
+	var Router = new Class({
 		Implements: [Options, Events],
 
 		/**
@@ -1667,7 +1667,7 @@
 		{
 			this.setOptions(options);
 
-			this.routes	=	routes;
+			this.routes = routes;
 			this.register_callback(this._do_route.bind(this));
 
 			// in case History.js isn't loaded
@@ -1687,8 +1687,8 @@
 			else if(this.options.hash_fallback)
 			{
 				// load the initial hash value
-				var path	=	window.location.pathname;
-				var hash	=	path == '' || path == '/' ? this.cur_path() : path;
+				var path = window.location.pathname;
+				var hash = path == '' || path == '/' ? this.cur_path() : path;
 
 				// if redirect_initial is true, then whatever page a user lands on, redirect
 				// them to the hash version, ie
@@ -1701,7 +1701,7 @@
 				// it normally
 				if(this.options.redirect_initial && !(hash == '/' || hash == ''))
 				{
-					global.location	=	'/#!' + hash;
+					global.location = '/#!' + hash;
 				}
 
 				// SUCK ON THAT, HISTORY.JS!!!!
@@ -1762,9 +1762,9 @@
 		 */
 		get_param: function(key)
 		{
-			key			=	key.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
-			var regex	=	new RegExp("[\\?&]" + key + "=([^&#]*)");
-			var results	=	regex.exec(location.search);
+			key = key.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+			var regex = new RegExp("[\\?&]" + key + "=([^&#]*)");
+			var results = regex.exec(location.search);
 			return results == null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
 		},
 
@@ -1782,8 +1782,8 @@
 			options || (options = {});
 			options.state || (options.state = {});
 
-			var href	=	'/' + url.trim().replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
-			var old		=	this.cur_path();
+			var href = '/' + url.trim().replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
+			var old = this.cur_path();
 			if(old == href)
 			{
 				if(History.enabled)
@@ -1810,11 +1810,11 @@
 				}
 				else if(this.options.hash_fallback)
 				{
-					global.location	=	'/#!'+href;
+					global.location = '/#!'+href;
 				}
 				else
 				{
-					global.location	=	href;
+					global.location = href;
 				}
 			}
 		},
@@ -1835,22 +1835,22 @@
 			// allow passing in of routes manually, otherwise default to internal route table
 			routes || (routes = this.routes);
 
-			var routematch	=	this.find_matching_route(url, routes);
+			var routematch = this.find_matching_route(url, routes);
 			if(!routematch) return this.options.on_failure({url: url, route: false, handler_exists: false, action_exists: false});
 
-			var route	=	routematch.route;
-			var match	=	routematch.args;
+			var route = routematch.route;
+			var match = routematch.args;
 
-			var obj	=	route[0];
-			var action	=	route[1];
+			var obj = route[0];
+			var action = route[1];
 			if (typeof(obj) != 'object') {
 				if(!global[obj]) return this.options.on_failure({url: url, route: route, handler_exists: false, action_exists: false});
-				var obj		=	global[obj];
+				var obj = global[obj];
 			}
 			if(!obj[action] || typeof(obj[action]) != 'function') return this.options.on_failure({url: url, route: route, handler_exists: true, action_exists: false});
-			var args	=	match;
+			var args = match;
 			args.shift();
-			this._last_url	=	url;	// save the last successfully routed url
+			this._last_url = url;	// save the last successfully routed url
 			obj[action].apply(obj, args);
 		},
 
@@ -1860,17 +1860,17 @@
 		 */
 		find_matching_route: function(url, routes)
 		{
-			var url		=	'/' + url.replace(/^!?\//g, '');
-			var route	=	false;
-			var match	=	[];
-			var regex	=	null;
+			var url = '/' + url.replace(/^!?\//g, '');
+			var route = false;
+			var match = [];
+			var regex = null;
 			for(var re in routes)
 			{
-				regex	=	new RegExp('^' + re.replace(/\//g, '\\\/') + '$');
-				match	=	regex.exec(url);
+				regex = new RegExp('^' + re.replace(/\//g, '\\\/') + '$');
+				match = regex.exec(url);
 				if(match)
 				{
-					route	=	routes[re];
+					route = routes[re];
 					break;
 				}
 			}
@@ -1884,7 +1884,7 @@
 		 */
 		setup_routes: function(routes)
 		{
-			this.routes	=	routes;
+			this.routes = routes;
 		},
 
 		/**
@@ -1895,7 +1895,7 @@
 		{
 			if(path && path.stop != undefined) path = false;
 			path || (path = this.cur_path());
-			force	=	!!force;
+			force = !!force;
 
 			// check if we are routing to the same exact page. if we are, return
 			// (unless we force the route)
@@ -1905,7 +1905,7 @@
 				return false;
 			}
 
-			this.last_path	=	path;
+			this.last_path = path;
 
 			// remove querystring from the url if we have set the Router to
 			// ignore it. Note that this happens after the same-page check since
@@ -1917,9 +1917,9 @@
 			// a preroute callback to "rewrite" the URL such that the address
 			// bar stays the same, but the actual route loaded is for the
 			// new, rewritten URL.
-			path			=	new String(path);
-			path.rewrite	=	function(str) {
-				this._string_value	=	str;
+			path = new String(path);
+			path.rewrite = function(str) {
+				this._string_value = str;
 			}.bind(path);
 			path.rewrite(null);
 			this.trigger('preroute', path);
@@ -1950,7 +1950,7 @@
 			if(options.selector)
 			{
 				// specific selector......specified. use it.
-				var selector	=	options.selector;
+				var selector = options.selector;
 			}
 			else
 			{
@@ -1959,12 +1959,12 @@
 				{
 					// exclusion classname exists, make sure to not listen to <a>
 					// tags with that class
-					var selector	=	'a:not([class~="'+options.exclude_class+'"])';
+					var selector = 'a:not([class~="'+options.exclude_class+'"])';
 				}
 				else
 				{
 					// bind all <a>'s
-					var selector	=	'a';
+					var selector = 'a';
 				}
 			}
 
@@ -1982,15 +1982,15 @@
 			$(document.body).addEvent('click:relay('+selector+')', function(e) {
 				if(e.control || e.shift || e.alt) return;
 
-				var a		=	next_tag_up('a', e.target);
-				var button	=	typeof(e.button) != 'undefined' ? e.button : e.event.button;
+				var a = next_tag_up('a', e.target);
+				var button = typeof(e.button) != 'undefined' ? e.button : e.event.button;
 
 				// don't trap links that are meant to open new windows, and don't
 				// trap middle mouse clicks (or anything more than left click)
 				if(a.target == '_blank' || button > 0) return;
 
-				var curhost		=	new String(global.location).replace(/[a-z]+:\/\/(.*?)\/.*/i, '$1');
-				var linkhost	=	a.href.match(/^[a-z]+:\/\//) ? a.href.replace(/[a-z]+:\/\/(.*?)\/.*/i, '$1') : curhost;
+				var curhost = new String(global.location).replace(/[a-z]+:\/\/(.*?)\/.*/i, '$1');
+				var linkhost = a.href.match(/^[a-z]+:\/\//) ? a.href.replace(/[a-z]+:\/\/(.*?)\/.*/i, '$1') : curhost;
 				if(
 					curhost != linkhost ||
 					(typeof(options.do_state_change) == 'function' && !options.do_state_change(a))
@@ -2003,20 +2003,20 @@
 
 				if(History.enabled)
 				{
-					var href	=	a.href.replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
+					var href = a.href.replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
 					if(options.filter_trailing_slash) href = href.replace(/\/$/, '');
-					href	=	'/'+href;
+					href = '/'+href;
 
 					History.pushState(options.global_state, '', href);
 					return false;
 				}
 				else
 				{
-					var href	=	a.href.replace(/^[a-z]+:\/\/.*?\//, '');
+					var href = a.href.replace(/^[a-z]+:\/\/.*?\//, '');
 					if(options.filter_trailing_slash) href = href.replace(/\/$/, '');
-					href	=	'/#!/'+href;
+					href = '/#!/'+href;
 
-					global.location	=	href;
+					global.location = href;
 				}
 			});
 		}
@@ -2061,7 +2061,7 @@
 	};
 
 	// wraps error callbacks for syncing functions
-	var wrap_error	=	function(callback, model, options)
+	var wrap_error = function(callback, model, options)
 	{
 		return function(resp)
 		{
@@ -2077,7 +2077,7 @@
 	};
 
 	// do a shallow clone of an array
-	var shallow_array_clone	=	function(from)
+	var shallow_array_clone = function(from)
 	{
 		return from.slice(0);
 	};
@@ -2090,7 +2090,7 @@
 	// other _ dependencies. Writing our own is a bit easier.
 	//
 	// This is a work in progress.
-	var eq	=	function(a, b)
+	var eq = function(a, b)
 	{
 		if ( a === b ) return true;
 		if(a instanceof Function) return false;
@@ -2127,7 +2127,7 @@
 		}
 		return true;
 	};
-	Composer.eq	=	eq;
+	Composer.eq = eq;
 
 
 	/**
@@ -2135,13 +2135,13 @@
 	 * Extend: Composer.Model) for Composer objects (and objects that extend
 	 * them).
 	 */
-	Composer._export	=	function(exports)
+	Composer._export = function(exports)
 	{
 		exports.each(function(name) {
 			// TODO: eliminate eval here
-			name		=	name.replace(/[^a-z]/gi, '');	// make eval not so bad for now
-			var _do_try	=	function(classname) { return 'try{'+classname+'}catch(e){false}'; };
-			var cls		=	eval(_do_try(name)) || eval(_do_try('Composer.'+name));
+			name = name.replace(/[^a-z]/gi, '');	// make eval not so bad for now
+			var _do_try = function(classname) { return 'try{'+classname+'}catch(e){false}'; };
+			var cls = eval(_do_try(name)) || eval(_do_try('Composer.'+name));
 			if(!cls) return false;
 
 			// This function creates a new class with the given attributes that
@@ -2150,24 +2150,24 @@
 			//
 			// The resulting class is also assigned extend/_do_extend functions
 			// (which are added to the class, NOT insteances of the class).
-			var do_extend	=	function(obj, base)
+			var do_extend = function(obj, base)
 			{
-				var classobj		=	Object.merge({Extends: base}, obj);
-				var newclass		=	new Class(classobj);
-				newclass.extend		=	base.extend;
-				newclass._do_extend	=	do_extend;
+				var classobj = Object.merge({Extends: base}, obj);
+				var newclass = new Class(classobj);
+				newclass.extend = base.extend;
+				newclass._do_extend = do_extend;
 				return newclass;
 			};
-			cls._do_extend	=	do_extend;
-			Composer[name]	=	cls;
+			cls._do_extend = do_extend;
+			Composer[name] = cls;
 		}, this);
 	}.bind(this);
 
 	Composer._export(['Model', 'Collection', 'Controller']);
 
-	Composer.Base	=	Base;
-	Composer.Events	=	Events;
-	Composer.Router	=	Router;
+	Composer.Base = Base;
+	Composer.Events = Events;
+	Composer.Router = Router;
 
-	global.Composer	=	Composer;
+	global.Composer = Composer;
 })();

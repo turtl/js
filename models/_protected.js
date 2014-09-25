@@ -58,7 +58,7 @@ var Protected = Composer.RelationalModel.extend({
 	 */
 	detect_old_format: function(data)
 	{
-		var raw	=	data.match(/:i[0-9a-f]{32}$/) ? data : tcrypt.from_base64(data);
+		var raw = data.match(/:i[0-9a-f]{32}$/) ? data : tcrypt.from_base64(data);
 		return raw;
 	},
 
@@ -70,10 +70,10 @@ var Protected = Composer.RelationalModel.extend({
 	deserialize: function(data, parentobj)
 	{
 		if(!this.key) return false;
-		var raw			=	this.detect_old_format(data);
+		var raw = this.detect_old_format(data);
 		try
 		{
-			var decrypted	=	tcrypt.decrypt(this.key, raw);
+			var decrypted = tcrypt.decrypt(this.key, raw);
 		}
 		catch(e)
 		{
@@ -88,7 +88,7 @@ var Protected = Composer.RelationalModel.extend({
 
 		try
 		{
-			var obj			=	JSON.decode(decrypted);
+			var obj = JSON.decode(decrypted);
 		}
 		catch(e)
 		{
@@ -107,13 +107,13 @@ var Protected = Composer.RelationalModel.extend({
 	serialize: function(data, parentobj)
 	{
 		if(!this.key) return false;
-		var json	=	JSON.encode(data);
+		var json = JSON.encode(data);
 		// TODO: crypto: investigate prefixing/suffixing padding with random
 		// bytes. Should be easy enough to filter out when deserializing (since
 		// it's always JSON), but would give an attacker less data about the
 		// payload (it wouldn't ALWAYS start with "{")
-		var encrypted	=	tcrypt.encrypt(this.key, json);
-		encrypted		=	tcrypt.to_base64(encrypted);
+		var encrypted = tcrypt.encrypt(this.key, json);
+		encrypted = tcrypt.to_base64(encrypted);
 		return encrypted;
 	},
 
@@ -122,10 +122,10 @@ var Protected = Composer.RelationalModel.extend({
 	 */
 	decrypt_key: function(decrypting_key, encrypted_key)
 	{
-		var raw			=	this.detect_old_format(encrypted_key);
+		var raw = this.detect_old_format(encrypted_key);
 		try
 		{
-			var decrypted	=	tcrypt.decrypt(decrypting_key, raw, {raw: true});
+			var decrypted = tcrypt.decrypt(decrypting_key, raw, {raw: true});
 		}
 		catch(e)
 		{
@@ -140,8 +140,8 @@ var Protected = Composer.RelationalModel.extend({
 	 */
 	encrypt_key: function(key, key_to_encrypt)
 	{
-		var encrypted	=	tcrypt.encrypt(key, key_to_encrypt);
-		encrypted		=	tcrypt.to_base64(encrypted);
+		var encrypted = tcrypt.encrypt(key, key_to_encrypt);
+		encrypted = tcrypt.to_base64(encrypted);
 		return encrypted;
 	},
 
@@ -172,9 +172,9 @@ var Protected = Composer.RelationalModel.extend({
 		// NOTE: don't use `arguments` here since we need to explicitely pass in
 		// our obj to the parent function
 		options || (options = {});
-		var _body	=	obj[this.body_key];
+		var _body = obj[this.body_key];
 		delete obj[this.body_key];
-		var ret		=	this.parent.apply(this, [obj, options]);
+		var ret = this.parent.apply(this, [obj, options]);
 		if(_body != undefined) obj[this.body_key] = _body;
 		if(!options.ignore_body) this.process_body(obj, options);
 		return ret;
@@ -190,7 +190,7 @@ var Protected = Composer.RelationalModel.extend({
 	{
 		options || (options = {});
 
-		var _body	=	obj[this.body_key];
+		var _body = obj[this.body_key];
 		if(!_body) return false;
 
 		if(!this.ensure_key_exists(obj.keys)) return false;
@@ -198,16 +198,16 @@ var Protected = Composer.RelationalModel.extend({
 		if(typeOf(_body) == 'string')
 		{
 			// decrypt/deserialize the body
-			_body	=	this.deserialize(_body, obj);
+			_body = this.deserialize(_body, obj);
 		}
 
 		if(typeOf(_body) == 'object')
 		{
 			this.set(_body, Object.merge({ignore_body: true}, options));
 			Object.each(_body, function(v, k) {
-				var _body	=	this.get('_body');
-				var set		=	{};
-				set[k]		=	v;
+				var _body = this.get('_body');
+				var set = {};
+				set[k] = v;
 				_body.set(set);
 			}.bind(this));
 		}
@@ -222,13 +222,13 @@ var Protected = Composer.RelationalModel.extend({
 		options || (options = {});
 
 		// grab the normal serialization
-		var data	=	this.parent();
-		var _body	=	{};
-		var newdata	=	{};
+		var data = this.parent();
+		var _body = {};
+		var newdata = {};
 
 		// detect if we're even using encryption (on by default). it's useful to
 		// disable decryption when serializing a model to a view.
-		var disable_encryption	=	window._toJSON_disable_protect;
+		var disable_encryption = window._toJSON_disable_protect;
 
 		// just return normally if encryption is disabled (no need to do
 		// anything special)
@@ -242,12 +242,12 @@ var Protected = Composer.RelationalModel.extend({
 			if(this.public_fields.contains(k))
 			{
 				// public field, store it in our main return container
-				newdata[k]	=	v;
+				newdata[k] = v;
 			}
 			else if(this.private_fields.contains(k))
 			{
 				// private field, store it in protected container
-				_body[k]	=	v;
+				_body[k] = v;
 			}
 		}.bind(this));
 
@@ -255,14 +255,14 @@ var Protected = Composer.RelationalModel.extend({
 		// the encrypted body
 		if(this.raw_data)
 		{
-			newdata[this.body_key]	=	this.get(this.body_key, false);
+			newdata[this.body_key] = this.get(this.body_key, false);
 			return newdata;
 		}
 
 		// serialize the body (encrypted)
-		var encbody	=	this.serialize(_body, newdata, options);
+		var encbody = this.serialize(_body, newdata, options);
 
-		newdata[this.body_key]	=	encbody;
+		newdata[this.body_key] = encbody;
 		return newdata;
 	},
 
@@ -274,9 +274,9 @@ var Protected = Composer.RelationalModel.extend({
 	clone: function()
 	{
 		window._toJSON_disable_protect = true;
-		var copy	=	this.parent.apply(this, arguments);
+		var copy = this.parent.apply(this, arguments);
 		window._toJSON_disable_protect = false;
-		copy.key	=	this.key;
+		copy.key = this.key;
 		return copy;
 	},
 
@@ -324,35 +324,35 @@ var Protected = Composer.RelationalModel.extend({
 		if(search.u && typeOf(search.u) != 'array') search.u = [search.u];
 		search.u.push({id: turtl.user.id(), k: turtl.user.get_key()});
 
-		var search_keys		=	Object.keys(search);
-		var encrypted_key	=	false;
-		var decrypting_key	=	false;
+		var search_keys = Object.keys(search);
+		var encrypted_key = false;
+		var decrypting_key = false;
 
 		for(x in keys)
 		{
-			var key		=	keys[x];
+			var key = keys[x];
 			if(!key || !key.k) continue;
-			var enckey	=	key.k;
+			var enckey = key.k;
 			delete(key.k);
-			var match	=	false;
+			var match = false;
 			Object.each(key, function(id, type) {
 				if(encrypted_key) return;
 				if(search[type] && search[type].id && search[type].id == id)
 				{
-					encrypted_key	=	enckey;
-					decrypting_key	=	search[type].k;
+					encrypted_key = enckey;
+					decrypting_key = search[type].k;
 				}
 				else if(typeOf(search[type] == 'array'))
 				{
-					var entries	=	search[type];
+					var entries = search[type];
 					for(x in entries)
 					{
-						var entry	=	entries[x];
+						var entry = entries[x];
 						if(!entry.k || !entry.id) return;
 						if(entry.id == id)
 						{
-							encrypted_key	=	enckey;
-							decrypting_key	=	entry.k;
+							encrypted_key = enckey;
+							decrypting_key = entry.k;
 							break;
 						}
 					}
@@ -361,16 +361,16 @@ var Protected = Composer.RelationalModel.extend({
 			if(encrypted_key) break;
 		}
 
-		var key	=	false;
+		var key = false;
 		if(decrypting_key && encrypted_key)
 		{
-			key	=	this.decrypt_key(decrypting_key, encrypted_key);
+			key = this.decrypt_key(decrypting_key, encrypted_key);
 		}
 
 		// if we didn't find our key, check the user's data
 		if(!key)
 		{
-			key	=	turtl.profile.get('keychain').find_key(this.id());
+			key = turtl.profile.get('keychain').find_key(this.id());
 		}
 
 		return key;
@@ -410,7 +410,7 @@ var Protected = Composer.RelationalModel.extend({
 
 		var keys = [];
 		members.each(function(m) {
-			m	=	Object.clone(m);
+			m = Object.clone(m);
 			var key = m.k;
 			var enc = this.encrypt_key(key, this.key).toString();
 			m.k = enc;
@@ -446,7 +446,7 @@ var ProtectedThreaded = Protected.extend({
 		this.workers.each(function(worker) {
 			if(worker) worker.terminate();
 		});
-		this.workers	=	[];
+		this.workers = [];
 
 		// call Model.clear() (or whoever is next in the call chain)
 		return this.parent.apply(this, arguments);
@@ -461,10 +461,10 @@ var ProtectedThreaded = Protected.extend({
 		if(!this.key) return false;
 
 		// generate a random seed for sjcl
-		var seed	=	new Uint32Array(32);
+		var seed = new Uint32Array(32);
 		window.crypto.getRandomValues(seed);
 
-		var worker	=	new Worker(window._base_url + '/library/tcrypt.thread.js');
+		var worker = new Worker(window._base_url + '/library/tcrypt.thread.js');
 		this.workers.push(worker);
 		worker.postMessage({
 			cmd: 'decrypt',
@@ -472,10 +472,10 @@ var ProtectedThreaded = Protected.extend({
 			seed: seed
 		});
 		worker.addEventListener('message', function(e) {
-			var res		=	e.data;
+			var res = e.data;
 			if(res.type != 'success')
 			{
-				var dec	=	false;
+				var dec = false;
 				log.error('tcrypt.thread: err: ', res, e.stack);
 			}
 			else
@@ -485,12 +485,12 @@ var ProtectedThreaded = Protected.extend({
 				// new object)
 				if(this.private_fields.length == 1)
 				{
-					var dec	=	{};
-					dec[this.private_fields[0]]	=	res.data;
+					var dec = {};
+					dec[this.private_fields[0]] = res.data;
 				}
 				else
 				{
-					var dec	=	JSON.parse(res.data);
+					var dec = JSON.parse(res.data);
 				}
 			}
 			this.trigger('deserialize', dec);
@@ -498,7 +498,7 @@ var ProtectedThreaded = Protected.extend({
 
 			// got a response, clean up
 			worker.terminate();
-			this.workers	=	this.workers.erase(worker);
+			this.workers = this.workers.erase(worker);
 		}.bind(this));
 	},
 
@@ -511,21 +511,21 @@ var ProtectedThreaded = Protected.extend({
 		if(!this.key) return false;
 
 		// generate a random seed for sjcl
-		var seed	=	new Uint32Array(32);
+		var seed = new Uint32Array(32);
 		window.crypto.getRandomValues(seed);
 
-		var worker	=	new Worker(window._base_url + '/library/tcrypt.thread.js');
+		var worker = new Worker(window._base_url + '/library/tcrypt.thread.js');
 		this.workers.push(worker);
 
 		// if we only have 1 (one) private field, forgo JSON serialization and
 		// instead just encrypt that field directly.
 		if(this.private_fields.length == 1)
 		{
-			var enc_data	=	data[this.private_fields[0]];
+			var enc_data = data[this.private_fields[0]];
 		}
 		else
 		{
-			var enc_data	=	JSON.stringify(data);
+			var enc_data = JSON.stringify(data);
 		}
 
 		worker.postMessage({
@@ -541,24 +541,24 @@ var ProtectedThreaded = Protected.extend({
 				seed: seed
 		});
 		worker.addEventListener('message', function(e) {
-			var res		=	e.data;
+			var res = e.data;
 			if(res.type != 'success')
 			{
-				var enc	=	false;
+				var enc = false;
 				log.error('tcrypt.thread: err: ', res);
 			}
 			else
 			{
 				// TODO: uint8array?
-				var enc		=	tcrypt.words_to_bin(res.data.c);
-				var hash	=	res.data.h;
+				var enc = tcrypt.words_to_bin(res.data.c);
+				var hash = res.data.h;
 			}
 			this.trigger('serialize', enc, hash);
 			if(options.complete) options.complete(enc, hash);
 
 			// got a response, clean up
 			worker.terminate();
-			this.workers	=	this.workers.erase(worker);
+			this.workers = this.workers.erase(worker);
 		}.bind(this));
 	},
 
@@ -569,20 +569,20 @@ var ProtectedThreaded = Protected.extend({
 	{
 		options || (options = {});
 
-		var _body	=	obj[this.body_key];
+		var _body = obj[this.body_key];
 		if(!_body) return false;
 
 		if(!this.ensure_key_exists(obj.keys)) return false;
 
-		var finish_fn	=	function(_body)
+		var finish_fn = function(_body)
 		{
 			if(typeOf(_body) == 'object')
 			{
 				this.set(_body, Object.merge({ignore_body: true}, options));
 				Object.each(_body, function(v, k) {
-					var _body	=	this.get('_body');
-					var set		=	{};
-					set[k]		=	v;
+					var _body = this.get('_body');
+					var set = {};
+					set[k] = v;
 					_body.set(set);
 				}.bind(this));
 				if(options.async_success) options.async_success(this);
@@ -626,16 +626,16 @@ var ProtectedThreaded = Protected.extend({
 	toJSONAsync: function(finish_cb, options)
 	{
 		options || (options = {});
-		var data		=	{};
+		var data = {};
 
-		var do_finish	=	function(encrypted, hash)
+		var do_finish = function(encrypted, hash)
 		{
-			data[this.body_key]	=	encrypted;
+			data[this.body_key] = encrypted;
 			// cache (before we call the finish cb)
-			this._cached_serialization	=	data;
+			this._cached_serialization = data;
 			finish_cb(data, hash);
 		}.bind(this);
-		data	=	this.toJSON(Object.merge({}, options, {skip_cache: true, complete: do_finish}));
+		data = this.toJSON(Object.merge({}, options, {skip_cache: true, complete: do_finish}));
 	}
 });
 
@@ -667,12 +667,12 @@ var ProtectedShared = Protected.extend({
 	deserialize: function(data, parentobj)
 	{
 		if(!this.private_key) return false;
-		var obj	=	false;
+		var obj = false;
 		try
 		{
-			var binary		=	tcrypt.from_base64(data);
-			var decrypted	=	tcrypt.asym.decrypt(this.private_key, binary);
-			obj				=	JSON.decode(decrypted);
+			var binary = tcrypt.from_base64(data);
+			var decrypted = tcrypt.asym.decrypt(this.private_key, binary);
+			obj = JSON.decode(decrypted);
 		}
 		catch(e)
 		{
@@ -686,12 +686,12 @@ var ProtectedShared = Protected.extend({
 	{
 		if(!this.public_key) return false;
 
-		var encrypted	=	false;
+		var encrypted = false;
 		try
 		{
-			var json	=	JSON.encode(data);
-			encrypted	=	tcrypt.asym.encrypt(this.public_key, json);
-			encrypted	=	tcrypt.to_base64(encrypted);
+			var json = JSON.encode(data);
+			encrypted = tcrypt.asym.encrypt(this.public_key, json);
+			encrypted = tcrypt.to_base64(encrypted);
 		}
 		catch(e)
 		{

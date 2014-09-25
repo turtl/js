@@ -1,4 +1,4 @@
-var ChromeAddonPort	=	new Class({
+var ChromeAddonPort = new Class({
 	comm: false,
 
 	initialize: function(options)

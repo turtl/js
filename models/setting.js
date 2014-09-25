@@ -19,7 +19,7 @@ var Settings = Composer.Collection.extend({
 	get_by_key: function(key, options)
 	{
 		options || (options = {});
-		var setting	=	this.find(function(setting) {
+		var setting = this.find(function(setting) {
 			return setting.get('key') == key;
 		});
 
@@ -33,7 +33,7 @@ var Settings = Composer.Collection.extend({
 
 	clear_setting: function(key)
 	{
-		var setting	=	this.find(function(setting) {
+		var setting = this.find(function(setting) {
 			return setting.get('key') == key;
 		});
 

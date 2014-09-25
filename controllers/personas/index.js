@@ -48,8 +48,8 @@ var PersonasController = Composer.Controller.extend({
 	render: function()
 	{
 		var personas = this.collection.map(function(persona) {
-			var data		=	toJSON(persona);
-			data.has_key	=	persona.has_keypair();
+			var data = toJSON(persona);
+			data.has_key = persona.has_keypair();
 			return data;
 		});
 		var content = Template.render('personas/index', {
@@ -87,8 +87,8 @@ var PersonasController = Composer.Controller.extend({
 	{
 		if(!e) return false;
 		e.stop();
-		var pid		=	this.get_persona_id(e.target);
-		var persona	=	this.collection.find_by_id(pid);
+		var pid = this.get_persona_id(e.target);
+		var persona = this.collection.find_by_id(pid);
 		if(!persona) return false;
 		this.release();
 		new PersonaEditController({
@@ -113,9 +113,9 @@ var PersonasController = Composer.Controller.extend({
 	toggle_email_settings: function(e)
 	{
 		if(e) e.stop();
-		var persona_li	=	next_tag_up('li', next_tag_up('li', e.target).getParent());
+		var persona_li = next_tag_up('li', next_tag_up('li', e.target).getParent());
 		if(!persona_li) return false;
-		var settings	=	persona_li.getElement('.email-settings');
+		var settings = persona_li.getElement('.email-settings');
 		if(!settings) return false;
 		if(settings.getStyle('display') == 'block')
 		{
@@ -132,13 +132,13 @@ var PersonasController = Composer.Controller.extend({
 	{
 		if(!e) return false;
 		e.stop();
-		var pid		=	 next_tag_up('li', e.target).className.replace(/^.*persona_([0-9a-f-]+).*?$/, '$1');
-		var persona	=	this.collection.find_by_id(pid);
-		var setting	=	e.target.name;
-		var enabled	=	e.target.checked;
+		var pid = next_tag_up('li', e.target).className.replace(/^.*persona_([0-9a-f-]+).*?$/, '$1');
+		var persona = this.collection.find_by_id(pid);
+		var setting = e.target.name;
+		var enabled = e.target.checked;
 		if(!persona) return false;
-		var settings	=	Object.clone(persona.get('settings', {}));
-		settings[setting]	=	enabled ? 1 : 0;
+		var settings = Object.clone(persona.get('settings', {}));
+		settings[setting] = enabled ? 1 : 0;
 
 		// update the settings silently (otherwise dropdown will disappear)
 		persona.set({settings: settings}, {silent: true});
@@ -149,8 +149,8 @@ var PersonasController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 
-		var pid		=	next_tag_up('li', e.target).className.replace(/^.*persona_([0-9a-f-]+).*?$/, '$1');
-		var persona	=	this.collection.find_by_id(pid);
+		var pid = next_tag_up('li', e.target).className.replace(/^.*persona_([0-9a-f-]+).*?$/, '$1');
+		var persona = this.collection.find_by_id(pid);
 		if(!persona) return false;
 
 		persona.generate_ecc_key();

@@ -16,7 +16,7 @@
  * Redistributions of files must retain the above copyright notice.
  */
 (function() {
-	var Keyboard	=	new Class({
+	var Keyboard = new Class({
 		Implements: [Composer.Events, Options],
 
 		// set to true to allow bindings based on meta keys
@@ -33,7 +33,7 @@
 
 			// create a function bound to "this" and store it later so we can
 			// unbind it when we detach
-			this._dispatch	=	this.dispatch.bind(this);
+			this._dispatch = this.dispatch.bind(this);
 
 			// start listening for keyboard events
 			return this.attach();
@@ -75,5 +75,5 @@
 	});
 
 	// direct export (no need to do Composer.Keyboard.extend(...))
-	Composer.Keyboard	=	Keyboard;
+	Composer.Keyboard = Keyboard;
 })();

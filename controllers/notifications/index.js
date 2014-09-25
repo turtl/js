@@ -30,10 +30,10 @@ var NotificationsController = Composer.Controller.extend({
 			this.msg_notify();
 
 			/*
-			this.check_close	=	function(e) {
+			this.check_close = function(e) {
 				if(!e || !e.page) return;
 				if(!this.notification_list.hasClass('sel')) return;
-				var coords	=	this.notification_list.getCoordinates();
+				var coords = this.notification_list.getCoordinates();
 				if((e.page.x < coords.left || e.page.x > coords.right || e.page.y < coords.top || e.page.y > coords.bottom))
 				{
 					this.open_notifications();	// it SAYS open but it's actually going to close
@@ -43,7 +43,7 @@ var NotificationsController = Composer.Controller.extend({
 			*/
 		}.bind(this);
 
-		this._open_list	=	this.open_notifications.bind(this);
+		this._open_list = this.open_notifications.bind(this);
 		if(this.button) this.button.addEvent('click', this._open_list);
 
 		if(turtl.user.logged_in)
@@ -72,11 +72,11 @@ var NotificationsController = Composer.Controller.extend({
 	render: function()
 	{
 		/*
-		var notifications	=	turtl.messages.select({notification: true}).map(function(n) {
+		var notifications = turtl.messages.select({notification: true}).map(function(n) {
 			return toJSON(n);
 		});
 
-		var content	=	Template.render('notifications/index', {
+		var content = Template.render('notifications/index', {
 			notifications: notifications,
 			invites: toJSON(turtl.invites),
 			is_open: this.is_open,
@@ -88,19 +88,19 @@ var NotificationsController = Composer.Controller.extend({
 	msg_notify: function()
 	{
 		if(!this.button) return;
-		var num_unread	=	turtl.messages.select({notification: true}).length;
+		var num_unread = turtl.messages.select({notification: true}).length;
 		num_unread		+=	turtl.invites.models().length;
 		if(num_unread > 0)
 		{
-			var notif	=	this.button.getElement('small');
+			var notif = this.button.getElement('small');
 			this.button.addClass('active');
 			if(notif) notif.destroy();
-			var notif	=	new Element('small').set('html', (num_unread+'').safe());
+			var notif = new Element('small').set('html', (num_unread+'').safe());
 			notif.inject(this.button);
 		}
 		else
 		{
-			var notif	=	this.button.getElement('small');
+			var notif = this.button.getElement('small');
 			if(notif) notif.destroy();
 			this.button.removeClass('active');
 		}
@@ -119,13 +119,13 @@ var NotificationsController = Composer.Controller.extend({
 		{
 			this.button.removeClass('sel');
 			this.notification_list.removeClass('sel');
-			this.is_open	=	false;
+			this.is_open = false;
 		}
 		else
 		{
 			this.button.addClass('sel');
 			this.notification_list.addClass('sel');
-			this.is_open	=	true;
+			this.is_open = true;
 		}
 		*/
 	},
@@ -139,24 +139,24 @@ var NotificationsController = Composer.Controller.extend({
 	{
 		if(!e) return false;
 		e.stop();
-		var nid		=	this.get_notification_id_from_el(e.target);
-		var message	=	turtl.messages.find_by_id(nid);
+		var nid = this.get_notification_id_from_el(e.target);
+		var message = turtl.messages.find_by_id(nid);
 		if(!message) return;
 
-		var body	=	message.get('body');
+		var body = message.get('body');
 		switch(body.type)
 		{
 		case 'share_board':
-			var board_id	=	body.board_id;
-			var board_key	=	tcrypt.key_to_bin(body.board_key);
-			var persona		=	turtl.user.get('personas').find_by_id(message.get('to'));
+			var board_id = body.board_id;
+			var board_key = tcrypt.key_to_bin(body.board_key);
+			var persona = turtl.user.get('personas').find_by_id(message.get('to'));
 			if(!persona) return false;
 			// this should never happen, but you never know
 			if(!board_id || !board_key) persona.delete_message(message);
-			var board	=	new Board({
+			var board = new Board({
 				id: board_id
 			});
-			board.key	=	board_key;
+			board.key = board_key;
 			turtl.loading(true);
 			board.accept_share(persona, {
 				success: function() {
@@ -186,16 +186,16 @@ var NotificationsController = Composer.Controller.extend({
 	{
 		if(!e) return false;
 		e.stop();
-		var nid		=	this.get_notification_id_from_el(e.target);
-		var message	=	turtl.messages.find_by_id(nid);
+		var nid = this.get_notification_id_from_el(e.target);
+		var message = turtl.messages.find_by_id(nid);
 		if(!message) return;
 
-		var body	=	message.get('body');
+		var body = message.get('body');
 		switch(body.type)
 		{
 		case 'share_board':
-			var board_id	=	body.board_id;
-			var persona		=	turtl.user.get('personas').find_by_id(message.get('to'));
+			var board_id = body.board_id;
+			var persona = turtl.user.get('personas').find_by_id(message.get('to'));
 			if(!persona) return false;
 			turtl.loading(true);
 			persona.delete_message(message, {

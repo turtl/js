@@ -56,7 +56,7 @@ var $ES = function(selector, filter) {return ($(filter) || document).getElements
  * 
  * @author		Andrew Lyon <andrew@lyonbros.com>
  */
-var modal_interface	=	new Class({
+var modal_interface = new Class({
 	/**
 	 * Configurable options - these are safe to tweak and change
 	 */
@@ -149,23 +149,23 @@ var modal_interface	=	new Class({
 		// set up the parameters
 		for(x in options)
 		{
-			this.options[x]	=	options[x];
+			this.options[x] = options[x];
 		}
 
 		// default to not attaching to links unless we specify
-		var attach_links	=	this.options.attach_links;
+		var attach_links = this.options.attach_links;
 
 		// create an element (unique to this modal instance) just for holding events
-		this.objects.events	=	new Element('div');
+		this.objects.events = new Element('div');
 
 		// create all of our needed divs/objects and inject them into the DOM (only if we haven't already tho)
 		if(this.options.overlay)
 		{
-			var el	=	$('modalbox-overlay');
+			var el = $('modalbox-overlay');
 			if(!this.objects.overlay && !el)
 			{
-				this.objects.overlay	=	new Element('div');
-				this.objects.overlay.id	=	'modalbox-overlay';
+				this.objects.overlay = new Element('div');
+				this.objects.overlay.id = 'modalbox-overlay';
 				this.objects.overlay.setStyles({
 					display: 'none'
 				});
@@ -173,61 +173,61 @@ var modal_interface	=	new Class({
 			}
 			else if(el)
 			{
-				this.objects.overlay	=	el;
+				this.objects.overlay = el;
 			}
 		}
 
-		var el	=	$('modalbox');
+		var el = $('modalbox');
 		if(!this.objects.container && !el)
 		{
 			// create the container, holds everything
-			this.objects.container		=	new Element('div');
-			this.objects.container.id	=	'modalbox';
+			this.objects.container = new Element('div');
+			this.objects.container.id = 'modalbox';
 			this.objects.container.setStyles({
 				display:	'none'
 			});
 		}
 		else if(el)
 		{
-			this.objects.container	=	el;
+			this.objects.container = el;
 		}
 			
-		var el	=	$E('.modalgutter', this.objects.container);
+		var el = $E('.modalgutter', this.objects.container);
 		if(!this.objects.gutter && !el)
 		{
 			// create the gutter object, wraps around the content
-			this.objects.gutter		=	new Element('div');
+			this.objects.gutter = new Element('div');
 			this.objects.gutter.addClass('modalgutter');
 		}
 		else if(el)
 		{
-			this.objects.gutter		=	el;
+			this.objects.gutter = el;
 		}
 		this.objects.gutter.inject(this.objects.container, 'top');
 			
-		var el	=	$E('.modalcontent', this.objects.container);
+		var el = $E('.modalcontent', this.objects.container);
 		if(!this.objects.content && !el)
 		{
 			// create our content div
-			this.objects.content	=	new Element('div');
+			this.objects.content = new Element('div');
 			this.objects.content.addClass('modalcontent');
 		}
 		else if(el)
 		{
-			this.objects.content	=	el;
+			this.objects.content = el;
 		}
 		this.objects.content.inject(this.objects.gutter, 'top');
 
 		// inject the container (hidden) into the DOM, bottom of <body>
 		this.objects.container.inject(document.body, 'bottom');
 
-		var el	=	$E('.closelink', this.objects.container);
+		var el = $E('.closelink', this.objects.container);
 		if(!this.objects.close && !el)
 		{
 			// create a "close [x]" link, add a close event to it, but don't inject it anywhere (it will be used later)
-			this.objects.close			=	new Element('a');
-			this.objects.close.href		=	'#close-box';
-			this.objects.close.title	=	'Close';
+			this.objects.close = new Element('a');
+			this.objects.close.href = '#close-box';
+			this.objects.close.title = 'Close';
 			this.objects.close.addEvent('click', function(e) {
 				if(e) e.stop();
 				this.close();
@@ -236,13 +236,13 @@ var modal_interface	=	new Class({
 		}
 		else if(el)
 		{
-			this.objects.close	=	el;
+			this.objects.close = el;
 		}
 			
 		// useful for "bookmarking" where a node should be returned to when using a selector for loading content.
 		if(!this.objects.placeholder)
 		{
-			this.objects.placeholder	=	new Element('div');
+			this.objects.placeholder = new Element('div');
 		}
 		
 		if(attach_links)
@@ -269,19 +269,19 @@ var modal_interface	=	new Class({
 		// praise be to event delegation. wow. this code used to be so complicated and buggy.
 		document.addEvent('click:relay(a[rel="modal"])', function(e) {
 			if(e) e.stop();
-			var next_tag_up	=	function(tag, element)
+			var next_tag_up = function(tag, element)
 			{
 				return element.get('tag') == tag ? element : next_tag_up(element.getParent());
 			}
-			var a	=	next_tag_up('a', e.target);
-			var rel	=	a.get('rel');
+			var a = next_tag_up('a', e.target);
+			var rel = a.get('rel');
 			
 			// check the rel for width/height. if not found, just use defaults
-			var params	=	rel.split(/\s+/);
-			var width	=	false;
-			var height	=	false;
-			var nodom	=	this.options.disable_domload;
-			var title	=	el.title ? el.title : '';
+			var params = rel.split(/\s+/);
+			var width = false;
+			var height = false;
+			var nodom = this.options.disable_domload;
+			var title = el.title ? el.title : '';
 			
 			// loop over our parameters in the rel attribute. valid params are:
 			// modal - this one is obvious, activate the modal box for this link
@@ -300,17 +300,17 @@ var modal_interface	=	new Class({
 					if(!width)
 					{
 						// always use the first found numeric value as width
-						width	=	p;
+						width = p;
 					}
 					else if(!height)
 					{
 						// if we already have a width but not a height, assign the second numeric value as height
-						height	=	p;
+						height = p;
 					}
 				}
 				else if(p.match(/nodom/))
 				{
-					nodom	=	true;
+					nodom = true;
 				}
 			});
 			
@@ -347,24 +347,24 @@ var modal_interface	=	new Class({
 		this.fireEvent('start');
 		
 		// double check our width/height values
-		var width	=	width && (parseInt(width) == width) ? width : this.options.width;
-		var height	=	height ? height : null;								// if a height isn't specified, let the content decide
+		var width = width && (parseInt(width) == width) ? width : this.options.width;
+		var height = height ? height : null;								// if a height isn't specified, let the content decide
 		
 		// pull out some other vars
-		var	evalscripts	=	this.options.evalscripts;
-		var nodomload	=	nodomload ? true : false;
+		var	evalscripts = this.options.evalscripts;
+		var nodomload = nodomload ? true : false;
 		
 		// TODO: implement a starting top value (ex right on top a link that was clicked vs the top of the window)
 		// get the correct coordinates for positioning our box
-		var cheight		=	height ? height : 500;							// if height isn't specified, use a height in our calculations so the box isn't halfway down the screen
-		var wincoords	=	window.getCoordinates();
-		var left		=	(wincoords.width / 2) - (width / 2);
-		var top			=	(wincoords.height / 2) - (cheight / 1.3);		// notice we make use of "cheight" here when calculating the top position of the window
+		var cheight = height ? height : 500;							// if height isn't specified, use a height in our calculations so the box isn't halfway down the screen
+		var wincoords = window.getCoordinates();
+		var left = (wincoords.width / 2) - (width / 2);
+		var top = (wincoords.height / 2) - (cheight / 1.3);		// notice we make use of "cheight" here when calculating the top position of the window
 		
 		// make sure our top value is not above the cutoff (this way the box is never cut off by the top of the browser)
 		if(top < this.options.top_cutoff)
 		{
-			top	=	this.options.top_cutoff;
+			top = this.options.top_cutoff;
 		}
 		
 		// add the scroll height on
@@ -401,11 +401,11 @@ var modal_interface	=	new Class({
 		// see if the "href" is actually a selector
 		if(href.inject && typeof(href.inject) == 'function')
 		{
-			var node	=	href;
+			var node = href;
 		}
 		else
 		{
-			var node	=	$E(href.replace(/.*?#/, '#'));
+			var node = $E(href.replace(/.*?#/, '#'));
 		}
 		
 		// make sure if we have a node, it's not the <html> tag (pulled out by default), and we aren't forcing a no DOM load
@@ -413,16 +413,16 @@ var modal_interface	=	new Class({
 		{
 			// gnar dude, we found a node with the given "URL" (selector). load its contents into the modal box
 			// as if we pulled it from a URL
-			this.params.dom_object			=	node;
+			this.params.dom_object = node;
 			this.open_complete(false, {height: height});
 		}
 		else if(href.match(/\.(jpg|jpeg|gif|png)$/i))
 		{
 			// we's got an image, do tings a bit differently
-			var img	=	null;
+			var img = null;
 			
 			// create a function that gets called after the image is loaded
-			var image_loaded	=	function() {
+			var image_loaded = function() {
 				// grab padding for our content area and gutter
 				
 				if(this.options.image_no_padding)
@@ -430,21 +430,21 @@ var modal_interface	=	new Class({
 					this.objects.content.setStyle('padding', '0px');
 				}
 				
-				var gpadding	=	parseInt(this.objects.gutter.getStyle('padding'));
-				var cpadding	=	parseInt(this.objects.content.getStyle('padding'));
+				var gpadding = parseInt(this.objects.gutter.getStyle('padding'));
+				var cpadding = parseInt(this.objects.content.getStyle('padding'));
 				
 				// calculate width/height of our top-level container based on padding and image widths/heights
-				var cwidth		=	img.width + (cpadding * 2) + (gpadding * 2);
-				var cheight		=	img.height + (cpadding * 2) + (gpadding * 2);
+				var cwidth = img.width + (cpadding * 2) + (gpadding * 2);
+				var cheight = img.height + (cpadding * 2) + (gpadding * 2);
 				
 				// calculate our left/top values for our top-level container based on our widths and heights. note that this
 				// uses some values from above. no point in re-initializing them since they aren't changed
-				var left		=	(wincoords.width / 2) - (cwidth / 2);
-				var top			=	(wincoords.height / 2) - (img.height / 1.5);
+				var left = (wincoords.width / 2) - (cwidth / 2);
+				var top = (wincoords.height / 2) - (img.height / 1.5);
 				
 				if(top < this.options.top_cutoff)
 				{
-					top	=	this.options.top_cutoff;
+					top = this.options.top_cutoff;
 				}
 				
 				// add on our scroll height
@@ -466,10 +466,10 @@ var modal_interface	=	new Class({
 			}.bind(this);
 			
 			// load a new image and call our image callback once it's loaded and we have width/height values
-			img			=	new Image();
-			img.onload	=	image_loaded;		// is this safe? works great in FF/IE7+8/Chrome/Opera.
-			img.src		=	href;
-			img.title	=	title;
+			img = new Image();
+			img.onload = image_loaded;		// is this safe? works great in FF/IE7+8/Chrome/Opera.
+			img.src = href;
+			img.title = title;
 		}
 		else
 		{
@@ -504,7 +504,7 @@ var modal_interface	=	new Class({
 		if(this.params.dom_object)
 		{
 			// we're pulling "content" from a DOM object (or rather, pulling the object itself)
-			var node	=	this.params.dom_object;
+			var node = this.params.dom_object;
 			this.objects.content.set('html', '');
 			
 			// inject our object "placeholder" after the node before we remove it from the view. this way when we 
@@ -519,7 +519,7 @@ var modal_interface	=	new Class({
 			node.inject(this.objects.content, 'bottom');
 			
 			// save node display mode for later (we don't want to ASSUME it's display:none)
-			node.display	=	node.getStyle('display');
+			node.display = node.getStyle('display');
 			node.setStyle('display', 'block');
 		}
 		else
@@ -542,7 +542,7 @@ var modal_interface	=	new Class({
 		// make sure our "close [x]" link gets shoved in there at the top
 		this.objects.close.inject(this.objects.content, 'top');
 
-		this.is_open	=	true;
+		this.is_open = true;
 		
 		// fire our complete event
 		this.fireEvent('complete');
@@ -570,14 +570,14 @@ var modal_interface	=	new Class({
 		// outside the coordinates of the modal should really be considered a close event. consider when you have an autocomplete
 		// or dropdown that spills over the edge. normally, a user clicking on it will trigger the close event even though it's
 		// inside the modal. this is bad. we try to solve that here!
-		this.is_in_modal	=	function(e) { this.params.mouse_in_box = true; }.bind(this);
-		this.not_in_modal	=	function(e) { this.params.mouse_in_box = false; }.bind(this);
+		this.is_in_modal = function(e) { this.params.mouse_in_box = true; }.bind(this);
+		this.not_in_modal = function(e) { this.params.mouse_in_box = false; }.bind(this);
 		
 		this.addEvent('mouseenter', this.is_in_modal);
 		this.addEvent('mouseleave', this.not_in_modal);
 		
 		// function to test for the 'esc' key. separate function so it can be specifically removed by modal_interface::close()
-		this.test_escape	=	function(e)
+		this.test_escape = function(e)
 		{
 			// pretty simple
 			if(e.key.toLowerCase && e.key.toLowerCase() == 'esc')
@@ -587,26 +587,26 @@ var modal_interface	=	new Class({
 		}.bind(this);
 		window.addEvent('keydown', this.test_escape);
 
-		var inside	=	false;
-		this.test_click_start	=	function(e)
+		var inside = false;
+		this.test_click_start = function(e)
 		{
 			// get our container's coordinates
-			var coords	=	this.objects.container.getCoordinates();
+			var coords = this.objects.container.getCoordinates();
 			
 			if((e.page.x < coords.left || e.page.x > coords.right || e.page.y < coords.top || e.page.y > coords.bottom))
 			{
 				// what do you know, someone clicked outside it. close
-				inside	=	false;
+				inside = false;
 			}
 			else
 			{
-				inside	=	true;
+				inside = true;
 			}
 			return true;
 		}.bind(this);
 		
 		// function to test for a click outside the modal box. separate function so it can be specifically removed by modal_interface::close()
-		this.test_click		=	function(e)
+		this.test_click = function(e)
 		{
 			// if the mousedown event detects that the mousedown happened *in*
 			// the modal, then don't close the modal on mouseup (ie click) event
@@ -624,7 +624,7 @@ var modal_interface	=	new Class({
 			}
 
 			// get our container's coordinates
-			var coords	=	this.objects.container.getCoordinates();
+			var coords = this.objects.container.getCoordinates();
 			
 			if((e.page.x < coords.left || e.page.x > coords.right || e.page.y < coords.top || e.page.y > coords.bottom))
 			{
@@ -641,7 +641,7 @@ var modal_interface	=	new Class({
 	 */
 	close: function(disable_close_events)
 	{
-		var disable_close_events	=	disable_close_events ? true : false;
+		var disable_close_events = disable_close_events ? true : false;
 		
 		if(this.params.close_confirm && !disable_close_events)
 		{
@@ -651,7 +651,7 @@ var modal_interface	=	new Class({
 			}
 		}
 
-		this.is_open	=	false;
+		this.is_open = false;
 		
 		// close (hide) the container
 		this.objects.container.setStyles({
@@ -666,12 +666,12 @@ var modal_interface	=	new Class({
 		// if we have a DOM object as a content provider, inject it back into where we got it from and remove our placeholder
 		if(this.params.dom_object)
 		{
-			var node	=	this.params.dom_object;
+			var node = this.params.dom_object;
 			node.dispose();
 			node.setStyle('display', node.display);
 			node.inject(this.objects.placeholder, 'after');
 			this.objects.placeholder.dispose();
-			this.params.dom_object	=	false;
+			this.params.dom_object = false;
 		}
 		
 		// remove our slappy close events (won't need them now)

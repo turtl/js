@@ -23,14 +23,14 @@ var NoteEditFileController = Composer.Controller.extend({
 	release: function()
 	{
 		this.model.unbind_relational('file', 'change', 'note:edit:file:change');
-		var blob_url	=	this.model.get('file').get('blob_url');
+		var blob_url = this.model.get('file').get('blob_url');
 		//if(blob_url) URL.revokeObjectURL(blob_url);
 		this.parent.apply(this, arguments);
 	},
 
 	render: function()
 	{
-		var file	=	this.model.get('file');
+		var file = this.model.get('file');
 		if(file && !file.get('blob_url') && file.get('type', '').match(/^image/))
 		{
 			file.to_blob({
@@ -39,7 +39,7 @@ var NoteEditFileController = Composer.Controller.extend({
 				}
 			});
 		}
-		var content	=	Template.render('notes/edit_file', {
+		var content = Template.render('notes/edit_file', {
 			file: toJSON(this.model.get('file')),
 			blob_url: file.get('blob_url')
 		});
@@ -52,14 +52,14 @@ var NoteEditFileController = Composer.Controller.extend({
 
 	set_attachment: function(e)
 	{
-		var file	=	e.target.files[0];
-		var reader	=	new FileReader();
-		reader.onload	=	function(e)
+		var file = e.target.files[0];
+		var reader = new FileReader();
+		reader.onload = function(e)
 		{
 			// create a new file record with the binary file data
-			var binary	=	e.target.result;
+			var binary = e.target.result;
 
-			var blob_url	=	this.model.get('file').get('blob_url');
+			var blob_url = this.model.get('file').get('blob_url');
 			//if(blob_url) URL.revokeObjectURL(blob_url);
 
 			// if the current note has an existing file, we're going to
@@ -89,10 +89,10 @@ var NoteEditFileController = Composer.Controller.extend({
 	clear_attachment: function(e)
 	{
 		if(e) e.stop();
-		this.inp_file.value	=	'';
+		this.inp_file.value = '';
 		this.upload_remove.setStyle('display', '');
 		this.upload_preview.set('html', '');
-		var blob_url	=	this.model.get('file').get('blob_url');
+		var blob_url = this.model.get('file').get('blob_url');
 		//if(blob_url) URL.revokeObjectURL(blob_url);
 		this.model.get('file').clear().set({cleared: true});
 	}

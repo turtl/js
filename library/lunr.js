@@ -756,7 +756,7 @@ lunr.Index = function () {
   this.documentStore = new lunr.Store
   this.tokenStore = new lunr.TokenStore
   this.corpusTokens = new lunr.SortedSet
-  this.eventEmitter =  new lunr.EventEmitter
+  this.eventEmitter = new lunr.EventEmitter
 
   this._idfCache = {}
 

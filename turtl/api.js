@@ -1,4 +1,4 @@
-var ApiTracker	=	new Class({
+var ApiTracker = new Class({
 	id: 0,
 
 	requests: {},
@@ -16,13 +16,13 @@ var ApiTracker	=	new Class({
 		port.bind('xhr-response', function(id, result) {
 			this.finish(id, result);
 		}.bind(this));
-		this.attached	=	true;
+		this.attached = true;
 	},
 
 	send: function(request)
 	{
-		var id			=	this.id++;
-		var msgargs	=	{
+		var id = this.id++;
+		var msgargs = {
 			id:	id,
 			url: request.url,
 			method: request.method,
@@ -31,19 +31,19 @@ var ApiTracker	=	new Class({
 		};
 
 		// track the request
-		this.requests[id]	=	new Request(request);
+		this.requests[id] = new Request(request);
 
 		port.send('xhr', msgargs);
 	},
 
 	finish: function(id, result)
 	{
-		var request	=	this.requests[id];
+		var request = this.requests[id];
 		delete this.requests[id];
 		if(!request) return false;
 
-		var status	=	result.status;
-		var text	=	result.text;
+		var status = result.status;
+		var text = result.text;
 
 		if(window._net_log)
 		{
@@ -59,7 +59,7 @@ var ApiTracker	=	new Class({
 		else
 		{
 			// trick the Request into having the "correct" xhr info
-			request.xhr	=	{
+			request.xhr = {
 				status: status,
 				responseText: text
 			};
@@ -68,7 +68,7 @@ var ApiTracker	=	new Class({
 	}
 });
 
-var Api	=	new Class({
+var Api = new Class({
 	// the base url all resources are pulled from (NEVER a trailing slash!)
 	// NOTE: this must be set by the app
 	api_url:		null,
@@ -93,12 +93,12 @@ var Api	=	new Class({
 
 	initialize: function(url, key, cb_wrap)
 	{
-		this.api_url		=	url;
-		this.api_key		=	key;
-		this.cb_wrap		=	cb_wrap;
-		this.tracker		=	new ApiTracker();
+		this.api_url = url;
+		this.api_key = key;
+		this.cb_wrap = cb_wrap;
+		this.tracker = new ApiTracker();
 		// JS hax LAWL omgawrsh gawrsh shhwarshhrwsh
-		this['delete']		=	function()
+		this['delete'] = function()
 		{
 			alert('api.delete() is deprecated and broken in MANY browsers ("delete" is a reserved word in JS). Please use api._delete() instead.');
 		};
@@ -106,7 +106,7 @@ var Api	=	new Class({
 
 	set_api_key: function(key)
 	{
-		this.api_key	=	key;
+		this.api_key = key;
 	},
 
 	set_auth: function(auth_key)
@@ -120,7 +120,7 @@ var Api	=	new Class({
 
 	clear_auth: function()
 	{
-		this.user	=	false;
+		this.user = false;
 	},
 
 	// HTTP status after a call is made
@@ -150,9 +150,9 @@ var Api	=	new Class({
 		params || (params = {});
 
 		// should we auth to the server? we don't want to unless we have to
-		var send_auth	=	this.test_auth_needed(method, resource);
+		var send_auth = this.test_auth_needed(method, resource);
 
-		var url	=	api_url + '/' + resource.replace(/^\//, '');
+		var url = api_url + '/' + resource.replace(/^\//, '');
 
 		if(!['post', 'get'].contains(method.toLowerCase()))
 		{
@@ -163,7 +163,7 @@ var Api	=	new Class({
 				url += '?_method='+method;
 		}
 
-		var request	=	{
+		var request = {
 			url: url,
 			method: (method.toLowerCase() == 'get' ? 'GET' : 'POST'),
 			emulation: false,
@@ -176,11 +176,11 @@ var Api	=	new Class({
 				{
 					try
 					{
-						res	=	JSON.parse(res);
+						res = JSON.parse(res);
 					}
 					catch(e)
 					{
-						var err	=	'api: error parsing resonse: '+ res
+						var err = 'api: error parsing resonse: '+ res
 						log.debug(err);
 						if(params.error) params.error(err);
 						return;
@@ -190,16 +190,16 @@ var Api	=	new Class({
 			},
 			onFailure: function(xhr)
 			{
-				var res	=	xhr;
+				var res = xhr;
 				if(!params.responseType && xhr)
 				{
 					try
 					{
-						res	=	JSON.parse(xhr.responseText);
+						res = JSON.parse(xhr.responseText);
 					}
 					catch(e)
 					{
-						res	=	'error parsing error response: '+ xhr.responseText;
+						res = 'error parsing error response: '+ xhr.responseText;
 						log.debug('api: ', res);
 					}
 				}
@@ -207,12 +207,12 @@ var Api	=	new Class({
 			},
 			onProgress: function(event, xhr)
 			{
-				var progress	=	{total: event.total, loaded: event.loaded};
+				var progress = {total: event.total, loaded: event.loaded};
 				if(params.progress) params.progress(progress, xhr);
 			},
 			onUploadprogress: function(event, xhr)
 			{
-				var progress	=	{total: event.total, loaded: event.loaded};
+				var progress = {total: event.total, loaded: event.loaded};
 				if(params.uploadprogress) params.uploadprogress(progress, xhr);
 			},
 			evalScripts: false,
@@ -221,22 +221,22 @@ var Api	=	new Class({
 
 		if(params.rawUpload)
 		{
-			request.urlEncoded	=	false;
-			request.encoding	=	false;
-			request.processData	=	false;
+			request.urlEncoded = false;
+			request.encoding = false;
+			request.processData = false;
 		}
 
 		// fill in the client we're using
-		request.headers['X-Turtl-Client']	=	config.client + '-' + config.version;
+		request.headers['X-Turtl-Client'] = config.client + '-' + config.version;
 
 		// if we're sending auth AND we're logged in, authenticate
 		if(this.user && send_auth)
 		{
-			request.headers['X-Auth-Api-Key']	=	this.api_key;
-			request.headers['Authorization']	=	'Basic ' + Base64.encode('user:' + this.user.auth_key);
+			request.headers['X-Auth-Api-Key'] = this.api_key;
+			request.headers['Authorization'] = 'Basic ' + Base64.encode('user:' + this.user.auth_key);
 		}
 
-		//var user_cookie	=	Cookie.read(config.user_cookie);
+		//var user_cookie = Cookie.read(config.user_cookie);
 		//Cookie.dispose(config.user_cookie);
 		this.send_request(request);
 		//if(user_cookie) Cookie.write(config.user_cookie, user_cookie);
@@ -262,18 +262,18 @@ var Api	=	new Class({
 	{
 		if(['POST', 'PUT', 'DELETE'].contains(method))
 		{
-			var auth	=	true;
+			var auth = true;
 		}
 		else
 		{
-			var auth	=	false;
+			var auth = false;
 		}
 
 		for(var i = 0; i < config.auth.length; i++)
 		{
-			var entry	=	config.auth[i];
-			var regex	=	new RegExp('^' + entry.resource.replace(/\//g, '\\\/') + '$')
-			match		=	regex.exec(resource);
+			var entry = config.auth[i];
+			var regex = new RegExp('^' + entry.resource.replace(/\//g, '\\\/') + '$')
+			match = regex.exec(resource);
 			if(match && entry.method.toUpperCase() == method)
 			{
 				if(!auth && entry.auth) auth = true;

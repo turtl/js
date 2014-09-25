@@ -1,4 +1,4 @@
-var InvitesListController	=	Composer.Controller.extend({
+var InvitesListController = Composer.Controller.extend({
 	elements: {
 	},
 
@@ -19,7 +19,7 @@ var InvitesListController	=	Composer.Controller.extend({
 
 	init: function()
 	{
-		this.collection	=	turtl.invites;
+		this.collection = turtl.invites;
 
 		// TODO: persona selector (when allowing multiple personas)
 		if(!this.persona) this.persona = turtl.user.get('personas').first();
@@ -55,7 +55,7 @@ var InvitesListController	=	Composer.Controller.extend({
 
 	render: function()
 	{
-		var content	=	Template.render('invites/list', {
+		var content = Template.render('invites/list', {
 			invites: this.collection.toJSON(),
 			messages: toJSON(turtl.messages),
 			num_personas: turtl.user.get('personas').models().length
@@ -67,16 +67,16 @@ var InvitesListController	=	Composer.Controller.extend({
 	get_invite_id_from_el: function(el)
 	{
 		// grab first <li> tag (holds our id val);
-		var tmpel	=	el;
-		var li		=	null;
+		var tmpel = el;
+		var li = null;
 		for(var i = 0, n = 10; i < n; i++)
 		{
 			if(tmpel.get('tag').toLowerCase() == 'li')
 			{
-				li	=	tmpel;
+				li = tmpel;
 				break;
 			}
-			tmpel	=	tmpel.getParent();
+			tmpel = tmpel.getParent();
 		}
 
 		if(!li) return false;
@@ -94,11 +94,11 @@ var InvitesListController	=	Composer.Controller.extend({
 		if(!e) return;
 		e.stop();
 
-		var invite_id	=	this.get_invite_id_from_el(e.target);
-		var invite		=	this.collection.find_by_id(invite_id);
+		var invite_id = this.get_invite_id_from_el(e.target);
+		var invite = this.collection.find_by_id(invite_id);
 		if(!invite) return;
 
-		var board_key	=	invite.decrypt_key(invite.get('data').board_key, invite.get('data').key, '');
+		var board_key = invite.decrypt_key(invite.get('data').board_key, invite.get('data').key, '');
 		if(!board_key || !this.key_valid(board_key)) return false;
 
 		invite.set({item_key: board_key});
@@ -125,8 +125,8 @@ var InvitesListController	=	Composer.Controller.extend({
 		if(!e) return;
 		e.stop();
 
-		var invite_id	=	this.get_invite_id_from_el(e.target);
-		var invite		=	this.collection.find_by_id(invite_id);
+		var invite_id = this.get_invite_id_from_el(e.target);
+		var invite = this.collection.find_by_id(invite_id);
 		if(!invite) return;
 		invite.deny(this.persona, {
 			success: function() {
@@ -151,7 +151,7 @@ var InvitesListController	=	Composer.Controller.extend({
 		if(!e) return;
 		e.stop();
 
-		var invite_id	=	this.get_invite_id_from_el(e.target);
+		var invite_id = this.get_invite_id_from_el(e.target);
 		this.el.getElement('li.invite_'+invite_id+' form').setStyle('display', 'block');
 		this.el.getElement('li.invite_'+invite_id+' input[name=secret]').focus();
 	},
@@ -161,15 +161,15 @@ var InvitesListController	=	Composer.Controller.extend({
 		if(!e) return;
 		e.stop();
 
-		var secret	=	e.target.getElement('input[name=secret]').get('value');
-		secret		=	secret.clean();
+		var secret = e.target.getElement('input[name=secret]').get('value');
+		secret = secret.clean();
 		if(secret == '') return false;
 
-		var invite_id	=	this.get_invite_id_from_el(e.target);
-		var invite		=	this.collection.find_by_id(invite_id);
+		var invite_id = this.get_invite_id_from_el(e.target);
+		var invite = this.collection.find_by_id(invite_id);
 		if(!invite) return false;
 
-		var board_key	=	invite.decrypt_key(invite.get('data').board_key, invite.get('data').key, secret);
+		var board_key = invite.decrypt_key(invite.get('data').board_key, invite.get('data').key, secret);
 		if(!board_key || !this.key_valid(board_key))
 		{
 			barfr.barf('Sorry, that answer wasn\'t correct.');
@@ -191,17 +191,17 @@ var InvitesListController	=	Composer.Controller.extend({
 	{
 		if(!e) return false;
 		e.stop();
-		var nid		=	this.get_invite_id_from_el(e.target);
-		var message	=	turtl.messages.find_by_id(nid);
+		var nid = this.get_invite_id_from_el(e.target);
+		var message = turtl.messages.find_by_id(nid);
 		if(!message) return;
 
-		var body	=	message.get('body');
+		var body = message.get('body');
 		switch(body.type)
 		{
 		case 'share_board':
-			var board_id	=	body.board_id;
-			var board_key	=	tcrypt.key_to_bin(body.board_key);
-			var persona		=	turtl.user.get('personas').find_by_id(message.get('to'));
+			var board_id = body.board_id;
+			var board_key = tcrypt.key_to_bin(body.board_key);
+			var persona = turtl.user.get('personas').find_by_id(message.get('to'));
 			if(!persona) return false;
 			// this should never happen, but you never know
 			if(!board_id || !board_key)
@@ -209,10 +209,10 @@ var InvitesListController	=	Composer.Controller.extend({
 				persona.delete_message(message);
 				return false;
 			}
-			var board	=	new Board({
+			var board = new Board({
 				id: board_id
 			});
-			board.key	=	board_key;
+			board.key = board_key;
 			turtl.loading(true);
 			board.accept_share(persona, {
 				success: function() {
@@ -242,16 +242,16 @@ var InvitesListController	=	Composer.Controller.extend({
 	{
 		if(!e) return false;
 		e.stop();
-		var nid		=	this.get_invite_id_from_el(e.target);
-		var message	=	turtl.messages.find_by_id(nid);
+		var nid = this.get_invite_id_from_el(e.target);
+		var message = turtl.messages.find_by_id(nid);
 		if(!message) return;
 
-		var body	=	message.get('body');
+		var body = message.get('body');
 		switch(body.type)
 		{
 		case 'share_board':
-			var board_id	=	body.board_id;
-			var persona		=	turtl.user.get('personas').find_by_id(message.get('to'));
+			var board_id = body.board_id;
+			var persona = turtl.user.get('personas').find_by_id(message.get('to'));
 			if(!persona) return false;
 			turtl.loading(true);
 			persona.delete_message(message, {

@@ -21,7 +21,7 @@ var HelpController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var content	=	Template.render('help/index');
+		var content = Template.render('help/index');
 		this.html(content);
 	}
 });

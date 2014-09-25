@@ -148,7 +148,7 @@ var TrackController = Composer.Controller.extend({
 
 	render_to_fragment: function()
 	{
-		this.fragment	=	document.createDocumentFragment();
+		this.fragment = document.createDocumentFragment();
 		this.sub_controllers.each(function(c) {
 			this.fragment.appendChild(c.el.dispose());
 		}.bind(this));
@@ -158,6 +158,6 @@ var TrackController = Composer.Controller.extend({
 	{
 		if(!this.fragment) return false;
 		element.appendChild(this.fragment);
-		this.fragment	=	null;
+		this.fragment = null;
 	}
 });

@@ -1,4 +1,4 @@
-var UserIndexController	=	Composer.Controller.extend({
+var UserIndexController = Composer.Controller.extend({
 	inject: turtl.main_container_selector,
 
 	elements: {
@@ -22,19 +22,19 @@ var UserIndexController	=	Composer.Controller.extend({
 	soft_release: function()
 	{
 		this.sub_controllers.each(function(s) { s.release(); });
-		this.sub_controllers	=	[];
+		this.sub_controllers = [];
 	},
 
 	render: function()
 	{
 		this.soft_release();
-		var content	=	Template.render('users/index', {});
+		var content = Template.render('users/index', {});
 		this.html(content);
 
-		var login	=	new UserLoginController({
+		var login = new UserLoginController({
 			inject: this.login_container
 		});
-		var join	=	new UserJoinController({
+		var join = new UserJoinController({
 			inject: this.join_container
 		});
 		this.sub_controllers.push(login);

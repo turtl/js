@@ -51,13 +51,13 @@ var NoteEditController = Composer.Controller.extend({
 	{
 		if(this.board == 'last')
 		{
-			var board_id	=	turtl.user.get('settings').get_by_key('last_board').value() || false;
-			var board		=	turtl.profile.get('boards').find_by_id(board_id);
+			var board_id = turtl.user.get('settings').get_by_key('last_board').value() || false;
+			var board = turtl.profile.get('boards').find_by_id(board_id);
 			if(board) this.board = board;
 			else this.board = turtl.profile.get_current_board();
 			if(!this.board && turtl.profile.get('boards').models().length > 0)
 			{
-				this.board	=	turtl.profile.get('boards').first();
+				this.board = turtl.profile.get('boards').first();
 			}
 		}
 
@@ -68,11 +68,11 @@ var NoteEditController = Composer.Controller.extend({
 
 		if(!this.note) this.note = new Note({type: 'quick'});
 		// clone the note so any changes to it pre-save don't show up in the listings.
-		this.note_copy		=	new Note(toJSON(this.note));
-		this.note_copy.key	=	this.note.key;
-		this.note_copy.get('file').key	=	this.note.key;
+		this.note_copy = new Note(toJSON(this.note));
+		this.note_copy.key = this.note.key;
+		this.note_copy.get('file').key = this.note.key;
 		this.note_copy.get('file').set({blob_url: null});
-		this.note_copy.disable_file_monitoring	=	true;
+		this.note_copy.disable_file_monitoring = true;
 
 		this.render();
 		if(this.edit_in_modal)
@@ -91,7 +91,7 @@ var NoteEditController = Composer.Controller.extend({
 		if(this.board_controller)
 		{
 			this.board_controller.bind('change-board', function(board) {
-				this.board	=	board;
+				this.board = board;
 				if(!this.board)
 				{
 					this.release();
@@ -109,7 +109,7 @@ var NoteEditController = Composer.Controller.extend({
 			this.note_copy.unbind();
 			this.note_copy.get('tags').unbind();
 			this.note_copy.clear();
-			this.note_copy	=	null;
+			this.note_copy = null;
 		}
 		if(this.tag_controller) this.tag_controller.release();
 		if(this.board_controller) this.board_controller.release();
@@ -135,7 +135,7 @@ var NoteEditController = Composer.Controller.extend({
 		}
 
 		if(this.upload_controller) this.upload_controller.release();
-		this.upload_controller	=	new NoteEditFileController({
+		this.upload_controller = new NoteEditFileController({
 			inject: this.uploader,
 			model: this.note_copy
 		});
@@ -147,9 +147,9 @@ var NoteEditController = Composer.Controller.extend({
 		this.render_tags();
 		if(this.show_boards)
 		{
-			var board	=	null;
+			var board = null;
 			if(this.track_last_board) board = this.board;
-			this.board_controller	=	new BoardsController({
+			this.board_controller = new BoardsController({
 				inject: this.board_container,
 				profile: turtl.profile,
 				add_bare: true,
@@ -165,17 +165,17 @@ var NoteEditController = Composer.Controller.extend({
 
 		// render our math example in the Formatting tutorial by hijacking a
 		// note item controller.
-		var note_controller	=	new NoteItemController({model: new Note()});
-		note_controller.el	=	this.el;
+		var note_controller = new NoteItemController({model: new Note()});
+		note_controller.el = this.el;
 		note_controller.render_math();
-		note_controller.el	=	null;
+		note_controller.el = null;
 		note_controller.release();
 	},
 
 	render_tags: function()
 	{
 		if(this.tag_controller) this.tag_controller.release();
-		this.tag_controller	=	new NoteEditTagController({
+		this.tag_controller = new NoteEditTagController({
 			inject: this.tags,
 			note: this.note_copy,
 			board: this.board
@@ -186,7 +186,7 @@ var NoteEditController = Composer.Controller.extend({
 	{
 		options || (options = {});
 
-		var note	=	options.note;
+		var note = options.note;
 		if(!note) note = this.note_copy;
 
 		if(note.get('type') == 'quick')
@@ -262,7 +262,7 @@ var NoteEditController = Composer.Controller.extend({
 
 		this.save_form_to_copy(e, {set_type: true});
 
-		var isnew	=	this.note_copy.is_new();
+		var isnew = this.note_copy.is_new();
 		if(!this.note_copy.get('board_id'))
 		{
 			this.note_copy.set({board_id: this.board.id()});
@@ -277,9 +277,9 @@ var NoteEditController = Composer.Controller.extend({
 		}
 
 		turtl.loading(true);
-		this.inp_submit.disabled	=	true;
+		this.inp_submit.disabled = true;
 
-		var do_close	=	function()
+		var do_close = function()
 		{
 			turtl.loading(false);
 			if(this.edit_in_modal) modal.close();
@@ -292,17 +292,17 @@ var NoteEditController = Composer.Controller.extend({
 		}.bind(this);
 
 		// grab the binary file data (and clear out the ref in the NoteFile)
-		var file_bin	=	this.note_copy.get('file').get('data');
+		var file_bin = this.note_copy.get('file').get('data');
 		this.note_copy.get('file').unset('data');
 
-		var note_copy				=	new Note();
-		note_copy.key				=	this.note_copy.key;
+		var note_copy = new Note();
+		note_copy.key = this.note_copy.key;
 		// bit of a hack to copy the data over
-		note_copy.data				=	this.note_copy.data;
-		note_copy.relation_data		=	this.note_copy.relation_data;
-		note_copy.get('file').key	=	this.note_copy.key;
+		note_copy.data = this.note_copy.data;
+		note_copy.relation_data = this.note_copy.relation_data;
+		note_copy.get('file').key = this.note_copy.key;
 
-		var file		=	note_copy.get('file');
+		var file = note_copy.get('file');
 
 		// get rid of the temporary blob URL
 		URL.revokeObjectURL(file.get('blob_url'));
@@ -317,13 +317,13 @@ var NoteEditController = Composer.Controller.extend({
 			this.note.get('file').clear();
 		}
 
-		var file_set	=	file.get('set');
-		var file_size	=	false;
+		var file_set = file.get('set');
+		var file_size = false;
 		if(isnew && file_set)
 		{
 			// let the view know we're encrypting, and remove the blob_url so it
 			// doesn't try to display an image
-			var setnote				=	this.note_copy.toJSON();
+			var setnote = this.note_copy.toJSON();
 			delete setnote.file;
 			this.note.set(setnote);
 			this.note.set({file: toJSON(file)});
@@ -335,12 +335,12 @@ var NoteEditController = Composer.Controller.extend({
 		}
 		else if(file_set)
 		{
-			var filedata		=	toJSON(file);
-			filedata.encrypting	=	true;
+			var filedata = toJSON(file);
+			filedata.encrypting = true;
 			this.note.get('file').set(filedata);
 		}
 
-		var do_note_save	=	function(options)
+		var do_note_save = function(options)
 		{
 			options || (options = {});
 
@@ -353,15 +353,15 @@ var NoteEditController = Composer.Controller.extend({
 			note_copy.save({
 				// make sure we pass if we have a file or not
 				success: function() {
-					this.note.key	=	note_copy.key;
-					var copy_json	=	note_copy.toJSON();
-					copy_json.mod	=	Math.round(new Date().getTime() / 1000);
+					this.note.key = note_copy.key;
+					var copy_json = note_copy.toJSON();
+					copy_json.mod = Math.round(new Date().getTime() / 1000);
 					if(file_set)
 					{
 						// manually set the file data and trigger a hash change
 						// async, which forces the note to refresh its file
 						// contents
-						var copy_file	=	copy_json.file;
+						var copy_file = copy_json.file;
 						delete copy_json.file;
 						this.note.get('file').set(copy_file, {silent: true});
 						(function() { this.note.get('file').trigger('change:hash'); }).delay(1, this);
@@ -379,7 +379,7 @@ var NoteEditController = Composer.Controller.extend({
 					}
 				}.bind(this),
 				error: function(e) {
-					this.inp_submit.disabled	=	false;
+					this.inp_submit.disabled = false;
 					barfr.barf('There was a problem saving your note: '+ e);
 					turtl.loading(false);
 				}
@@ -395,8 +395,8 @@ var NoteEditController = Composer.Controller.extend({
 			// heartache when actually running our syncing.
 			file.unset('set');
 			note_copy.clear_files({skip_remote_sync: true});
-			var filedata	=	new FileData({data: file_bin});
-			filedata.key	=	note_copy.key;
+			var filedata = new FileData({data: file_bin});
+			filedata.key = note_copy.key;
 			filedata.toJSONAsync(function(res, hash) {
 				// we now have the encrypted data + hash, set the hash as the
 				// ID. note we're not setting it directly into filedata here,
@@ -408,14 +408,14 @@ var NoteEditController = Composer.Controller.extend({
 				//
 				// setting id here is a roundabout way of modifying the cache,
 				// but it works great.
-				res.id			=	hash;
+				res.id = hash;
 				// we don't want to upload the file until the note we're
 				// attaching to has a real ID
-				res.synced		=	0;
-				res.has_data	=	1;
+				res.synced = 0;
+				res.has_data = 1;
 				if(!note_copy.is_new())
 				{
-					res.note_id	=	note_copy.id();
+					res.note_id = note_copy.id();
 					filedata.set({note_id: res.note_id});
 				}
 				filedata.set({id: hash});		// set the id for good measure
@@ -423,19 +423,19 @@ var NoteEditController = Composer.Controller.extend({
 				// we're no longer encrypting
 				file.unset('encrypting');
 				this.note.get('file').unset('encrypting');
-				file_size	=	res.body.length;
+				file_size = res.body.length;
 
 				// save the file contents into local db then save the note
 				filedata.save({
 					skip_remote_sync: note_copy.is_new(),
 					success: function() {
 						// give the note's file object a ref to the file's id
-						var has_data	=	this.note.get('file').get('has_data', 0);
+						var has_data = this.note.get('file').get('has_data', 0);
 						file.set({hash: hash, has_data: has_data + 1});
 						do_note_save({no_close: true});
 					}.bind(this),
 					error: function(e) {
-						this.inp_submit.disabled	=	false;
+						this.inp_submit.disabled = false;
 						barfr.barf('There was a problem saving the attached file: '+ e);
 						log.error('note: edit: file save: ', e);
 						turtl.loading(false);
@@ -469,7 +469,7 @@ var NoteEditController = Composer.Controller.extend({
 		this.note_copy.set({type: typename});
 		var input_sel = typename;
 		if(['link','image'].contains(typename)) input_sel = 'url';
-		var inp_el	=	this['inp_'+input_sel];
+		var inp_el = this['inp_'+input_sel];
 		if(inp_el)
 		{
 			inp_el.focus.delay(10, inp_el);
@@ -497,23 +497,23 @@ var NoteEditController = Composer.Controller.extend({
 
 		// height is used to keep jarring visuals down (by setting it into the
 		// preview window)
-		var height	=	this.editor.getCoordinates().height;
+		var height = this.editor.getCoordinates().height;
 
 		this.preview.setStyles({
 			display: 'block',
 			minHeight: height
 		});
 		this.editor.setStyle('display', 'none');
-		var html_el	=	this.preview.getElement('.html');
+		var html_el = this.preview.getElement('.html');
 
 		// create a temp note and populate it woth our form data
-		var preview_note	=	new Note({type: this.note_copy.get('type')});
+		var preview_note = new Note({type: this.note_copy.get('type')});
 		preview_note.generate_key();
 		this.save_form_to_copy(null, {
 			note: preview_note,
 			set_type: true
 		});
-		var html	=	Template.render('notes/view/index', {
+		var html = Template.render('notes/view/index', {
 			note: toJSON(preview_note),
 			has_file: false,
 			file_type: false
@@ -521,10 +521,10 @@ var NoteEditController = Composer.Controller.extend({
 		html_el.set('html', html);
 
 		// render any math
-		var note_controller	=	new NoteItemController({model: new Note()});
-		note_controller.el	=	html_el;
+		var note_controller = new NoteItemController({model: new Note()});
+		note_controller.el = html_el;
 		note_controller.render_math();
-		note_controller.el	=	null;
+		note_controller.el = null;
 		note_controller.release();
 
 		html_el.getElement('.actions').dispose();

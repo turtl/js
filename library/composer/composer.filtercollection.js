@@ -27,7 +27,7 @@
 	 * This is useful for keeping many collections in sync with one master list
 	 * without having to manually update them all.
 	 */
-	var FilterCollection	=	new Class({
+	var FilterCollection = new Class({
 		Extends: Composer.Collection,
 
 		/**
@@ -52,13 +52,13 @@
 
 			Object.each(Object.clone(options), function(v, k) {
 				if(typeof(v) == 'function') v = v.bind(this);
-				this[k]	=	v;
+				this[k] = v;
 			}, this);
 
 			// assign the unique app id
-			this._cid	=	Composer.cid();
+			this._cid = Composer.cid();
 
-			this.master	=	master;
+			this.master = master;
 
 			if(!this.master) return false;
 			if(!this.filter) return false;
@@ -86,7 +86,7 @@
 
 		match_action: function(event, model)
 		{
-			var args	=	Array.prototype.slice.call(arguments, 0);
+			var args = Array.prototype.slice.call(arguments, 0);
 			switch(event)
 			{
 			case 'add':
@@ -112,16 +112,16 @@
 
 			if(options.diff_events)
 			{
-				var old_models	=	this._models;
+				var old_models = this._models;
 			}
-			this._models	=	this.master._models.filter(function(model) {
+			this._models = this.master._models.filter(function(model) {
 				return this.filter(model, this);
 			}.bind(this));
 			this.sort({silent: true});
 			if(this.limit) this._models.splice(this.limit);
 			if(options.diff_events)
 			{
-				var arrdiff	=	function(arr1, arr2) { return arr1.filter(function(el) { return !arr2.contains(el); }); };
+				var arrdiff = function(arr1, arr2) { return arr1.filter(function(el) { return !arr2.contains(el); }); };
 
 				arrdiff(old_models, this._models).each(function(model) {
 					this.fire_event('remove', options, model);
@@ -142,7 +142,7 @@
 			if(model && !this.models().contains(model) && !this.filter(model, this)) return false;
 
 			// track the current number of items and reloda the data
-			var num_items	=	this._models.length;
+			var num_items = this._models.length;
 
 			if(this.refresh_on_change)
 			{
@@ -195,7 +195,7 @@
 			if(this._models.length == num_items)
 			{
 				forward_args.shift();
-				var args	=	['change', options].append(forward_args);
+				var args = ['change', options].append(forward_args);
 				this.fire_event.apply(this, args);
 			}
 			else
@@ -208,7 +208,7 @@
 		{
 			if(!fn) return false;
 			options || (options = {refresh: true});
-			this.filter	=	fn.bind(this);
+			this.filter = fn.bind(this);
 			if(!options.refresh) this.refresh();
 		},
 
@@ -223,11 +223,11 @@
 			if(typeof(options.transform) == 'undefined') options.transform = true;
 
 			// if we are passing raw data, create a new model from data
-			var model		=	data.__composer_type == 'model' ? data : new this.master.model(data, options);
+			var model = data.__composer_type == 'model' ? data : new this.master.model(data, options);
 
 			if(this.transform && options.transform)
 			{
-				model	=	this.transform.call(this, model, 'add');
+				model = this.transform.call(this, model, 'add');
 			}
 
 			// model doesn't match filter. NICE TRY
@@ -236,11 +236,11 @@
 			if(typeof(options.at) == 'number')
 			{
 				// find the correct insertion point in the master it options.at is set.
-				var current		=	this.at(options.at);
-				var master_idx	=	this.master.index_of(current);
+				var current = this.at(options.at);
+				var master_idx = this.master.index_of(current);
 				if(master_idx !== false)
 				{
-					options.at	=	master_idx;
+					options.at = master_idx;
 				}
 			}
 			
@@ -270,9 +270,9 @@
 			// add the model to this collection's models, sorted, and
 			// apply the limit.
 			this._models.push(model);
-			var old_idx	=	this._models.indexOf(model);
+			var old_idx = this._models.indexOf(model);
 			this.sort({silent: true});
-			var new_idx	=	this._models.indexOf(model);
+			var new_idx = this._models.indexOf(model);
 			if(this.limit) this._models.splice(this.limit);
 			// after sort/limit, model may not actually be in the FC, so
 			// check before wildly firing add/sort events
@@ -309,7 +309,7 @@
 
 			if(this.transform && options.transform)
 			{
-				model	=	this.transform.call(this, model, 'remove');
+				model = this.transform.call(this, model, 'remove');
 			}
 
 			// remove the model
@@ -350,14 +350,14 @@
 			this.trigger.apply(this, args);
 		}
 	});
-	FilterCollection.extend	=	function(obj, base)
+	FilterCollection.extend = function(obj, base)
 	{
 		obj || (obj = {});
 		base || (base = this);
-		obj	=	Composer.Base.extend.call(this, obj, base);
+		obj = Composer.Base.extend.call(this, obj, base);
 		return this._do_extend(obj, base);
 	};
 
-	Composer.FilterCollection	=	FilterCollection;
+	Composer.FilterCollection = FilterCollection;
 	Composer._export(['FilterCollection']);
 })();

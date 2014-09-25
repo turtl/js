@@ -26,7 +26,7 @@ var TagsController = Composer.Controller.extend({
 			tag.unset('disabled', {silent: true});
 		});
 
-		this.tags	=	new TagsFilter(this.board.get('tags'), {
+		this.tags = new TagsFilter(this.board.get('tags'), {
 			sort_event: true,
 			refresh_on_change: false
 		});
@@ -76,22 +76,22 @@ var TagsController = Composer.Controller.extend({
 
 	gray_tags: function()
 	{
-		var start	=	performance.now();
-		var notes	=	turtl.controllers.pages.cur_controller.notes_controller.filter_list;
+		var start = performance.now();
+		var notes = turtl.controllers.pages.cur_controller.notes_controller.filter_list;
 		if(!notes) return;
 
-		notes		=	notes
+		notes = notes
 			.map(function(n) { return n.id(); })
 			.sort(function(a, b) { return a.localeCompare(b); });
-		var tags	=	this.tags.models();
-		var change	=	[];
+		var tags = this.tags.models();
+		var change = [];
 
 		// for each tag, intersect the search index with the currently enabled
 		// notes. an empty list means the tag has no notes.
 		tags.each(function(tag) {
-			var enabled		=	!tag.get('disabled', false);
-			var note_list	=	turtl.search.index_tags[tag.get('name')];
-			var tag_enable	=	turtl.search.intersect(notes, note_list).length > 0;
+			var enabled = !tag.get('disabled', false);
+			var note_list = turtl.search.index_tags[tag.get('name')];
+			var tag_enable = turtl.search.intersect(notes, note_list).length > 0;
 
 			if(tag_enable != enabled)
 			{
@@ -104,14 +104,14 @@ var TagsController = Composer.Controller.extend({
 
 	do_text_search: function(e)
 	{
-		var do_search	=	function()
+		var do_search = function()
 		{
 			// NOTE: kind of a hack...search box used to belong to notes controller
 			// and instead of using a central filtering model, we just set the
 			// search text into the notes controller manually and trigger a filter
 			// change. not the best way to do it.
-			var notes_controller			=	turtl.controllers.pages.cur_controller.notes_controller;
-			notes_controller.search_text	=	this.inp_search.get('value');
+			var notes_controller = turtl.controllers.pages.cur_controller.notes_controller;
+			notes_controller.search_text = this.inp_search.get('value');
 			this.board.get('tags').trigger('change:filters');
 		}.bind(this);
 
@@ -125,8 +125,8 @@ var TagsController = Composer.Controller.extend({
 
 		if(!this.search_timer)
 		{
-			this.search_timer		=	new Timer(100);
-			this.search_timer.end	=	do_search;
+			this.search_timer = new Timer(100);
+			this.search_timer.end = do_search;
 		}
 		this.search_timer.start();
 	},
@@ -148,8 +148,8 @@ var TagsController = Composer.Controller.extend({
 		// as noted above, it's stupid to have controllers holding search state.
 		// don't worry, I'm aware. but this is a quick.dirty way to get things
 		// moving
-		var notes_controller	=	turtl.controllers.pages.cur_controller.notes_controller;
-		notes_controller.search_text	=	'';
+		var notes_controller = turtl.controllers.pages.cur_controller.notes_controller;
+		notes_controller.search_text = '';
 
 		this.inp_search.set('value', '');
 		this.board.get('tags').each(function(t) {
@@ -167,7 +167,7 @@ var TagsController = Composer.Controller.extend({
 	{
 		if(!this.filters) return false;
 
-		var num_notes	=	this.board.get('notes').models().length;
+		var num_notes = this.board.get('notes').models().length;
 		if(num_notes > 0) this.filters.setStyle('display', 'block');
 		else this.filters.setStyle('display', 'none');
 	}

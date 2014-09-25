@@ -248,18 +248,18 @@ sjcl.cipher.aes.prototype = {
         table = this._tables[dir],
         
         // load up the tables
-        t0    = table[0],
-        t1    = table[1],
-        t2    = table[2],
-        t3    = table[3],
-        sbox  = table[4];
+        t0 = table[0],
+        t1 = table[1],
+        t2 = table[2],
+        t3 = table[3],
+        sbox = table[4];
  
     // Inner rounds.  Cribbed from OpenSSL.
     for (i = 0; i < nInnerRounds; i++) {
       a2 = t0[a>>>24] ^ t1[b>>16 & 255] ^ t2[c>>8 & 255] ^ t3[d & 255] ^ key[kIndex];
       b2 = t0[b>>>24] ^ t1[c>>16 & 255] ^ t2[d>>8 & 255] ^ t3[a & 255] ^ key[kIndex + 1];
       c2 = t0[c>>>24] ^ t1[d>>16 & 255] ^ t2[a>>8 & 255] ^ t3[b & 255] ^ key[kIndex + 2];
-      d  = t0[d>>>24] ^ t1[a>>16 & 255] ^ t2[b>>8 & 255] ^ t3[c & 255] ^ key[kIndex + 3];
+      d = t0[d>>>24] ^ t1[a>>16 & 255] ^ t2[b>>8 & 255] ^ t3[c & 255] ^ key[kIndex + 3];
       kIndex += 4;
       a=a2; b=b2; c=c2;
     }
@@ -585,7 +585,7 @@ sjcl.codec.base64 = {
       if (bits > 26) {
         bits -= 26;
         out.push(ta ^ x>>>bits);
-        ta  = x << (32-bits);
+        ta = x << (32-bits);
       } else {
         bits += 6;
         ta ^= x << (32-bits);
@@ -826,8 +826,8 @@ sjcl.hash.sha256.prototype = {
       if (i<16) {
         tmp = w[i];
       } else {
-        a   = w[(i+1 ) & 15];
-        b   = w[(i+14) & 15];
+        a = w[(i+1 ) & 15];
+        b = w[(i+14) & 15];
         tmp = w[i&15] = ((a>>>7  ^ a>>>18 ^ a>>>3  ^ a<<25 ^ a<<14) + 
                          (b>>>17 ^ b>>>19 ^ b>>>10 ^ b<<15 ^ b<<13) +
                          w[i&15] + w[(i+9) & 15]) | 0;
@@ -1126,7 +1126,7 @@ sjcl.hash.sha512.prototype = {
         wrh += wr16h + ((wrl >>> 0) < (wr16l >>> 0) ? 1 : 0);
       }
 
-      w[i*2]     = wrh |= 0;
+      w[i*2] = wrh |= 0;
       w[i*2 + 1] = wrl |= 0;
 
       // Ch
@@ -1730,7 +1730,7 @@ sjcl.mode.ocb2 = {
         pad;
         
     adata = adata || [];
-    tlen  = tlen || 64;
+    tlen = tlen || 64;
   
     for (i=0; i+4 < plaintext.length; i+=4) {
       /* Encrypt a non-final block */
@@ -1773,7 +1773,7 @@ sjcl.mode.ocb2 = {
     if (sjcl.bitArray.bitLength(iv) !== 128) {
       throw new sjcl.exception.invalid("ocb iv must be 128 bits");
     }
-    tlen  = tlen || 64;
+    tlen = tlen || 64;
     var i,
         times2 = sjcl.mode.ocb2._times2,
         w = sjcl.bitArray,
@@ -2202,37 +2202,37 @@ sjcl.misc.pbkdf2 = function (password, salt, count, length, Prff) {
 sjcl.prng = function(defaultParanoia) {
   
   /* private */
-  this._pools                   = [new sjcl.hash.sha256()];
-  this._poolEntropy             = [0];
-  this._reseedCount             = 0;
-  this._robins                  = {};
-  this._eventId                 = 0;
+  this._pools = [new sjcl.hash.sha256()];
+  this._poolEntropy = [0];
+  this._reseedCount = 0;
+  this._robins = {};
+  this._eventId = 0;
   
-  this._collectorIds            = {};
-  this._collectorIdNext         = 0;
+  this._collectorIds = {};
+  this._collectorIdNext = 0;
   
-  this._strength                = 0;
-  this._poolStrength            = 0;
-  this._nextReseed              = 0;
-  this._key                     = [0,0,0,0,0,0,0,0];
-  this._counter                 = [0,0,0,0];
-  this._cipher                  = undefined;
-  this._defaultParanoia         = defaultParanoia;
+  this._strength = 0;
+  this._poolStrength = 0;
+  this._nextReseed = 0;
+  this._key = [0,0,0,0,0,0,0,0];
+  this._counter = [0,0,0,0];
+  this._cipher = undefined;
+  this._defaultParanoia = defaultParanoia;
   
   /* event listener stuff */
-  this._collectorsStarted       = false;
-  this._callbacks               = {progress: {}, seeded: {}};
-  this._callbackI               = 0;
+  this._collectorsStarted = false;
+  this._callbacks = {progress: {}, seeded: {}};
+  this._callbackI = 0;
   
   /* constants */
-  this._NOT_READY               = 0;
-  this._READY                   = 1;
-  this._REQUIRES_RESEED         = 2;
+  this._NOT_READY = 0;
+  this._READY = 1;
+  this._REQUIRES_RESEED = 2;
 
-  this._MAX_WORDS_PER_BURST     = 65536;
-  this._PARANOIA_LEVELS         = [0,48,64,96,128,192,256,384,512,768,1024];
+  this._MAX_WORDS_PER_BURST = 65536;
+  this._PARANOIA_LEVELS = [0,48,64,96,128,192,256,384,512,768,1024];
   this._MILLISECONDS_PER_RESEED = 30000;
-  this._BITS_PER_RESEED         = 80;
+  this._BITS_PER_RESEED = 80;
 };
  
 sjcl.prng.prototype = {
@@ -3346,13 +3346,13 @@ sjcl.ecc.pointJac.prototype = {
 
     x1 = d.square();
     x2 = c.square().mul(c).addM( S.x.add(S.x).mul(c2) );
-    x  = x1.subM(x2);
+    x = x1.subM(x2);
 
     y1 = S.x.mul(c2).subM(x).mul(d);
     y2 = S.y.mul(c.square().mul(c));
-    y  = y1.subM(y2);
+    y = y1.subM(y2);
 
-    z  = S.z.mul(c);
+    z = S.z.mul(c);
 
     return new sjcl.ecc.pointJac(this.curve,x,y,z);
   },
@@ -3366,15 +3366,15 @@ sjcl.ecc.pointJac.prototype = {
 
     var
       y2 = this.y.square(),
-      a  = y2.mul(this.x.mul(4)),
-      b  = y2.square().mul(8),
+      a = y2.mul(this.x.mul(4)),
+      b = y2.square().mul(8),
       z2 = this.z.square(),
-      c  = this.curve.a.toString() == (new sjcl.bn(-3)).toString() ?
+      c = this.curve.a.toString() == (new sjcl.bn(-3)).toString() ?
                 this.x.sub(z2).mul(3).mul(this.x.add(z2)) :
                 this.x.square().mul(3).add(z2.square().mul(this.curve.a)),
-      x  = c.square().subM(a).subM(a),
-      y  = a.sub(x).mul(c).subM(b),
-      z  = this.y.add(this.y).mul(this.z);
+      x = c.square().subM(a).subM(a),
+      y = a.sub(x).mul(c).subM(b),
+      z = this.y.add(this.y).mul(this.z);
     return new sjcl.ecc.pointJac(this.curve, x, y, z);
   },
 
@@ -3736,12 +3736,12 @@ sjcl.ecc.ecdsa.secretKey.prototype = {
     if (sjcl.bitArray.bitLength(hash) > this._curveBitLength) {
       hash = sjcl.bitArray.clamp(hash, this._curveBitLength);
     }
-    var R  = this._curve.r,
-        l  = R.bitLength(),
-        k  = fixedKForTesting || sjcl.bn.random(R.sub(1), paranoia).add(1),
-        r  = this._curve.G.mult(k).x.mod(R),
+    var R = this._curve.r,
+        l = R.bitLength(),
+        k = fixedKForTesting || sjcl.bn.random(R.sub(1), paranoia).add(1),
+        r = this._curve.G.mult(k).x.mod(R),
         ss = sjcl.bn.fromBits(hash).add(r.mul(this._exponent)),
-        s  = fakeLegacyVersion ? ss.inverseMod(R).mul(k).mod(R)
+        s = fakeLegacyVersion ? ss.inverseMod(R).mul(k).mod(R)
              : ss.mul(k.inverseMod(R)).mod(R);
     return sjcl.bitArray.concat(r.toBits(l), s.toBits(l));
   }

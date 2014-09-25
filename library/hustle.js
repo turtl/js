@@ -1,52 +1,52 @@
 (function(window, undefined) {
 	"use strict";
-	var version				=	'0.2.0';
-	var internal_db_version	=	5;
+	var version = '0.2.0';
+	var internal_db_version = 5;
 
-	var indexedDB	=	window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.oIndexedDB || window.msIndexedDB;
-	var IDBKeyRange	=	window.IDBKeyRange || window.webkitIDBKeyRange
+	var indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.oIndexedDB || window.msIndexedDB;
+	var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange
 
 	if(!indexedDB) throw 'IndexedDB required';
 
 	// define error(s) used by tcrypt
-	var extend_error	=	function(extend, errname)
+	var extend_error = function(extend, errname)
 	{
-		var err						=	function() {
-			var tmp	=	extend.apply(this, arguments);
+		var err = function() {
+			var tmp = extend.apply(this, arguments);
 			tmp.name = this.name = errname;
 
-			this.stack		=	tmp.stack
-			this.message	=	tmp.message
+			this.stack = tmp.stack
+			this.message = tmp.message
 
 			return this;
 		};
-		err.prototype	=	Object.create(extend.prototype, { constructor: { value: err } });
+		err.prototype = Object.create(extend.prototype, { constructor: { value: err } });
 		return err;
 	}
-	var HustleError			=	extend_error(window.Error, 'HustleError');
-	var HustleDBClosed		=	extend_error(HustleError, 'HustleDBClosed');
-	var HustleDBOpened		=	extend_error(HustleError, 'HustleDBOpened');
-	var HustleBadTube		=	extend_error(HustleError, 'HustleBadTube');
-	var HustleBadID			=	extend_error(HustleError, 'HustleBadID');
-	var HustleNotice		=	extend_error(window.Error, 'HustleNotice');
-	var HustleNotFound		=	extend_error(HustleNotice, 'HustleNotFound');
+	var HustleError = extend_error(window.Error, 'HustleError');
+	var HustleDBClosed = extend_error(HustleError, 'HustleDBClosed');
+	var HustleDBOpened = extend_error(HustleError, 'HustleDBOpened');
+	var HustleBadTube = extend_error(HustleError, 'HustleBadTube');
+	var HustleBadID = extend_error(HustleError, 'HustleBadID');
+	var HustleNotice = extend_error(window.Error, 'HustleNotice');
+	var HustleNotFound = extend_error(HustleNotice, 'HustleNotFound');
 
-	var Hustle	=	function(qoptions)
+	var Hustle = function(qoptions)
 	{
 		qoptions || (qoptions = {});
 		if(!qoptions.tubes) qoptions.tubes = [];
 
 		// database version. should change every time the tubes change
-		var db_version			=	qoptions.db_version ? qoptions.db_version : 1;
+		var db_version = qoptions.db_version ? qoptions.db_version : 1;
 
 		// how often we do DB maintenance
-		var maintenance_delay	=	qoptions.maintenance_delay ? qoptions.maintenance_delay : 1000;
+		var maintenance_delay = qoptions.maintenance_delay ? qoptions.maintenance_delay : 1000;
 
 		// define some system db vars
-		var db_name	=	qoptions.db_name ? qoptions.db_name : 'hustle';
+		var db_name = qoptions.db_name ? qoptions.db_name : 'hustle';
 
 		// our reserved tables
-		var tbl		=	{
+		var tbl = {
 			ids: '_ids',
 			reserved: '_reserved',
 			delayed: '_delayed',
@@ -56,13 +56,13 @@
 		// always add a default tube
 		if(qoptions.tubes.indexOf('default') < 0) qoptions.tubes.push('default');
 
-		var db	=	null;
+		var db = null;
 
 		// ---------------------------------------------------------------------
 		// database-related functions
 		// ---------------------------------------------------------------------
 
-		var check_db	=	function()
+		var check_db = function()
 		{
 			if(!db) throw new HustleDBClosed('Closed database being operated on. Did you call Hustle.open()?');
 			return true;
@@ -75,31 +75,31 @@
 		 * helper function, creates a table if it doesn't exist, otherwise grabs
 		 * it. returns the store.
 		 */
-		var update_table_schema	=	function(e, tablename, options)
+		var update_table_schema = function(e, tablename, options)
 		{
 			options || (options = {});
-			var store	=	null;
-			var udb		=	e.target.result;
-			var keypath	=	options.keypath ? options.keypath : 'id';
-			var autoinc	=	options.autoincrement ? options.autoincrement : false;
+			var store = null;
+			var udb = e.target.result;
+			var keypath = options.keypath ? options.keypath : 'id';
+			var autoinc = options.autoincrement ? options.autoincrement : false;
 			// grab an existing object store or create a new one
 			if(udb.objectStoreNames.contains(tablename))
 			{
-				store	=	e.currentTarget.transaction.objectStore(tablename);
+				store = e.currentTarget.transaction.objectStore(tablename);
 			}
 			else
 			{
-				store	=	udb.createObjectStore(tablename, {keyPath: keypath, autoIncrement: autoinc});
+				store = udb.createObjectStore(tablename, {keyPath: keypath, autoIncrement: autoinc});
 			}
 
 			if(options.indexes)
 			{
-				var keys	=	Object.keys(options.indexes);
+				var keys = Object.keys(options.indexes);
 				for(var i = 0; i < keys.length; i++)
 				{
 					(function(key, idx) {
-						var index_val	=	idx.index ? idx.index : key;
-						var unique		=	idx.unique ? true : false;
+						var index_val = idx.index ? idx.index : key;
+						var unique = idx.unique ? true : false;
 						try
 						{
 							store.createIndex(key, index_val, { unique: unique });
@@ -116,30 +116,30 @@
 		/**
 		 * open the queue database and make sure the schema is ship-shape
 		 */
-		var open	=	function(options)
+		var open = function(options)
 		{
 			options || (options = {});
 
 			if(db) throw new HustleDBOpened('db is already open');
 
-			var version	=	(internal_db_version * 1000) + db_version;
-			var req		=	indexedDB.open(db_name, version);
-			req.onerror	=	function(e)
+			var version = (internal_db_version * 1000) + db_version;
+			var req = indexedDB.open(db_name, version);
+			req.onerror = function(e)
 			{
 				if(options.error) options.error(e);
 			}
 
-			req.onsuccess	=	function(e)
+			req.onsuccess = function(e)
 			{
-				db	=	req.result;
+				db = req.result;
 				if(options.success) options.success(e);
 				do_maintenance();
 			};
 
-			req.onupgradeneeded	=	function(e)
+			req.onupgradeneeded = function(e)
 			{
-				var store		=	null;
-				var tubes		=	qoptions.tubes;
+				var store = null;
+				var tubes = qoptions.tubes;
 
 				update_table_schema(e, tbl.ids);
 				update_table_schema(e, tbl.reserved, {
@@ -165,18 +165,18 @@
 		/**
 		 * close the queue database
 		 */
-		var close	=	function()
+		var close = function()
 		{
 			if(!db) return false;
 			db.close();
-			db	=	null;
+			db = null;
 			return true;
 		};
 
 		/**
 		 * convenience function to obliterate the queue
 		 */
-		var wipe	=	function()
+		var wipe = function()
 		{
 			close();
 			indexedDB.deleteDatabase(db_name);
@@ -186,16 +186,16 @@
 		/**
 		 * generate a unique, auto-incrementing ID
 		 */
-		var new_id	=	function(options)
+		var new_id = function(options)
 		{
 			check_db();
 			options || (options = {});
 
 
-			var id	=	null;
+			var id = null;
 
-			var trx		=	db.transaction([tbl.ids], 'readwrite');
-			trx.oncomplete	=	function(e)
+			var trx = db.transaction([tbl.ids], 'readwrite');
+			trx.oncomplete = function(e)
 			{
 				if(!id)
 				{
@@ -205,25 +205,25 @@
 				if(options.success) options.success(id, e);
 			};
 
-			trx.onerror	=	function(e)
+			trx.onerror = function(e)
 			{
 				if(options.error) options.error(e);
 			}
 			// upsert the ID record
-			var store		=	trx.objectStore(tbl.ids);
-			var req			=	store.get('id');
-			req.onsuccess	=	function(e)
+			var store = trx.objectStore(tbl.ids);
+			var req = store.get('id');
+			req.onsuccess = function(e)
 			{
-				var item	=	req.result;
+				var item = req.result;
 				if(!item)
 				{
-					id	=	1;
+					id = 1;
 					store.put({id: 'id', value: 1});
 				}
 				else
 				{
 					item.value++;
-					id	=	item.value;
+					id = item.value;
 					store.put(item);
 				}
 			};
@@ -232,53 +232,53 @@
 		/**
 		 * generic function to move a queue item from one table to another.
 		 */
-		var move_item	=	function(id, from, to, options)
+		var move_item = function(id, from, to, options)
 		{
 			options || (options = {});
 
-			var trx			=	db.transaction([from, to], 'readwrite');
-			trx.oncomplete	=	function(e) { if(options.success) options.success(e); };
-			trx.onerror		=	function(e) { if(options.error) options.error(e); }
+			var trx = db.transaction([from, to], 'readwrite');
+			trx.oncomplete = function(e) { if(options.success) options.success(e); };
+			trx.onerror = function(e) { if(options.error) options.error(e); }
 
-			var do_move_item	=	function(item, success)
+			var do_move_item = function(item, success)
 			{
 				if(options.transform)
 				{
-					item	=	options.transform(item);
+					item = options.transform(item);
 				}
-				var store		=	trx.objectStore(to);
-				var req			=	store.add(item);
-				req.onsuccess	=	success;
+				var store = trx.objectStore(to);
+				var req = store.add(item);
+				req.onsuccess = success;
 			};
 
-			var store		=	trx.objectStore(from);
+			var store = trx.objectStore(from);
 			var req;
 			if(from == tbl.buried)
 			{
 				// if we're looking up the buried table, we use the "id" index
-				var index	=	store.index('id');
-				req			=	index.get(id);
+				var index = store.index('id');
+				req = index.get(id);
 			}
 			else
 			{
-				req	=	store.get(id);
+				req = store.get(id);
 			}
-			req.onsuccess	=	function(e)
+			req.onsuccess = function(e)
 			{
-				var item	=	req.result;
+				var item = req.result;
 				if(!item)
 				{
 					if(options.error) options.error(new HustleNotFound('item '+ id +' wasn\'t found'));
 					return;
 				}
 
-				var item_id	=	item.id;
+				var item_id = item.id;
 				// account for the buried table's IDs
 				if(from == tbl.buried) item_id = item._id;
 
 				do_move_item(item, function(e) {
-					var req		=	store.delete(item_id);
-					req.onerror	=	options.error;
+					var req = store.delete(item_id);
+					req.onerror = options.error;
 				});
 			};
 		};
@@ -288,10 +288,10 @@
 		 *
 		 * valid option values are 'priority'
 		 */
-		var create_queue_item	=	function(data, options)
+		var create_queue_item = function(data, options)
 		{
-			var item	=	{data: data};
-			var fields	=	[
+			var item = {data: data};
+			var fields = [
 				{name: 'priority', type: 'int', default: 1024},
 				{name: 'delay', type: 'int', default: 0},
 				{name: 'ttr', type: 'int', default: 0}
@@ -301,34 +301,34 @@
 			// format.
 			for(var i = 0; i < fields.length; i++)
 			{
-				var field	=	fields[i];
+				var field = fields[i];
 				if(options[field.name])
 				{
 					item[field.name] = options[field.name];
 					switch(field.type)
 					{
 					case 'int':
-						item[field.name]	=	parseInt(item[field.name]);
+						item[field.name] = parseInt(item[field.name]);
 						break;
 					case 'float':
-						item[field.name]	=	parseFloat(item[field.name]);
+						item[field.name] = parseFloat(item[field.name]);
 						break;
 					}
 				}
 
 				if(field.default && typeof item[field.name] == 'undefined')
 				{
-					item[field.name]	=	field.default;
+					item[field.name] = field.default;
 				}
 			}
 			// some defaults
-			item.age		=	0;
-			item.reserves	=	0;
-			item.releases	=	0;
-			item.timeouts	=	0;
-			item.buries		=	0;
-			item.kicks		=	0;
-			item.created	=	new Date().getTime();
+			item.age = 0;
+			item.reserves = 0;
+			item.releases = 0;
+			item.timeouts = 0;
+			item.buries = 0;
+			item.kicks = 0;
+			item.created = new Date().getTime();
 			return item;
 		};
 
@@ -339,7 +339,7 @@
 		/**
 		 * grab an item by id from the queue
 		 */
-		var peek	=	function(id, options)
+		var peek = function(id, options)
 		{
 			check_db();
 			options || (options = {});
@@ -349,11 +349,11 @@
 				return false;
 			}
 
-			var item	=	null;
+			var item = null;
 
-			var tables		=	[tbl.reserved, tbl.delayed, tbl.buried].concat(qoptions.tubes);
-			var trx			=	db.transaction(tables, 'readonly');
-			trx.oncomplete	=	function(e)
+			var tables = [tbl.reserved, tbl.delayed, tbl.buried].concat(qoptions.tubes);
+			var trx = db.transaction(tables, 'readonly');
+			trx.oncomplete = function(e)
 			{
 				if(!item && options.not_found_error)
 				{
@@ -362,42 +362,42 @@
 				}
 				if(options.success) options.success(item, e);
 			};
-			trx.onerror		=	function(e) { if(options.error) options.error(e); }
+			trx.onerror = function(e) { if(options.error) options.error(e); }
 
 			// scan all tables for this id
 			tables.forEach(function(table) {
 				var req;
 				if(table == tbl.buried)
 				{
-					var index	=	trx.objectStore(table).index('id');
-					req			=	index.get(id);
+					var index = trx.objectStore(table).index('id');
+					req = index.get(id);
 				}
 				else
 				{
-					req	=	trx.objectStore(table).get(id);
+					req = trx.objectStore(table).get(id);
 				}
-				req.onsuccess	=	function(e)
+				req.onsuccess = function(e)
 				{
-					var res	=	e && e.target && e.target.result;
+					var res = e && e.target && e.target.result;
 					if(item || !res) return false;
 
-					item		=	res;
-					item.age	=	Math.round((new Date().getTime() - item.expire) / 1000);
+					item = res;
+					item.age = Math.round((new Date().getTime() - item.expire) / 1000);
 					if(table == tbl.reserved)
 					{
-						item.state	=	'reserved';
+						item.state = 'reserved';
 						if(item.ttr > 0)
 						{
-							item.time_left	=	Math.round((item.expire - new Date().getTime()) / 1000);
+							item.time_left = Math.round((item.expire - new Date().getTime()) / 1000);
 						}
 					}
 					else if(table == tbl.buried)
 					{
-						item.state	=	'buried';
+						item.state = 'buried';
 					}
 					else
 					{
-						item.state	=	'ready';
+						item.state = 'ready';
 						if(!item.tube) item.tube = table;
 					}
 				}
@@ -408,38 +408,38 @@
 		 * put a new item in the queue in the specified tube (or the "default"
 		 * tube)
 		 */
-		var put	=	function(data, options)
+		var put = function(data, options)
 		{
 			check_db();
 			options || (options = {});
 			if(!data) return false;
 
-			var tube	=	options.tube ? options.tube : 'default';
+			var tube = options.tube ? options.tube : 'default';
 			if(qoptions.tubes.indexOf(tube) < 0) throw new HustleBadTube('tube '+ tube +' doesn\'t exist');
 
-			var item	=	create_queue_item(data, options);
+			var item = create_queue_item(data, options);
 			if(item.delay && item.delay > 0)
 			{
-				item.tube		=	tube;
-				item.activate	=	new Date().getTime() + (1000 * item.delay);
-				tube			=	tbl.delayed;
+				item.tube = tube;
+				item.activate = new Date().getTime() + (1000 * item.delay);
+				tube = tbl.delayed;
 				delete item.delayed;
 			}
 
 			// grab a unique ID for this item
 			new_id({
 				success: function(id) {
-					item.id		=	id;
+					item.id = id;
 
-					var trx			=	db.transaction([tube], 'readwrite');
-					trx.oncomplete	=	function(e) { if(options.success) options.success(item, e); };
-					trx.onerror		=	function(e) { if(options.error) options.error(e); }
+					var trx = db.transaction([tube], 'readwrite');
+					trx.oncomplete = function(e) { if(options.success) options.success(item, e); };
+					trx.onerror = function(e) { if(options.error) options.error(e); }
 
-					var store		=	trx.objectStore(tube);
-					var req			=	store.add(item);
-					req.onsuccess	=	function(e)
+					var store = trx.objectStore(tube);
+					var req = store.add(item);
+					req.onsuccess = function(e)
 					{
-						item.id		=	e.target.result;
+						item.id = e.target.result;
 					};
 				},
 				error: function(e) {
@@ -453,47 +453,47 @@
 		 * grab one item off of the given tube (or "default" tube) and move it
 		 * onto the reserved table.
 		 */
-		var reserve	=	function(options)
+		var reserve = function(options)
 		{
 			check_db();
 			options || (options = {});
 
-			var tube	=	options.tube ? options.tube : 'default';
+			var tube = options.tube ? options.tube : 'default';
 			if(qoptions.tubes.indexOf(tube) < 0) throw new HustleBadTube('tube '+ tube +' doesn\'t exist');
 
-			var item	=	null;
+			var item = null;
 
-			var trx			=	db.transaction([tbl.reserved, tube], 'readwrite');
-			trx.oncomplete	=	function(e) { if(options.success) options.success(item, e); };
-			trx.onerror		=	function(e) { if(options.error) options.error(e); }
+			var trx = db.transaction([tbl.reserved, tube], 'readwrite');
+			trx.oncomplete = function(e) { if(options.success) options.success(item, e); };
+			trx.onerror = function(e) { if(options.error) options.error(e); }
 
 			// called once we have an item, puts the item in the reserved table
-			var put_in_reserved	=	function(citem, success)
+			var put_in_reserved = function(citem, success)
 			{
-				item		=	citem;
+				item = citem;
 				item.reserves++;
-				item.tube	=	tube;
+				item.tube = tube;
 				if(item.ttr > 0)
 				{
-					item.expire	=	new Date().getTime() + (1000 * item.ttr);
+					item.expire = new Date().getTime() + (1000 * item.ttr);
 				}
-				var store		=	trx.objectStore(tbl.reserved);
-				var req			=	store.add(item);
-				req.onsuccess	=	success;
+				var store = trx.objectStore(tbl.reserved);
+				var req = store.add(item);
+				req.onsuccess = success;
 			};
 
 			// grab one item from the tube, and put it in reserved
-			var store	=	trx.objectStore(tube);
-			var index	=	store.index('priority');
-			index.openCursor().onsuccess	=	function(e)
+			var store = trx.objectStore(tube);
+			var index = store.index('priority');
+			index.openCursor().onsuccess = function(e)
 			{
-				var cursor	=	e.target.result;
+				var cursor = e.target.result;
 				if(cursor)
 				{
 					put_in_reserved(cursor.value, function(e) {
 						// remove the item from the tube once we know it's reserved
-						var req		=	store.delete(cursor.value.id);
-						req.onerror	=	options.error;
+						var req = store.delete(cursor.value.id);
+						req.onerror = options.error;
 					});
 				}
 			};
@@ -503,7 +503,7 @@
 		 * delete a queue item by id. checks all tubes and the reserved/buried
 		 * tables as well.
 		 */
-		var del	=	function(id, options)
+		var del = function(id, options)
 		{
 			check_db();
 			options || (options = {});
@@ -516,22 +516,22 @@
 						return;
 					}
 
-					var table	=	item.tube;
-					var item_id	=	item.id;
+					var table = item.tube;
+					var item_id = item.id;
 					if(item.state == 'reserved')
 					{
-						table	=	tbl.reserved;
+						table = tbl.reserved;
 					}
 					else if(item.state == 'buried')
 					{
-						table	=	tbl.buried;
+						table = tbl.buried;
 						// be mindful of the buried table's own IDs
-						item_id	=	item._id;
+						item_id = item._id;
 					}
 
-					var trx			=	db.transaction(table, 'readwrite');
-					trx.oncomplete	=	function(e) { if(options.success) options.success(item, e); };
-					trx.onerror		=	function(e) { if(options.error) options.error(e); }
+					var trx = db.transaction(table, 'readwrite');
+					trx.oncomplete = function(e) { if(options.success) options.success(item, e); };
+					trx.onerror = function(e) { if(options.error) options.error(e); }
 
 					trx.objectStore(table).delete(item_id);
 				},
@@ -543,7 +543,7 @@
 		 * release a reserved item back into the queue (from the tube it came
 		 * from).
 		 */
-		var release	=	function(id, options)
+		var release = function(id, options)
 		{
 			check_db();
 			options || (options = {});
@@ -557,15 +557,15 @@
 						return;
 					}
 
-					var tube	=	item.tube;
+					var tube = item.tube;
 
 					if(options.delay)
 					{
-						var delay	=	parseInt(options.delay);
+						var delay = parseInt(options.delay);
 						if(delay)
 						{
-							item.activate	=	new Date().getTime() + (1000 * delay);
-							tube			=	tbl.delayed;
+							item.activate = new Date().getTime() + (1000 * delay);
+							tube = tbl.delayed;
 						}
 					}
 
@@ -574,7 +574,7 @@
 							item.releases++;
 							if(options.priority)
 							{
-								var pri	=	parseInt(options.priority);
+								var pri = parseInt(options.priority);
 								if(pri) item.priority = pri;
 							}
 							delete item.tube;
@@ -593,7 +593,7 @@
 		 * that fail a lot and can't be ignored, allowing you to look over them
 		 * later on and see what jobs are failing.
 		 */
-		var bury	=	function(id, options)
+		var bury = function(id, options)
 		{
 			check_db();
 			options || (options = {});
@@ -606,19 +606,19 @@
 						if(options.success) options.success();
 						return;
 					}
-					var table	=	item.tube;
+					var table = item.tube;
 					if(item.state == 'reserved')
 					{
-						table	=	tbl.reserved;
+						table = tbl.reserved;
 					}
 
 					move_item(id, table, tbl.buried, {
 						transform: function(titem) {
 							titem.buries++;
-							titem.tube	=	item.tube;
+							titem.tube = item.tube;
 							if(options.priority)
 							{
-								var pri	=	parseInt(options.priority);
+								var pri = parseInt(options.priority);
 								if(pri) titem.priority = pri;
 							}
 							return titem;
@@ -634,42 +634,42 @@
 		/**
 		 * kick N many buried items back into their tubes
 		 */
-		var kick	=	function(num, options)
+		var kick = function(num, options)
 		{
 			check_db();
 			options || (options = {});
 
-			var records	=	0;
+			var records = 0;
 
 			// open all tables since we may get a range of tubes when kicking
-			var tables		=	[tbl.buried].concat(qoptions.tubes);
-			var trx			=	db.transaction(tables, 'readwrite');
-			trx.oncomplete	=	function(e) { if(options.success) options.success(records, e); };
-			trx.onerror		=	function(e) { if(options.error) options.error(e); }
+			var tables = [tbl.buried].concat(qoptions.tubes);
+			var trx = db.transaction(tables, 'readwrite');
+			trx.oncomplete = function(e) { if(options.success) options.success(records, e); };
+			trx.onerror = function(e) { if(options.error) options.error(e); }
 
-			var put_in_tube	=	function(item, success)
+			var put_in_tube = function(item, success)
 			{
 				item.kicks++;
-				var tube	=	item.tube;
+				var tube = item.tube;
 				// remove the buried table's ID
 				delete item._id;
 				delete item.tube;
-				var store		=	trx.objectStore(tube)
-				var req			=	store.add(item);
-				req.onsuccess	=	success;
+				var store = trx.objectStore(tube)
+				var req = store.add(item);
+				req.onsuccess = success;
 			};
 
 			// grab one item from the tube, and put it in reserved
-			var store	=	trx.objectStore(tbl.buried);
-			store.openCursor().onsuccess	=	function(e)
+			var store = trx.objectStore(tbl.buried);
+			store.openCursor().onsuccess = function(e)
 			{
-				var cursor	=	e.target.result;
+				var cursor = e.target.result;
 				if(cursor)
 				{
 					put_in_tube(cursor.value, function(e) {
 						// remove the item from the tube once we know it's reserved
-						var req		=	store.delete(cursor.key);
-						req.onerror	=	options.error;
+						var req = store.delete(cursor.key);
+						req.onerror = options.error;
 					});
 					records++;
 					if(records < num) cursor.continue();
@@ -680,7 +680,7 @@
 		/**
 		 * kick a job from the buried table by its id
 		 */
-		var kick_job	=	function(id, options)
+		var kick_job = function(id, options)
 		{
 			check_db();
 			options || (options = {});
@@ -712,7 +712,7 @@
 		/**
 		 * reset a job's ttr
 		 */
-		var touch	=	function(id, options)
+		var touch = function(id, options)
 		{
 			check_db();
 			options || (options = {});
@@ -733,16 +733,16 @@
 						return;
 					}
 
-					var trx			=	db.transaction(tbl.reserved, 'readwrite');
-					trx.oncomplete	=	function(e) { if(options.success) options.success(e); };
-					trx.onerror		=	function(e) { if(options.error) options.error(e); }
+					var trx = db.transaction(tbl.reserved, 'readwrite');
+					trx.oncomplete = function(e) { if(options.success) options.success(e); };
+					trx.onerror = function(e) { if(options.error) options.error(e); }
 
-					var store		=	trx.objectStore(tbl.reserved);
-					var req			=	store.get(id);
-					req.onsuccess	=	function(e)
+					var store = trx.objectStore(tbl.reserved);
+					var req = store.get(id);
+					req.onsuccess = function(e)
 					{
-						var item	=	req.result;
-						item.expire	=	new Date().getTime() + (item.ttr * 1000);
+						var item = req.result;
+						item.expire = new Date().getTime() + (item.ttr * 1000);
 						store.put(item);
 					};
 				},
@@ -750,24 +750,24 @@
 			});
 		};
 
-		var count_ready	=	function(tube, options)
+		var count_ready = function(tube, options)
 		{
 			check_db();
 			options || (options = {});
 
 			if(qoptions.tubes.indexOf(tube) < 0) throw new HustleBadTube('tube '+ tube +' doesn\'t exist');
 
-			var count		=	null;
+			var count = null;
 
-			var trx			=	db.transaction(tube, 'readonly');
-			trx.oncomplete	=	function(e) { if(options.success) options.success(count, e); };
-			trx.onerror		=	function(e) { if(options.error) options.error(e); }
+			var trx = db.transaction(tube, 'readonly');
+			trx.oncomplete = function(e) { if(options.success) options.success(count, e); };
+			trx.onerror = function(e) { if(options.error) options.error(e); }
 
-			var store		=	trx.objectStore(tube);
-			var req			=	store.count();
-			req.onsuccess	=	function(e)
+			var store = trx.objectStore(tube);
+			var req = store.count();
+			req.onsuccess = function(e)
 			{
-				count	=	req.result;
+				count = req.result;
 			};
 		};
 
@@ -778,25 +778,25 @@
 		 * Has two public methods: start and stop. The consumer is started by
 		 * default on instantiation.
 		 */
-		var Consumer	=	function(fn, coptions)
+		var Consumer = function(fn, coptions)
 		{
 			coptions || (coptions = {});
 
-			var tube	=	coptions.tube ? coptions.tube : 'default';
-			var delay	=	coptions.delay ? coptions.delay : 100;
-			var do_stop	=	false;
+			var tube = coptions.tube ? coptions.tube : 'default';
+			var delay = coptions.delay ? coptions.delay : 100;
+			var do_stop = false;
 
-			var poll	=	function(options)
+			var poll = function(options)
 			{
 				options || (options = {});
 
 				if(do_stop || !db) return;
 				if(coptions.enable_fn)
 				{
-					var res	=	coptions.enable_fn();
+					var res = coptions.enable_fn();
 					if(!res)
 					{
-						do_stop	=	true;
+						do_stop = true;
 						return false;
 					}
 				}
@@ -816,25 +816,25 @@
 				if(!options.skip_recurse) setTimeout(poll, delay);
 			};
 
-			var start	=	function()
+			var start = function()
 			{
 				if(!do_stop) return false;
-				do_stop	=	false;
+				do_stop = false;
 				setTimeout(poll, delay);
 				return true;
 			};
 
-			var stop	=	function()
+			var stop = function()
 			{
 				if(do_stop) return false;
-				do_stop	=	true;
+				do_stop = true;
 				return true;
 			};
 
 			setTimeout(poll, delay);
 
-			this.start	=	start;
-			this.stop	=	stop;
+			this.start = start;
+			this.stop = stop;
 
 			return this;
 		};
@@ -846,14 +846,14 @@
 		/**
 		 * move jobs in the delayed state into their respective tubes
 		 */
-		var move_delayed_jobs_to_ready	=	function(options)
+		var move_delayed_jobs_to_ready = function(options)
 		{
 			options || (options = {});
 
-			var move_items	=	[];
+			var move_items = [];
 
-			var trx			=	db.transaction(tbl.delayed, 'readonly');
-			trx.oncomplete	=	function(e)
+			var trx = db.transaction(tbl.delayed, 'readonly');
+			trx.oncomplete = function(e)
 			{
 				move_items.forEach(function(item) {
 					move_item(item.id, tbl.delayed, item.tube, {
@@ -863,19 +863,19 @@
 					});
 				});
 			};
-			trx.onerror		=	function(e)
+			trx.onerror = function(e)
 			{
 				console.error('Hustle: delayed move: ', e);
 				if(options.error) options.error(e);
 			}
 
-			var store	=	trx.objectStore(tbl.delayed);
-			var index	=	store.index('activate');
-			var bound	=	new Date().getTime();
-			var range	=	IDBKeyRange.upperBound(bound);
-			index.openCursor(range).onsuccess	=	function(e)
+			var store = trx.objectStore(tbl.delayed);
+			var index = store.index('activate');
+			var bound = new Date().getTime();
+			var range = IDBKeyRange.upperBound(bound);
+			index.openCursor(range).onsuccess = function(e)
 			{
-				var cursor	=	e.target.result;
+				var cursor = e.target.result;
 				if(cursor)
 				{
 					move_items.push(cursor.value);
@@ -887,14 +887,14 @@
 		/**
 		 * move expired jobs to their ready tube
 		 */
-		var move_expired_jobs_to_ready	=	function(options)
+		var move_expired_jobs_to_ready = function(options)
 		{
 			options || (options = {});
 
-			var move_items	=	[];
+			var move_items = [];
 
-			var trx			=	db.transaction(tbl.reserved, 'readonly');
-			trx.oncomplete	=	function(e)
+			var trx = db.transaction(tbl.reserved, 'readonly');
+			trx.oncomplete = function(e)
 			{
 				move_items.forEach(function(item) {
 					move_item(item.id, tbl.reserved, item.tube, {
@@ -913,19 +913,19 @@
 					});
 				});
 			};
-			trx.onerror		=	function(e)
+			trx.onerror = function(e)
 			{
 				console.error('Hustle: ttr move: ', e);
 				if(options.error) options.error(e);
 			}
 
-			var store	=	trx.objectStore(tbl.reserved);
-			var index	=	store.index('expire');
-			var bound	=	new Date().getTime();
-			var range	=	IDBKeyRange.upperBound(bound);
-			index.openCursor(range).onsuccess	=	function(e)
+			var store = trx.objectStore(tbl.reserved);
+			var index = store.index('expire');
+			var bound = new Date().getTime();
+			var range = IDBKeyRange.upperBound(bound);
+			index.openCursor(range).onsuccess = function(e)
 			{
-				var cursor	=	e.target.result;
+				var cursor = e.target.result;
 				if(cursor)
 				{
 					move_items.push(cursor.value);
@@ -937,9 +937,9 @@
 		/**
 		 * this function does database cleanup. only runs while db is open.
 		 */
-		do_maintenance	=	function()
+		do_maintenance = function()
 		{
-			var run_maintenance	=	function()
+			var run_maintenance = function()
 			{
 				if(!db) return false;
 
@@ -954,7 +954,7 @@
 		// ---------------------------------------------------------------------
 		// exports
 		// ---------------------------------------------------------------------
-		var Queue	=	{
+		var Queue = {
 			peek: peek,
 			put: put,
 			reserve: reserve,
@@ -967,52 +967,52 @@
 			count_ready: count_ready,
 			Consumer: Consumer
 		};
-		this.open		=	open;
-		this.close		=	close;
-		this.is_open	=	function() { return !!db; };
-		this.wipe		=	wipe;
-		this.Error		=	Error;
-		this.Queue		=	Queue;
-		this.promisify	=	function()
+		this.open = open;
+		this.close = close;
+		this.is_open = function() { return !!db; };
+		this.wipe = wipe;
+		this.Error = Error;
+		this.Queue = Queue;
+		this.promisify = function()
 		{
-			var _self	=	this;
-			var do_promisify	=	function(fn, opts_idx)
+			var _self = this;
+			var do_promisify = function(fn, opts_idx)
 			{
 				return function() {
-					var args	=	Array.prototype.slice.call(arguments, 0);
+					var args = Array.prototype.slice.call(arguments, 0);
 					if(!args[opts_idx]) args[opts_idx] = {};
 					return new Promise(function(success, error) {
-						args[opts_idx].success	=	success;
-						args[opts_idx].error	=	error;
+						args[opts_idx].success = success;
+						args[opts_idx].error = error;
 						fn.apply(_self, args);
 					});
 				};
 			};
-			this.open				=	do_promisify(this.open, 0);
-			this.Queue.peek			=	do_promisify(this.Queue.peek, 1);
-			this.Queue.put			=	do_promisify(this.Queue.put, 1);
-			this.Queue.reserve		=	do_promisify(this.Queue.reserve, 0);
-			this.Queue.delete		=	do_promisify(this.Queue.delete, 1);
-			this.Queue.release		=	do_promisify(this.Queue.release, 1);
-			this.Queue.bury			=	do_promisify(this.Queue.bury, 1);
-			this.Queue.kick			=	do_promisify(this.Queue.kick, 1);
-			this.Queue.kick_job		=	do_promisify(this.Queue.kick_job, 1);
-			this.Queue.touch		=	do_promisify(this.Queue.touch, 1);
-			this.Queue.count_ready	=	do_promisify(this.Queue.count_ready, 1);
+			this.open = do_promisify(this.open, 0);
+			this.Queue.peek = do_promisify(this.Queue.peek, 1);
+			this.Queue.put = do_promisify(this.Queue.put, 1);
+			this.Queue.reserve = do_promisify(this.Queue.reserve, 0);
+			this.Queue.delete = do_promisify(this.Queue.delete, 1);
+			this.Queue.release = do_promisify(this.Queue.release, 1);
+			this.Queue.bury = do_promisify(this.Queue.bury, 1);
+			this.Queue.kick = do_promisify(this.Queue.kick, 1);
+			this.Queue.kick_job = do_promisify(this.Queue.kick_job, 1);
+			this.Queue.touch = do_promisify(this.Queue.touch, 1);
+			this.Queue.count_ready = do_promisify(this.Queue.count_ready, 1);
 			return this;
 		}.bind(this);
-		this.debug		=	{
+		this.debug = {
 			get_db: function() { return db; }
 		};
 
 		return this;
 	};
-	Hustle.Error	=	{
+	Hustle.Error = {
 		DBClosed: HustleDBClosed,
 		DBOpened: HustleDBOpened,
 		BadTube: HustleBadTube,
 		BadID: HustleBadID,
 		NotFound: HustleNotFound
 	};
-	window.Hustle	=	Hustle;
+	window.Hustle = Hustle;
 })(window);

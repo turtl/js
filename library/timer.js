@@ -7,16 +7,16 @@ var Timer = new Class({
 
 	initialize: function (ms, poll) {
 		poll || (poll = 50);
-		this.start_ms	=	0;
-		this.ms			=	ms;
-		this.is_started	=	false;
-		this.poll		=	poll;
+		this.start_ms = 0;
+		this.ms = ms;
+		this.is_started = false;
+		this.poll = poll;
 	},
 
 	start: function () {
 		d=new Date();
-		this.start_ms	=	d.getTime();
-		this.is_started	=	true;
+		this.start_ms = d.getTime();
+		this.is_started = true;
 		this.run.delay(this.poll, this);
 	},
 
