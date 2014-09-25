@@ -328,7 +328,7 @@ var Protected = Composer.RelationalModel.extend({
 		var encrypted_key = false;
 		var decrypting_key = false;
 
-		for(x in keys)
+		for(var x in keys)
 		{
 			var key = keys[x];
 			if(!key || !key.k) continue;
