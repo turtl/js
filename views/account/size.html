@@ -7,7 +7,7 @@ var pretty_size	=	function(size, div)
 };
 ?>
 <div class="profile-size" title="<?=profile_size?> bytes used out of <?=storage?>">
-	<div class="bar" style="width: <?=Math.min(Math.max((profile_size / storage) * 100, 1), 100)?>%;">
+	<div class="bar" style="width: <?=Math.min(Math.max((profile_size / storage) * 100, 4), 100)?>%;">
 		<? if(loading_profile_size) { ?>
 			&nbsp; (loading)
 		<? } else { ?>
