@@ -4,7 +4,6 @@ config.routes = {
 	//'/users/join': ['users', 'join'],
 	'/users/logout': ['users', 'logout'],
 
-	'/bookmark': ['bookmark', 'index'],
-
-	'/': ['dashboard', 'load']
+	'/': ['boards', 'index'],
+	'/board/([0-9a-f]+)': ['boards', 'view']
 }

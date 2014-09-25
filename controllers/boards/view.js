@@ -1,4 +1,4 @@
-var DashboardController = Composer.Controller.extend({
+var BoardsViewController = Composer.Controller.extend({
 	inject: turtl.main_container_selector,
 
 	elements: {
@@ -67,7 +67,7 @@ var DashboardController = Composer.Controller.extend({
 			this.profile.trigger('change:current_board');
 		}.bind(this), 'dashboard:boards:remove');
 
-		this.boards_controller = new BoardsController({
+		this.boards_controller = new BoardsDropdownController({
 			el: this.boards,
 			profile: this.profile
 		});

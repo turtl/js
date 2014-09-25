@@ -19,8 +19,7 @@ var cid_match = /^z\.[0-9a-f]+\.c[0-9]+$/;
 var turtl = {
 	site_url: null,
 
-	// base window title
-	base_window_title: 'Turtl',
+	events: new Composer.Event(),
 
 	// holds the user model
 	user: null,
@@ -151,7 +150,7 @@ var turtl = {
 				turtl.user.bind('change', turtl.user.write_cookie.bind(turtl.user), 'user:write_changes_to_cookie');
 			}
 			turtl.api.set_auth(turtl.user.get_auth());
-			turtl.controllers.pages.release_current();
+			turtl.controllers.pages.release();
 			turtl.sync = new Sync();
 			turtl.messages = new Messages();
 			turtl.profile = new Profile();
@@ -182,7 +181,7 @@ var turtl = {
 						complete: function() {
 							// move keys from the user's settings into the keychain
 							turtl.show_loading_screen(false);
-							turtl.controllers.pages.release_current();
+							turtl.controllers.pages.release();
 							turtl.last_url = '';
 							turtl.search.reindex();
 							var initial_route = options.initial_route || '';
@@ -227,7 +226,7 @@ var turtl = {
 				delete turtl.controllers.feedback;
 			}
 
-			turtl.controllers.pages.release_current();
+			turtl.controllers.pages.release();
 			turtl.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
 			turtl.messages.unbind(['add', 'remove', 'reset', 'change'], 'turtl:messages:counter');
 			turtl.user.unbind_relational('personas', ['add', 'remove', 'reset'], 'turtl:personas:counter');
@@ -417,7 +416,7 @@ var turtl = {
 		if(!window.port) return false;
 
 		window.port.bind('addon-controller-open', function(controller_name, params) {
-			var controller = turtl.controllers.pages.load(window[controller_name], params);
+			var controller = turtl.controllers.pages.load(new window[controller_name](params));
 		});
 
 		window.port.bind('get-height', function() {
