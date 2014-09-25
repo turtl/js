@@ -6,10 +6,6 @@ var Board = Composer.RelationalModel.extend({
 			type: Composer.HasMany,
 			collection: 'Tags'
 		},
-		categories: {
-			type: Composer.HasMany,
-			collection: 'Categories'
-		},
 		notes: {
 			type: Composer.HasMany,
 			filter_collection: 'NotesFilter',

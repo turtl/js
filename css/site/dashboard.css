@@ -1,11 +1,3 @@
-.dashboard > .boards {position: relative; float: left; width: 19%;}
-.dashboard > .sidebar {float: left; position: absolute; top: 108px /* 29+16+22+40+1 */; width: 20%; height: 200px; overflow: auto;}
-/* fixes a chrome (and webkit?) performance issue with fixed divs */
-.dashboard > .sidebar {-webkit-transform: translateZ(0);}
 .dashboard > .menu {}
-.dashboard > .notes {float: right; width: 79%; min-height: 75px;}
+.dashboard > .notes {min-height: 75px;}
 
-@media screen and (min-resolution: 250dpi), screen and (max-width: 1000px) {
-	.dashboard > .sidebar {position: static; float: none; width: auto; height: auto; padding: 0 0 0 2%; overflow: hidden;}
-	.dashboard > .notes {float: none; width: auto; min-height: 75px;}
-}

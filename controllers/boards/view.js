@@ -2,7 +2,6 @@ var BoardsViewController = Composer.Controller.extend({
 	inject: turtl.main_container_selector,
 
 	elements: {
-		'.sidebar': 'sidebar',
 		'.boards': 'boards',
 		'.categories': 'categories',
 		'.tags': 'tags',
@@ -19,8 +18,6 @@ var BoardsViewController = Composer.Controller.extend({
 	categories_controller: null,
 	tags_controller: null,
 
-	sidebar_timer: null,
-
 	init: function()
 	{
 		this.render();
@@ -30,14 +27,6 @@ var BoardsViewController = Composer.Controller.extend({
 		var do_load = function() {
 			var current = this.profile.get_current_board();
 
-			this.categories_controller = new CategoriesController({
-				inject: this.categories,
-				board: current
-			});
-			this.tags_controller = new TagsController({
-				inject: this.tags,
-				board: current
-			});
 			this.notes_controller = new NotesController({
 				inject: this.notes,
 				board: current
@@ -67,24 +56,7 @@ var BoardsViewController = Composer.Controller.extend({
 			this.profile.trigger('change:current_board');
 		}.bind(this), 'dashboard:boards:remove');
 
-		this.boards_controller = new BoardsDropdownController({
-			el: this.boards,
-			profile: this.profile
-		});
-		this.boards_controller.bind('change-board', function(board) {
-			this.tags_controller.clear_filters();
-			this.profile.set_current_board(board);
-		}.bind(this), 'dashboard:boards:change-board');
-
 		turtl.keyboard.bind('S-/', this.open_help.bind(this), 'dashboard:shortcut:open_help');
-
-		// monitor sidebar size changes
-		this.sidebar_timer = new Timer(50);
-		this.sidebar_timer.end = this.resize_sidebar.bind(this);
-		this.sidebar_timer.start();
-
-		var sidebar = $E('.sidebar-bg');
-		if(sidebar) sidebar.setStyle('display', 'block');
 
 		this.profile.trigger('change:current_board');
 	},
@@ -104,11 +76,6 @@ var BoardsViewController = Composer.Controller.extend({
 		this.profile.unbind_relational('boards', 'remove', 'dashboard:boards:remove');
 		turtl.keyboard.unbind('S-/', 'dashboard:shortcut:open_help');
 		turtl.user.unbind('logout', 'dashboard:logout:clear_timer');
-		if(this.sidebar_timer && this.sidebar_timer.end) this.sidebar_timer.end = null;
-
-		// hide sidebar again
-		var sidebar = $E('.sidebar-bg');
-		if(sidebar) sidebar.setStyle('display', '');
 
 		this.parent.apply(this, arguments);
 	},
@@ -122,49 +89,6 @@ var BoardsViewController = Composer.Controller.extend({
 	open_help: function()
 	{
 		new HelpController();
-	},
-
-	resize_sidebar: function()
-	{
-		// we're probably in a mobile view, or for some other reason have marked
-		// the sidebar as static. don't resize/move it at all.
-		if(this.sidebar.getStyle('position') == 'static') return false;
-
-		var scroll = window.getScroll().y;
-		var sidepos = this.sidebar.getCoordinates();
-		if(sidepos.top <= scroll && this.sidebar.getStyle('position') != 'fixed')
-		{
-			this._side_orig_top = sidepos.top;
-			this.sidebar.setStyles({
-				position: 'fixed',
-				top: 10
-			});
-		}
-		if(scroll <= this._side_orig_top)
-		{
-			this.sidebar.setStyles({
-				position: '',
-				top: ''
-			});
-		}
-
-		var wheight = window.getCoordinates().height;
-		var height = 500;
-		if(this.sidebar.getStyle('position') == 'fixed')
-		{
-			height = wheight;
-		}
-		else
-		{
-			var sidepos = this.sidebar.getCoordinates();  // recalculate (sidebar pos may have changed)
-			var mtop = sidepos.top;
-			height = wheight - mtop;
-			height += scroll;
-		}
-		this.sidebar.setStyles({
-			height: height - 5
-		});
-		this.sidebar_timer.start();
 	}
 });
 

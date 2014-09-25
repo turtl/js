@@ -138,12 +138,6 @@ var turtl = {
 
 		// update the user_profiles collection on login
 		this.user.bind('login', function() {
-			// init our feedback
-			if(!window._in_background)
-			{
-				this.load_controller('feedback', FeedbackButtonController);
-			}
-
 			// if the user is logged in, we'll put their auth info into the api object
 			if(!window._in_ext && !window._disable_cookie)
 			{
@@ -218,13 +212,6 @@ var turtl = {
 		turtl.user.bind('logout', function() {
 			// stop syncing
 			turtl.sync.stop();
-
-			// remove feedback button
-			if(turtl.controllers.feedback)
-			{
-				turtl.controllers.feedback.release();
-				delete turtl.controllers.feedback;
-			}
 
 			turtl.controllers.pages.release();
 			turtl.keyboard.unbind('S-l', 'dashboard:shortcut:logout');

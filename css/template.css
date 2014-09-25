@@ -33,9 +33,9 @@ a { text-decoration: none; }
 /* custom icon font(s) */
 @font-face { font-family: 'Entypo'; font-weight: 400; src: url(../images/font/entypo.fontello.ttf); }
 
-header {/*float: left; width: 20%;*/ height: 40px; margin: 0 0 22px 0; padding: 0 0 0 10px; background: #222; border-bottom: 1px solid #222;}
-header h1 {position: relative; float: left; display: inline-block; margin: 5px 0 0 0;}
-header h1 a {display: block; width: 29px; height: 29px; background: url(../images/template/logo.svg) 0 0 no-repeat; background-size: 100% 100%;}
+header {position: relative; width: 100%; height: 52px; margin: 0 0 22px 0; padding: 4px 0 0 0; background: #222; border-bottom: 1px solid #222;}
+header h1 {position: absolute; display: inline-block; left: 50%; margin-left: -14.5px; margin: 5px 0 0 0;}
+header h1 a {display: block; width: 38px; height: 38px; background: url(../images/template/logo.svg) 0 0 no-repeat; background-size: 100% 100%;}
 header h1 span {display: none;}
 header h1 {color: #eee; color: #92b579;}
 header h1.active {cursor: pointer;}
@@ -43,9 +43,9 @@ header h1 small {position: absolute; z-index: 4; right: 0; bottom: 0; display: b
 header div.loading {visibility: hidden; float: left; margin: 15px 16px 0 16px;}
 
 /* header menu */
-header div.actions {position: relative; float: right; margin: 0 4px 0 0;}
+header div.actions {position: relative; float: left; margin: 0 0 0 14px;}
 header div.actions a.menu {display: inline-block; height: 36px; margin: 5px 0 0 0; opacity: .9;}
-header div.actions a.menu icon {padding: 7px 0 0 0; font-size: 2.2em; color: #ddd;}
+header div.actions a.menu icon {padding: 9px 0 0 0; font-size: 2.6em; color: #8fc46a;}
 header div.actions a.menu:hover {opacity: 1;}
 header div.actions div.menu {display: none; position: absolute; right: 0; z-index: 10; width: 220px; margin: -4px 0 0 -220px; padding: 10px; text-align: center; background: #fff; border-radius: 4px; box-shadow: 0 0 3px 2px rgba(0, 0, 0, .3);}
 header div.actions div.menu.open {display: block;}

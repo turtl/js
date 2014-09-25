@@ -1,37 +1,10 @@
 /*.notes div.note-actions {display: block; height: 40px; margin: 0 0 16px 0; padding: 7px 0 0 0;}*/
-.notes div.note-actions {z-index: 200; display: block; position: absolute; top: 1px; height: 40px; margin: 0; padding: 5px 0 0 0;}
-.notes div.note-actions a {display: block;}
-.notes div.note-actions a span {display: block;}
-.notes div.note-actions {margin-left: 15px;}
-/*.notes div.note-actions div.button.add.note {float: left; margin: -1px 0 0 0; padding: 1px 4px; border-radius: 3px;}*/
-.notes div.note-actions div.button {margin: 0 6px 0 0;}
-.notes div.note-actions div.button:hover {background: #1e1e1e;}
-.notes div.note-actions .sort {display: inline-block; margin-left: 16px; color: #ccc; white-space: nowrap;}
-.notes div.note-actions .sort a {display: inline;}
-.notes div.note-actions .sort a icon {display: none; color: #ccc;}
-.notes div.note-actions .sort a.sel.asc icon.asc,
-.notes div.note-actions .sort a.sel.desc icon.desc {display: inline-block;}
-.notes div.note-actions ul {float: left; list-style: none; margin: -1px 0 0 32px;}
-.notes div.note-actions .hidden {display: none;}
-.notes div.note-actions ul li {float: left; margin: 0 0 0 0;}
-.notes div.note-actions ul li a {width: 24px; height: 24px; padding: 4px 0 0 4px; border: 1px solid #ccc; border-left: 0;}
-.notes div.note-actions ul li:first-child a {border-left: 1px solid #ccc;}
-.notes div.note-actions ul li a {
-	background: #eeeeee; /* Old browsers */
-	background: -moz-linear-gradient(top, #eeeeee 0%, #cccccc 100%); /* FF3.6+ */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#eeeeee), color-stop(100%,#cccccc)); /* Chrome,Safari4+ */
-	background: -webkit-linear-gradient(top, #eeeeee 0%,#cccccc 100%); /* Chrome10+,Safari5.1+ */
-	background: -o-linear-gradient(top, #eeeeee 0%,#cccccc 100%); /* Opera 11.10+ */
-	background: -ms-linear-gradient(top, #eeeeee 0%,#cccccc 100%); /* IE10+ */
-	background: linear-gradient(to bottom, #eeeeee 0%,#cccccc 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 ); /* IE6-9 */
-}
-.notes div.note-actions ul li a.sel {background: #e5e5e5;}
-.notes div.note-actions ul li a.sel span {opacity: .65;}
-.notes div.note-actions ul li a span {width: 20px; height: 20px; opacity: .6;}
-.notes div.note-actions ul li a.grid span {background: url(../../images/site/notes/icons/grid.png) center center no-repeat;}
-.notes div.note-actions ul li a.masonry span {background: url(../../images/site/notes/icons/masonry.png) center center no-repeat;}
-.notes div.note-actions ul li a.list span {background: url(../../images/site/notes/icons/list.png) center center no-repeat;}
+.notes div.note-actions {position: absolute; top: 0; right: 0;}
+.notes div.note-actions a {display: block; float: left; width: 56px; height: 56px; text-align: center; border-left: 1px solid rgba(255, 255, 255, .1);}
+.notes div.note-actions a icon {padding-top: 18px; font-size: 2.6em; color: #fff;}
+.notes div.note-actions a.search icon {font-size: 2.2em;}
+
+.notes div.filters {display: none;}
 
 /* individual note actions */
 .notes div.actions {display: none; z-index: 2; position: absolute; top: 0; right: 0; height: 24px; padding: 0 0 0 4px; opacity: .95; background: #222; border: 1px solid #333;}
@@ -222,10 +195,6 @@ ul.note_list.list_masonry .note p {padding: 0 0 16px 0;}
 ul.note_list.list_masonry .note p:first-child {padding: 0 0 0 0; margin: 0;}
 ul.note_list.list_masonry .note img {max-width: 100%;}
 ul.note_list.list_masonry .note a.img {display: block; width: 232px; line-height: 0; text-align: center; background: #000;}
-
-@media screen and (min-resolution: 250dpi), screen and (max-width: 1000px) {
-	.notes div.note-actions {z-index: 200; position: fixed; top: auto; bottom: 0; width: 98%; margin: 0; padding: 9px 0 0 2%; background: #dfdfdf; border-top: 1px solid #bbb;}
-}
 
 .notes .MathJax_Display {padding: 4px; overflow-x: auto;}
 
