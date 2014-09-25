@@ -1,7 +1,7 @@
 function toJSON(object)
 {
 	window._toJSON_disable_protect = true;
-	var ret	=	object.toJSON();
+	var ret = object.toJSON();
 	window._toJSON_disable_protect = false;
 	return ret;
 }
@@ -9,18 +9,18 @@ function toJSON(object)
 /**
  * Allow javascript's Error class to be extended
  */
-var extend_error	=	function(extend, errname)
+var extend_error = function(extend, errname)
 {
-	var err						=	function() {
-		var tmp	=	extend.apply(this, arguments);
+	var err = function() {
+		var tmp = extend.apply(this, arguments);
 		tmp.name = this.name = errname;
 
-		this.stack		=	tmp.stack
-		this.message	=	tmp.message
+		this.stack = tmp.stack
+		this.message = tmp.message
 
 		return this;
 	};
-	err.prototype	=	Object.create(extend.prototype, { constructor: { value: err } });
+	err.prototype = Object.create(extend.prototype, { constructor: { value: err } });
 	return err;
 }
 
@@ -36,9 +36,9 @@ var extend_error	=	function(extend, errname)
  */
 function get_parent(obj)
 {
-	var name	=	obj.$caller.$name,
-	parent		=	obj.$caller.$owner.parent,
-	previous	=	(parent) ? parent.prototype[name] : null;
+	var name = obj.$caller.$name,
+	parent = obj.$caller.$owner.parent,
+	previous = (parent) ? parent.prototype[name] : null;
 	if (!previous) throw new Error('The method "' + name + '" has no parent.');
 	return previous;
 }
@@ -51,9 +51,9 @@ function uint8array_to_string(array)
 	// be smart about converting array buffers to arrays
 	if(typeof ArrayBuffer != 'undefined' && array instanceof ArrayBuffer)
 	{
-		array	=	new Uint8Array(array);
+		array = new Uint8Array(array);
 	}
-	var str	=	'';
+	var str = '';
 	for(var i = 0, n = array.length; i < n; i++)
 	{
 		str	+=	String.fromCharCode(array[i]);
@@ -114,9 +114,9 @@ function fire_click(node)
 function get_url()
 {
 	if(History.enabled)
-		var url		=	new String(window.location.pathname).replace(/^\/?/, '');
+		var url = new String(window.location.pathname).replace(/^\/?/, '');
 	else
-		var url		=	new String(window.location.hash).replace(/^#!\/?/, '');
+		var url = new String(window.location.hash).replace(/^#!\/?/, '');
 	return url;
 }
 
@@ -125,8 +125,8 @@ function get_data_from_querystring(url)
 	url || (url = new String(window.location.hash).replace(/.*?&/, ''));
 	var data = {};
 	url.split('&').each(function(d) {
-		var pieces	=	d.split('=');
-		data[pieces[0]]	=	unescape(pieces[1]);
+		var pieces = d.split('=');
+		data[pieces[0]] = unescape(pieces[1]);
 	});
 	return data;
 }
@@ -151,7 +151,7 @@ String.implement({
 
 	pad: function(num, pad)
 	{
-		var str	=	'';
+		var str = '';
 		for(var i = 0; i < num - this.toString().length; i++)
 		{
 			str	+=	pad;
@@ -168,10 +168,10 @@ String.implement({
 function clicked_outside(e, obj)
 {
 	if(!obj || !e || !obj.getCoordinates) return false;
-	var c	=	obj.getCoordinates();
+	var c = obj.getCoordinates();
 	if(e.page.x == 0 || e.page.y == 0 || c.bottom == 0) return false;
-	var x	=	e.page.x;
-	var y	=	e.page.y;
+	var x = e.page.x;
+	var y = e.page.y;
 	if(x < c.left || x > c.right || y < c.top || y > c.bottom)
 	{
 		// click was outside given object
@@ -191,7 +191,7 @@ Element.implement({
 	}
 });
 
-var empty	=	function(obj)
+var empty = function(obj)
 {
 	if(obj == null)
 	{
@@ -213,7 +213,7 @@ var empty	=	function(obj)
 		}
 		else
 		{
-			var items	=	0;
+			var items = 0;
 			Object.each(obj, function(val, key) {
 				items++;
 			});
@@ -237,7 +237,7 @@ var parse_querystring = function(qs)
 	return data;
 };
 
-var view	=	{
+var view = {
 	escape: function(str)
 	{
 		return str;
@@ -247,20 +247,20 @@ var view	=	{
 	{
 		options || (options = {});
 
-		tag_name	=	tag_name.toLowerCase();
+		tag_name = tag_name.toLowerCase();
 		if(options.escape)
 		{
-			tag_name	=	tag_name
+			tag_name = tag_name
 				.replace(/&(?!amp;)/g, '&amp;')
 				.replace(/"/g, '&quot;');
 		}
 		else
 		{
-			tag_name	=	tag_name
+			tag_name = tag_name
 				.replace(/&amp;/g, '&')
 				.replace(/&quot;/g, '"')
 		}
-		tag_name	=	tag_name.clean();
+		tag_name = tag_name.clean();
 		return tag_name;
 	},
 
@@ -282,14 +282,14 @@ var view	=	{
 
 	tex_math: function(body)
 	{
-		body	=	body.replace(/\$\$([\s\S]+?)\$\$/g, '<pre class="math">$1</pre>');
+		body = body.replace(/\$\$([\s\S]+?)\$\$/g, '<pre class="math">$1</pre>');
 		return body;
 	},
 
 	note_body: function(body)
 	{
-		body	=	view.tex_math(body);
-		body	=	marked(body);
+		body = view.tex_math(body);
+		body = marked(body);
 		return body;
 	}
 };

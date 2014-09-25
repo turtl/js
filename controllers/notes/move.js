@@ -57,7 +57,7 @@ var NoteMoveController = Composer.Controller.extend({
 		if(!boardfrom || !boardto) return false;
 
 		// save our note's keys in case something goes...awry
-		var keys		=	this.note.get('keys');
+		var keys = this.note.get('keys');
 
 		this.note.set({board_id: bid}, {silent: true});
 		this.note.generate_subkeys([

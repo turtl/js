@@ -32,9 +32,9 @@ var FeedbackController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var persona	=	turtl.user.get('personas').first();
-		var email	=	persona ? persona.get('email') : null;
-		var content	=	Template.render('feedback/index', {
+		var persona = turtl.user.get('personas').first();
+		var email = persona ? persona.get('email') : null;
+		var content = Template.render('feedback/index', {
 			email: email
 		});
 		this.html(content);
@@ -53,7 +53,7 @@ var FeedbackController = Composer.Controller.extend({
 
 	render_thanks: function(email)
 	{
-		var content	=	Template.render('feedback/thanks', {
+		var content = Template.render('feedback/thanks', {
 			email: email
 		});
 		this.html(content);
@@ -63,8 +63,8 @@ var FeedbackController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 
-		var from	=	this.inp_email.get('value').clean();
-		var body	=	this.inp_body.get('value').clean();
+		var from = this.inp_email.get('value').clean();
+		var body = this.inp_body.get('value').clean();
 
 		if(body == '')
 		{
@@ -72,11 +72,11 @@ var FeedbackController = Composer.Controller.extend({
 			return false;
 		}
 
-		var feedback	=	new Feedback({
+		var feedback = new Feedback({
 			email: from,
 			body: body
 		});
-		this.inp_submit.disabled	=	true;
+		this.inp_submit.disabled = true;
 		turtl.loading(true);
 		feedback.save({
 			success: function(res) {
@@ -86,7 +86,7 @@ var FeedbackController = Composer.Controller.extend({
 			error: function(err) {
 				turtl.loading(false);
 				barfr.barf('There was a problem sending your feedback: '+ err +'. Please try again!');
-				this.inp_submit.disabled	=	false;
+				this.inp_submit.disabled = false;
 			}.bind(this)
 		});
 	},

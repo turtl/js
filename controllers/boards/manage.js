@@ -41,12 +41,12 @@ var BoardManageController = Composer.Controller.extend({
 	render: function()
 	{
 		// load board data (sans notes)
-		var boards	=	this.collection.map(function(b) {
-			var _notes	=	b.get('notes');
+		var boards = this.collection.map(function(b) {
+			var _notes = b.get('notes');
 			b.unset('notes', {silent: true});
-			var ret		=	toJSON(b);
+			var ret = toJSON(b);
 			b.set({notes: _notes}, {silent: true});
-			ret.share_enabled	=	b.share_enabled();;
+			ret.share_enabled = b.share_enabled();;
 			return ret;
 		});
 		var content = Template.render('boards/manage', {
@@ -62,14 +62,14 @@ var BoardManageController = Composer.Controller.extend({
 	setup_sort: function()
 	{
 		if(this.my_sort) this.my_sort.detach();
-		this.my_sort	=	new Sortables(this.my_boards, {
+		this.my_sort = new Sortables(this.my_boards, {
 			handle: 'span.sort',
 			onComplete: function() {
-				var items	=	this.my_boards.getElements('> li');
-				var sort	=	{};
-				var ids		=	items.each(function(li, idx) {
-					var bid		=	li.className.replace(/^.*board_([0-9a-f-]+).*?$/, '$1');
-					sort[bid]	=	idx;
+				var items = this.my_boards.getElements('> li');
+				var sort = {};
+				var ids = items.each(function(li, idx) {
+					var bid = li.className.replace(/^.*board_([0-9a-f-]+).*?$/, '$1');
+					sort[bid] = idx;
 				});
 				turtl.user.get('settings').get_by_key('board_sort').value(sort);
 				this.collection.sort();
@@ -107,8 +107,8 @@ var BoardManageController = Composer.Controller.extend({
 	{
 		if(!e) return;
 		e.stop();
-		var bid		=	next_tag_up('a', e.target).className;
-		var board	=	this.collection.find_by_id(bid);
+		var bid = next_tag_up('a', e.target).className;
+		var board = this.collection.find_by_id(bid);
 		if(!board) return;
 		this.release();
 		new BoardShareController({
@@ -120,8 +120,8 @@ var BoardManageController = Composer.Controller.extend({
 	{
 		if(!e) return;
 		e.stop();
-		var bid		=	next_tag_up('a', e.target).className;
-		var board	=	this.collection.find_by_id(bid);
+		var bid = next_tag_up('a', e.target).className;
+		var board = this.collection.find_by_id(bid);
 		if(!board) return;
 		this.release();
 		new BoardEditController({
@@ -134,8 +134,8 @@ var BoardManageController = Composer.Controller.extend({
 	{
 		if(!e) return;
 		e.stop();
-		var bid		=	next_tag_up('a', e.target).className;
-		var board	=	this.collection.find_by_id(bid);
+		var bid = next_tag_up('a', e.target).className;
+		var board = this.collection.find_by_id(bid);
 		if(!board) return;
 		if(!confirm('Really the board "'+board.get('title')+'", and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
 
@@ -157,10 +157,10 @@ var BoardManageController = Composer.Controller.extend({
 	{
 		if(!e) return;
 		e.stop();
-		var bid			=	next_tag_up('a', e.target).className;
-		var board		=	this.collection.select_one({id: bid, shared: true});
+		var bid = next_tag_up('a', e.target).className;
+		var board = this.collection.select_one({id: bid, shared: true});
 		if(!board) return false;
-		var persona		=	board.get_shared_persona();
+		var persona = board.get_shared_persona();
 		if(!persona) return;
 		if(!confirm('Really leave this board? You won\'t be able to access it again until the owner invites you again!')) return false;
 

@@ -22,7 +22,7 @@ var Tag = Composer.Model.extend({
 
 	toJSON: function()
 	{
-		var data	=	this.parent.apply(this, arguments);
+		var data = this.parent.apply(this, arguments);
 		if(window._toJSON_disable_protect)
 		{
 			return data;

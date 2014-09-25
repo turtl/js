@@ -101,7 +101,7 @@ var ShareController = Composer.Controller.extend({
 			this.sub_controller.unbind('sent', 'share:sub:sent');
 			this.sub_controller.release();
 		}
-		this.sub_controller	=	new this.controller({
+		this.sub_controller = new this.controller({
 			inject: this.sub_el,
 			model: this.model,
 			persona_data: persona_data,
@@ -111,7 +111,7 @@ var ShareController = Composer.Controller.extend({
 			this.trigger('sent');
 		}.bind(this), 'share:sub:sent');
 		this.sub_controller.bind('release', function() {
-			this.inp_email.value	=	'';
+			this.inp_email.value = '';
 			this.render();
 		}.bind(this), 'share:sub:release');
 	}

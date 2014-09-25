@@ -1,4 +1,4 @@
-var DesktopAddonPort	=	new Class({
+var DesktopAddonPort = new Class({
 	comm: false,
 
 	initialize: function(options)

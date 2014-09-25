@@ -22,7 +22,7 @@ var Template = {
 		if(typeof(this.cache[view_name]) != 'undefined')
 		{
 			// we have it in hand, so just fucking run it and return it
-			var content	=	this.do_render(view_name, data, options);
+			var content = this.do_render(view_name, data, options);
 			return content;
 		}
 
@@ -32,10 +32,10 @@ var Template = {
 	load: function(view_name, data, options)
 	{
 		options || (options = {});
-		var cb_success	=	!options.onSuccess ? function(obj) {} : options.onSuccess;
-		var cb_fail		=	!options.onFail ? function(obj) {} : options.onFail;
+		var cb_success = !options.onSuccess ? function(obj) {} : options.onSuccess;
+		var cb_fail = !options.onFail ? function(obj) {} : options.onFail;
 
-		var success	=	function(res)
+		var success = function(res)
 		{
 			if(!options.load_only)
 			{
@@ -63,12 +63,12 @@ var Template = {
 			method: 'get',
 			onSuccess: function(res)
 			{
-				this.cache[view_name]	=	res;
+				this.cache[view_name] = res;
 				success();
 			}.bind(this),
 			onFailure: function(obj)
 			{
-				this.cache[view_name]	=	false;
+				this.cache[view_name] = false;
 				cb_fail();
 			}.bind(this)
 		}).send();
@@ -79,14 +79,14 @@ var Template = {
 		if(typeof(_templates) != 'undefined')
 		{
 			// load templates from pre-made script
-			this.cache	=	_templates;
+			this.cache = _templates;
 		}
 		else
 		{
 			// templates are most likely inlined, load them.
-			var tpls	=	$$('script').filter(function(el) { return el.get('type') == 'text/x-lb-tpl'; });
+			var tpls = $$('script').filter(function(el) { return el.get('type') == 'text/x-lb-tpl'; });
 			tpls.each(function(tpl) {
-				this.cache[tpl.get('name')]	=	tpl.get('html').replace(/<%script%/g, '<script').replace(/<\/%script%>/g, '</script>');
+				this.cache[tpl.get('name')] = tpl.get('html').replace(/<%script%/g, '<script').replace(/<\/%script%>/g, '</script>');
 			}, this);
 		}
 	},
@@ -100,9 +100,9 @@ var Template = {
 		options || (options = {});
 
 		// pull out important vars from our options
-		var container	=	typeof(options['container']) == 'undefined' ? new Element('div') : options['container'];
-		var cb_success	=	typeof(options['onSuccess']) == 'undefined' ? null : options['onSuccess'];
-		var cb_fail		=	!options.onFail ? function(obj) {} : options.onFail;
+		var container = typeof(options['container']) == 'undefined' ? new Element('div') : options['container'];
+		var cb_success = typeof(options['onSuccess']) == 'undefined' ? null : options['onSuccess'];
+		var cb_fail = !options.onFail ? function(obj) {} : options.onFail;
 
 		// check if we even have the view we want
 		if(!this.cache[name])
@@ -115,7 +115,7 @@ var Template = {
 			return false;
 		}
 
-		var tpl_fn	=	this.cache[name];
+		var tpl_fn = this.cache[name];
 		if(typeof(tpl_fn) != 'function')
 		{
 			// (sort of) Simple JavaScript Templating
@@ -123,8 +123,8 @@ var Template = {
 			// ---------------------------------------
 			// Heavily modified version of John Resig's templating engine
 			//    http://ejohn.org/ - MIT Licensed
-			var template	=	new String(tpl_fn).toString().replace(/(\r\n|\n\r)/g, "\n");
-			var fnstr		=	
+			var template = new String(tpl_fn).toString().replace(/(\r\n|\n\r)/g, "\n");
+			var fnstr = 
 				"var ___p=[],print=function(){___p.push.apply(___p,arguments);};" +
 				"with(obj) {___p.push('" +
 				template
@@ -145,15 +145,15 @@ var Template = {
 					.split("___::SLASHR::___").join("\\'")
 					.replace(/___::NEWLINE::___/g, '\'+ "\\n" + \'') +
 					"');}" + "return ___p.join('');";
-			var tpl_fn	=	new Function("obj", fnstr);
-			this.cache[name]	=	tpl_fn;
+			var tpl_fn = new Function("obj", fnstr);
+			this.cache[name] = tpl_fn;
 		}
 
 		// if we don't have a success callback, define a default that shoves the
 		// view into the container's html.
 		if(!cb_success)
 		{
-			var cb_success	=	function(res, container)
+			var cb_success = function(res, container)
 			{
 				if(container.innerHTML)
 				{
@@ -164,12 +164,12 @@ var Template = {
 		}
 
 		// great success!
-		var view	=	tpl_fn(data);
+		var view = tpl_fn(data);
 		if(options.filter_scripts || Template.filter_scripts)
 		{
 			// remove inline scripts from generated content. yes, you should do
 			// this.
-			view	=	view.replace(/<\/?script(.*?)>/ig, '');
+			view = view.replace(/<\/?script(.*?)>/ig, '');
 		}
 		cb_success(view, container);
 		return view;

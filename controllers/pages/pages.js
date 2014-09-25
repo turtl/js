@@ -1,4 +1,4 @@
-var PagesController	=	Composer.Controller.extend({
+var PagesController = Composer.Controller.extend({
 	inject: turtl.main_container_selector,
 	className: 'home',
 
@@ -28,18 +28,20 @@ var PagesController	=	Composer.Controller.extend({
 	{
 	},
 
-	pre_route: function(url)
+	pre_route: function(boxed)
 	{
+		var url = boxed.path;
+
 		// scroll to the top of the window (but ONLY if we're not in a modal).
-		var last	=	(turtl.last_url || window.location.pathname).replace(/\-\-.*/, '');
-		var cur		=	url.replace(/\-\-.*/, '');
+		var last = (turtl.last_url || window.location.pathname).replace(/\-\-.*/, '');
+		var cur = url.replace(/\-\-.*/, '');
 		if(last != cur)
 		{
 			// this variable is read by the pages controller on post_load to see
 			// if we should scroll to the top after a trigger('loaded') event.
 			// if we did the scroll here, it would happen before the page content
 			// changes and would be confusing.
-			turtl.scroll_to_top	=	true;
+			turtl.scroll_to_top = true;
 		}
 	},
 
@@ -62,12 +64,12 @@ var PagesController	=	Composer.Controller.extend({
 		if(turtl.scroll_to_top)
 		{
 			window.scrollTo(0, 0);
-			turtl.scroll_to_top	=	false;
+			turtl.scroll_to_top = false;
 		}
 
 		// used to give our scraper a heads up on whether or not the page has
 		// finished loading.
-		window._has_full_html	=	true;
+		window._has_full_html = true;
 	},
 
 	load: function(cls, data, options)
@@ -77,7 +79,7 @@ var PagesController	=	Composer.Controller.extend({
 
 		if(typeof(cls) == 'string')
 		{
-			var cls	=	window[cls];
+			var cls = window[cls];
 		}
 
 		// load the controller, setting is as the current controller for the page.
@@ -85,14 +87,14 @@ var PagesController	=	Composer.Controller.extend({
 		if(options.keep_current && cls == this.cur_controller.$constructor)
 		{
 			Object.each(data, function(v, k) {
-				this.cur_controller[k]	=	v;
+				this.cur_controller[k] = v;
 			}, this);
 			this.cur_controller.init();
 		}
 		else
 		{
 			this.release_current();
-			this.cur_controller	=	new cls(data, {clean_injection: true});
+			this.cur_controller = new cls(data, {clean_injection: true});
 		}
 
 		if(!options.skip_loaded_event)
@@ -114,7 +116,7 @@ var PagesController	=	Composer.Controller.extend({
 
 		this.release_current();
 
-		this.template	=	tpl;
+		this.template = tpl;
 		this.render(data, layout);
 		this.trigger('loaded');
 	},
@@ -124,10 +126,10 @@ var PagesController	=	Composer.Controller.extend({
 		data || (data = {});
 		layout || (layout = null);
 
-		var content	=	Template.render(this.template, data);
+		var content = Template.render(this.template, data);
 		if(layout)
 		{
-			var content	=	Template.render('layouts/'+layout, { content: content });
+			var content = Template.render('layouts/'+layout, { content: content });
 		}
 		this.html(content);
 
@@ -148,13 +150,13 @@ var PagesController	=	Composer.Controller.extend({
 
 		if(!this.cur_controller) return false;
 		this.cur_controller.release();
-		this.cur_controller	=	false;
+		this.cur_controller = false;
 		return true;
 	},
 
 	page_loading: function(yesno)
 	{
-		var yesno	=	!!yesno;
+		var yesno = !!yesno;
 		if(yesno)
 		{
 			$(document.html).addClass('loading');

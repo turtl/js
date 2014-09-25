@@ -1,1 +1,4 @@
 .DS_Store
+node_modules
+index.html
+library/templates.js

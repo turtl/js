@@ -25,7 +25,7 @@ var Message = ProtectedShared.extend({
 
 	initialize: function()
 	{
-		this.sync	=	api_sync;
+		this.sync = api_sync;
 		return this.parent.apply(this, arguments);
 	},
 
@@ -33,11 +33,11 @@ var Message = ProtectedShared.extend({
 	{
 		// keep the "created" timestamp updated (not that the ID changes, but w/e)
 		this.bind('change:id', function() {
-			var id		=	this.id(true);
+			var id = this.id(true);
 			if(!id) return;
-			var ts		=	parseInt(this.id().substr(0, 8), 16);
+			var ts = parseInt(this.id().substr(0, 8), 16);
 			if(!ts) return;
-			var date	=	new Date(ts * 1000);
+			var date = new Date(ts * 1000);
 			this.set({created: date});
 		}.bind(this), 'message:track_timestamp');
 		this.trigger('change:id');

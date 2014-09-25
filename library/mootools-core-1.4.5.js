@@ -1438,7 +1438,7 @@ this.Events = new Class({
 		type = removeOn(type);
 		var events = this.$events[type];
 		if (events && !fn.internal){
-			var index =  events.indexOf(fn);
+			var index = events.indexOf(fn);
 			if (index != -1) delete events[index];
 		}
 		return this;
@@ -1772,15 +1772,15 @@ local.setDocument = function(document){
 	features.isXMLDocument = this.isXML(document);
 
 	features.brokenStarGEBTN
-	= features.starSelectsClosedQSA
-	= features.idGetsName
-	= features.brokenMixedCaseQSA
-	= features.brokenGEBCN
-	= features.brokenCheckedQSA
-	= features.brokenEmptyAttributeQSA
-	= features.isHTMLDocument
-	= features.nativeMatchesSelector
-	= false;
+ = features.starSelectsClosedQSA
+ = features.idGetsName
+ = features.brokenMixedCaseQSA
+ = features.brokenGEBCN
+ = features.brokenCheckedQSA
+ = features.brokenEmptyAttributeQSA
+ = features.isHTMLDocument
+ = features.nativeMatchesSelector
+ = false;
 
 	var starSelectsClosed, starSelectsComments,
 		brokenSecondClassNameGEBCN, cachedGetElementsByClassName,
@@ -2139,13 +2139,13 @@ local.search = function(context, expression, append, first){
 		combinator = 'combinator:' + currentBit.combinator;
 		if (!this[combinator]) continue search;
 
-		tag        = (this.isXMLDocument) ? currentBit.tag : currentBit.tag.toUpperCase();
-		id         = currentBit.id;
-		classList  = currentBit.classList;
-		classes    = currentBit.classes;
+		tag = (this.isXMLDocument) ? currentBit.tag : currentBit.tag.toUpperCase();
+		id = currentBit.id;
+		classList = currentBit.classList;
+		classes = currentBit.classes;
 		attributes = currentBit.attributes;
-		pseudos    = currentBit.pseudos;
-		lastBit    = (j === (currentExpression.length - 1));
+		pseudos = currentBit.pseudos;
+		lastBit = (j === (currentExpression.length - 1));
 
 		this.bitUniques = {};
 

@@ -19,7 +19,7 @@ var BoardListController = Composer.Controller.extend({
 
 	init: function()
 	{
-		this.collection	=	this.profile.get('boards');
+		this.collection = this.profile.get('boards');
 
 		if(!this.board) this.board = this.profile.get_current_board();
 		this.render();
@@ -41,7 +41,7 @@ var BoardListController = Composer.Controller.extend({
 	{
 		// this is much faster than doing toJSON (since the board has notes and
 		// shit we would have to iterate over)
-		this.filtered_boards	=	this.collection.map(function(board) {
+		this.filtered_boards = this.collection.map(function(board) {
 			return {
 				id: board.id(),
 				title: board.get('title'),
@@ -51,12 +51,12 @@ var BoardListController = Composer.Controller.extend({
 		});
 		if(this.filter_text)
 		{
-			this.filtered_boards	=	this.filtered_boards.filter(function(board) {
+			this.filtered_boards = this.filtered_boards.filter(function(board) {
 				return board.title.toLowerCase().contains(this.filter_text.toLowerCase());
 			}.bind(this));
 		}
-		var current	=	this.board;
-		var content	=	Template.render('boards/list', {
+		var current = this.board;
+		var content = Template.render('boards/list', {
 			boards: this.filtered_boards,
 			current: current ? toJSON(current) : null,
 			show_actions: this.show_actions
@@ -67,15 +67,15 @@ var BoardListController = Composer.Controller.extend({
 	filter: function(text)
 	{
 		if(text == '') text = null;
-		this.filter_text	=	text;
+		this.filter_text = text;
 		this.render();
 	},
 
 	select_first_board: function()
 	{
 		if(this.filtered_boards.length == 0) return false;
-		var first_id	=	this.filtered_boards[0].id;
-		var board		=	this.collection.find_by_id(first_id);
+		var first_id = this.filtered_boards[0].id;
+		var board = this.collection.find_by_id(first_id);
 		if(!board) return false;
 		this.close_boards();
 		this.do_change_board(board);
@@ -89,7 +89,7 @@ var BoardListController = Composer.Controller.extend({
 	do_change_board: function(board)
 	{
 		this.trigger('change-board', board);
-		this.board		=	board;
+		this.board = board;
 	},
 
 	change_board: function(e)
@@ -97,9 +97,9 @@ var BoardListController = Composer.Controller.extend({
 		if(!e) return;
 		e.stop();
 		this.close_boards();
-		var atag		=	next_tag_up('a', e.target);
-		var board_id	=	atag.href.replace(/^.*board-([0-9a-f]+).*?$/, '$1');
-		var board		=	this.collection.find_by_id(board_id);
+		var atag = next_tag_up('a', e.target);
+		var board_id = atag.href.replace(/^.*board-([0-9a-f]+).*?$/, '$1');
+		var board = this.collection.find_by_id(board_id);
 		this.do_change_board(board);
 	},
 
@@ -107,8 +107,8 @@ var BoardListController = Composer.Controller.extend({
 	{
 		if(!e) return;
 		e.stop();
-		var bid		=	next_tag_up('ul', e.target).className;
-		var board	=	this.collection.find_by_id(bid);
+		var bid = next_tag_up('ul', e.target).className;
+		var board = this.collection.find_by_id(bid);
 		if(!board) return;
 		this.close_boards();
 		new BoardShareController({ board: board });
@@ -137,8 +137,8 @@ var BoardListController = Composer.Controller.extend({
 	{
 		if(!e) return;
 		e.stop();
-		var bid		=	next_tag_up('ul', e.target).className;
-		var board	=	this.collection.find_by_id(bid, {allow_cid: true});
+		var bid = next_tag_up('ul', e.target).className;
+		var board = this.collection.find_by_id(bid, {allow_cid: true});
 		if(!board) return;
 		this.close_boards();
 		new BoardEditController({
@@ -152,10 +152,10 @@ var BoardListController = Composer.Controller.extend({
 	{
 		if(!e) return;
 		e.stop();
-		var bid			=	next_tag_up('ul', e.target).className;
-		var board		=	this.collection.select_one({id: bid, shared: true});
+		var bid = next_tag_up('ul', e.target).className;
+		var board = this.collection.select_one({id: bid, shared: true});
 		if(!board) return false;
-		var persona		=	board.get_shared_persona();
+		var persona = board.get_shared_persona();
 		if(!persona) return;
 		if(!confirm('Really leave this board? You won\'t be able to access it again until the owner invites you again!')) return false;
 

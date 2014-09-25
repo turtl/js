@@ -1616,7 +1616,7 @@
 				History.doubleCheckComplete();
 
 				// Check for a Hash, and handle apporiatly
-				currentHash	= History.getHash();
+				currentHash = History.getHash();
 				if ( currentHash ) {
 					// Expand Hash
 					currentState = History.extractState(currentHash||document.location.href,true);

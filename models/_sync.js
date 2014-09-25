@@ -1,5 +1,5 @@
-var SyncError			=	extend_error(Error, 'SyncError');
-var _sync_debug_list	=	['notes', 'files', 'boards', 'keychain'];
+var SyncError = extend_error(Error, 'SyncError');
+var _sync_debug_list = ['notes', 'files', 'boards', 'keychain'];
 
 /**
  * Sync model, handles (almost) all syncing between the in-memory models, the
@@ -58,7 +58,7 @@ var Sync = Composer.Model.extend({
 	 */
 	start: function()
 	{
-		this.enabled	=	true;
+		this.enabled = true;
 	},
 
 	/**
@@ -66,7 +66,7 @@ var Sync = Composer.Model.extend({
 	 */
 	stop: function()
 	{
-		this.enabled	=	false;
+		this.enabled = false;
 	},
 
 	/**
@@ -129,10 +129,10 @@ var Sync = Composer.Model.extend({
 		options || (options = {});
 		if(!options.type) options.type = 'local';
 		if(!(ids instanceof Array)) ids = [ids];
-		var ignores	=	this.sync_ignore[options.type];
+		var ignores = this.sync_ignore[options.type];
 		for(var i = 0; i < ids.length; i++)
 		{
-			var id	=	ids[i];
+			var id = ids[i];
 			if(!id && id !== 0) continue;
 			if(ignores.contains(id))
 			{
@@ -153,7 +153,7 @@ var Sync = Composer.Model.extend({
 	{
 		if(!turtl.db || !turtl.db.sync) return false;
 
-		var sync_id	=	this.get('sync_id');
+		var sync_id = this.get('sync_id');
 		turtl.db.sync.update(
 			{key: 'sync_id', value: sync_id}
 		).fail(function(e) {
@@ -169,7 +169,7 @@ var Sync = Composer.Model.extend({
 	{
 		options || (options = {});
 
-		var msg	=	{
+		var msg = {
 			sync_id: this.local_sync_id++,
 			type: table,
 			action: action,
@@ -181,9 +181,9 @@ var Sync = Composer.Model.extend({
 		// DB newayz
 		if(table == 'files')
 		{
-			var data	=	Object.clone(msg.data);
+			var data = Object.clone(msg.data);
 			delete data.body;
-			msg.data	=	data;
+			msg.data = data;
 		}
 
 		if(options.track)
@@ -204,13 +204,13 @@ var Sync = Composer.Model.extend({
 	 */
 	queue_remote_change: function(table, action, data)
 	{
-		var msg	=	{
+		var msg = {
 			type: table,
 			action: action,
 			data: data
 		};
-		var fail_count	=	0;
-		var enqueue	=	function()
+		var fail_count = 0;
+		var enqueue = function()
 		{
 			turtl.hustle.Queue.put(msg, {
 				tube: 'outgoing',
@@ -266,7 +266,7 @@ var Sync = Composer.Model.extend({
 	{
 		if(!turtl.user.logged_in || !this.enabled) return false;
 
-		var get_tracker	=	function(type)
+		var get_tracker = function(type)
 		{
 			for(var i = 0, n = this.local_trackers.length; i < n; i++)
 			{
@@ -276,17 +276,17 @@ var Sync = Composer.Model.extend({
 
 		// NOTE: we used to use hustle for pubsub here, but it's really an
 		// enormous CPU hog in NW so that's no longer an option.
-		var poller	=	function()
+		var poller = function()
 		{
 			if(!(turtl.user.logged_in && this.enabled)) return;
 
 			this.local_changes.each(function(msg) {
-				var track_obj	=	get_tracker(msg.type);
+				var track_obj = get_tracker(msg.type);
 				if(!track_obj) return;
 				log.debug('sync: notify local: recv: ', msg);
 				track_obj.tracker.sync_record_from_db(msg.data, msg);
 			});
-			this.local_changes	=	[];
+			this.local_changes = [];
 
 			poller.delay(500, this);
 		}.bind(this);
@@ -306,7 +306,7 @@ var Sync = Composer.Model.extend({
 
 		if(!turtl.do_sync) return false;
 
-		var get_tracker	=	function(type)
+		var get_tracker = function(type)
 		{
 			for(var i = 0, n = this.remote_trackers.length; i < n; i++)
 			{
@@ -314,8 +314,8 @@ var Sync = Composer.Model.extend({
 			}
 		}.bind(this);
 
-		var consumer	=	turtl.hustle.Queue.Consumer(function(item) {
-			var track_obj	=	get_tracker(item.data.type);
+		var consumer = turtl.hustle.Queue.Consumer(function(item) {
+			var track_obj = get_tracker(item.data.type);
 			if(!track_obj) return;
 			log.debug('sync: queue remote: recv: ', item);
 			track_obj.tracker.sync_record_to_api(item.data.data, item);
@@ -343,9 +343,9 @@ var Sync = Composer.Model.extend({
 	{
 		if(!turtl.user.logged_in || !this.enabled) return false;
 
-		var do_sync	=	function()
+		var do_sync = function()
 		{
-			var sync_id	=	this.get('sync_id', false);
+			var sync_id = this.get('sync_id', false);
 			if(!sync_id)
 			{
 				log.error('Sync.sync_from_api: error starting API sync (bad initial sync ID)');
@@ -373,7 +373,7 @@ var Sync = Composer.Model.extend({
 						(sync.user && sync.user.length > 0)
 					)
 					{
-						var sync_clone	=	{};
+						var sync_clone = {};
 						if(sync.user && sync.user.length > 0) sync_clone.user = sync.user.length;
 						if(sync.keychain && sync.keychain.length > 0) sync_clone.keychain = sync.keychain.length;
 						if(sync.personas && sync.personas.length > 0) sync_clone.personas = sync.personas.length;
@@ -387,9 +387,9 @@ var Sync = Composer.Model.extend({
 					// pipe our sync data off to the respective remote
 					// trackers
 					this.remote_trackers.each(function(track_obj) {
-						var type		=	track_obj.type;
-						var tracker		=	track_obj.tracker;
-						var syncdata	=	sync[type];
+						var type = track_obj.type;
+						var tracker = track_obj.tracker;
+						var syncdata = sync[type];
 						if(!syncdata || syncdata.length == 0) return false;
 
 						tracker.sync_from_api(syncdata);
@@ -414,7 +414,7 @@ var Sync = Composer.Model.extend({
 		}.bind(this);
 
 		// make sure we have a sync time before POST /sync
-		var sync_id	=	this.get('sync_id', false);
+		var sync_id = this.get('sync_id', false);
 		if(sync_id)
 		{
 			do_sync();
@@ -443,24 +443,24 @@ var Sync = Composer.Model.extend({
 	{
 		if(!data) return data;
 
-		var board_idx	=	{};
-		var persona_idx	=	{};
+		var board_idx = {};
+		var persona_idx = {};
 
 		// used to create id => object indexes generically. note that this pulls
 		// both from the passed data *and* a passed collection (which is
 		// generally the turtl.profile matching collection).
-		var make_idx	=	function(index, collection, name)
+		var make_idx = function(index, collection, name)
 		{
 			if(turtl.profile && collection)
 			{
 				collection.each(function(item) {
-					index[item.id()]	=	item.toJSON();
+					index[item.id()] = item.toJSON();
 				});
 			}
 			if(data && data[name])
 			{
 				data[name].each(function(item) {
-					index[item.id]	=	item;
+					index[item.id] = item;
 				});
 			}
 		};
@@ -474,11 +474,11 @@ var Sync = Composer.Model.extend({
 		if(data.boards)
 		{
 			// set board.shared, and set board.meta.persona
-			var user_id	=	turtl.user.id();
+			var user_id = turtl.user.id();
 			data.boards.each(function(board) {
 				if(board.user_id && board.user_id != user_id)
 				{
-					board.shared	=	true;
+					board.shared = true;
 
 					// loop over each share in the board's data, noting the
 					// user's persona that has the highest ranking privs in the
@@ -488,21 +488,21 @@ var Sync = Composer.Model.extend({
 					// exists).
 					if(board.privs)
 					{
-						var perms		=	0;
-						var the_persona	=	false;
+						var perms = 0;
+						var the_persona = false;
 						Object.keys(persona_idx).each(function(pid) {
 							if(!board.privs[pid]) return;
-							var this_privs	=	board.privs[pid].perms;
+							var this_privs = board.privs[pid].perms;
 							if(this_privs > perms)
 							{
-								the_persona	=	pid;
-								perms		=	this_privs;
+								the_persona = pid;
+								perms = this_privs;
 							}
 						});
 						if(the_persona)
 						{
 							if(!board.meta) board.meta = {};
-							board.meta.persona	=	the_persona;
+							board.meta.persona = the_persona;
 						}
 					}
 				}
@@ -513,23 +513,23 @@ var Sync = Composer.Model.extend({
 		{
 			data.notes.each(function(note) {
 				// set note.meta.persona based on owning board's meta.persona
-				var board	=	board_idx[note.board_id];
+				var board = board_idx[note.board_id];
 				if(board && board.meta && board.meta.persona)
 				{
 					if(!note.meta) note.meta = {};
-					note.meta.persona	=	board.meta.persona;
+					note.meta.persona = board.meta.persona;
 				}
 
 				// make sure if we have file data, we have has_file = 1 (and
 				// also size)
 				if(note && note.file && note.file.hash)
 				{
-					note.has_file	=	1;
+					note.has_file = 1;
 
 					// check in-mem notes for has_data value
-					var note_mem		=	turtl.profile.get('notes').find_by_id(note.id);
-					var has_data		=	note_mem && note_mem.get('file').get('has_data');
-					note.file.has_data	=	has_data || 0;
+					var note_mem = turtl.profile.get('notes').find_by_id(note.id);
+					var has_data = note_mem && note_mem.get('file').get('has_data');
+					note.file.has_data = has_data || 0;
 					console.log('note: size: ', note.file.size);
 				}
 			});
@@ -548,7 +548,7 @@ var Sync = Composer.Model.extend({
  * that control can be gained where needed by an extending collection without
  * throwing out all of the wonderful work SyncCollection does.
  */
-var SyncCollection	=	Composer.Collection.extend({
+var SyncCollection = Composer.Collection.extend({
 	// stores the table in the local DB we operate on
 	local_table: 'overrideme',
 
@@ -558,7 +558,7 @@ var SyncCollection	=	Composer.Collection.extend({
 	 */
 	process_local_sync: function(item_data, model, msg)
 	{
-		var action	=	msg.action;
+		var action = msg.action;
 		if(_sync_debug_list.contains(this.local_table))
 		{
 			//log.debug('sync: process_local_sync: '+ this.local_table +': '+ msg.sync_id + ' ' + action, item_data, model);
@@ -575,7 +575,7 @@ var SyncCollection	=	Composer.Collection.extend({
 		}
 		else if(action == 'create')
 		{
-			var model	=	new this.model(item_data);
+			var model = new this.model(item_data);
 			if(item_data.cid) model._cid = item_data.cid;
 			this.upsert(model);
 		}
@@ -597,12 +597,12 @@ var SyncCollection	=	Composer.Collection.extend({
 		if(options.destructive)
 		{
 			// we actually desire destructive changes to modeldata.
-			var record	=	modeldata;
+			var record = modeldata;
 		}
 		else
 		{
 			// clone the data so we don't destroy it.
-			var record	=	Object.clone(modeldata);
+			var record = Object.clone(modeldata);
 		}
 
 		// Well, well...Indiana Jones. we got ourselves a CID. don't want to
@@ -610,40 +610,40 @@ var SyncCollection	=	Composer.Collection.extend({
 		// mistaken as an update (not an add).
 		if(record.id && record.id.match(cid_match))
 		{
-			record.cid	=	record.id;
+			record.cid = record.id;
 			delete record.id;
 		}
 
 		// create a new instance of our collection's model
-		var modelclass	=	options.model ? options.model : this.model;
-		var model		=	new modelclass();
+		var modelclass = options.model ? options.model : this.model;
+		var model = new modelclass();
 
 		// create a parse function that runs the model's data through the
 		// standard sync parse function before applying into the model.
-		model.parse	=	function(data)
+		model.parse = function(data)
 		{
 			if(!data) return data;
-			var key			=	this.local_table;
-			var process		=	{};
-			process[key]	=	[data];
-			process			=	turtl.sync.process_data(process);
+			var key = this.local_table;
+			var process = {};
+			process[key] = [data];
+			process = turtl.sync.process_data(process);
 			return process[key][0];
 		}.bind(this);
 
 		// raw_data disables encryption/decryption (only the in-mem
 		// models are going to need this, so we just stupidly pass
 		// around encrypted payloads when syncing to/from the API).
-		model.raw_data	=	true;
+		model.raw_data = true;
 		Object.each(model.relations, function(v, k) {
 			// set raw data for each of the model's sub-objects
-			var submodel	=	model.get(k);
+			var submodel = model.get(k);
 			if(!submodel) return false;
-			submodel.raw_data	=	true;
+			submodel.raw_data = true;
 		});
 
 		// set our model to use the API sync function (instead of
 		// Composer.sync)
-		model.sync	=	api_sync;
+		model.sync = api_sync;
 
 		// match the model's CID to the records. this is a bit of a Composer
 		// hack because two Composer objects should never share the same CID,
@@ -671,11 +671,11 @@ var SyncCollection	=	Composer.Collection.extend({
 	{
 		options || (options = {});
 
-		var table	=	turtl.db[this.local_table];
+		var table = turtl.db[this.local_table];
 		table.remove(cid)
 			.done(function() {
-				modeldata.cid	=	cid;
-				var model		=	this.create_remote_model(modeldata);
+				modeldata.cid = cid;
+				var model = this.create_remote_model(modeldata);
 				if(model.sync_post_create) model.sync_post_create();
 				if(options.success) options.success();
 			}.bind(this))
@@ -691,10 +691,10 @@ var SyncCollection	=	Composer.Collection.extend({
 		if(turtl.sync.should_ignore([msg.sync_id], {type: 'local'})) return false;
 
 		// try to find the model locally (using both the ID and CID)
-		var model	=	this.find_by_id(result.id, {strict: true});
+		var model = this.find_by_id(result.id, {strict: true});
 		if(!model && result.cid)
 		{
-			model	=	this.find_by_id(result.cid, {strict: true});
+			model = this.find_by_id(result.cid, {strict: true});
 			// make sure we actually save the ID, even if
 			// process_local_sync neglects to
 			if(model) model.set({id: result.id}, {silent: true});
@@ -718,11 +718,11 @@ var SyncCollection	=	Composer.Collection.extend({
 	 */
 	update_record_from_api_save: function(modeldata, record, options)
 	{
-		var table		=	turtl.db[this.local_table];
-		var action		=	options.action;
+		var table = turtl.db[this.local_table];
+		var action = options.action;
 
 		// saves the model into the database
-		var run_update	=	function()
+		var run_update = function()
 		{
 			//console.log(this.local_table + '.sync_record_to_api: got: ', modeldata);
 			if(_sync_debug_list.contains(this.local_table))
@@ -773,21 +773,21 @@ var SyncCollection	=	Composer.Collection.extend({
 		options || (options = {});
 
 		// create a model suited for DB <--> API tasks
-		var model	=	this.create_remote_model(record, {destructive: true});
-		var action	=	queue_item.data.action;
+		var model = this.create_remote_model(record, {destructive: true});
+		var action = queue_item.data.action;
 
 		if(_sync_debug_list.contains(this.local_table))
 		{
 			log.info('sync: '+ this.local_table +': db -> api ('+action+') (new: '+model.is_new()+')');
 		}
 
-		var delete_queue_item	=	function()
+		var delete_queue_item = function()
 		{
 			turtl.hustle.Queue.delete(queue_item.id);
 		};
 
-		var table	=	turtl.db[this.local_table];
-		var options	=	{
+		var table = turtl.db[this.local_table];
+		var options = {
 			api_save: true,
 			success: function(model, res) {
 				// save done, delete the queue item
@@ -798,7 +798,7 @@ var SyncCollection	=	Composer.Collection.extend({
 
 				// the model may have changed during save, to serialize it and
 				// put it back into the db
-				var modeldata		=	model.toJSON();
+				var modeldata = model.toJSON();
 
 				// make sure synced k/v items have their primary key (aka the
 				// User model)
@@ -820,7 +820,7 @@ var SyncCollection	=	Composer.Collection.extend({
 				log.error('sync_record_to_api: error saving: ', err, xhr);
 				// set the record as local_modified again so we can
 				// try again next run
-				var item_id	=	options.model_key || model.id();
+				var item_id = options.model_key || model.id();
 				table.get(item_id).done(function(obj) {
 					if(!obj)
 					{
@@ -870,18 +870,18 @@ var SyncCollection	=	Composer.Collection.extend({
 	 */
 	sync_record_from_api: function(item)
 	{
-		var table	=	turtl.db[this.local_table];
+		var table = turtl.db[this.local_table];
 		if(_sync_debug_list.contains(this.local_table) && item._sync)
 		{
 			log.info('sync: '+ this.local_table +': api -> db ('+ item._sync.action +')');
 		}
 
-		var action	=	'update';
+		var action = 'update';
 
 		if(item.deleted)
 		{
 			table.remove(item.id);
-			action	=	'delete';
+			action = 'delete';
 		}
 		else
 		{
@@ -910,15 +910,15 @@ var SyncCollection	=	Composer.Collection.extend({
 	sync_from_api: function(syncdata)
 	{
 		// process the sync data
-		var process	=	{};
-		process[this.local_table]	=	syncdata;
-		syncdata	=	turtl.sync.process_data(process)[this.local_table];
+		var process = {};
+		process[this.local_table] = syncdata;
+		syncdata = turtl.sync.process_data(process)[this.local_table];
 
 		// loop over each of the synced items (this is a collection, remember)
 		// and perform any standard data transformations before saving to the
 		// local DB. update is the only operation we need.
 		syncdata.each(function(item) {
-			var table	=	turtl.db[this.local_table];
+			var table = turtl.db[this.local_table];
 
 			// check if this item has an ignored sync_id (if yes, this sync
 			// record is from something just did, and we don't need to re-apply
@@ -931,7 +931,7 @@ var SyncCollection	=	Composer.Collection.extend({
 			if(item._sync && turtl.sync.should_ignore(item._sync.id, {type: 'remote'})) return false;
 
 			// just create a forward to sync_record_from_api
-			var do_sync	=	function() { this.sync_record_from_api(item); }.bind(this);
+			var do_sync = function() { this.sync_record_from_api(item); }.bind(this);
 
 			if(item._sync && item._sync.cid)
 			{

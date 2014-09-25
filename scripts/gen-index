@@ -1,0 +1,97 @@
+#!/bin/bash
+
+### This script generates index.html, which loads all needed javascript and
+### css for the app.
+
+## -----------------------------------------------------------------------------
+## generate CSS links
+## -----------------------------------------------------------------------------
+
+css=""
+cssfiles="`find css -name '*.css' \
+	| sort \
+	| grep -v 'template.css' \
+	| grep -v 'general.css' \
+	| grep -v 'reset.css' `"
+for cssfile in $cssfiles; do
+	css=`echo -ne "$css\n<link rel=\"stylesheet\" href=\"/$cssfile\">"`
+done
+
+## -----------------------------------------------------------------------------
+## generate JS includes
+## -----------------------------------------------------------------------------
+js=""
+function print_js() {
+	jsfile=$1
+	jsfile="`echo $jsfile | sed 's|___| |g'`"
+	js="$js\n<script src=\"/$jsfile\"></script>"
+}
+
+function path_to_js() {
+	path=$1
+	files="`find $path -name '*.js' | sort | sed 's| |___|g'`"
+	js=`echo -e "$js"`
+	for jsfile in $files; do
+		print_js $jsfile
+	done
+}
+
+jsfiles="`find library -name '*.js' \
+	| sort \
+	| grep -v 'ignore' \
+	| grep -v 'mootools-' \
+	| grep -v 'composer' \
+	| grep -v 'cowcrypt' \
+	| grep -v 'tcrypt.thread' \
+	| grep -v 'bookmarklet' \
+	| grep -v 'bluebird' \
+	| grep -v 'mathjax' \
+	| sed 's| |___|g' `"
+for jsfile in $jsfiles; do print_js $jsfile; done
+
+print_js "turtl.js"
+path_to_js "turtl"
+path_to_js "handlers"
+path_to_js "controllers"
+path_to_js "models"
+
+## -----------------------------------------------------------------------------
+## generate templates
+## -----------------------------------------------------------------------------
+views="var _templates = {};"
+viewfiles="`find views/ -name '*.html' | sort | sed 's| |___|g'`"
+for viewfile in $viewfiles; do
+	content=$( cat $viewfile \
+		| awk '{ prev_line = line; line = $0; } NR > 1 { print prev_line; } END { ORS = ""; print line; }' \
+		| sed 's|</script>|</%script%>|g' \
+		| sed 's|<script|<%script%|g' \
+		| sed 's|\\|\\\\|g' \
+		| sed "s|'|\\\'|g" \
+		| tr -d '\r' \
+		| sed ':a;N;$!ba;s/\n/\\\n/g' )
+	name="`echo $viewfile | sed 's|views/||' | sed 's|\.html||' `"
+	views="${views}"'\n\n'"_templates['${name}'] = '${content}"'\\n'"';"
+done
+
+## -----------------------------------------------------------------------------
+## put it all together
+## -----------------------------------------------------------------------------
+echo "$css" > /tmp/.gen-index.css
+echo "$js" > /tmp/.gen-index.js
+
+index="`cat views/layouts/default.html`"
+index="`echo \"$index\" | sed -e '/{{gencss}}/ r /tmp/.gen-index.css' -e '/{{gencss}}/d'`"
+index="`echo \"$index\" | sed -e '/{{genjs}}/ r /tmp/.gen-index.js' -e '/{{genjs}}/d'`"
+# yuck. newline madness...
+echo "$views" \
+	| sed 's|\\\\\\n|____{NEWLINE}____|g' \
+	| sed 's|\\n|\n|g' \
+	| sed 's|____{NEWLINE}____|\\\\\\n|g' \
+	> library/templates.js \
+
+# cleanup
+rm -f /tmp/.gen-index.css /tmp/.gen-index.js
+
+# send our generated data into their restecpive files
+echo -ne "$index" > index.html
+

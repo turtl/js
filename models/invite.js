@@ -6,7 +6,7 @@ var Invite = Composer.Model.extend({
 
 		if(typeOf(secret) == 'string')
 		{
-			secret	=	secret.clean();
+			secret = secret.clean();
 			// remember, this is insecure already, so making the secret actually
 			// easy to enter is more of a priority
 			if(options.normalize) secret = secret.toLowerCase().clean();
@@ -14,13 +14,13 @@ var Invite = Composer.Model.extend({
 		}
 
 		// create a key used to encrypt the board's key before emailing it
-		var salt			=	(secret || '') + ':throw the NSA down the well';
-		var encrypting_pass	=	tcrypt.uuid();
-		var encrypting_key	=	tcrypt.key(encrypting_pass, salt, {key_size: 32, iterations: 400});
+		var salt = (secret || '') + ':throw the NSA down the well';
+		var encrypting_pass = tcrypt.uuid();
+		var encrypting_key = tcrypt.key(encrypting_pass, salt, {key_size: 32, iterations: 400});
 
 		// don't do encryption directly, use the Protected model.
-		var keymodel		=	new InviteKey({key: tcrypt.key_to_string(key)});
-		keymodel.key		=	encrypting_key;
+		var keymodel = new InviteKey({key: tcrypt.key_to_string(key)});
+		keymodel.key = encrypting_key;
 		return {
 			encrypted_key: keymodel.toJSON().body,
 			encrypting_pass: encrypting_pass,
@@ -35,7 +35,7 @@ var Invite = Composer.Model.extend({
 
 		if(typeOf(secret) == 'string')
 		{
-			secret	=	secret.clean();
+			secret = secret.clean();
 			// remember, this is insecure already, so making the secret actually
 			// easy to enter is more of a priority
 			if(options.normalize) secret = secret.toLowerCase();
@@ -43,20 +43,20 @@ var Invite = Composer.Model.extend({
 		}
 
 		// create a key used to encrypt the board's key before emailing it
-		var salt			=	(secret || '') + ':throw the NSA down the well';
-		var encrypting_key	=	tcrypt.key(encrypting_pass, salt, {key_size: 32, iterations: 400});
+		var salt = (secret || '') + ':throw the NSA down the well';
+		var encrypting_key = tcrypt.key(encrypting_pass, salt, {key_size: 32, iterations: 400});
 
 		// don't do encryption directly, use the Protected model.
-		var keymodel		=	new InviteKey();
-		keymodel.key		=	encrypting_key;
+		var keymodel = new InviteKey();
+		keymodel.key = encrypting_key;
 		keymodel.set({body: encrypted_key});
 		return keymodel.get('key');
 	},
 
 	accept: function(persona, options)
 	{
-		var item_key	=	tcrypt.key_to_bin(this.get('item_key'));
-		var item_id		=	this.get('item_id');
+		var item_key = tcrypt.key_to_bin(this.get('item_key'));
+		var item_id = this.get('item_id');
 
 		turtl.api.post('/invites/accepted/'+this.id(), {
 			code: this.get('code'),
@@ -76,8 +76,8 @@ var Invite = Composer.Model.extend({
 				switch(this.get('type'))
 				{
 				case 'b':
-					var board	=	new Board({id: item_id});
-					board.key	=	item_key;
+					var board = new Board({id: item_id});
+					board.key = item_key;
 					board.from_share(res);
 					break;
 				}
@@ -117,10 +117,10 @@ var BoardInvite = Invite.extend({
 		// make sure we have an email (kinda)
 		if(!this.get('email', '').clean().match(/@/)) return false;
 
-		var encdata			=	this.encrypt_key(board.key, secret, {normalize: true});
-		var encrypted_key	=	encdata.encrypted_key;
-		var encrypting_pass	=	encdata.encrypting_pass;
-		var used_secret		=	encdata.used_secret;
+		var encdata = this.encrypt_key(board.key, secret, {normalize: true});
+		var encrypted_key = encdata.encrypted_key;
+		var encrypting_pass = encdata.encrypting_pass;
+		var used_secret = encdata.used_secret;
 
 		turtl.api.post('/invites/boards/'+board.id(), {
 			persona: from_persona.id(),
@@ -133,8 +133,8 @@ var BoardInvite = Invite.extend({
 			success: function(invite) {
 				if(invite.priv)
 				{
-					var privs			=	Object.clone(board.get('privs', {}));
-					privs[invite.id]	=	invite.priv;
+					var privs = Object.clone(board.get('privs', {}));
+					privs[invite.id] = invite.priv;
 					board.set({privs: privs});
 				}
 				if(options.success) options.success(invite);
@@ -149,7 +149,7 @@ var BoardInvite = Invite.extend({
 
 		turtl.api._delete('/invites/'+this.id(), {}, {
 			success: function() {
-				var privs	=	Object.clone(board.get('privs', {}));
+				var privs = Object.clone(board.get('privs', {}));
 				delete privs[this.id()];
 				board.set({privs: privs});
 				if(options.success) options.success();
@@ -159,7 +159,7 @@ var BoardInvite = Invite.extend({
 	}
 });
 
-var Invites	=	Composer.Collection.extend({
+var Invites = Composer.Collection.extend({
 	model: Invite
 });
 

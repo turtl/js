@@ -76,7 +76,7 @@ var PersonaEditController = Composer.Controller.extend({
 		// TODO: if you add to these, remove them from the model below
 		var email = this.inp_email.get('value').clean();
 		var name = this.inp_name.get('value').clean();
-		this.inp_submit.disabled	=	true;
+		this.inp_submit.disabled = true;
 
 		this.model.unset('name');
 		this.model.unset('email');
@@ -89,7 +89,7 @@ var PersonaEditController = Composer.Controller.extend({
 			return false;
 		}
 
-		var set		=	{
+		var set = {
 			user_id: turtl.user.id(),
 			email: email
 		};
@@ -98,8 +98,8 @@ var PersonaEditController = Composer.Controller.extend({
 		var is_new = this.model.is_new();
 		if(is_new)
 		{
-			set.pubkey	=	false;
-			set.privkey	=	false;
+			set.pubkey = false;
+			set.privkey = false;
 		}
 		this.model.set(set);
 		if(is_new) this.model.generate_ecc_key();
@@ -125,7 +125,7 @@ var PersonaEditController = Composer.Controller.extend({
 			error: function(model, err) {
 				turtl.loading(false);
 				barfr.barf('There was a problem '+ (is_new ? 'adding' : 'updating') +' your persona: '+ err);
-				this.inp_submit.disabled	=	false;
+				this.inp_submit.disabled = false;
 			}.bind(this)
 		});
 	},
@@ -147,7 +147,7 @@ var PersonaEditController = Composer.Controller.extend({
 	email_msg: function(msg, success)
 	{
 		success || (success = false);
-		msg	=	msg.clean().safe();
+		msg = msg.clean().safe();
 
 		this.email_note.className = this.email_note.className.replace(/(error|success)/g, '');
 		this.email_note.addClass(success ? 'success' : 'error');

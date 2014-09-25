@@ -29,7 +29,7 @@ return false;
 	render_icon: function()
 	{
 		if($('sync-icon')) return false;
-		var icon	=	new Element('icon').set('id', 'sync-icon').set('html', '&#xE800;');
+		var icon = new Element('icon').set('id', 'sync-icon').set('html', '&#xE800;');
 		icon.inject(document.body, 'top');
 		$('sync-icon').addEvent('click', this.toggle_info.bind(this));
 	},

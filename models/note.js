@@ -64,7 +64,7 @@ var Note = Protected.extend({
 				//URL.revokeObjectURL(this.get('file').get('blob_url'));
 			}
 
-			var has_file	=	this.get('file').get('hash') ? 1 : 0;
+			var has_file = this.get('file').get('hash') ? 1 : 0;
 			this.set({has_file: has_file});
 			if(!this.raw_data)
 			{
@@ -93,7 +93,7 @@ var Note = Protected.extend({
 			{
 				this.get('file').to_blob({
 					success: function(blob) {
-						var blob_url	=	URL.createObjectURL(blob)
+						var blob_url = URL.createObjectURL(blob)
 						if(Browser.chrome)
 						{
 							// only append the filename if we're in chrome, since
@@ -125,14 +125,14 @@ var Note = Protected.extend({
 
 	ensure_key_exists: function()
 	{
-		var key	=	this.parent.apply(this, arguments);
+		var key = this.parent.apply(this, arguments);
 		if(key)
 		{
-			this.get('file').key	=	key;
+			this.get('file').key = key;
 			if(this._tmp_file_data)
 			{
 				this.set({file: this._tmp_file_data});
-				this._tmp_file_data	=	false;
+				this._tmp_file_data = false;
 			}
 		}
 		return key;
@@ -140,8 +140,8 @@ var Note = Protected.extend({
 
 	generate_key: function()
 	{
-		var key					=	this.parent.apply(this, arguments);
-		this.get('file').key	=	key;
+		var key = this.parent.apply(this, arguments);
+		this.get('file').key = key;
 		return key;
 	},
 
@@ -149,7 +149,7 @@ var Note = Protected.extend({
 	{
 		if(data.file && !this.key)
 		{
-			this._tmp_file_data	=	data.file;
+			this._tmp_file_data = data.file;
 		}
 		return this.parent.apply(this, arguments);
 	},
@@ -180,7 +180,7 @@ var Note = Protected.extend({
 
 	get_url: function()
 	{
-		var url	=	this.id(true) ?
+		var url = this.id(true) ?
 						'/notes/'+this.id() :
 						'/boards/'+this.get('board_id')+'/notes';
 		return url;
@@ -188,7 +188,7 @@ var Note = Protected.extend({
 
 	toJSON: function()
 	{
-		var data	=	this.parent.apply(this, arguments);
+		var data = this.parent.apply(this, arguments);
 		if(!this.get('file') || (!this.get('file').get('hash') && !this.get('file').get('encrypting')))
 		{
 			delete data.file;
@@ -200,21 +200,21 @@ var Note = Protected.extend({
 	{
 		options || (options = {});
 
-		var args	=   {};
+		var args = {};
 		if(options.api_save)
 		{
-			var meta	=   this.get('meta');
+			var meta = this.get('meta');
 			if(meta && meta.persona)
 			{
-				args.persona	=   meta.persona;
+				args.persona = meta.persona;
 			}
-			options.args	=	args;
+			options.args = args;
 		}
 		else
 		{
-			options.table	=	'notes';
+			options.table = 'notes';
 
-			var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
+			var board = turtl.profile.get('boards').find_by_id(this.get('board_id'));
 			if(!board && !options.force_save)
 			{
 				if(options.error) options.error('Problem finding board for that note.');
@@ -223,10 +223,10 @@ var Note = Protected.extend({
 
 			if(board && board.get('shared', false) && this.get('user_id') != turtl.user.id())
 			{
-				var persona		=	board.get_shared_persona();
-				args.persona	=	persona.id();
+				var persona = board.get_shared_persona();
+				args.persona = persona.id();
 			}
-			options.args	=	args;
+			options.args = args;
 		}
 		return this.parent.call(this, options);
 	},
@@ -234,17 +234,17 @@ var Note = Protected.extend({
 	destroy: function(options)
 	{
 		options || (options = {});
-		var args		=	{};
+		var args = {};
 
 		if(options.api_save)
 		{
-			var args	=	{};
-			var meta	=	this.get('meta');
+			var args = {};
+			var meta = this.get('meta');
 			if(meta && meta.persona)
 			{
-				args.persona	=	meta.persona;
+				args.persona = meta.persona;
 			}
-			options.args	=	args;
+			options.args = args;
 		}
 		else
 		{
@@ -253,9 +253,9 @@ var Note = Protected.extend({
 				URL.revokeObjectURL(this.get('file').get('blob_url'));
 			}
 
-			options.table	=	'notes';
+			options.table = 'notes';
 
-			var board	=	turtl.profile.get('boards').find_by_id(this.get('board_id'));
+			var board = turtl.profile.get('boards').find_by_id(this.get('board_id'));
 			if(!board && !options.force_save)
 			{
 				if(options.error) options.error('Problem finding board for that note.');
@@ -264,10 +264,10 @@ var Note = Protected.extend({
 
 			if(board && board.get('shared', false) && this.get('user_id') != turtl.user.id())
 			{
-				var persona		=	board.get_shared_persona();
-				args.persona	=	persona.id();
+				var persona = board.get_shared_persona();
+				args.persona = persona.id();
 			}
-			options.args	=	args;
+			options.args = args;
 
 			if(this.get('file').get('hash'))
 			{
@@ -289,7 +289,7 @@ var Note = Protected.extend({
 				files.each(function(filedata) {
 					if(options.exclude && options.exclude.contains(filedata.id)) return;
 					delete filedata.body;
-					var file		=	new FileData(filedata);
+					var file = new FileData(filedata);
 					file.destroy(options);
 				});
 			})
@@ -300,13 +300,13 @@ var Note = Protected.extend({
 	{
 		options || (options = {});
 		search || (search = {});
-		var board_id	=	this.get('board_id');
-		var board_key	=	turtl.profile.get('boards').find_by_id(board_id).key;
+		var board_id = this.get('board_id');
+		var board_key = turtl.profile.get('boards').find_by_id(board_id).key;
 		if(!search.b && board_id && board_key)
 		{
-			search.b	=	[{id: board_id, k: board_key}];
+			search.b = [{id: board_id, k: board_key}];
 		}
-		var ret	=	this.parent(keys, search, options);
+		var ret = this.parent(keys, search, options);
 		return ret;
 	},
 
@@ -314,7 +314,7 @@ var Note = Protected.extend({
 	// ID.
 	sync_post_create: function()
 	{
-		var hash	=	this.get('file').get('hash');
+		var hash = this.get('file').get('hash');
 		if(!hash) return;
 
 		turtl.db.files.query()
@@ -323,7 +323,7 @@ var Note = Protected.extend({
 			.execute()
 			.done(function(filedata) {
 				if(!filedata || !filedata[0]) return false;
-				filedata	=	filedata[0];
+				filedata = filedata[0];
 				delete filedata.body;
 				turtl.sync.queue_remote_change('files', 'create', filedata);
 			})
@@ -345,7 +345,7 @@ var Notes = SyncCollection.extend({
 
 	start_batch_save: function()
 	{
-		this.batch_track	=	[];
+		this.batch_track = [];
 		this.bind('change', function(note) {
 			this.batch_track.push(note);
 		}.bind(this), 'notes:collection:batch_track:change');
@@ -357,22 +357,22 @@ var Notes = SyncCollection.extend({
 		this.unbind('change', 'notes:collection:batch_track:change');
 		if(this.batch_track.length == 0) return;
 
-		var save	=	this.batch_track.map(function(note) {
+		var save = this.batch_track.map(function(note) {
 			// we really only care about the id/body
 			return {id: note.id(), body: note.toJSON().body};
 		});
 		// corpses
-		var args	=	{data: save};
+		var args = {data: save};
 		if(options.shared && options.persona)
 		{
-			args.persona	=	options.persona.id();
+			args.persona = options.persona.id();
 		}
 		turtl.api.put('/notes/batch', args, {
 			success: options.success,
 			error: options.error
 		});
 
-		this.batch_track	=	[];
+		this.batch_track = [];
 	},
 	*/
 
@@ -400,7 +400,7 @@ var Notes = SyncCollection.extend({
 				res.each(function(notedata) {
 					if(!notedata || !notedata.file || !notedata.file.hash) return false;
 
-					var filedata	=	{
+					var filedata = {
 						id: notedata.file.hash,
 						note_id: notedata.id,
 						has_data: 0

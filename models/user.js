@@ -1,4 +1,4 @@
-var User	=	Protected.extend({
+var User = Protected.extend({
 	base_url: '/users',
 	local_table: 'user',
 
@@ -36,7 +36,7 @@ var User	=	Protected.extend({
 
 	init: function()
 	{
-		this.logged_in		=	false;
+		this.logged_in = false;
 
 		// whenever the user settings change, automatically save them (encrypted).
 		this.bind_relational('settings', ['change'], this.save_settings.bind(this), 'user:save_settings');
@@ -50,11 +50,11 @@ var User	=	Protected.extend({
 		this.get_auth();
 		this.unset('username');
 		this.unset('password');
-		this.logged_in	=	true;
-		var duration	=	1;
+		this.logged_in = true;
+		var duration = 1;
 		if(remember)
 		{
-			duration	=	30;
+			duration = 30;
 		}
 
 		// now grab the user record by ID from the API.
@@ -77,28 +77,28 @@ var User	=	Protected.extend({
 	{
 		if(!auth) return false;
 		this.set({id: auth.uid});
-		this.auth		=	auth.auth;
-		this.key		=	tcrypt.key_to_bin(auth.key);
-		this.logged_in	=	true;
+		this.auth = auth.auth;
+		this.key = tcrypt.key_to_bin(auth.key);
+		this.logged_in = true;
 		this.trigger('login', this);
 	},
 
 	login_from_cookie: function()
 	{
-		var cookie	=	localStorage[config.user_cookie];
+		var cookie = localStorage[config.user_cookie];
 		if(cookie == null)
 		{
 			return false;
 		}
-		var userdata	=	JSON.decode(cookie);
-		var key			=	tcrypt.key_to_bin(userdata.k);
-		var auth		=	userdata.a;
+		var userdata = JSON.decode(cookie);
+		var key = tcrypt.key_to_bin(userdata.k);
+		var auth = userdata.a;
 		delete userdata.k;
 		delete userdata.a;
-		this.key	=	key;
-		this.auth	=	auth;
+		this.key = key;
+		this.auth = auth;
 		this.set(userdata);
-		this.logged_in	=	true;
+		this.logged_in = true;
 		this.trigger('login', this);
 	},
 
@@ -118,18 +118,18 @@ var User	=	Protected.extend({
 	join: function(options)
 	{
 		options || (options = {});
-		var data	=	{data: {a: this.get_auth()}};
+		var data = {data: {a: this.get_auth()}};
 		if(localStorage.invited_by)
 		{
-			data.invited_by	=	localStorage.invited_by;
+			data.invited_by = localStorage.invited_by;
 		}
 
 		// grab the promo code, if we haven't already used it.
-		var used_promos	=	JSON.parse(localStorage.used_promos || '[]');
-		var promo		=	options.promo;
+		var used_promos = JSON.parse(localStorage.used_promos || '[]');
+		var promo = options.promo;
 		if(promo) //&& (!used_promos || !used_promos.contains(promo)))
 		{
-			data.promo		=	promo;
+			data.promo = promo;
 		}
 
 		turtl.api.post('/users', data, {
@@ -138,7 +138,7 @@ var User	=	Protected.extend({
 				{
 					// if we used a promo, track it to make sure this client
 					// doesn't use it again.
-					//localStorage.used_promos	=	JSON.stringify(JSON.parse(localStorage.used_promos || '[]').push(data.promo));
+					//localStorage.used_promos = JSON.stringify(JSON.parse(localStorage.used_promos || '[]').push(data.promo));
 				}
 
 				// once we have a successful signup with the invite/promo, wipe
@@ -152,7 +152,7 @@ var User	=	Protected.extend({
 				// the local db.
 				this.bind('login', function() {
 					this.unbind('login', 'user:join:add_local_record');
-					var check_db	=	function()
+					var check_db = function()
 					{
 						if(!turtl.db)
 						{
@@ -175,26 +175,26 @@ var User	=	Protected.extend({
 	write_cookie: function(options)
 	{
 		options || (options = {});
-		var duration	=	options.duration ? options.duration : 30;
-		var key			=	this.get_key();
-		var auth		=	this.get_auth();
+		var duration = options.duration ? options.duration : 30;
+		var key = this.get_key();
+		var auth = this.get_auth();
 		if(!key || !auth) return false;
 
-		var save		=	{
+		var save = {
 			id: this.id(),
 			k: tcrypt.key_to_string(key),
 			a: auth,
 			invite_code: this.get('invite_code'),
 			storage: this.get('storage')
 		};
-		localStorage[config.user_cookie]	=	JSON.encode(save);
+		localStorage[config.user_cookie] = JSON.encode(save);
 	},
 
 	logout: function()
 	{
 		this.auth = null;
 		this.key = null;
-		this.logged_in	=	false;
+		this.logged_in = false;
 		this.clear();
 		delete localStorage[config.user_cookie];
 		this.unbind_relational('personas', ['saved'], 'user:track_personas');
@@ -202,7 +202,7 @@ var User	=	Protected.extend({
 		this.unbind_relational('settings', ['change'], 'user:save_settings');
 
 		// clear user data
-		var personas	=	this.get('personas');
+		var personas = this.get('personas');
 		if(personas) personas.each(function(p) {
 			p.unbind();
 			p.destroy({silent: true, skip_remote_sync: true, skip_local_sync: true});
@@ -254,15 +254,15 @@ var User	=	Protected.extend({
 
 		var user_record = tcrypt.hash(password) +':'+ username;
 		// use username as salt/initial vector
-		var key	=	this.get_key();
-		var iv	=	tcrypt.iv(username+'4c281987249be78a');	// make sure IV always has 16 bytes
+		var key = this.get_key();
+		var iv = tcrypt.iv(username+'4c281987249be78a');	// make sure IV always has 16 bytes
 
 		// note we serialize with version 0 (the original Turtl serialization
 		// format) for backwards compat
-		var auth	=	tcrypt.encrypt(key, user_record, {iv: iv, version: 0});
+		var auth = tcrypt.encrypt(key, user_record, {iv: iv, version: 0});
 
 		// save auth
-		this.auth	=	auth;
+		this.auth = auth;
 
 		return auth;
 	},
@@ -280,7 +280,7 @@ var User	=	Protected.extend({
 });
 
 // we don't actually use this collection for anything but syncing
-var Users	=	SyncCollection.extend({
+var Users = SyncCollection.extend({
 	model: User,
 	local_table: 'user',
 
@@ -296,7 +296,7 @@ var Users	=	SyncCollection.extend({
 	{
 		// make sure item.key is set so the correct record updates in the DB
 		// (since we only ever get one user object synced: ours)
-		item.key		=	'user';
+		item.key = 'user';
 		return this.parent.apply(this, arguments);
 	}
 });

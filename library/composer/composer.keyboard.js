@@ -1,4 +1,6 @@
 /**
+ * keyboard.js
+ *
  * This is a simple global key handler for attaching keyboard events to your
  * application.
  * -----------------------------------------------------------------------------
@@ -16,9 +18,9 @@
  * Redistributions of files must retain the above copyright notice.
  */
 (function() {
-	var Keyboard	=	new Class({
-		Implements: [Composer.Events, Options],
+	"use strict";
 
+	var Keyboard = Composer.Base.extend({
 		// set to true to allow bindings based on meta keys
 		// (ie "?" would be 'S-/' (shift + /)
 		options: {
@@ -29,11 +31,11 @@
 
 		initialize: function(options)
 		{
-			this.setOptions(options);
+			this.set_options(options);
 
 			// create a function bound to "this" and store it later so we can
 			// unbind it when we detach
-			this._dispatch	=	this.dispatch.bind(this);
+			this._dispatch = this.dispatch.bind(this);
 
 			// start listening for keyboard events
 			return this.attach();
@@ -74,6 +76,5 @@
 		}
 	});
 
-	// direct export (no need to do Composer.Keyboard.extend(...))
-	Composer.Keyboard	=	Keyboard;
+	Composer.exp0rt({ Keyboard: Keyboard });
 })();

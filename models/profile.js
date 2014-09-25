@@ -68,16 +68,16 @@ var Profile = Composer.RelationalModel.extend({
 
 		// called when we're sure we have downloaded the profile and populated
 		// the local DB with it
-		var finished	=	function()
+		var finished = function()
 		{
-			this.profile_data	=	true;
-			var profile_data	=	{};
+			this.profile_data = true;
+			var profile_data = {};
 
-			var num_items	=	0;
-			var num_synced	=	0;
+			var num_items = 0;
+			var num_synced = 0;
 
 			// called each time we get data from the local DB. 
-			var finished	=	function()
+			var finished = function()
 			{
 				num_synced++;
 				// only continue when all local DB grabs are done
@@ -99,7 +99,7 @@ var Profile = Composer.RelationalModel.extend({
 			['keychain', 'personas', 'boards', 'notes'].each(function(itemname) {
 				num_items++;
 				turtl.db[itemname].query().filter().execute().done(function(res) {
-					profile_data[itemname]	=	res;
+					profile_data[itemname] = res;
 					finished();
 				});
 			});
@@ -111,19 +111,19 @@ var Profile = Composer.RelationalModel.extend({
 		// the db, set the sync time record, and continue loading.
 		turtl.db.sync.get('sync_id').then(
 			function(res) {
-				var make_the_call	=	function()
+				var make_the_call = function()
 				{
 					turtl.api.get('/profiles/users/'+turtl.user.id(), {}, {
 						success: function(profile) {
 							// process the data through the sync system
-							profile	=	turtl.sync.process_data(profile);
+							profile = turtl.sync.process_data(profile);
 
 							// create file records from note records
 							// TODO: determine if this is necessary. from my
 							// understanding, all one has to do is set note.has_file
 							// = 1 for a file record to be created for that note.
 							// was this done for performance reasons?
-							profile.files	=	(profile.notes || [])
+							profile.files = (profile.notes || [])
 								.filter(function(note) { return note.file && note.file.hash; })
 								.map(function(note) {
 									return {
@@ -160,9 +160,9 @@ var Profile = Composer.RelationalModel.extend({
 					 * they are out of sync and give them an option to export
 					 * their data before syncing
 					 *
-					var sync_id		=	res.value;
-					var timestamp	=	parseInt(sync_id.substr(0, 8), 16);
-					var month		=	(new Date().getTime() / 1000) - 2592000;
+					var sync_id = res.value;
+					var timestamp = parseInt(sync_id.substr(0, 8), 16);
+					var month = (new Date().getTime() / 1000) - 2592000;
 					if(timestamp > month)
 					{
 						return finished();
@@ -201,12 +201,12 @@ var Profile = Composer.RelationalModel.extend({
 	{
 		options || (options = {});
 
-		var num_items	=	0;
-		var num_added	=	0;
+		var num_items = 0;
+		var num_added = 0;
 
 		// populates a collection of data into a table. collects all errors as
 		// it goes along. when finished, calls options.complete.
-		var populate	=	function(table, collection, options)
+		var populate = function(table, collection, options)
 		{
 			options || (options = {});
 
@@ -217,7 +217,7 @@ var Profile = Composer.RelationalModel.extend({
 				return;
 			}
 
-			var errors	=	[];
+			var errors = [];
 			turtl.db[table].update.apply(turtl.db[table], collection).then(
 				function(recs) {
 					if(options.complete) options.complete(errors);
@@ -231,20 +231,20 @@ var Profile = Composer.RelationalModel.extend({
 
 		// sets a particular key/value entry into a table, calls
 		// options.complete when finished.
-		var set_key	=	function(table, key, value, options)
+		var set_key = function(table, key, value, options)
 		{
 			options || (options = {});
 
 			// k/v pairs in the db should always use the primary field "key"
-			var clone	=	Object.clone(value);
-			clone['key']	=	key;
+			var clone = Object.clone(value);
+			clone['key'] = key;
 
 			// let populate do the work
 			populate(table, [clone], options);
 		};
 
 		// called when our individual saves below finish
-		var complete_fn	=	function(name) {
+		var complete_fn = function(name) {
 			return function(errors) {
 				if(errors.length > 0) barfr.barf('Error(s) persisting profile '+ name +': '+ errors.join(', '));
 				num_added++;
@@ -279,14 +279,14 @@ var Profile = Composer.RelationalModel.extend({
 	{
 		options || (options = {});
 
-		var keychain	=	this.get('keychain');
-		var personas	=	this.get('personas');
-		var boards		=	this.get('boards');
-		var notes		=	this.get('notes');
+		var keychain = this.get('keychain');
+		var personas = this.get('personas');
+		var boards = this.get('boards');
+		var notes = this.get('notes');
 
-		var done		=	function()
+		var done = function()
 		{
-			this.loaded	=	true;
+			this.loaded = true;
 			// turn tag tracking back on
 			boards.each(function(b) {
 				b.get('notes').refresh();
@@ -297,10 +297,10 @@ var Profile = Composer.RelationalModel.extend({
 					b.trigger('notes_updated');
 				}).delay(1, this);
 			});
-			var board	=	null;
+			var board = null;
 			if(options.board)
 			{
-				board	=	boards.select_one({id: options.board.clean()});
+				board = boards.select_one({id: options.board.clean()});
 			}
 			if(!board) board = boards.first();
 			if(board) this.set_current_board(board);
@@ -337,11 +337,11 @@ var Profile = Composer.RelationalModel.extend({
 
 		options || (options = {});
 
-		var profile_size		=	0;
-		var num_boards			=	0;
-		var boards_processed	=	0;
+		var profile_size = 0;
+		var num_boards = 0;
+		var boards_processed = 0;
 
-		var finished	=	function()
+		var finished = function()
 		{
 			boards_processed++;
 			if(boards_processed < num_boards) return;
@@ -359,7 +359,7 @@ var Profile = Composer.RelationalModel.extend({
 
 		turtl.db.boards.query('user_id').only(turtl.user.id()).execute()
 			.done(function(boards) {
-				num_boards	=	boards.length;
+				num_boards = boards.length;
 				boards.each(function(board) {
 					turtl.db.notes.query('board_id').only(board.id).execute()
 						.done(function(notes) {
@@ -388,7 +388,7 @@ var Profile = Composer.RelationalModel.extend({
 
 	get_current_board: function()
 	{
-		var cur	=	this.get('current_board', false);
+		var cur = this.get('current_board', false);
 		if(!cur) cur = this.get('boards').first();
 		return cur;
 	},

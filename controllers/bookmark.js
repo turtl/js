@@ -33,23 +33,23 @@ var BookmarkController = Composer.Controller.extend({
 				this.resize();
 				return;
 			}
-			this.last_url	=	data.url;
-			this.linkdata	=	data;
+			this.last_url = data.url;
+			this.linkdata = data;
 			this.profile.trigger('change:current_board');
 			// resize (in case height changed) and select the tag box
 			(function() {
 				this.resize();
-				var inp_tag	=	this.edit_controller.tag_controller.inp_tag;
+				var inp_tag = this.edit_controller.tag_controller.inp_tag;
 				if(inp_tag) inp_tag.focus();
 			}).delay(100, this);
 		}.bind(this));
 
-		this.profile	=	turtl.profile;
+		this.profile = turtl.profile;
 
 		this.soft_release();
 
-		var savedstr	=	localStorage['bookmarker:note:saved'];
-		var saved		=	savedstr && JSON.parse(savedstr);
+		var savedstr = localStorage['bookmarker:note:saved'];
+		var saved = savedstr && JSON.parse(savedstr);
 		if(saved && saved.url == this.linkdata.url)
 		{
 			var note = new Note(saved.note);
@@ -86,7 +86,7 @@ var BookmarkController = Composer.Controller.extend({
 		});
 		if(!this.edit_controller.board)
 		{
-			this.edit_controller	=	new BoardEditController({
+			this.edit_controller = new BoardEditController({
 				inject: this.edit_container,
 				profile: turtl.profile,
 				edit_in_modal: false,
@@ -155,12 +155,12 @@ var BookmarkController = Composer.Controller.extend({
 	track_note_changes: function()
 	{
 		if(!this.edit_controller || !this.edit_controller.note_copy) return false;
-		var note	=	this.edit_controller.note_copy;
-		var data	=	{
+		var note = this.edit_controller.note_copy;
+		var data = {
 			url: this.linkdata.url,
 			note: toJSON(note)
 		}
-		localStorage['bookmarker:note:saved']	=	JSON.encode(data);
+		localStorage['bookmarker:note:saved'] = JSON.encode(data);
 	},
 
 	get_height: function()
@@ -171,7 +171,7 @@ var BookmarkController = Composer.Controller.extend({
 	resize: function(delay)
 	{
 		delay || (delay = 0);
-		var do_set	=	function()
+		var do_set = function()
 		{
 			if(window.port) window.port.send('resize');
 		};

@@ -1,4 +1,4 @@
-var Search	=	Composer.Model.extend({
+var Search = Composer.Model.extend({
 	// stores JSON objects for each indexed object. this allows us to unindex an
 	// object easily (for instance if we're re-indexing it, we need to unindex
 	// the old version and index the new version...the old version is stored
@@ -22,7 +22,7 @@ var Search	=	Composer.Model.extend({
 			this.watch_board(board);
 		}.bind(this), 'search:board:add');
 
-		this.ft	=	lunr(function() {
+		this.ft = lunr(function() {
 			this.ref('id');
 			this.field('title', {boost: 5});
 			this.field('url', {boost: 10});
@@ -34,13 +34,13 @@ var Search	=	Composer.Model.extend({
 	search: function(search)
 	{
 		// this will hold all search results, as an array of note IDs
-		var res			=	false;
+		var res = false;
 
 		// process full-text search first
 		if(search.text && typeOf(search.text) == 'string' && search.text.length > 0 && this.ft)
 		{
 			// run the search and grab the IDs (throw out relevance for now)
-			var res	=	this.ft.search(search.text).map(function(r) { return r.ref; });
+			var res = this.ft.search(search.text).map(function(r) { return r.ref; });
 
 			// sort the resulting IDs so the intersection functions later on
 			// don't choke (they operate on sorted sets).
@@ -54,11 +54,11 @@ var Search	=	Composer.Model.extend({
 		// note id list as we go along. this continues until a) no notes are
 		// left (empty result set) or b) we get a list of notes that match all
 		// the search criteria.
-		var searches	=	Object.keys(search);
+		var searches = Object.keys(search);
 		for(var i = 0, n = searches.length; i < n; i++)
 		{
-			var index	=	searches[i];
-			var vals	=	search[index];
+			var index = searches[i];
+			var vals = search[index];
 			if(typeOf(vals) != 'array') vals = [vals];
 
 			// loop over all values passed for this index type and interset the
@@ -69,19 +69,19 @@ var Search	=	Composer.Model.extend({
 			// with "!"
 			for(var ii = 0, nn = vals.length; ii < nn; ii++)
 			{
-				var val		=	vals[ii];
-				var exclude	=	false;
+				var val = vals[ii];
+				var exclude = false;
 				if(val.substr(0, 1) == '!')
 				{
-					val		=	val.substr(1);
-					exclude	=	true;
+					val = val.substr(1);
+					exclude = true;
 				}
 
 				// check if there is no result set yet. if not, create it using
 				// the first set of index data.
 				if(!res)
 				{
-					res	=	this['index_'+index][val];
+					res = this['index_'+index][val];
 					continue;
 				}
 
@@ -92,11 +92,11 @@ var Search	=	Composer.Model.extend({
 				// doing.
 				if(exclude)
 				{
-					res	=	this.exclude(res, this['index_'+index][val]);
+					res = this.exclude(res, this['index_'+index][val]);
 				}
 				else
 				{
-					res	=	this.intersect(res, this['index_'+index][val]);
+					res = this.intersect(res, this['index_'+index][val]);
 				}
 			}
 		}
@@ -143,10 +143,10 @@ var Search	=	Composer.Model.extend({
 	exclude: function(array1, array2)
 	{
 		// create an index
-		var idx	=	{};
+		var idx = {};
 		array2.each(function(item) { idx[item] = true; });
 
-		var result	=	[];
+		var result = [];
 		array1.each(function(item) {
 			if(idx[item]) return;
 			result.push(item);
@@ -159,17 +159,18 @@ var Search	=	Composer.Model.extend({
 	 */
 	index_note: function(note)
 	{
-		var json	=	toJSON(note);
+		var json = toJSON(note);
 		if(json.url && json.url.match(/^data:/)) json.url = '';
-		this.index_json.notes[note.id()]	=	json;
+		this.index_json.notes[note.id()] = json;
 
 		note.get('tags').each(function(tag) {
+			console.log('tag: ', tag, tag.get('name'));
 			this.index_type('tags', tag.get('name'), note.id());
 		}.bind(this));
 		this.index_type('boards', note.get('board_id'), note.id());
 
 		// run full-text indexer
-		var tags	=	json.tags.map(function(t) { return t.name; }).join(' ');
+		var tags = json.tags.map(function(t) { return t.name; }).join(' ');
 		this.ft.add({
 			id: json.id,
 			url: json.url,
@@ -184,16 +185,16 @@ var Search	=	Composer.Model.extend({
 	 */
 	unindex_note: function(note)
 	{
-		var id		=	note.id();
-		var json	=	this.index_json.notes[id];
+		var id = note.id();
+		var json = this.index_json.notes[id];
 		if(!json) return false;
 		json.tags.each(function(tag) {
-			this.unindex_type('tags', tag.name, id);
+			this.unindex_type('tags', tag, id);
 		}.bind(this));
 		this.unindex_type('boards', json.board_id, id);
 
 		// undo full-text indexing
-		var tags	=	json.tags.map(function(t) { return t.name; }).join(' ');
+		var tags = json.tags.map(function(t) { return t.name; }).join(' ');
 		this.ft.remove({
 			id: json.id,
 			url: json.url,
@@ -215,7 +216,7 @@ var Search	=	Composer.Model.extend({
 	{
 		if(typeOf(this['index_'+type][index_id]) != 'array')
 		{
-			this['index_'+type][index_id]	=	[];
+			this['index_'+type][index_id] = [];
 		}
 		// make sure this is a set
 		if(this['index_'+type][index_id].contains(item_id)) return;
@@ -227,7 +228,8 @@ var Search	=	Composer.Model.extend({
 
 	unindex_type: function(type, index_id, item_id)
 	{
-		this['index_'+type][index_id].erase(item_id);
+		var idx = this['index_'+type][index_id];
+		if(idx) idx.erase(item_id);
 	},
 
 	/**

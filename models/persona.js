@@ -32,14 +32,14 @@ var Persona = Protected.extend({
 	init: function()
 	{
 		this.bind('destroy', function() {
-			var settings	=	Object.clone(turtl.user.get('settings').get_by_key('personas').value());
+			var settings = Object.clone(turtl.user.get('settings').get_by_key('personas').value());
 			delete settings[this.id()];
 			turtl.user.get('settings').get_by_key('personas').value(settings);
 		}.bind(this), 'persona:user:cleanup');
 
 		this.bind('change:pubkey', function() {
 			if(this.get('user_id') != turtl.user.id()) return false;
-			var persona	=	turtl.user.get('personas').find_by_id(this.id());
+			var persona = turtl.user.get('personas').find_by_id(this.id());
 			if(!persona || persona.has_keypair()) return false;
 
 			log.warn('persona: old (or missing) RSA key detected. nuking it.', this.id(), this.cid());
@@ -56,8 +56,8 @@ var Persona = Protected.extend({
 		// in addition to destroying the persona, we need to UNset all board
 		// priv entries that contain this persona.
 		turtl.profile.get('boards').each(function(board) {
-			var privs	=	Object.clone(board.get('privs', {}));
-			var shared	=	privs[this.id()];
+			var privs = Object.clone(board.get('privs', {}));
+			var shared = privs[this.id()];
 			if(!shared) return;
 
 			delete privs[this.id()];
@@ -81,7 +81,7 @@ var Persona = Protected.extend({
 		}
 		if(options.require_pubkey)
 		{
-			args.require_key	=	1;
+			args.require_key = 1;
 		}
 		turtl.api.get('/personas/email/'+email, args, options);
 	},
@@ -110,8 +110,8 @@ var Persona = Protected.extend({
 					// if we already have this message, don't bother with all
 					// the crypto stuff
 					if(turtl.messages.find_by_id(msgdata.id)) return;
-					var msg			=	new Message();
-					msg.private_key	=	this.get('privkey');
+					var msg = new Message();
+					msg.private_key = this.get('privkey');
 					msg.set(msgdata);
 					turtl.messages.add(msg);
 				}.bind(this));
@@ -159,7 +159,7 @@ var Persona = Protected.extend({
 			return true;
 		}
 
-		var keys	=	tcrypt.asym.generate_ecc_keys();
+		var keys = tcrypt.asym.generate_ecc_keys();
 		this.set({pubkey: keys.public, privkey: keys.private});
 		return true;
 	},
@@ -167,27 +167,27 @@ var Persona = Protected.extend({
 	has_keypair: function(options)
 	{
 		options || (options = {});
-		var has_key	=	this.get('pubkey') && true;
+		var has_key = this.get('pubkey') && true;
 		if(options.check_private) has_key = has_key && this.get('privkey') && true;
 		return has_key;
 	},
 
 	toJSON: function()
 	{
-		var privkey	=	this.get('privkey');
+		var privkey = this.get('privkey');
 		if(privkey && typeof(privkey != 'string'))
 		{
 			this.data.privkey = tcrypt.to_base64(privkey);
 		}
-		var data	=	this.parent.apply(this, arguments);
-		this.data.privkey	=	privkey;
+		var data = this.parent.apply(this, arguments);
+		this.data.privkey = privkey;
 
-		var pubkey	=	this.get('pubkey');
+		var pubkey = this.get('pubkey');
 		if(pubkey && typeof(pubkey != 'string'))
 		{
 			pubkey = tcrypt.to_base64(pubkey);
 		}
-		data.pubkey	=	pubkey;
+		data.pubkey = pubkey;
 		return data;
 	},
 
@@ -199,23 +199,23 @@ var Persona = Protected.extend({
 			{
 				try
 				{
-					data.pubkey	=	tcrypt.from_base64(data.pubkey);
+					data.pubkey = tcrypt.from_base64(data.pubkey);
 				}
 				catch(e)
 				{
 					// this is probably an old key (RSA). nuke it.
-					data.pubkey	=	null;
+					data.pubkey = null;
 				}
 			}
 			if(data.privkey && typeof(data.privkey) == 'string')
 			{
 				try
 				{
-					data.privkey	=	tcrypt.from_base64(data.privkey);
+					data.privkey = tcrypt.from_base64(data.privkey);
 				}
 				catch(e)
 				{
-					data.privkey	=	null;
+					data.privkey = null;
 				}
 			}
 		}
@@ -256,7 +256,7 @@ var Persona = Protected.extend({
 	{
 		options || (options = {});
 
-		var split	=	tcrypt.split_rsa_key(rsakey);
+		var split = tcrypt.split_rsa_key(rsakey);
 		this.set({
 			pubkey: tcrypt.rsa_key_to_json(split.public),
 			privkey: tcrypt.rsa_key_to_json(split.private)
@@ -279,17 +279,17 @@ var PersonasFilter = Composer.FilterCollection.extend({
  * model is kept around for the sole purposes of offering obscured personas in
  * the future, and will be built on top of regular personas (not replace them).
  */
-var PersonaPrivate	=	Persona.extend({
+var PersonaPrivate = Persona.extend({
 	// persistent challenge
 	challenge: null,
 	challenge_timer: null,
 
 	init: function()
 	{
-		this.challenge_timer		=	new Timer(1);
-		this.challenge_timer.end	=	function()
+		this.challenge_timer = new Timer(1);
+		this.challenge_timer.end = function()
 		{
-			this.challenge	=	null;
+			this.challenge = null;
 		}.bind(this);
 	},
 
@@ -301,7 +301,7 @@ var PersonaPrivate	=	Persona.extend({
 					success: function(profile) {
 						// mark shared boards as such
 						profile.boards.each(function(board) {
-							board.shared	=	true;
+							board.shared = true;
 						});
 
 						// add the boards to the profile
@@ -346,7 +346,7 @@ var PersonaPrivate	=	Persona.extend({
 					if(options.expire)
 					{
 						// expire the local challenge before it expires on the server
-						this.challenge_timer.ms	=	(options.expire - 5) * 1000;
+						this.challenge_timer.ms = (options.expire - 5) * 1000;
 						this.challenge_timer.reset();
 					}
 				}
@@ -358,7 +358,7 @@ var PersonaPrivate	=	Persona.extend({
 
 	generate_response: function(challenge)
 	{
-		var secret	=	this.get('secret');
+		var secret = this.get('secret');
 		if(!secret) secret = turtl.user.get('settings').get_by_key('personas').value()[this.id()];
 		if(!secret) return false;
 		return tcrypt.hash(secret + challenge);
@@ -426,17 +426,17 @@ var PersonaPrivate	=	Persona.extend({
 		var response = this.generate_response(challenge);
 		turtl.api.get('/messages/personas/'+this.id(), { after: options.after, challenge: response }, {
 			success: function(res) {
-				var my_personas	=	turtl.user.get('personas');
+				var my_personas = turtl.user.get('personas');
 
 				// add our messages into the pool
 				turtl.messages.add(res.received);
 				// messages we sent have the "to" persona replaced with our own for
 				// display purposes
 				turtl.messages.add((res.sent || []).map(function(sent) {
-					var persona		=	my_personas.find_by_id(sent.from);
+					var persona = my_personas.find_by_id(sent.from);
 					if(!persona) return false;
-					sent.persona	=	persona.toJSON();
-					sent.mine		=	true;	// let the app know WE sent it
+					sent.persona = persona.toJSON();
+					sent.mine = true;	// let the app know WE sent it
 					return sent;
 				}));
 				if(options.success) options.success(res, this);

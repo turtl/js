@@ -1,9 +1,9 @@
-var FirefoxAddonPort	=	new Class({
+var FirefoxAddonPort = new Class({
 	comm: false,
 
 	initialize: function(comm_object)
 	{
-		this.comm	=	comm_object;
+		this.comm = comm_object;
 	},
 
 	send: function(ev, args)

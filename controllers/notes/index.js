@@ -32,27 +32,27 @@ var NotesController = TrackController.extend({
 		this.render();
 
 		// direction: 0 is ASC, 1 is DESC
-		var create_sort	=	function(field, direction)
+		var create_sort = function(field, direction)
 		{
-			var def		=	99999999999;
-			var type	=	'int';
+			var def = 99999999999;
+			var type = 'int';
 			if(field == 'id')
 			{
-				def		=	'zzzzzzzzzzzzzzz';
-				type	=	'str';
+				def = 'zzzzzzzzzzzzzzz';
+				type = 'str';
 			}
 
-			var do_sort	=	function(a, b)
+			var do_sort = function(a, b)
 			{
-				var sort_a	=	a.get(field, def);
-				var sort_b	=	b.get(field, def);
+				var sort_a = a.get(field, def);
+				var sort_b = b.get(field, def);
 				if(type == 'int')
 				{
-					var sort	=	sort_a - sort_b;
+					var sort = sort_a - sort_b;
 				}
 				else
 				{
-					var sort	=	sort_a.localeCompare(sort_b);
+					var sort = sort_a.localeCompare(sort_b);
 				}
 
 				if(sort != 0) return sort;
@@ -68,8 +68,8 @@ var NotesController = TrackController.extend({
 			}
 		};
 
-		var board_id	=	this.board.id();
-		this.filter_list	=	new NotesFilter(this.board.get('notes'), {
+		var board_id = this.board.id();
+		this.filter_list = new NotesFilter(this.board.get('notes'), {
 			sort_event: true,
 			refresh_on_change: false,
 			filter: function(note)
@@ -96,23 +96,23 @@ var NotesController = TrackController.extend({
 
 		// Main search event
 		this.board.bind_relational('tags', ['change:filters', 'change:selected', 'change:excluded'], function() {
-			var start		=	performance.now();
-			var selected	=	this.board.get_selected_tags().map(function(t) { return t.get('name'); });
-			var excluded	=	this.board.get_excluded_tags().map(function(t) { return '!'+t.get('name'); });
+			var start = performance.now();
+			var selected = this.board.get_selected_tags().map(function(t) { return t.get('name'); });
+			var excluded = this.board.get_excluded_tags().map(function(t) { return '!'+t.get('name'); });
 			if(selected.length == 0 && excluded.length == 0 && (!this.search_text || this.search_text.clean().length == 0))
 			{
-				this.last_search	=	false;
+				this.last_search = false;
 			}
 			else
 			{
-				this.last_search	=	turtl.search.search({
+				this.last_search = turtl.search.search({
 					text: this.search_text,
 					boards: this.board.id(),
 					tags: selected.append(excluded)
 				});
 			}
 			//console.log('note search time: ', performance.now() - start);
-			var start		=	performance.now();
+			var start = performance.now();
 
 			// do the actual filtering
 			this.render_to_fragment();
@@ -151,7 +151,7 @@ var NotesController = TrackController.extend({
 		}.bind(this), 'notes:listing:show_display_buttons');
 
 		this.bind('sort-change', function(field, direction) {
-			this.filter_list.sortfn	=	create_sort(field, direction);
+			this.filter_list.sortfn = create_sort(field, direction);
 			this.filter_list.trigger('sort');
 			this.update_display_type();
 		}.bind(this));
@@ -282,8 +282,8 @@ var NotesController = TrackController.extend({
 		if(!e) return false;
 		e.stop();
 
-		var a		=	next_tag_up('a', e.target);
-		var sort	=	a.href.replace(/.*#note-sort-/, '');
+		var a = next_tag_up('a', e.target);
+		var sort = a.href.replace(/.*#note-sort-/, '');
 		if(a.hasClass('sel'))
 		{
 			if(a.hasClass('asc'))
@@ -311,7 +311,7 @@ var NotesController = TrackController.extend({
 				a.addClass('sel').addClass('asc');
 			}
 		}
-		var direction	=	a.className.match(/\basc\b/) ? 0 : 1;
+		var direction = a.className.match(/\basc\b/) ? 0 : 1;
 		this.trigger('sort-change', sort, direction);
 	},
 
@@ -357,22 +357,22 @@ var NotesController = TrackController.extend({
 
 	setup_masonry: function()
 	{
-		var do_masonry	=	function()
+		var do_masonry = function()
 		{
 			if(this.board.get('display_type') != 'masonry') return;
 
-			var start	=	performance.now();
+			var start = performance.now();
 			if(this.masonry)
 			{
 				this.masonry.detach();
-				this.masonry	=	null;
+				this.masonry = null;
 			}
 			this.masonry = this.note_list.masonry({
 				singleMode: true,
 				resizeable: true,
 				itemSelector: '> li.note:not(.hide)'
 			});
-			var images	=	this.note_list.getElements('> li.note:not(.hide) > .gutter img');
+			var images = this.note_list.getElements('> li.note:not(.hide) > .gutter img');
 			images.each(function(img) {
 				if(img.complete || (img.naturalWidth && img.naturalWidth > 0)) return;
 				img.onload = function() {
@@ -385,8 +385,8 @@ var NotesController = TrackController.extend({
 
 		if(!this.masonry_timer)
 		{
-			this.masonry_timer		=	new Timer(5, 5);
-			this.masonry_timer.end	=	do_masonry;
+			this.masonry_timer = new Timer(5, 5);
+			this.masonry_timer.end = do_masonry;
 		}
 		this.masonry_timer.start();
 	},
@@ -396,15 +396,15 @@ var NotesController = TrackController.extend({
 	{
 		if(!this.edge_check)
 		{
-			var mousey	=	null;
-			this.edge_check	=	function(e)
+			var mousey = null;
+			this.edge_check = function(e)
 			{
 				if(!this.sorting) return false;
 				if(e) mousey = e.page.y;
 				if(!mousey) return false;
 
-				var coords	=	$(window).getCoordinates();
-				var scroll	=	$(window).getScrollTop();
+				var coords = $(window).getCoordinates();
+				var scroll = $(window).getScrollTop();
 				if(mousey > (scroll + coords.bottom) - 200)
 				{
 					window.scrollTo(null, scroll + 10);
@@ -420,55 +420,55 @@ var NotesController = TrackController.extend({
 
 		if(this.board.get('display_type') == 'masonry') return false;
 
-		var note_being_sorted_el	=	null;
-		this.sort_notes	=	new Sortables(this.note_list, {
+		var note_being_sorted_el = null;
+		this.sort_notes = new Sortables(this.note_list, {
 			clone: true,
 			opacity: .5,
 			handle: '.actions a.sort span',
 			onStart: function(note_el) {
-				note_being_sorted_el	=	note_el;
-				this.sorting	=	true;
+				note_being_sorted_el = note_el;
+				this.sorting = true;
 			}.bind(this),
 			onComplete: function() {
-				this.sorting	=	false;
-				var sorted_el	=	note_being_sorted_el;
-				var prev_el		=	sorted_el.getPrevious();
-				var next_el		=	sorted_el.getNext();
-				var get_id		=	function(classname)
+				this.sorting = false;
+				var sorted_el = note_being_sorted_el;
+				var prev_el = sorted_el.getPrevious();
+				var next_el = sorted_el.getNext();
+				var get_id = function(classname)
 				{
 					return classname.replace(/^.*id_([0-9a-f-]+).*?$/, '$1').clean();
 				};
 
-				note_being_sorted_el	=	null;
+				note_being_sorted_el = null;
 
-				var ids			=	this.note_list.getElements('> li.note').map(function(el) {
+				var ids = this.note_list.getElements('> li.note').map(function(el) {
 					return get_id(el.className);
 				});
 
 				/*
-				var notes_collection	=	this.board.get('notes');
+				var notes_collection = this.board.get('notes');
 
-				var sorted_id	=	get_id(sorted_el.className);
-				var prev_id		=	prev_el ? get_id(prev_el.className) : null;
-				var next_id		=	next_el ? get_id(next_el.className) : null;
-				var sorted		=	notes_collection.find_by_id(sorted_id);
-				var prev		=	notes_collection.find_by_id(prev_id);
-				var next		=	notes_collection.find_by_id(next_id);
+				var sorted_id = get_id(sorted_el.className);
+				var prev_id = prev_el ? get_id(prev_el.className) : null;
+				var next_id = next_el ? get_id(next_el.className) : null;
+				var sorted = notes_collection.find_by_id(sorted_id);
+				var prev = notes_collection.find_by_id(prev_id);
+				var next = notes_collection.find_by_id(next_id);
 
 				if(prev && next)
 				{
 					// manwich
-					var sortval	=	prev.get('sort') + ((next.get('sort') - prev.get('sort')) / 2);
+					var sortval = prev.get('sort') + ((next.get('sort') - prev.get('sort')) / 2);
 				}
 				else if(next)
 				{
 					// sorted item was put at beginning
-					var sortval	=	next.get('sort') - 1;
+					var sortval = next.get('sort') - 1;
 				}
 				else if(prev)
 				{
 					// sorted item was put at end
-					var sortval	=	prev.get('sort') + 1;
+					var sortval = prev.get('sort') + 1;
 				}
 				else
 				{
@@ -485,11 +485,11 @@ var NotesController = TrackController.extend({
 				*/
 
 				// save all note sorts as a batch
-				var notes_collection	=	this.board.get('notes');
+				var notes_collection = this.board.get('notes');
 				notes_collection.start_batch_save();
 				notes_collection.each(function(note) {
 					if(!ids.contains(note.id())) return;
-					var sortval	=	ids.indexOf(note.id()) + 1;
+					var sortval = ids.indexOf(note.id()) + 1;
 					console.log('sort: ', sortval, note.get('text'));
 					note.set({sort: sortval});
 				});
