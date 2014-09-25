@@ -497,7 +497,7 @@ var turtl = {
 				base: window._route_base || '',
 				// we'll do our own first route
 				suppress_initial_route: true,
-				enable_cb: function(url) { return this.loaded; }.bind(this)
+				enable_cb: function(url) { return turtl.loaded; }
 			}, options);
 			this.router = new Composer.Router(config.routes, options);
 			this.router.bind_links({ filter_trailing_slash: true });
@@ -519,8 +519,7 @@ var turtl = {
 		if(
 			!this.user.logged_in &&
 			!url.match(/\/users\/login/) &&
-			!url.match(/\/users\/join/) &&
-			!url.match(/\/bookmark/)
+			!url.match(/\/users\/join/)
 		)
 		{
 			url = '/users/login';
@@ -589,7 +588,7 @@ window.addEvent('domready', function() {
 		// stick it in #wrap instead of body, which fixes various problems with
 		// controllers expecting wrap to be there (for instance, the Likes
 		// controller).
-		entry_element: '#wrap',
+		entry_element: 'body',
 		overlay: true,
 		load_icon: img('/images/site/icons/load_42x11.gif')	// not that it's needed anymore...
 	});

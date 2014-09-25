@@ -33,11 +33,9 @@ a { text-decoration: none; }
 /* custom icon font(s) */
 @font-face { font-family: 'Entypo'; font-weight: 400; src: url(../images/font/entypo.fontello.ttf); }
 
-#wrap > .sidebar-bg {display: none; position: fixed; z-index: -1; top: 0; left: 0; width: 20%; padding-right: 9px; height: 100%; background: #e3e3e3; border-right: 1px solid #ddd;}
-body.bare #wrap > .sidebar-bg {display: none;}
-
 header {/*float: left; width: 20%;*/ height: 40px; margin: 0 0 22px 0; padding: 0 0 0 10px; background: #222; border-bottom: 1px solid #222;}
-header h1 {position: relative; float: left; display: block; width: 29px; height: 29px; margin: 5px 0 0 0; background: url(../images/template/logo.svg) 0 0 no-repeat; background-size: 100% 100%;}
+header h1 {position: relative; float: left; display: inline-block; margin: 5px 0 0 0;}
+header h1 a {display: block; width: 29px; height: 29px; background: url(../images/template/logo.svg) 0 0 no-repeat; background-size: 100% 100%;}
 header h1 span {display: none;}
 header h1 {color: #eee; color: #92b579;}
 header h1.active {cursor: pointer;}
@@ -67,7 +65,6 @@ footer {display: block; margin: 32px 0 0 0; padding: 16px; font-size: 10px; colo
 
 @media screen and (min-resolution: 250dpi), screen and (max-width: 1000px) {
 	header {float: none; width: auto;}
-	#wrap > .sidebar-bg {display: none;}
 	#main {padding: 0;}
 }
 
