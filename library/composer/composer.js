@@ -1,4 +1,234 @@
 /**
+ * util.js
+ *
+ * This sets up our util object, which defines a way to export Composer
+ * components and also defines a number of helper functions the rest of the
+ * system will use.
+ * -----------------------------------------------------------------------------
+ *
+ * Composer.js is an MVC framework for creating and organizing javascript 
+ * applications. For documentation, please visit:
+ *
+ *     http://lyonbros.github.com/composer.js/
+ * 
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (c) 2011, Lyon Bros Enterprises, LLC. (http://www.lyonbros.com)
+ * 
+ * Licensed under The MIT License. 
+ * Redistributions of files must retain the above copyright notice.
+ */
+(function() {
+	"use strict";
+
+	var global = this;
+	if(!global.Composer) global.Composer = {
+		// note: this used to be "export" but IE is a whiny little bitch, so now
+		// we're sup3r 1337 h4x0r5
+		exp0rt: function(obj)
+		{
+			Object.keys(obj).forEach(function(key) {
+				global.Composer[key] = obj[key];
+			});
+		}
+	};
+
+	/**
+	 * You must override this function in your app.
+	 */
+	var sync = function(method, model, options) { return options.success(); };
+
+	// a closure that returns incrementing integers. these will be unique across
+	// the entire app since only one counter is instantiated
+	var cid = (function() {
+		var counter = 1;
+		return function(inc) { return 'c'+counter++; };
+	})();
+
+	// wraps error callbacks for syncing functions
+	var wrap_error = function(callback, model, options)
+	{
+		return function(resp)
+		{
+			if(callback)
+			{
+				callback(model, resp, options);
+			}
+			else
+			{
+				this.fire_event('error', options, model, resp, options);
+			}
+		};
+	};
+
+	// Composer equality function. Does deep-inpection and is able to tell the
+	// difference between {key: 3} and {key: 3, key2: 4} (_.eq had problems with
+	// this back in the day).
+	var eq = function(a, b)
+	{
+		if ( a === b ) return true;
+		if(a instanceof Function) return false;
+		if(typeof(a) != typeof(b)) return false;
+		if((a && a.constructor) && !b || !b.constructor) return false;
+		if((b && b.constructor) && !a || !a.constructor) return false;
+		if(a && b && a.constructor != b.constructor) return false;
+		if(a instanceof Array || Object.prototype.toString.call(a) === '[object Array]')
+		{
+			if(a.length != b.length) return false;
+			// TODO: check if array indexes are always sequential
+			for(var i = 0, n = a.length; i < n; i++)
+			{
+				if(!b.hasOwnProperty(i)) return false;
+				if(!eq(a[i], b[i])) return false;
+			}
+		}
+		else if(a instanceof Object)
+		{
+			for( var p in b )
+			{
+				if( b.hasOwnProperty(p) && ! a.hasOwnProperty(p) ) return false;
+			}
+			for( var p in a )
+			{
+				if ( ! a.hasOwnProperty( p ) ) continue;
+				if ( ! b.hasOwnProperty( p ) ) return false;
+				if ( a[ p ] === b[ p ] ) continue;
+				if ( typeof( a[ p ] ) !== "object" ) return false;
+				if ( ! eq( a[ p ],  b[ p ] ) ) return false;
+			}
+		}
+		else if(a != b)
+		{
+			return false;
+		}
+		return true;
+	};
+
+	// create an extension function that merges specific properties from
+	// inherited objects
+	var merge_extend = function(cls, properties)
+	{
+		var _extend = cls.extend;
+		cls.extend = function(def, base)
+		{
+			base || (base = this);
+			var attr = base.prototype;
+
+			properties.forEach(function(prop) {
+				def[prop] = Composer.object.merge({}, attr[prop], def[prop]);
+			});
+
+			var cls = _extend.call(base, def);
+			Composer.merge_extend(cls, properties);
+			return cls;
+		}
+	};
+
+	// some Mootools-reminiscent object utilities Composer uses
+	var array = {
+		erase: function(arr, item)
+		{
+			for(var i = arr.length - 1; i >= 0; i--)
+			{
+				if(arr[i] === item) arr.splice(i, 1);
+			}
+		},
+
+		is: (function() {
+			return ('isArray' in Array) ? 
+				Array.isArray :
+				function(obj) {
+					return obj instanceof Array || Object.prototype.toString.call(obj) === '[object Array]'
+				}
+		})()
+	};
+	var object = {
+		each: function(obj, fn, bind)
+		{
+			if(!obj) return;
+			bind || (bind = this);
+			Object.keys(obj).forEach(function(key) {
+				(fn.bind(bind))(obj[key], key)
+			});
+		},
+		clone: function(obj)
+		{
+			var clone = {};
+			Object.keys(obj).forEach(function(key) {
+				clone[key] = obj[key];
+			});
+			return clone;
+		},
+		merge: function(to, _)
+		{
+			var args = Array.prototype.slice.call(arguments, 1);
+			args.forEach(function(obj) {
+				if(!obj) return;
+				Object.keys(obj).forEach(function(key) {
+					to[key] = obj[key];
+				});
+			});
+			return to;
+		}
+	};
+
+	var promisify = function()
+	{
+		var create_converter = function(type)
+		{
+			return function(key)
+			{
+				var options = arguments[1] || {};
+				var options_idx = options.options_idx || 0;
+				var names = options.names || ['success', 'error'];
+
+				var _old = Composer[type].prototype[key];
+				Composer[type].prototype[key] = function()
+				{
+					var args = Array.prototype.slice.call(arguments, 0);
+					if(args.length < options_idx)
+					{
+						var _tmp = new Array(options_idx);
+						args.forEach(function(item, i) { _tmp[i] = item; });
+						args = _tmp;
+					}
+					if(!args[options_idx]) args[options_idx] = {};
+					var _self = this;
+					var options = args[options_idx];
+					if(options.promisified) return _old.apply(_self, args);
+					return new Promise(function(resolve, reject) {
+						if(names[0]) options[names[0]] = resolve;
+						if(names[1]) options[names[1]] = function(_, err) { reject(err); };
+						options.promisified = true;
+						_old.apply(_self, args);
+					});
+				};
+			};
+		}
+		var convert_collection_fn = create_converter('Collection');
+		['fetch', 'save', 'destroy'].forEach(create_converter('Model'));
+		['fetch'].forEach(convert_collection_fn);
+		convert_collection_fn('reset_async', {options_idx: 1, names: ['complete']});
+	};
+
+	Composer.exp0rt({
+		sync: sync,
+		cid: cid,
+		wrap_error: wrap_error,
+		eq: eq,
+		merge_extend: merge_extend,
+		array: array,
+		object: object,
+		promisify: promisify
+	});
+}).apply((typeof exports != 'undefined') ? exports : this);
+
+/**
+ * class.js
+ *
+ * Defines the base class system used by Composer (can be standlone as well)
+ * -----------------------------------------------------------------------------
+ *
  * Composer.js is an MVC framework for creating and organizing javascript
  * applications. For documentation, please visit:
  *
@@ -13,232 +243,404 @@
  */
 (function() {
 	"use strict";
-	var Composer = {};
-	var global = typeof(global) != 'undefined' ? global :
-						typeof(window) != 'undefined' ? window : this;
+
+	var global = this;
 
 	/**
-	 * You must override this function in your app.
+	 * like typeof, but returns if it's an array or null
 	 */
-	Composer.sync = function(method, model, options) { return options.success(); };
-
-	// an option to suppress those annoying warnings when overriding initialize and extend methods
-	Composer.suppress_warnings = false;
-
-	// a closure that returns incrementing integers. these will be unique across
-	// the entire app since only one counter is instantiated
-	Composer.cid = (function() {
-		var counter = 1;
-		return function(inc) { return 'c'+counter++; };
-	})();
+	var typeOf = function(obj)
+	{
+		if(obj == null) return 'null';
+		var type = typeof(obj);
+		if(type != 'object') return type;
+		if(Array.isArray && Array.isArray(obj)) return 'array';
+		else if(Object.prototype.toString.call(obj) === '[object Array]') return 'array';
+		return type;
+	};
 
 	/**
-	 * The events class provides bindings to objects (Models and Collections,
-	 * mainly) and allows triggering of those events. For instance, a controller
-	 * can bind its "removeItemFromView" function to its model's "destroy" event.
-	 * Now when that model is destroyed, the destroyer doesn't have to remember to
-	 * also trigger the "removeItemFromView" function, but it will happen
-	 * automatically as a result of the binding.
-	 *
-	 * Note that this class is meant to be extended and doesn't provide much use on
-	 * its own.
-	 *
-	 * Certain events are used by the framework itself:
-	 *   Models:
-	 *     "change" - called when a model's values are changed vie its set()
-	 *       function.
-	 *     "change:[key]" - called when [key] is changed under model's data. For
-	 *       instance, if you did :
-	 *         model.bind("change:name", myfn);
-	 *         model.set({name: 'leonard'});    // <-- this will trigger the event
-	 *     "destroy" - called when model.destroy() is called.
-	 *     "error" - triggered when an error happens saving/reading/validating the
-	 *       model
-	 *   Collections:
-	 *     "add" - Called when a model is added to a collection via
-	 *       collection.add()
-	 *     "clear" - Called when all models are cleared out of a via
-	 *       collection.clear()
-	 *     "reset" - Called when collection is reset with new model data via
-	 *       collection.reset()
-	 *     "remove" - Called when collection.remove() is used to remove a model
-	 *       from the collection
-	 *   Controllers:
-	 *     "release" - Called when controller.release() is called to remove the
-	 *       controller from the view.
-	 *
-	 * Note that the "all" event will bubble up from model to collection...when a
-	 * model is added to a collection via collection.add(), the collection binds
-	 * an 'all' event to that model so that any events that happen on that model
-	 * will be triggered in the collection as well. This makes it easy for a
-	 * controller to monitor changes on collections of items instead of each item
-	 * individually.
+	 * Merge object `from` into `into`
 	 */
-	var Events = new Class({
-		_events: {},
-		_named_events: {},
+	var merge = function(into, from, options)
+	{
+		options || (options = {});
+		for(var k in from)
+		{
+			if(!from.hasOwnProperty(k)) continue;
+			if(options.transform) options.transform(into, from, k);
+			into[k] = from[k];
+		}
+		return into;
+	};
+
+	/**
+	 * Wraps an overriding method to track its state so get_parent() can pull
+	 * out the right function.
+	 */
+	var wrapfn = function(origfn, k)
+	{
+		return function()
+		{
+			if(!this.$state.levels[k]) this.$state.levels[k] = 0;
+			this.$state.levels[k]++;
+			this.$state.fn.unshift(k);
+			var val = origfn.apply(this, arguments);
+			this.$state.fn.shift();
+			this.$state.levels[k]--;
+			return val;
+		};
+	};
+
+	/**
+	 * Takes care of "parentizing" overridden methods when merging prototypes
+	 */
+	var do_extend = function(to_prototype, from_prototype)
+	{
+		return merge(to_prototype, from_prototype, {
+			transform: function(into, from, k) {
+				if(typeof into[k] != 'function' || into[k].prototype.$parent || typeof from[k] != 'function' || from[k].prototype.$parent) return false;
+				from[k] = wrapfn(from[k], k);
+				from[k].$parent = into[k];
+			}
+		});
+	};
+
+	/**
+	 * Given an object, copy the subobjects/subarrays recursively
+	 */
+	var copy = function(obj)
+	{
+		for(var k in obj)
+		{
+			var val = obj[k];
+			switch(typeOf(val))
+			{
+			case 'object':
+				obj[k] = copy(merge({}, val));
+				break;
+			case 'array':
+				obj[k] = val.slice(0);
+				break;
+			}
+		}
+		return obj;
+	}
+
+	/**
+	 * Create a new class prototype from the given base class.
+	 */
+	var create = function(base)
+	{
+		base.$initializing = true;
+		var prototype = new base();
+		delete base.$initializing;
+
+		var cls = function Omni()
+		{
+			copy(this);
+			if(cls.$initializing) return this;
+			this.$state = {levels: {}, fn: []};
+			if(this.initialize) return this.initialize.apply(this, arguments);
+			else return this;
+		};
+		cls.$constructor = prototype.$constructor = cls;
+		cls.prototype = prototype;
+		cls.prototype.$parent = base;
+
+		return cls;
+	};
+
+	/**
+	 * Once base to rule them all (and in the darkness bind them)
+	 */
+	var Base = function() {};
+
+	/**
+	 * Main extension method, creates a new class from the given object
+	 */
+	Base.extend = function(obj)
+	{
+		var base = this;
+		var cls = create(base);
+		do_extend(cls.prototype, obj);
+		cls.extend = Base.extend;
+
+		cls.prototype.get_parent = function()
+		{
+			var key = this.$state.fn[0];
+			if(!key) return false;
+			var level = this.$state.levels[key];
+			var parent = cls.prototype[key]; for(var i = 0; i < level && parent; i++) { parent = parent.$parent; }
+			return parent || false;
+		};
+		cls.prototype.parent = function()
+		{
+			var fn = this.get_parent();
+			if(fn) return fn.apply(this, arguments);
+			throw 'Class.js: Bad parent method: '+ this.$state.fn[0];
+		};
+
+		return cls;
+	};
+
+	// wrap base class so we can call it directly or as .extend()
+	function Class(obj) { return Base.extend(obj); };
+	Class.extend = Class;
+
+	if(global.Composer) global.Composer.exp0rt({ Class: Class });
+	global.Class = Class;
+}).apply((typeof exports != 'undefined') ? exports : this);
+
+/**
+ * event.js
+ *
+ * Defines the eventing fabric used throughout Composer
+ * -----------------------------------------------------------------------------
+ *
+ * Composer.js is an MVC framework for creating and organizing javascript 
+ * applications. For documentation, please visit:
+ *
+ *     http://lyonbros.github.com/composer.js/
+ * 
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (c) 2011, Lyon Bros Enterprises, LLC. (http://www.lyonbros.com)
+ * 
+ * Licensed under The MIT License. 
+ * Redistributions of files must retain the above copyright notice.
+ */
+(function(global, undefined) {
+	"use strict";
+
+	var make_lookup_name = function(event_name, bind_name)
+	{
+		return event_name + '@' + bind_name;
+	};
+
+	var Event = Composer.Class({
+		_handlers: {},
+		_handler_names: {},
+		_forwards: [],
 
 		/**
-		 * Bind a callback to a specific event for this object. Adds the callback to
-		 * an array instead of replacing other callbacks, so many callbacks can exist
-		 * under the same event for this object.
-		 *
-		 * Example: mymodel.bind("change", this.render.bind(this));
-		 *
-		 * Whenever mymodel is changed in any way, the "render" function for the
-		 * current object (probably a controller in this instance) will be called.
+		 * Forward events from this dispatcher to another. If the second
+		 * dispatcher is given as a function, that function must return either
+		 * another dispatcher or false. This lets you forward specific events at
+		 * runtime based on data within the event.
 		 */
-		bind: function(ev, callback, callback_name)
+		forward: function(to_or_function)
 		{
-			if(typeof(ev) == 'object' && ev.length)
-			{
-				// it's an array, process each binding separately
-				return ev.each(function(evname) {
-					this.bind(evname, callback, callback_name);
-				}, this);
-			}
-			callback_name || (callback_name = null);
-
-			if(callback_name)
-			{
-				// prepend event type to callback name
-				callback_name = ev+':'+callback_name;
-
-				if(!this._named_events[callback_name])
-				{
-					// assign the callback into the named collection so it can be retrieved
-					// later by name if required.
-					this._named_events[callback_name] = callback;
-				}
-				else
-				{
-					// don't bother with duplicate event names
-					return false;
-				}
-			}
-
-			this._events[ev] || (this._events[ev] = []);
-			if(!this._events[ev].contains(callback))
-			{
-				this._events[ev].push(callback);
-			}
-
+			this._forwards.push(to_or_function);
 			return this;
 		},
 
 		/**
-		 * Like bind(), but clears out the binding after one use.
+		 * Determine if this dispatcher forwards to the given.
 		 */
-		bind_once: function(ev, callback, callback_name)
+		forwards_to: function(to_or_function)
 		{
-			var wrapped;
-			wrapped = function() {
-				this.unbind(ev, wrapped);
-				callback.apply(this, arguments);
-			}.bind(this);
-			this.bind(ev, wrapped, callback_name);
+			return this._forwards.indexOf(to_or_function) >= 0;
 		},
 
 		/**
-		 * Trigger an event for this object, which in turn runs all callbacks for that
-		 * event WITH all parameters passed in to this function.
-		 *
-		 * For instance, you could do:
-		 * mymodel.bind("destroy", this.removeFromView.bind(this));
-		 * mymodel.trigger("destroy", "omg", "lol", "wtf");
-		 *
-		 * this.removeFromView will be called with the arguments "omg", "lol", "wtf".
-		 *
-		 * Note that any trigger event will also trigger the "all" event. the idea
-		 * being that you can subscribe to anything happening on an object.
+		 * Undo a forward created by forward.
 		 */
-		trigger: function(ev)
+		unforward: function(to_or_function)
+		{
+			var idx = this._forwards.indexOf(to_or_function);
+			if(idx < 0) return this;
+			this._forwards.splice(idx, 1);
+			return this;
+		},
+
+		/**
+		 * Bind a function to an event. Optionally allows naming the binding so
+		 * it can be removed later on without the reference to the bound
+		 * function.
+		 */
+		bind: function(event_name, fn, bind_name)
+		{
+			if(Composer.array.is(event_name))
+			{
+				event_name.forEach(function(ev) {
+					this.bind(ev, fn, bind_name);
+				}.bind(this));
+				return this;
+			}
+			if(bind_name) this.unbind(event_name, bind_name);
+
+			if(!this._handlers[event_name]) this._handlers[event_name] = [];
+			var eventhandlers = this._handlers[event_name];
+			eventhandlers.push(fn);
+
+			if(bind_name)
+			{
+				this._handler_names[make_lookup_name(event_name, bind_name)] = fn;
+			}
+			return this;
+		},
+
+		/**
+		 * Bind a function to an event, but clear the binding out once the event
+		 * has been triggered once.
+		 */
+		bind_once: function(event_name, fn, bind_name)
+		{
+			bind_name || (bind_name = null);
+
+			var wrapped_function = function()
+			{
+				this.unbind(event_name, wrapped_function)
+				fn.apply(this, arguments);
+			}.bind(this);
+			return this.bind(event_name, wrapped_function, bind_name);
+		},
+
+		/**
+		 * Unbind an event/function pair. If function_or_name contains a
+		 * non-function value, the value is used in a name lookup instead. This
+		 * allows removing an event/function binding by its name (as specified
+		 * by `bind_name` in the bind function) which can be nice when the
+		 * original function is no longer in scope.
+		 */
+		unbind: function(event_name, function_or_name)
+		{
+			if(!event_name) return this.wipe();
+			if(Composer.array.is(event_name))
+			{
+				event_name.forEach(function(ev) {
+					this.unbind(ev, function_or_name);
+				}.bind(this));
+				return this;
+			}
+			if(!function_or_name) return this.unbind_all(event_name);
+
+			var is_fn = function_or_name instanceof Function;
+			var lookup_name = is_fn ? null : make_lookup_name(event_name, function_or_name);
+			var fn = is_fn ?  function_or_name : this._handler_names[lookup_name];
+			if(!fn) return this;
+			if(!is_fn) delete this._handler_names[lookup_name];
+
+			var idx = this._handlers[event_name].indexOf(fn);
+			if(idx < 0) return this;
+
+			this._handlers[event_name].splice(idx, 1);
+			return this;
+		},
+
+		/**
+		 * Unbind all handlers for the given event name.
+		 */
+		unbind_all: function(event_name)
+		{
+			delete this._handlers[event_name];
+			return this;
+		},
+
+		/**
+		 * Wipe out all handlers for a dispatch object.
+		 */
+		wipe: function(options)
+		{
+			options || (options = {});
+
+			this._handlers = {};
+			this._handler_names = {};
+
+			if(!options.preserve_forwards) this._forwards = [];
+			return this;
+		},
+
+		/**
+		 * Trigger an event.
+		 */
+		trigger: function(event_name, _)
 		{
 			var args = Array.prototype.slice.call(arguments, 0);
-			[ev, 'all'].each(function(type) {
-				if(!this._events[type]) return;
-				Array.clone(this._events[type]).each(function(callback) {
-					callback.apply(this, (type == 'all') ? args : args.slice(1));
-				}, this);
-			}, this);
-
-			return this;
-		},
-
-		/**
-		 * Unbinds an event from the current object.
-		 */
-		unbind: function(ev, callback)
-		{
-			if(typeof(ev) == 'object' && ev.length)
+			var handlers = this._handlers[event_name] || [];
+			var catch_all = this._handlers['all'] || [];
+			handlers.slice(0).forEach(function(handler) {
+				handler.apply(this, args.slice(1));
+			}.bind(this));
+			catch_all.slice(0).forEach(function(handler) {
+				handler.apply(this, args.slice(0));
+			}.bind(this));
+			if(this._forwards.length > 0)
 			{
-				// it's an array, process each item individually
-				return ev.each(function(evname) {
-					this.unbind(evname, callback);
-				}, this);
+				this._forwards.forEach(function(to) {
+					if(to instanceof Event)
+					{
+						to.trigger.apply(to, args);
+					}
+					else if(to instanceof Function)
+					{
+						var to = to.apply(to, args);
+						if(to instanceof Event)
+						{
+							to.trigger.apply(to, args);
+						}
+					}
+				});
 			}
-
-			if(typeof(ev) == 'undefined')
-			{
-				// no event passed, unbind everything
-				this._events = {};
-				this._named_events = {};
-				return this;
-			}
-
-			if(typeof(this._events[ev]) == 'undefined' || this._events[ev].length == 0)
-			{
-				// event isn't bound
-				return this;
-			}
-
-			if(typeof(callback) == 'undefined')
-			{
-				// no callback specified, remove all events of the given type
-				Object.each(this._named_events, function(cb, ev_key) {
-					// clear out all named events for this event type
-					var match = ev_key.substr(0, ev.length + 1);
-					if(ev+':' != match) return;
-					delete this._named_events[ev_key];
-				}, this);
-				// empty out the event type
-				this._events[ev].empty();
-			}
-			else
-			{
-				if(typeof(callback) == 'string')
-				{
-					// load the function we assigned the name to and assign it to "callback",
-					// also removing the named reference after we're done.
-					callback = ev+':'+callback;
-					var fn = this._named_events[callback];
-					delete this._named_events[callback];
-					var callback = fn;
-				}
-
-				// remove all callback matches for the event type ev
-				this._events[ev].erase(callback);
-			}
-
 			return this;
 		}
 	});
+
+	Event._make_lookup_name = make_lookup_name;
+	Composer.exp0rt({ Event: Event });
+}).apply((typeof exports != 'undefined') ? exports : this);
+
+/**
+ * base.js
+ *
+ * Defines the base class for Composer objects (Model, Collection, etc)
+ * -----------------------------------------------------------------------------
+ *
+ * Composer.js is an MVC framework for creating and organizing javascript 
+ * applications. For documentation, please visit:
+ *
+ *     http://lyonbros.github.com/composer.js/
+ * 
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (c) 2011, Lyon Bros Enterprises, LLC. (http://www.lyonbros.com)
+ * 
+ * Licensed under The MIT License. 
+ * Redistributions of files must retain the above copyright notice.
+ */
+(function() {
+	"use strict";
 
 	/**
 	 * The base class is inherited by models, collections, and controllers. It
 	 * provides some nice common functionality.
 	 */
-	var Base = new Class({
+	var Base = Composer.Event.extend({
 		/**
 		 * Track this object's type. Useful for debugging, mainly
 		 */
 		__composer_type: 'base',
 
 		/**
+		 * Holds generic options for objects.
+		 * */
+		options: {},
+
+		/**
 		 * Every Composer object has an assigned unique id (regardless of the
 		 * object's actual app ID). It is stored here.
 		 */
 		_cid: false,
+
+		/**
+		 * CTOR, assigns our CID
+		 */
+		initialize: function()
+		{
+			// assign the unique app id
+			this._cid = Composer.cid();
+		},
 
 		/**
 		 * Pull out the object's unique Composer ID
@@ -249,7 +651,19 @@
 		},
 
 		/**
-		 * fire_event dtermines whether or not an event should fire. given an event
+		 * Convenience function to set options easily
+		 */
+		set_options: function(options)
+		{
+			options || (options = {});
+
+			Object.keys(options).forEach(function(key) {
+				this.options[key] = options[key];
+			}.bind(this));
+		},
+
+		/**
+		 * fire_event determines whether or not an event should fire. given an event
 		 * name, the passed-in options, and any arbitrary number of arguments,
 		 * determine whether or not the given event should be triggered.
 		 */
@@ -271,7 +685,7 @@
 			else if(
 				options.not_silent &&
 				(options.not_silent == evname ||
-				 (options.not_silent.contains && options.not_silent.contains(evname)))
+				 (options.not_silent.indexOf && options.not_silent.indexOf(evname) >= 0))
 			)
 			{
 				// silent, BUT the given event is allowed. fire it.
@@ -280,7 +694,7 @@
 			else if(
 				options.silent &&
 				((typeof(options.silent) == 'string' && options.silent != evname) ||
-				 (options.silent.contains && !options.silent.contains(evname)))
+				 (options.silent.indexOf && !(options.silent.indexOf(evname) >= 0)))
 			)
 			{
 				// the current event is not marked to be silent, fire it
@@ -289,41 +703,30 @@
 			return this;
 		}
 	});
-	/**
-	 * allows one object to extend another. since controllers, models, and
-	 * collections all do this differently, it is up to each to have their own
-	 * extend function and call this one for validation.
-	 */
-	Base.extend = function(obj, base)
-	{
-		obj || (obj = {});
-		base || (base = null);
-		if(obj.initialize && !Composer.suppress_warnings)
-		{
-			var str = 'You are creating a Composer object with an "initialize" method/' +
-						'parameter, which is reserved. Unless you know what you\'re doing ' +
-						'(and call this.parent.apply(this, arguments)), please rename ' +
-						'your parameter to something other than "initialize"! Perhaps you' +
-						'were thinking of init()?';
-			console.log('----------WARNING----------');
-			console.log(str);
-			console.log('---------------------------');
-		}
 
-		if(obj.extend && !Composer.suppress_warnings)
-		{
-			var str = 'You are creating a Composer object with an "extend" method/' +
-						'parameter, which is reserved. Unless you know what you\'re doing ' +
-						'(and call this.parent.apply(this, arguments)), please rename ' +
-						'your parameter to something other than "extend"!';
-			console.log('----------WARNING----------');
-			console.log(str);
-			console.log('---------------------------');
-		}
+	Composer.exp0rt({ Base: Base });
+})();
 
-		return obj;
-	};
-
+/**
+ * model.js
+ *
+ * Provides the data-driver layer of Composer
+ * -----------------------------------------------------------------------------
+ *
+ * Composer.js is an MVC framework for creating and organizing javascript 
+ * applications. For documentation, please visit:
+ *
+ *     http://lyonbros.github.com/composer.js/
+ * 
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (c) 2011, Lyon Bros Enterprises, LLC. (http://www.lyonbros.com)
+ * 
+ * Licensed under The MIT License. 
+ * Redistributions of files must retain the above copyright notice.
+ */
+(function() {
+	"use strict";
 
 	/**
 	 * Models are the data class. They deal with loading and manipulating data from
@@ -334,20 +737,11 @@
 	 * They also tie in with the Composer.sync function to provide a central place
 	 * for saving/updating information with a server.
 	 */
-	var Model = new Class({
-		Extends: Base,
-		Implements: [Events],
-
+	var Model = Composer.Base.extend({
 		/**
 		 * Track this object's type. Useful for debugging, mainly
 		 */
 		__composer_type: 'model',
-
-		// for internal object testing
-		// NOTE: deprecated in favor of __composer_type
-		__is_model: true,
-
-		options: {},
 
 		// default values for the model, merged with the data passed in on CTOR
 		defaults: {},
@@ -374,6 +768,9 @@
 		// doesn't have a collection or the url needs to change manually).
 		base_url: false,
 
+		// validation function, used to check data before it's set into the model
+		validate: function(data, options) { return false; },
+
 		/**
 		 * CTOR, allows passing in of data to set that data into the model.
 		 */
@@ -384,11 +781,11 @@
 
 			// merge in the defaults/data
 			var merge_fn = function(v, k) { _data[k] = v; };
-			Object.each(Object.clone(this.defaults), merge_fn);
-			Object.each(data, merge_fn);
+			Composer.object.each(Composer.object.clone(this.defaults), merge_fn);
+			Composer.object.each(data, merge_fn);
 
-			// assign the unique app id
-			this._cid = Composer.cid();
+			// call Base.initialize
+			this.parent();
 
 			// set the data into the model (but don't trigger any events)
 			this.set(_data, options);
@@ -470,7 +867,7 @@
 
 			var already_changing = this.changing;
 			this.changing = true;
-			Object.each(data, function(val, key) {
+			Composer.object.each(data, function(val, key) {
 				if(!Composer.eq(val, this.data[key]))
 				{
 					this.data[key] = val;
@@ -552,7 +949,7 @@
 				this.set(this.parse(res), options);
 				if(success) success(this, res);
 			}.bind(this);
-			options.error = wrap_error(options.error ? options.error.bind(this) : null, this, options).bind(this);
+			options.error = Composer.wrap_error(options.error ? options.error.bind(this) : null, this, options).bind(this);
 			return (this.sync || Composer.sync).call(this, 'read', this, options);
 		},
 
@@ -572,7 +969,7 @@
 				if(!this.set(this.parse(res), options)) return false;
 				if(success) success(this, res);
 			}.bind(this);
-			options.error = wrap_error(options.error ? options.error.bind(this) : null, this, options).bind(this);
+			options.error = Composer.wrap_error(options.error ? options.error.bind(this) : null, this, options).bind(this);
 			return (this.sync || Composer.sync).call(this, (this.is_new() ? 'create' : 'update'), this, options);
 		},
 
@@ -593,7 +990,7 @@
 			// if the model isn't saved yet, just mark it a success
 			if(this.is_new() && !options.force) return options.success();
 
-			options.error = wrap_error(options.error ? options.error.bind(this) : null, this, options).bind(this);
+			options.error = Composer.wrap_error(options.error ? options.error.bind(this) : null, this, options).bind(this);
 			return (this.sync || Composer.sync).call(this, 'delete', this, options);
 		},
 
@@ -633,7 +1030,7 @@
 		 */
 		clone: function()
 		{
-			return new this.$constructor(this.toJSON());
+			return new this.constructor(this.toJSON());
 		},
 
 		/**
@@ -641,18 +1038,7 @@
 		 */
 		toJSON: function()
 		{
-			return Object.clone(this.data);
-		},
-
-		/**
-		 * generally called by Collection.toJSONAsync. just wraps Model.toJSON,
-		 * async, but can be extended.
-		 */
-		toJSONAsync: function(finish_cb)
-		{
-			(function() {
-				finish_cb(this.toJSON());
-			}).delay(0, this);
+			return Composer.object.clone(this.data);
 		},
 
 		/**
@@ -684,7 +1070,7 @@
 		 */
 		highest_priority_collection: function()
 		{
-			var collections = shallow_array_clone(this.collections);
+			var collections = this.collections.slice(0);
 			collections.sort( function(a, b) { return b.priority - a.priority; } );
 			return collections.length ? collections[0] : false;
 		},
@@ -722,14 +1108,32 @@
 
 		}
 	});
-	Model.extend = function(obj, base)
-	{
-		obj || (obj = {});
-		base || (base = this);
-		obj = Base.extend.call(this, obj, base);
-		return this._do_extend(obj, base);
-	};
 
+	Composer.exp0rt({ Model: Model });
+})();
+
+/**
+ * collection.js
+ *
+ * Provides an object used to handle groups of models.
+ * -----------------------------------------------------------------------------
+ *
+ * Composer.js is an MVC framework for creating and organizing javascript 
+ * applications. For documentation, please visit:
+ *
+ *     http://lyonbros.github.com/composer.js/
+ * 
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (c) 2011, Lyon Bros Enterprises, LLC. (http://www.lyonbros.com)
+ * 
+ * Licensed under The MIT License. 
+ * Redistributions of files must retain the above copyright notice.
+ */
+(function() {
+	"use strict";
+
+	var global = this;
 
 	/**
 	 * Collections hold lists of models and contain various helper functions for
@@ -741,17 +1145,14 @@
 	 * notified, and anybody listinging to the collection (ie, a controller) can
 	 * react to that event (re-display the view, for instance).
 	 */
-	var Collection = new Class({
-		Extends: Base,
-		Implements: [Events],
-
+	var Collection = Composer.Base.extend({
 		/**
 		 * Track this object's type. Useful for debugging, mainly
 		 */
 		__composer_type: 'collection',
 
 		// the TYPE of model in this collection
-		model: Model,
+		model: Composer.Model,
 
 		// "private" array holding all the models in this collection
 		_models: [],
@@ -782,8 +1183,8 @@
 				this[x] = params[x];
 			}
 
-			// assign the unique app id
-			this._cid = Composer.cid();
+			// call Base.initialize
+			this.parent();
 
 			// allow Collection.model to be a string so load-order dependencies can be
 			// kept to a minimum. here, we convert the string to an object on collection
@@ -815,37 +1216,6 @@
 		},
 
 		/**
-		 * clone each model in this collection aynchronously, passing the final
-		 * result to the given finish cb.
-		 */
-		toJSONAsync: function(finish_cb)
-		{
-			// clone models
-			var models = this.models().slice(0);
-			var results = [];
-			var local_finish_cb = function(obj)
-			{
-				results.push(obj);
-				if(results.length >= models.length)
-				{
-					finish_cb(results);
-				}
-			};
-
-			// do it!
-			if(models.length > 0)
-			{
-				models.each(function(model) {
-					model.toJSONAsync(local_finish_cb);
-				});
-			}
-			else
-			{
-				finish_cb([]);
-			}
-		},
-
-		/**
 		 * wrapper to get the models under this collection for direct selection (often
 		 * via MooTools' array helper/selection functions)
 		 */
@@ -855,23 +1225,31 @@
 		},
 
 		/**
+		 * get the number of models in the collection
+		 */
+		size: function()
+		{
+			return this.models().length;
+		},
+
+		/**
 		 * add a model to this collection, and hook up the correct wire in doing so
 		 * (events and setting the model's collection).
 		 */
 		add: function(data, options)
 		{
-			if (data instanceof Array)
+			if (Composer.array.is(data))
 			{
-				return Object.each(data, function(model) { this.add(model, options); }, this);
+				return Composer.object.each(data, function(model) { this.add(model, options); }, this);
 			}
 
 			options || (options = {});
 
 			// if we are passing raw data, create a new model from data
-			var model = data.__composer_type == 'model' ? data : new this.model(data, options);
+			var model = data instanceof Composer.Model ? data : new this.model(data, options);
 
 			// reference this collection to the model
-			if(!model.collections.contains(this))
+			if(model.collections.indexOf(this) == -1)
 			{
 				model.collections.push(this);
 				options.is_new = true;
@@ -905,21 +1283,22 @@
 		 */
 		remove: function(model, options)
 		{
-			if (model instanceof Array)
+			if(Composer.array.is(model))
 			{
-				return Object.each(model, function(m) { this.remove(m); }, this);
+				return Composer.object.each(model, function(m) { this.remove(m); }, this);
 			}
+			if(!model) return;
 
 			options || (options = {});
 
 			// remove this collection's reference(s) from the model
-			model.collections.erase(this);
+			Composer.array.erase(model.collections, this);
 
 			// save to trigger change event if needed
 			var num_rec = this._models.length;
 
-			// remove hte model
-			this._models.erase(model);
+			// remove the model
+			Composer.array.erase(this._models, model);
 
 			// if the number actually change, trigger our change event
 			if(this._models.length != num_rec)
@@ -952,7 +1331,7 @@
 				}
 
 				// replace the data in the existing model with the new model's
-				existing.set(model.toJSON(), Object.merge({}, {silent: true, upsert: true}, options));
+				existing.set(model.toJSON(), Composer.object.merge({}, {silent: true, upsert: true}, options));
 				this.fire_event('upsert', options, existing, options);
 
 				return existing;
@@ -973,20 +1352,7 @@
 			// save to trigger change event if needed
 			var num_rec = this._models.length;
 
-			/*
-			 * AL - What was I thinking?
-			 *  1. collection.remove can work on an array of items already
-			 *  2. it's stupid to call _remove_reference instead of remove...why
-			 *     not use existing remove code??
-			 *  3. it's stupid to fire the remove event *on the model*
-			 *
-			 * I'm leaving this here in case there's *actually* a reason for
-			 * what I did.
-			this._models.each(function(model) {
-				this._remove_reference(model);
-				if(options.fire_remove_events) model.trigger('remove');
-			}, this);
-			*/
+			if(num_rec == 0) return;
 
 			this.remove(this._models, options);
 			this._models = [];
@@ -1030,9 +1396,9 @@
 			options || (options = {});
 
 			if(data == undefined) return;
-			if(typeOf(data) != 'array') data = [data];
+			if(!Composer.array.is(data)) data = [data];
 
-			data = shallow_array_clone(data);
+			data = data.slice(0);
 
 			if(!options.append) this.clear();
 			if(data.length > 0)
@@ -1046,9 +1412,9 @@
 				if(options.complete) options.complete()
 				return;
 			}
-			(function() {
-				this.reset_async(data, Object.merge({append: true}, options));
-			}).delay(0 ,this);
+			setTimeout(function() {
+				this.reset_async(data, Composer.object.merge({append: true}, options));
+			}.bind(this), 0);
 		},
 
 		/**
@@ -1067,7 +1433,7 @@
 			if(!this.sortfn) return false;
 
 			this._models.sort(this.sortfn);
-			this.fire_event('reset', options, this, options);
+			this.fire_event('reset', options, options);
 		},
 
 		/**
@@ -1082,10 +1448,7 @@
 
 			for(var i = 0; i < this._models.length; i++)
 			{
-				if(this.sortfn(this._models[i], model) > 0)
-				{
-					return i;
-				}
+				if(this.sortfn(this._models[i], model) > 0) return i;
 			}
 			var index = this._models.indexOf(model);
 			if(index == this._models.length - 1) return index;
@@ -1105,14 +1468,8 @@
 		 */
 		each: function(cb, bind)
 		{
-			if(bind)
-			{
-				this.models().each(cb, bind);
-			}
-			else
-			{
-				this.models().each(cb);
-			}
+			bind || (bind = this);
+			this.models().forEach(cb.bind(bind));
 		},
 
 		/**
@@ -1120,14 +1477,8 @@
 		 */
 		map: function(cb, bind)
 		{
-			if(bind)
-			{
-				return this.models().map(cb, bind);
-			}
-			else
-			{
-				return this.models().map(cb);
-			}
+			bind || (bind = this);
+			return this.models().map(cb.bind(bind));
 		},
 
 		/**
@@ -1137,14 +1488,8 @@
 		 */
 		find: function(callback, sortfn)
 		{
-			if(sortfn)
-			{
-				var models = shallow_array_clone(this.models()).sort(sortfn);
-			}
-			else
-			{
-				var models = this.models();
-			}
+			var models = this.models();
+			if(sortfn) models = models.slice(0).sort(sortfn);
 
 			for(var i = 0; i < models.length; i++)
 			{
@@ -1163,7 +1508,11 @@
 		 */
 		exists: function(callback)
 		{
-			return this.models().some(callback);
+			for(var i = 0; i < this.models().length; i++)
+			{
+				if(callback(this.models()[i])) return true;
+			}
+			return false;
 		},
 
 		/**
@@ -1219,14 +1568,8 @@
 		 */
 		filter: function(callback, bind)
 		{
-			if(bind)
-			{
-				return this._models.filter(callback, bind);
-			}
-			else
-			{
-				return this._models.filter(callback);
-			}
+			bind || (bind = this);
+			return this._models.filter(callback.bind(bind));
 		},
 
 		/**
@@ -1255,15 +1598,17 @@
 		{
 			if(typeof(selector) == 'object')
 			{
-				var qry = [];
-				for(var key in selector)
-				{
-					var val = selector[key];
-					if(typeof(val) == 'string') val = '"'+val+'"';
-					qry.push('data.get("'+key+'") == ' + val);
-				}
-				var fnstr = 'if(' + qry.join('&&') + ') { return true; }';
-				selector = new Function('data', fnstr);
+				var params = selector;
+				var keys = Object.keys(params);
+				selector = function(model) {
+					for(var i = 0; i < keys.length; i++)
+					{
+						var key = keys[i];
+						var compare = params[key];
+						if(model.get(key) !== compare) return false;
+					}
+					return true;
+				};
 			}
 			return this._models.filter(selector);
 		},
@@ -1275,8 +1620,7 @@
 		{
 			var result = this.select(selector);
 
-			if (result.length)
-				return result[0];
+			if(result.length) return result[0];
 
 			return null;
 		},
@@ -1324,7 +1668,7 @@
 				this.reset(this.parse(res), options);
 				if(success) success(this, res);
 			}.bind(this);
-			options.error = wrap_error(options.error ? options.error.bind(this) : null, this, options).bind(this);
+			options.error = Composer.wrap_error(options.error ? options.error.bind(this) : null, this, options).bind(this);
 			return (this.sync || Composer.sync).call(this, 'read', this, options);
 		},
 
@@ -1341,7 +1685,7 @@
 		 */
 		_remove_reference: function(model)
 		{
-			model.collections.erase(this);
+			Composer.array.erase(model.collections, this);
 
 			// don't listen to this model anymore
 			model.unbind('all', 'collection:'+this.cid()+':listen:model:all');
@@ -1352,7 +1696,7 @@
 		 */
 		_model_event: function(ev, model, collections, options)
 		{
-			if((ev == 'add' || ev == 'remove') && !collections.contains(this)) return;
+			if((ev == 'add' || ev == 'remove') && !(collections.indexOf(this) >= 0)) return;
 			if(ev == 'destroy')
 			{
 				this.remove(model, options);
@@ -1360,28 +1704,237 @@
 			this.trigger.apply(this, arguments);
 		}
 	});
-	Collection.extend = function(obj, base)
+	Composer.exp0rt({ Collection: Collection });
+}).apply((typeof exports != 'undefined') ? exports : this);
+
+/**
+ * adapter.js
+ *
+ * A jQuery/MooTools adapter for various DOM operations.
+ * -----------------------------------------------------------------------------
+ *
+ * Composer.js is an MVC framework for creating and organizing javascript 
+ * applications. For documentation, please visit:
+ *
+ *     http://lyonbros.github.com/composer.js/
+ * 
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (c) 2011, Lyon Bros Enterprises, LLC. (http://www.lyonbros.com)
+ * 
+ * Licensed under The MIT License. 
+ * Redistributions of files must retain the above copyright notice.
+ */
+(function() {
+	"use strict";
+
+	var global = this;
+
+	var has_sizzle = !!global.Sizzle;
+	var has_jquery = !!global.jQuery;
+	var has_slick = !!global.Slick;
+	var has_moo = !!global.MooTools;
+
+	var find = (function() {
+		if(has_moo)
+		{
+			return function(context, selector) {
+				context || (context = document);
+				return document.id(context).getElement(selector);
+			};
+		}
+		else if(has_jquery)
+		{
+			return function(context, selector) {
+				context || (context = document);
+				return jQuery(context).find(selector)[0];
+			};
+		}
+		else if(has_sizzle)
+		{
+			return function(context, selector) {
+				context || (context = document);
+				return Sizzle.select(selector, context)[0];
+			};
+		}
+		else if(has_slick)
+		{
+			return function(context, selector) {
+				context || (context = document);
+				return Slick.find(context, selector);
+			};
+		}
+		throw new Error('No selector engine present. Include Sizzle/jQuery or Slick/Mootools before loading composer.');
+	})();
+
+	var match = (function() {
+		if(has_sizzle)
+		{
+			return function(element, selector) {
+				element || (element = document);
+				return Sizzle.matchesSelector(element, selector);
+			};
+		}
+		else if(has_slick)
+		{
+			return function(element, selector) {
+				element || (element = document);
+				return Slick.match(element, selector);
+			};
+		}
+		else if(has_jquery)
+		{
+			return function(element, selector) {
+				element || (element = document);
+				return jQuery(element).is(selector);
+			};
+		}
+		throw new Error('No selector engine present. Include Sizzle/jQuery or Slick/Mootools before loading composer.');
+	})();
+
+	var add_event = (function() {
+		if(has_jquery)
+		{
+			return function(el, ev, fn, selector) {
+				if(selector) return jQuery(el).on(ev, selector, fn);
+				else return jQuery(el).on(ev, fn);
+			};
+		}
+		else if(has_moo)
+		{
+			return function(el, ev, fn, selector) {
+				var _fn = fn;
+				fn = function()
+				{
+					_fn.apply(this, arguments);
+				};
+
+				if(selector) return document.id(el).addEvent(ev+':relay('+selector+')', fn);
+				else return document.id(el).addEvent(ev, fn);
+			};
+		}
+		else
+		{
+			return function(el, ev, fn, selector) {
+				if(selector)
+				{
+					el.addEventListener(ev, function(event) {
+						var target = event.target || event.srcElement;
+						if(event.__composer_handled || !match(target, selector)) return false;
+						event.__composer_handled = true;
+						fn.apply(this, [event].concat(event.params || []));
+					});
+				}
+				else
+				{
+					el.addEventListener(ev, function(event) {
+						fn.apply(this, [event].concat(event.params || []));
+					}, false);
+				}
+			};
+		}
+	})();
+
+	var remove_event = (function() {
+		if(has_jquery)
+		{
+			return function(el, ev, fn) {
+				jQuery(el).off(ev, fn);
+			};
+		}
+		else if(has_moo)
+		{
+			return function(el, ev, fn) {
+				document.id(el).removeEvent(ev, fn);
+			};
+		}
+		else
+		{
+			return function(el, ev, fn) {
+				el.removeEventListener(ev, fn, false);
+			};
+		}
+	})();
+
+	var fire_event = (function() {
+		/**
+		 * NOTE: taken from http://stackoverflow.com/a/2381862/236331
+		 *
+		 * Fire an event handler to the specified node. Event handlers can
+		 * detect that the event was fired programatically by testing for a
+		 * 'synthetic=true' property on the event object
+		 *
+		 * @param {HTMLNode} node The node to fire the event handler on.
+		 * @param {String} eventName The name of the event without the "on" (e.g., "focus")
+		 */
+		return function(el, type, options) {
+			options || (options = {});
+
+			if(type == 'click' && el.click)
+			{
+				return el.click();
+			}
+
+			var ev = new CustomEvent(type, options.args);
+			el.dispatchEvent(ev);
+		};
+	})();
+
+	var find_parent = function(selector, element)
 	{
-		obj || (obj = {});
-		base || (base = this);
-		obj = Base.extend.call(this, obj, base);
-		return this._do_extend(obj, base);
+		if(!element) return false;
+		if(match(element, selector)) return element;
+		var par = element.parentNode;
+		return find_parent(selector, par);
 	};
 
+	Composer.exp0rt({
+		find: find,
+		match: match,
+		add_event: add_event,
+		fire_event: fire_event,
+		remove_event: remove_event,
+		find_parent: find_parent
+	});
+}).apply((typeof exports != 'undefined') ? exports : this);
+
+/**
+ * controller.js
+ *
+ * Provides the glue between the DOM/UI and our data layer (models)
+ * -----------------------------------------------------------------------------
+ *
+ * Composer.js is an MVC framework for creating and organizing javascript 
+ * applications. For documentation, please visit:
+ *
+ *     http://lyonbros.github.com/composer.js/
+ * 
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (c) 2011, Lyon Bros Enterprises, LLC. (http://www.lyonbros.com)
+ * 
+ * Licensed under The MIT License. 
+ * Redistributions of files must retain the above copyright notice.
+ */
+(function() {
+	"use strict";
 
 	/**
 	 * The controller class sits between views and your models/collections.
 	 * Controllers bind events to your data objects and update views when the data
 	 * changes. Controllers are also responsible for rendering views.
 	 */
-	var Controller = new Class({
-		Extends: Base,
-		Implements: [Events],
-
+	var Controller = Composer.Base.extend({
 		/**
 		 * Track this object's type. Useful for debugging, mainly
 		 */
 		__composer_type: 'controller',
+
+		// holds events bound with with_bind
+		_bound_events: [],
+
+		// tracks sub-controllers
+		_subcontrollers: {},
 
 		// the DOM element to tie this controller to (a container element)
 		el: false,
@@ -1392,10 +1945,7 @@
 		// controllers into the DOM
 		inject: false,
 
-		// don't worry about it
-		event_splitter:	/^(\w+)\s*(.*)$/,
-
-		// if tihs.el is empty, create a new element of this type as the container
+		// if this.el is empty, create a new element of this type as the container
 		tag: 'div',
 
 		// elements to assign to this controller
@@ -1417,8 +1967,8 @@
 				this[x] = params[x];
 			}
 
-			// assign the unique app id
-			this._cid = Composer.cid();
+			// call Base.initialize
+			this.parent();
 
 			// make sure we have an el
 			this._ensure_el();
@@ -1430,7 +1980,7 @@
 
 			if(this.className)
 			{
-				this.el.addClass(this.className);
+				this.el.className += ' ' + this.className;
 			}
 
 			this.refresh_elements();
@@ -1456,19 +2006,16 @@
 		 */
 		html: function(obj)
 		{
-			if(!this.el)
-			{
-				this._ensure_el();
-			}
+			if(!this.el) this._ensure_el();
 
-			if(typeOf(obj) == 'element')
+			if(obj.appendChild && obj.tagName)
 			{
-				this.el.set('html', '');
-				obj.inject(this.el);
+				this.el.innerHTML = '';
+				this.el.appendChild(obj);
 			}
 			else
 			{
-				this.el.set('html', obj);
+				this.el.innerHTML = obj;
 			}
 			this.refresh_elements();
 		},
@@ -1484,15 +2031,59 @@
 			this._ensure_el();
 
 			var container = typeof(this.inject) == 'string' ?
-									document.getElement(this.inject):
-									$(this.inject);
-			if(!container)
-			{
-				return false;
-			}
+									Composer.find(document, this.inject) :
+									this.inject;
+			if(!container) return false;
 
-			if(options.clean_injection) container.set('html', '');
-			this.el.inject(container);
+			if(options.clean_injection) container.innerHTML = '';
+			container.appendChild(this.el);
+		},
+
+		/**
+		 * bind an event that the controller tracks and unbinds on release
+		 */
+		with_bind: function(object, ev, fn, name)
+		{
+			name || (name = false);
+			object.bind(ev, fn, name);
+			this._bound_events.push([object, ev, fn]);
+		},
+
+		/**
+		 * bind a event that the controller tracks and unbinds on release or
+		 * that unbinds itself once it fires once
+		 */
+		with_bind_once: function(object, ev, fn, name)
+		{
+			name || (name = false);
+			object.bind_once(ev, fn, name);
+			this._bound_events.push([object, ev, fn]);
+		},
+
+		/**
+		 * keep track of a sub controller that will release when this controller
+		 * does
+		 */
+		track_subcontroller: function(name, create_fn)
+		{
+			// if we have an existing controller with the same name, release and
+			// remove it.
+			if(this._subcontrollers[name])
+			{
+				this._subcontrollers[name].release();
+				delete this._subcontrollers[name];
+			}
+			var instance = create_fn();
+			this._subcontrollers[name] = instance;
+			return instance;
+		},
+
+		/**
+		 * get a tracked subcontroller by name
+		 */
+		get_subcontroller: function(name)
+		{
+			return this._subcontrollers[name] || false;
 		},
 
 		/**
@@ -1506,12 +2097,12 @@
 			// exist).
 			if(typeof(this.el) == 'string')
 			{
-				this.el = document.getElement(this.el);
+				this.el = Composer.find(document, this.el);
 			}
 
 			// if this.el is null (bad selector or no item given), create a new DOM
 			// object from this.tag
-			this.el || (this.el = new Element(this.tag));
+			this.el || (this.el = document.createElement(this.tag));
 		},
 
 		/**
@@ -1520,19 +2111,24 @@
 		release: function(options)
 		{
 			options || (options = {});
-			if(this.el && this.el.destroy)
-			{
-				if(options.dispose)
-				{
-					this.el.dispose();
-				}
-				else
-				{
-					this.el.destroy();
-				}
-			}
-
+			if(this.el && this.el.parentNode) this.el.parentNode.removeChild(this.el);
 			this.el = false;
+
+			// auto-remove bound events
+			this._bound_events.forEach(function(binding) {
+				var obj = binding[0];
+				var ev = binding[1];
+				var fn = binding[2];
+				obj.unbind(ev, fn);
+			});
+			this._bound_events = [];
+
+			// auto-release/remove sub-controllers
+			Object.keys(this._subcontrollers).forEach(function(key) {
+				this._subcontrollers[key].release();
+			}.bind(this));
+			this._subcontrollers = {};
+
 			this.fire_event('release', options, this);
 
 			// remove all events from controller
@@ -1545,10 +2141,7 @@
 		 */
 		replace: function(element)
 		{
-			if(this.el.parentNode)
-			{
-				element.replaces(this.el);
-			}
+			if(this.el.parentNode) this.el.parentNode.replaceChild(element, this.el);
 			this.el = element;
 
 			this.refresh_elements();
@@ -1574,18 +2167,18 @@
 				}
 				fn = fn.bind(this);
 
-				var match = ev.match(this.event_splitter);
+				var match = ev.match(/^(\w+)\s*(.*)$/);
 				var evname = match[1].trim();
 				var selector = match[2].trim();
 
 				if(selector == '')
 				{
-					this.el.removeEvent(evname, fn);
-					this.el.addEvent(evname, fn);
+					Composer.remove_event(this.el, evname, fn);
+					Composer.add_event(this.el, evname, fn);
 				}
 				else
 				{
-					this.el.addEvent(evname+':relay('+selector+')', fn);
+					Composer.add_event(this.el, evname, fn, selector);
 				}
 			}
 		},
@@ -1596,35 +2189,41 @@
 		refresh_elements: function()
 		{
 			// setup given elements as instance variables
-			for(var selector in this.elements)
-			{
-				var iname = this.elements[selector];
-				this[iname] = this.el.getElement(selector);
-			}
+			if(!this.elements) return false;
+			Object.keys(this.elements).forEach(function(key) {
+				var iname = this.elements[key];
+				this[iname] = Composer.find(this.el, key);
+			}.bind(this));
 		}
 	});
-	Controller.extend = function(obj, base)
-	{
-		obj || (obj = {});
-		base || (base = this);
-		obj = Base.extend.call(this, obj, base);
 
-		// have to do some annoying trickery here to get the actual events/elements
-		var base_events = base.events || {};
-		var base_elements = base.elements || {};
+	Composer.merge_extend(Controller, ['events', 'elements']);
 
-		// extend the base object's events and elements
-		// NOTE: the first {} in the object is there because the merge is destructive
-		//       to the first argument (we don't want that).
-		obj.events = Object.merge({}, base_events, obj.events);
-		obj.elements = Object.merge({}, base_elements, obj.elements);
+	Composer.exp0rt({ Controller: Controller });
+})();
 
-		var cls = this._do_extend(obj, base);
-		cls.events = obj.events;
-		cls.elements = obj.elements;
-		return cls;
-	};
+/**
+ * router.js
+ *
+ * Provides tie-ins to URL state changes to route URLs to actions.
+ * -----------------------------------------------------------------------------
+ *
+ * Composer.js is an MVC framework for creating and organizing javascript 
+ * applications. For documentation, please visit:
+ *
+ *     http://lyonbros.github.com/composer.js/
+ * 
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (c) 2011, Lyon Bros Enterprises, LLC. (http://www.lyonbros.com)
+ * 
+ * Licensed under The MIT License. 
+ * Redistributions of files must retain the above copyright notice.
+ */
+(function(global, undefined) {
+	"use strict";
 
+	var global = this;
 
 	/**
 	 * The Router class is a utility that helps in the routing of requests to
@@ -1637,9 +2236,7 @@
 	 *
 	 *   https://github.com/balupton/History.js/
 	 */
-	var Router = new Class({
-		Implements: [Options, Events],
-
+	var Router = Composer.Base.extend({
 		/**
 		 * Track this object's type. Useful for debugging, mainly
 		 */
@@ -1650,12 +2247,10 @@
 		routes:		{},
 
 		options: {
-			redirect_initial: true,
 			suppress_initial_route: false,
-			enable_cb: function() { return true; },
-			on_failure: function() {},
-			hash_fallback: true,
-			process_querystring: false
+			enable_cb: function(url) { return true; },
+			process_querystring: false,
+			base: false
 		},
 
 		/**
@@ -1665,81 +2260,56 @@
 		 */
 		initialize: function(routes, options)
 		{
-			this.setOptions(options);
+			this.set_options(options);
 
 			this.routes = routes;
-			this.register_callback(this._do_route.bind(this));
+			this.bind('route', this._do_route.bind(this));
 
 			// in case History.js isn't loaded
 			if(!global.History) global.History = {enabled: false};
+			if(!History.enabled) throw 'History.js is *required* for proper router operation: https://github.com/browserstate/history.js';
 
-			if(History.enabled)
+			// set up our bindings
+			this.bind('statechange', this.state_change.bind(this));
+			this.bind_once('destroy', function() {
+				Object.keys(History.Adapter.handlers).forEach(function(key) {
+					delete History.Adapter.handlers[key];
+				});
+				delete global['onstatechange'];
+			});
+
+			History.Adapter.bind(global, 'statechange', function(data) {
+				data || (data = [this.cur_path()]);
+				var url = data[0];
+				var force = data[1];
+				this.trigger('statechange', url, force);
+			}.bind(this));
+
+			if(!this.options.suppress_initial_route)
 			{
-				// bind our pushstate event
-				History.Adapter.bind(global, 'statechange', this.state_change.bind(this));
-
-				if(!this.options.suppress_initial_route)
-				{
-					// run the initial route
-					History.Adapter.trigger(global, 'statechange', [global.location.pathname]);
-				}
-			}
-			else if(this.options.hash_fallback)
-			{
-				// load the initial hash value
-				var path = window.location.pathname;
-				var hash = path == '' || path == '/' ? this.cur_path() : path;
-
-				// if redirect_initial is true, then whatever page a user lands on, redirect
-				// them to the hash version, ie
-				//
-				// gonorrhea.com/users/display/42
-				// becomes:
-				// gonorrhea.com/#!/users/display/42
-				//
-				// the routing system will pick this new hash up after the redirect and route
-				// it normally
-				if(this.options.redirect_initial && !(hash == '/' || hash == ''))
-				{
-					global.location = '/#!' + hash;
-				}
-
-				// SUCK ON THAT, HISTORY.JS!!!!
-				// NOTE: this fixes a hashchange double-firing in IE, which
-				// causes some terrible, horrible, no-good, very bad issues in
-				// more complex controllers.
-				delete Element.NativeEvents.hashchange;
-
-				// set up the hashchange event
-				global.addEvent('hashchange', this.state_change.bind(this));
-
-				if(!this.options.suppress_initial_route)
-				{
-					// run the initial route
-					global.fireEvent('hashchange', [hash]);
-				}
-			}
-			else if(!this.options.suppress_initial_route)
-			{
-				this._do_route(new String(global.location.pathname).toString());
+				// run the initial route
+				History.Adapter.trigger(global, 'statechange', [this.cur_path()]);
 			}
 		},
 
 		/**
-		 * add a callback that runs whenever the router "routes"
+		 * remove all router bindings and perform any cleanup. note that once
+		 * this is called, the router can no longer be used and a new one must
+		 * be created.
 		 */
-		register_callback: function(cb, name)
+		destroy: function()
 		{
-			name || (name = null);
-			return this.bind('route', cb, name);
+			this.trigger('destroy');
+			this.unbind();
 		},
 
-		/**
-		 * remove a router callback
-		 */
-		unregister_callback: function(cb)
+		debasify: function(path)
 		{
-			return this.unbind('route', cb);
+			if(this.options.base && path.indexOf(this.options.base) == 0)
+			{
+				path = path.substr(this.options.base.length);
+			}
+			return path;
 		},
 
 		/**
@@ -1747,24 +2317,25 @@
 		 */
 		cur_path: function()
 		{
-			if(!History.enabled)
+			if(History.emulated.pushState)
 			{
-				return '/' + new String(global.location.hash).toString().replace(/^[#!\/]+/, '');
+				var path = '/' + new String(global.location.hash).toString().replace(/^[#!\/]+/, '');
 			}
 			else
 			{
-				return new String(global.location.pathname+global.location.search).toString();
+				var path = global.location.pathname+global.location.search;
 			}
+			return this.debasify(path);
 		},
 
 		/**
 		 * Get a value (by key) out of the current query string
 		 */
-		get_param: function(key)
+		get_param: function(search, key)
 		{
 			key = key.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
 			var regex = new RegExp("[\\?&]" + key + "=([^&#]*)");
-			var results = regex.exec(location.search);
+			var results = regex.exec(search);
 			return results == null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
 		},
 
@@ -1782,39 +2353,32 @@
 			options || (options = {});
 			options.state || (options.state = {});
 
-			var href = '/' + url.trim().replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
-			var old = this.cur_path();
+			var base = (this.options.base || '');
+			var href = base + '/' + url.trim().replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
+			var old = base + this.cur_path();
 			if(old == href)
 			{
-				if(History.enabled)
-				{
-					History.Adapter.trigger(global, 'statechange', [href, true]);
-				}
-				else if(this.options.hash_fallback)
-				{
-					global.fireEvent('hashchange', [href, true]);
-				}
+				this.trigger('statechange', href, true);
+			}
+			else if(History.emulated.pushState)
+			{
+				// we're using hashbangs, which are async (if we use
+				// History.pushState). we really want sync behavior so let's
+				// fool History into thinking it already routed this hash (so it
+				// doesn't double-fire) then trigger the event manually.
+				History.saveHash(url);		// makes History.js not fire on hash
+				window.location.hash = '#'+href;
+				this.trigger('statechange', href, true);
 			}
 			else
 			{
-				if(History.enabled)
+				if(options.replace_state)
 				{
-					if(options.replace_state)
-					{
-						History.replaceState(options.state, '', href);
-					}
-					else
-					{
-						History.pushState(options.state, '', href);
-					}
-				}
-				else if(this.options.hash_fallback)
-				{
-					global.location = '/#!'+href;
+					History.replaceState(options.state, '', href);
 				}
 				else
 				{
-					global.location = href;
+					History.pushState(options.state, '', href);
 				}
 			}
 		},
@@ -1836,7 +2400,10 @@
 			routes || (routes = this.routes);
 
 			var routematch = this.find_matching_route(url, routes);
-			if(!routematch) return this.options.on_failure({url: url, route: false, handler_exists: false, action_exists: false});
+			if(!routematch)
+			{
+				return this.trigger('fail', {url: url, route: false, handler_exists: false, action_exists: false});
+			}
 
 			var route = routematch.route;
 			var match = routematch.args;
@@ -1844,13 +2411,20 @@
 			var obj = route[0];
 			var action = route[1];
 			if (typeof(obj) != 'object') {
-				if(!global[obj]) return this.options.on_failure({url: url, route: route, handler_exists: false, action_exists: false});
+				if(!global[obj])
+				{
+					return this.trigger('fail', {url: url, route: route, handler_exists: false, action_exists: false});
+				}
 				var obj = global[obj];
 			}
-			if(!obj[action] || typeof(obj[action]) != 'function') return this.options.on_failure({url: url, route: route, handler_exists: true, action_exists: false});
+			if(!obj[action] || typeof(obj[action]) != 'function')
+			{
+				return this.trigger('fail', {url: url, route: route, handler_exists: true, action_exists: false});
+			}
 			var args = match;
 			args.shift();
 			this._last_url = url;	// save the last successfully routed url
+			this.trigger('route-success', route);
 			obj[action].apply(obj, args);
 		},
 
@@ -1880,21 +2454,14 @@
 		},
 
 		/**
-		 * stupid function, not worth the space it takes up. oh well.
-		 */
-		setup_routes: function(routes)
-		{
-			this.routes = routes;
-		},
-
-		/**
-		 * attached to the pushState event. runs all the callback assigned with
-		 * register_callback().
+		 * attached to the pushState event. fires the `route` event on success
+		 * which in turns runs any attached handlers.
 		 */
 		state_change: function(path, force)
 		{
 			if(path && path.stop != undefined) path = false;
-			path || (path = this.cur_path());
+			if(path) path = this.debasify(path);
+			if(!path) path = this.cur_path();
 			force = !!force;
 
 			// check if we are routing to the same exact page. if we are, return
@@ -1912,21 +2479,12 @@
 			// we still want to take QS into account when comparing URLs.
 			if(!this.options.process_querystring) path = path.replace(/\?.*/, '');
 
-			// allow URL to be modifyable within the "preroute" callback, ie
-			// mimick mutable strings, kind of. this affords an opportunity for
-			// a preroute callback to "rewrite" the URL such that the address
-			// bar stays the same, but the actual route loaded is for the
-			// new, rewritten URL.
+			// allow preroute to modify the path before sending out to the
+			// actualy route-matching function.
 			path = new String(path);
-			path.rewrite = function(str) {
-				this._string_value = str;
-			}.bind(path);
-			path.rewrite(null);
-			this.trigger('preroute', path);
-			// grab rewritten url, if any
-			if(path._string_value) path = path._string_value;
-
-			this.trigger('route', path.toString());
+			var boxed = {path: path};
+			this.trigger('preroute', boxed);
+			this.trigger('route', boxed.path);
 		},
 
 		/**
@@ -1946,228 +2504,789 @@
 		{
 			options || (options = {});
 
-			// build a selector that work for YOU.
+			// bind all <a>'s
+			var selector = 'a';
 			if(options.selector)
 			{
-				// specific selector......specified. use it.
-				var selector = options.selector;
+				// use specified selector
+				selector = options.selector;
 			}
-			else
+			else if(options.exclude_class)
 			{
-				// create a CUSTOM selector tailored to your INDIVIDUAL needs.
-				if(options.exclude_class)
-				{
-					// exclusion classname exists, make sure to not listen to <a>
-					// tags with that class
-					var selector = 'a:not([class~="'+options.exclude_class+'"])';
-				}
-				else
-				{
-					// bind all <a>'s
-					var selector = 'a';
-				}
+				// exclude <a> tags with given classname
+				selector = 'a:not([class~="'+options.exclude_class+'"])';
 			}
-
-			// convenience function, recursively searches up the DOM tree until
-			// it finds an element with tagname ==  tag.
-			var next_tag_up = function(tag, element)
-			{
-				return element.get('tag') == tag ? element : next_tag_up(tag, element.getParent());
-			};
 
 			// bind our heroic pushState to the <a> tags we specified. this
 			// hopefully be that LAST event called for any <a> tag because it's
 			// so high up the DOM chain. this means if a composer event wants to
 			// override this action, it can just call event.stop().
-			$(document.body).addEvent('click:relay('+selector+')', function(e) {
-				if(e.control || e.shift || e.alt) return;
+			var route_link = function(e)
+			{
+				if(e.ctrlKey || e.shiftKey || e.altKey) return;
 
-				var a = next_tag_up('a', e.target);
+				var a = Composer.find_parent(selector, e.target);
 				var button = typeof(e.button) != 'undefined' ? e.button : e.event.button;
 
 				// don't trap links that are meant to open new windows, and don't
 				// trap middle mouse clicks (or anything more than left click)
 				if(a.target == '_blank' || button > 0) return;
 
-				var curhost = new String(global.location).replace(/[a-z]+:\/\/(.*?)\/.*/i, '$1');
+				// don't run JS links
+				if(a.href.match(/^javascript:/)) return;
+
+				// this is an <a href="#"> link, ignore it
+				if(History.emulated.pushState && a.href.replace(/^.*?#/, '') == '') return;
+
+				var curhost = global.location.host;
 				var linkhost = a.href.match(/^[a-z]+:\/\//) ? a.href.replace(/[a-z]+:\/\/(.*?)\/.*/i, '$1') : curhost;
-				if(
-					curhost != linkhost ||
-					(typeof(options.do_state_change) == 'function' && !options.do_state_change(a))
-				)
-				{
-					return;
-				}
 
-				if(e) e.stop();
+				// if we're routing to a different domain/host, don't trap the click
+				if(curhost != linkhost) return;
 
-				if(History.enabled)
-				{
-					var href = a.href.replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
-					if(options.filter_trailing_slash) href = href.replace(/\/$/, '');
-					href = '/'+href;
+				// if our do_state_change exists and returns false, bail
+				if(options.do_state_change && !options.do_state_change(a)) return;
 
-					History.pushState(options.global_state, '', href);
-					return false;
-				}
-				else
-				{
-					var href = a.href.replace(/^[a-z]+:\/\/.*?\//, '');
-					if(options.filter_trailing_slash) href = href.replace(/\/$/, '');
-					href = '/#!/'+href;
+				if(e) e.preventDefault();
 
-					global.location = href;
-				}
-			});
+				var href = a.href.replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
+				if(options.filter_trailing_slash) href = href.replace(/\/$/, '');
+				href = '/'+href;
+
+				this.route(href, {state: options.global_state});
+				return;
+			}.bind(this);
+
+			Composer.add_event(document.body, 'click', route_link, selector);
 		}
 	});
 
-	/*
-	---
-	description: Added the onhashchange event
+	Composer.exp0rt({ Router: Router });
+}).apply((typeof exports != 'undefined') ? exports : this);
 
-	license: MIT-style
+/**
+ * relational.js
+ *
+ * An extension of the Model to allow hierarchical data structures.
+ * -----------------------------------------------------------------------------
+ *
+ * Composer.js is an MVC framework for creating and organizing javascript 
+ * applications. For documentation, please visit:
+ *
+ *     http://lyonbros.github.com/composer.js/
+ * 
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (c) 2011, Lyon Bros Enterprises, LLC. (http://www.lyonbros.com)
+ * 
+ * Licensed under The MIT License. 
+ * Redistributions of files must retain the above copyright notice.
+ */
+(function() {
+	"use strict";
 
-	authors:
-	- sdf1981cgn
-	- Greggory Hernandez
+	var global = this;
 
-	requires:
-	- core/1.2.4: '*'
+	var RelationalModel = Composer.Model.extend({
+		relations: false,
+		relation_data: {},
 
-	provides: [Element.Events.hashchange]
+		// if true, toJSON will just call Model.toJSON instead of serializing
+		// the relational data
+		skip_relational_serialize: false,
 
-	...
-	*/
-	Element.Events.hashchange = {
-		onAdd: function() {
-			var hash = self.location.hash;
-
-			var hashchange = function(){
-				if (hash == self.location.hash) return;
-				else hash = self.location.hash;
-
-				var value = (hash.indexOf('#') == 0 ? hash.substr(1) : hash);
-				global.fireEvent('hashchange', value);
-				document.fireEvent('hashchange', value);
-			};
-
-			if ("onhashchange" in global && !(Browser.ie && Browser.version < 8)){
-				global.onhashchange = hashchange;
-			} else {
-				hashchange.periodical(50);
-			}
-		}
-	};
-
-	// wraps error callbacks for syncing functions
-	var wrap_error = function(callback, model, options)
-	{
-		return function(resp)
+		initialize: function(data, options)
 		{
-			if(callback)
+			options || (options = {});
+
+			if(this.relations)
 			{
-				callback(model, resp, options);
+				// cache the model/collection strings to real objects
+				Composer.object.each(this.relations, function(relation, k) {
+					// for each relation, make sure strings are referenced back to the catual
+					// objects they refer to.
+					if(relation.model && typeof(relation.model) == 'string')
+					{
+						relation.model = this._get_key(global, relation.model);
+					}
+					else if(relation.collection && typeof(relation.collection) == 'string')
+					{
+						relation.collection = this._get_key(global, relation.collection);
+					}
+					else if(relation.filter_collection && typeof(relation.filter_collection) == 'string')
+					{
+						// set up the filter collection. if one doesn't exist, create a function
+						// that looks within the keys of the relational data to pull a master
+						// collection out of.
+						relation.filter_collection = this._get_key(global, relation.filter_collection);
+						var master = relation.master;
+						if(typeof(master) == 'string')
+						{
+							var master_key = relation.master;
+							relation.master = function()
+							{
+								var master = this._get_key(this.relation_data, master_key);
+								if(!master)
+								{
+									master = new this.relations[master_key].collection();
+									this._set_key(this.relation_data, master_key);
+								}
+								return master;
+							}.bind(this);
+							relation.master();
+						}
+					}
+
+					// unless otherwise specified, load relational objects up-front
+					if(!relation.delayed_init)
+					{
+						var obj = this._create_obj(relation, k, {set_parent: true});
+					}
+				}, this);
+			}
+
+			// call Model.initialize()
+			return this.parent(data, options);
+		},
+
+		/**
+		 * extension of Model.toJSON() that also serializes the child
+		 * (relational) objects
+		 */
+		toJSON: function(options)
+		{
+			options || (options = {});
+
+			var data = this.parent();
+
+			if(this.skip_relational_serialize || options.skip_relational)
+			{
+				Object.keys(this.relations).forEach(function(key) {
+					delete data[key];
+				});
+			}
+
+			return data;
+		},
+
+		/**
+		 * extension of Model.set which creates sub-models/collections from the
+		 * given data if specified by our relations
+		 */
+		set: function(data, options)
+		{
+			options || (options = {});
+
+			if(this.relations && !options.skip_relational)
+			{
+				Composer.object.each(this.relations, function(relation, k) {
+					var d = this._get_key(data, k);
+					if(typeof(d) == 'undefined') return;
+
+					var options_copy = Composer.object.clone(options);
+					options_copy.data = d;
+					var obj = this._create_obj(relation, k, options_copy);
+				}, this);
+			}
+
+			// call Model.set()
+			return this.parent(data, options);
+		},
+
+		/**
+		 * extension of Model.get which returns our relational data if it exists
+		 */
+		get: function(key, def)
+		{
+			var obj = this._get_key(this.relation_data, key);
+			if(typeof(obj) != 'undefined') return obj;
+
+			// call Model.get()
+			return this.parent(key, def);
+		},
+
+		/**
+		 * clear this model's data *and* its related sub-objects
+		 */
+		clear: function(options)
+		{
+			options || (options = {});
+
+			if(this.relations && !options.skip_relational)
+			{
+				Composer.object.each(this.relations, function(relation, k) {
+					var obj = this._get_key(this.relation_data, k);
+					if(typeof(obj) == 'undefined') return;
+					if(obj.clear && typeof(obj.clear) == 'function') obj.clear();
+				}, this);
+			}
+
+			// call Model.clear()
+			return this.parent.apply(this, arguments);
+		},
+
+		/**
+		 * a wrapper around bind that makes sure our relational objects exist
+		 */
+		bind_relational: function(key)
+		{
+			var relation = this.relations[key];
+			if(!relation) return false;
+
+			var obj = this._create_obj(relation, key);
+
+			// bind the event to the object
+			var args = Array.prototype.slice.call(arguments, 0);
+			obj.bind.apply(obj, args.slice(1));
+		},
+
+		/**
+		 * a wrapper around unbind that makes sure our relational objects exist
+		 */
+		unbind_relational: function(key)
+		{
+			var relation = this.relations[key];
+			if(!relation) return false;
+
+			// grab the object and unbind the event
+			var obj = this._get_key(this.relation_data, key);
+			if(!obj) return false;
+			var args = Array.prototype.slice.call(arguments, 0);
+			obj.unbind.apply(obj, args.slice(1));
+		},
+
+		/**
+		 * creates a reference to the parent (owning) object from the child
+		 */
+		set_parent: function(parent, child)
+		{
+			child.get_parent = function() { return parent; };
+		},
+
+		/**
+		 * get a sub-object's parent
+		 */
+		get_parent: function(child)
+		{
+			return child.get_parent();
+		},
+
+		/**
+		 * wrapper around creation/retrieval of relational sub-objects
+		 */
+		_create_obj: function(relation, obj_key, options)
+		{
+			options || (options = {});
+			var _data = options.data;
+			delete options.data;
+
+			// check if the object being passed in is already a Composer object
+			if(_data && _data.__composer_type && _data.__composer_type != '')
+			{
+				// yes, we passed in a composer object...set it directly into
+				// the relational data as a replacement for the old one.
+				// TODO: maybe provide an option to specify replace/update
+				var obj = _data;
 			}
 			else
 			{
-				this.fire_event('error', options, model, resp, options);
+				// data passed is just a plain old object (or, at least, not a
+				// Composer object). set the data into the relation object.
+				var obj = this._get_key(this.relation_data, obj_key);
+				var collection_or_model = (relation.collection || relation.filter_collection) ?
+											'collection' : 'model';
+				switch(collection_or_model)
+				{
+				case 'model':
+					obj || (obj = new relation.model());
+					if(options.set_parent) this.set_parent(this, obj);	// NOTE: happens BEFORE setting data
+					if(_data) obj.set(_data);
+					break;
+				case 'collection':
+					if(!obj)
+					{
+						if(relation.collection)
+						{
+							obj = new relation.collection();
+						}
+						else if(relation.filter_collection)
+						{
+							obj = new relation.filter_collection(relation.master(), Composer.object.merge({skip_initial_sync: true}, relation.options));
+						}
+					}
+					if(options.set_parent) this.set_parent(this, obj);	// NOTE: happens BEFORE setting data
+					if(_data) obj.reset(_data, options);
+					break;
+				}
 			}
-		};
-	};
 
-	// do a shallow clone of an array
-	var shallow_array_clone = function(from)
-	{
-		return from.slice(0);
-	};
+			// set the object back into our relational data objects
+			this._set_key(this.relation_data, obj_key, obj);
+			this.trigger('relation', obj, obj_key);
+			this.trigger('relation:'+obj_key, obj);
+			return obj;
+		},
 
-	// Composer equality function. It replaces _.eq, which wasn't able to tell
-	// non-equality between {key1: 3} and {key1: 3, key2: 5} (said they were
-	// equal). This was causing some events to not fire in Composer, prompting
-	// me to write our own equality function. It might have just been the release
-	// we were using, but I'm too lazy to go in and re-update _.eq to not have
-	// other _ dependencies. Writing our own is a bit easier.
-	//
-	// This is a work in progress.
-	var eq = function(a, b)
-	{
-		if ( a === b ) return true;
-		if(a instanceof Function) return false;
-		if(typeOf(a) != typeOf(b)) return false;
-		if(a instanceof Array)
-		{
-			if(a.length != b.length) return false;
-			// TODO: check if array indexes are always sequential
-			for(var i = 0, n = a.length; i < n; i++)
-			{
-				if(!b.hasOwnProperty(i)) return false;
-				if(!eq(a[i], b[i])) return false;
-			}
-		}
-		else if(a instanceof Object)
-		{
-			if ( a.constructor !== b.constructor ) return false;
-			for( var p in b )
-			{
-				if( b.hasOwnProperty(p) && ! a.hasOwnProperty(p) ) return false;
-			}
-			for( var p in a )
-			{
-				if ( ! a.hasOwnProperty( p ) ) continue;
-				if ( ! b.hasOwnProperty( p ) ) return false;
-				if ( a[ p ] === b[ p ] ) continue;
-				if ( typeof( a[ p ] ) !== "object" ) return false;
-				if ( ! eq( a[ p ],  b[ p ] ) ) return false;
-			}
-		}
-		else if(a != b)
-		{
-			return false;
-		}
-		return true;
-	};
-	Composer.eq = eq;
 
+		/**
+		 * wrapper around data[key] = value (equivelant:
+		 *   _set_key(data, key, value)
+		 * the VALUE ADD is that you can do things like:
+		 *   _set_key(data, 'key.subkey', value)
+		 * which yields:
+		 *   {key: {subkey: value}}
+		 */
+		_set_key: function(object, key, value)
+		{
+			object || (object = {});
+			var paths = key.split('.');
+			var obj = object;
+			for(var i = 0, n = paths.length; i < n; i++)
+			{
+				var path = paths[i];
+				if(i == n - 1)
+				{
+					obj[path] = value;
+					break;
+				}
+
+				if(!obj[path])
+				{
+					obj[path] = {};
+				}
+				else if(typeof(obj) != 'object' || Composer.array.is(obj))
+				{
+					obj[path] = {};
+				}
+				obj = obj[path];
+			}
+			return object;
+		},
+
+		/**
+		 * the getter version of _set_key
+		 */
+		_get_key: function(object, key)
+		{
+			object || (object = {});
+			var paths = key.split('.');
+			var obj = object;
+			for(var i = 0, n = paths.length; i < n; i++)
+			{
+				var path = paths[i];
+				var type = typeof(obj[path]);
+				if(type == 'undefined')
+				{
+					return obj[path];
+				}
+				obj = obj[path];
+			}
+			return obj;
+		}
+	});
+
+	Composer.merge_extend(RelationalModel, ['relations']);
+
+	Composer.exp0rt({
+		HasOne: -1,		// no longer used but needed for backwards compat
+		HasMany: -1,	// " "
+		RelationalModel: RelationalModel
+	});
+}).apply((typeof exports != 'undefined') ? exports : this);
+
+/**
+ * filtercollection.js
+ *
+ * Provides a collection type that utilizes automatic filtering to create what
+ * are essentially materialized views.
+ * -----------------------------------------------------------------------------
+ *
+ * Composer.js is an MVC framework for creating and organizing javascript 
+ * applications. For documentation, please visit:
+ *
+ *     http://lyonbros.github.com/composer.js/
+ * 
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (c) 2011, Lyon Bros Enterprises, LLC. (http://www.lyonbros.com)
+ * 
+ * Licensed under The MIT License. 
+ * Redistributions of files must retain the above copyright notice.
+ */
+(function() {
+	"use strict";
 
 	/**
-	 * Provides wrapping of extending via function (as opposed to
-	 * Extend: Composer.Model) for Composer objects (and objects that extend
-	 * them).
+	 * Collection that exists solely to be a "materialized view" of another
+	 * "master" collection. Whenever items are added/removed from the master
+	 * collection, the changes are filtered and applied to this collection as well.
+	 * This is useful for keeping many collections in sync with one master list
+	 * without having to manually update them all.
 	 */
-	Composer._export = function(exports)
-	{
-		exports.each(function(name) {
-			// TODO: eliminate eval here
-			name = name.replace(/[^a-z]/gi, '');	// make eval not so bad for now
-			var _do_try = function(classname) { return 'try{'+classname+'}catch(e){false}'; };
-			var cls = eval(_do_try(name)) || eval(_do_try('Composer.'+name));
-			if(!cls) return false;
+	var FilterCollection = Composer.Collection.extend({
+		/**
+		 * Track this object's type. Useful for debugging, mainly
+		 */
+		__composer_type: 'filtercollection',
 
-			// This function creates a new class with the given attributes that
-			// extends the given base. If no base is given, it uses the object's
-			// default constructor.
-			//
-			// The resulting class is also assigned extend/_do_extend functions
-			// (which are added to the class, NOT insteances of the class).
-			var do_extend = function(obj, base)
+		// holds the master collection, used to derive the items in this
+		// filtercollection
+		master: null,
+
+		// the filter function, used to determine if a model should be included
+		// in the filtercollection's results
+		filter: function() { return true },
+
+		// transformation function, called on a model when it's added or removed
+		// to the collection
+		transform: null,
+
+		// if set to an integer will limit the amount of models this collection
+		// will keep (post sort)
+		limit: false,
+
+		options: {
+			forward_all_events: false,
+			refresh_on_change: false,	// performance hit, but needed for backward compat
+			sort_event: false			// if true, fires a 'sort' event instead of 'reset' when sorting
+		},
+
+		initialize: function(master, options)
+		{
+			options || (options = {});
+
+			var optkeys = Object.keys(this.options);
+			Object.keys(options).forEach(function(k) {
+				var v = options[k];
+				if(typeof(v) == 'function') v = v.bind(this);
+				if(optkeys.indexOf(k) >= 0)
+				{
+					this.options[k] = v;
+				}
+				else
+				{
+					this[k] = v;
+				}
+			}.bind(this));
+
+			// call Base.initialize
+			this.parent();
+
+			this.master = master;
+
+			if(!this.master) return false;
+			if(!this.filter) return false;
+
+			this.attach(options);
+			if(!options.skip_initial_sync) this.refresh();
+		},
+
+		/**
+		 * bind our events to the master collection and start filtering
+		 */
+		attach: function()
+		{
+			this.master.bind('all', this.match_action.bind(this), 'filtercollection:'+this.cid()+':all');
+			this.bind('reset', function(options) {
+				options || (options = {});
+				if(options.has_reload) return false;
+				this.refresh(options);
+			}.bind(this), 'filtercollection:reset');
+		},
+
+		/**
+		 * detach from the master collection (stop listening and filtering)
+		 */
+		detach: function()
+		{
+			this.master.unbind('all', 'filtercollection:'+this.cid()+':all');
+			this.unbind('reset', 'filtercollection:reset');
+		},
+
+		/**
+		 * internal function used to match events from the master collection.
+		 */
+		match_action: function(event, model)
+		{
+			var args = Array.prototype.slice.call(arguments, 0);
+			switch(event)
 			{
-				var classobj = Object.merge({Extends: base}, obj);
-				var newclass = new Class(classobj);
-				newclass.extend = base.extend;
-				newclass._do_extend = do_extend;
-				return newclass;
-			};
-			cls._do_extend = do_extend;
-			Composer[name] = cls;
-		}, this);
-	}.bind(this);
+			case 'add':
+				this.add_event(model, {from_event: true}); break;
+			case 'reset':
+				this.refresh(); break;
+			case 'clear':
+				this.clear(); break;
+			case 'remove':
+				this.remove_event(model, {from_event: true}); break;
+			case 'change':
+				this.change_event(model, {}, args); break;
+			case 'sort':
+				this.refresh(); break;
+			default:
+				this.forward_event(event, model, args); break;
+			}
+		},
 
-	Composer._export(['Model', 'Collection', 'Controller']);
+		/**
+		 * match our models to the master collection
+		 *
+		 * works by filtering the master's models then comparing the original
+		 * models to the new (filtered) ones and firing the add/remove events
+		 * for each model respectively.
+		 *
+		 * also performs sorting/limiting.
+		 */
+		refresh: function(options)
+		{
+			options || (options = {});
 
-	Composer.Base = Base;
-	Composer.Events = Events;
-	Composer.Router = Router;
+			if(options.diff_events)
+			{
+				var old_models = this._models;
+			}
+			this._models = this.master._models.filter(function(model) {
+				return this.filter(model, this);
+			}.bind(this));
+			this.sort({silent: true});
+			if(this.limit) this._models.splice(this.limit, this._models.length);
+			if(options.diff_events)
+			{
+				var arrdiff = function(arr1, arr2) { return arr1.filter(function(el) { return arr2.indexOf(el) < 0; }); };
 
-	global.Composer = Composer;
+				arrdiff(old_models, this._models).forEach(function(model) {
+					this.fire_event('remove', options, model);
+				}, this);
+
+				arrdiff(this._models, old_models).forEach(function(model) {
+					this.fire_event('add', options, model);
+				}, this);
+			}
+			this.fire_event('reset', options, {has_reload: true});
+		},
+
+		/**
+		 * fired when a model changes. when this happens, we have to make sure
+		 * the model still meets the filtercollection's criteria so we call
+		 * tihs.filter on it to see if it "fits in."
+		 */
+		change_event: function(model, options, forward_args)
+		{
+			options || (options = {});
+
+			// see if this model even belongs to this collection
+			if(!model || this.models().indexOf(model) < 0 || !this.filter(model, this)) return false;
+
+			// track the current number of items and reloda the data
+			var num_items = this._models.length;
+
+			if(this.options.refresh_on_change)
+			{
+				// the brute force option (re-sort everything, re-filter everything)
+				// VERY expensive
+				this.refresh({silent: true});
+			}
+			else
+			{
+				// a more tactful approach
+				var cur_index = this._models.indexOf(model);
+				var new_index = this.sort_index(model);
+
+				if(cur_index == -1 && this.filter(model, this))
+				{
+					// welcome to the team!
+					this.add(model, options);
+				}
+				else if(cur_index > -1 && !this.filter(model, this))
+				{
+					// we feel that your interests no longer align with the team's
+					// ...we're going to have to let you go.
+					//
+					// You BASTARDS I've poured my LIFE into this collection!!
+					//
+					// Yes and we're thankful for your hard work, but feel it's
+					// time to move on. Your replacement is a potted plant (come
+					// to think of it, so is your severance). Think of this as a
+					// new beginning! Now get out of my office.
+					this.remove(model, options);
+				}
+				else if(cur_index != new_index)
+				{
+					// sort order changed
+					if(this.options.sort_event)
+					{
+						this.sort(Composer.object.merge({}, options, {silent: true}));
+						this.fire_event('sort', options);
+					}
+					else
+					{
+						this.sort(options);
+					}
+				}
+			}
+
+			// if the number of elements in the FC changed, just fire a standard
+			// "change" event (with the forwarded args), otherwise the change
+			// triggered a membership change, so fire a "reset"
+			if(this._models.length == num_items)
+			{
+				forward_args.shift();
+				var args = ['change', options].concat(forward_args);
+				this.fire_event.apply(this, args);
+			}
+			else
+			{
+				this.fire_event('reset', options);
+			}
+		},
+
+		/**
+		 * extension of Collection.add that makes sure our model passes the
+		 * filter test, and also adds the model into the master collection
+		 * instead of the filtercollection's models dircetly.
+		 */
+		add: function(data, options)
+		{
+			if (Composer.array.is(data))
+			{
+				return Composer.object.each(data, function(model) { this.add(model, options); }, this);
+			}
+			
+			options || (options = {});
+			if(typeof(options.transform) == 'undefined') options.transform = true;
+
+			// if we are passing raw data, create a new model from data
+			var model = data.__composer_type == 'model' ? data : new this.master.model(data, options);
+
+			if(this.transform && options.transform)
+			{
+				model = this.transform.call(this, model, 'add');
+			}
+
+			// model doesn't match filter. NICE TRY
+			if(!this.filter(model, this)) return false;
+
+			if(typeof(options.at) == 'number')
+			{
+				// find the correct insertion point in the master it options.at is set.
+				var current = this.at(options.at);
+				var master_idx = this.master.index_of(current);
+				if(master_idx !== false)
+				{
+					options.at = master_idx;
+				}
+			}
+			
+			// if this model exists in the master already, we call our special
+			// _do_add method, which manually adds, sorts, and limits for us.
+			// otherwise, we just call master.add() and the model will be added
+			// here via our wonderful events
+			if(this.master.index_of(model))
+			{
+				this._do_add(model, options);
+			}
+			else
+			{
+				this.master.add(model, options);
+				if(this.limit) this._models.splice(this.limit);
+			}
+			return model;
+		},
+
+		/**
+		 * Manually add a model to this collection. Sorts and limits as well.
+		 */
+		_do_add: function(model, options)
+		{
+			// master already has item, so we don't need to add it to
+			// master (it will just fire "upsert"). what we need is to
+			// add the model to this collection's models, sorted, and
+			// apply the limit.
+			this._models.push(model);
+			var old_idx = this._models.indexOf(model);
+			this.sort({silent: true});
+			var new_idx = this._models.indexOf(model);
+			if(this.limit) this._models.splice(this.limit);
+			// after sort/limit, model may not actually be in the FC, so
+			// check before wildly firing add/sort events
+			if(this.index_of(model))
+			{
+				// model was actually added, fire "add" event
+				this.fire_event('add', options, model, this, options);
+				if(old_idx != new_idx)
+				{
+					// sort changed! fire appropriate event
+					if(this.options.sort_event)
+					{
+						this.fire_event('sort', options);
+					}
+					else
+					{
+						this.fire_event('reset', options);
+					}
+				}
+			}
+		},
+
+		/**
+		 * extension of Colleciton.remove that removes the model from the
+		 * collection but only if it exists
+		 */
+		remove: function(model, options)
+		{
+			if (Composer.array.is(model))
+			{
+				return Composer.object.each(model, function(m) { this.remove(m); }, this);
+			}
+			
+			options || (options = {});
+			if(typeof(options.transform) == 'undefined') options.transform = true;
+
+			if(this._models.indexOf(model) < 0) return false;
+
+			if(this.transform && options.transform)
+			{
+				model = this.transform.call(this, model, 'remove');
+			}
+
+			// remove the model
+			Composer.array.erase(this._models, model);
+
+			this.fire_event('remove', options, model);
+
+			// remove the model from the collection
+			this._remove_reference(model);
+		},
+
+		add_event: function(model, options)
+		{
+			if(!this.filter(model, this)) return false;
+			this.refresh({silent: true});
+			if(this.options.sort_event) this.fire_event('sort', options);
+			this.fire_event('add', options, model, this, options);
+		},
+
+		remove_event: function(model, options)
+		{
+			if(this._models.indexOf(model) < 0) return false;
+			this.refresh({silent: true});
+			this.fire_event('remove', options, model);
+		},
+
+		forward_event: function(event, model, args)
+		{
+			// return if not forwarding events
+			if(!this.options.forward_all_events) return false;
+
+			// we're forwarding events, but we're not about to forward them for
+			// a model that doesn't "fit in" around here
+			if(model && model.__composer_type == 'model' && !this.filter(model, this))
+			{
+				return false;
+			}
+			this.trigger.apply(this, args);
+		}
+	});
+
+	Composer.exp0rt({ FilterCollection: FilterCollection });
 })();
