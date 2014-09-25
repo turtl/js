@@ -164,6 +164,7 @@ var Search = Composer.Model.extend({
 		this.index_json.notes[note.id()] = json;
 
 		note.get('tags').each(function(tag) {
+			console.log('tag: ', tag, tag.get('name'));
 			this.index_type('tags', tag.get('name'), note.id());
 		}.bind(this));
 		this.index_type('boards', note.get('board_id'), note.id());
@@ -188,7 +189,7 @@ var Search = Composer.Model.extend({
 		var json = this.index_json.notes[id];
 		if(!json) return false;
 		json.tags.each(function(tag) {
-			this.unindex_type('tags', tag.name, id);
+			this.unindex_type('tags', tag, id);
 		}.bind(this));
 		this.unindex_type('boards', json.board_id, id);
 
@@ -227,7 +228,8 @@ var Search = Composer.Model.extend({
 
 	unindex_type: function(type, index_id, item_id)
 	{
-		this['index_'+type][index_id].erase(item_id);
+		var idx = this['index_'+type][index_id];
+		if(idx) idx.erase(item_id);
 	},
 
 	/**

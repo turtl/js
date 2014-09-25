@@ -495,41 +495,21 @@ var turtl = {
 		if(!this.router)
 		{
 			options = Object.merge({
-				// we'll process our own QS, THXLOLOLOLOLOLOLOLOLOLOLOLOLOLOL!!!
-				process_querystring: false,
-
+				base: window._route_base || '',
 				// we'll do our own first route
 				suppress_initial_route: true,
-
-				enable_cb: function(url)
-				{
-					return this.loaded;
-				}.bind(this),
-				on_failure: function(obj)
-				{
-					console.log('route failed:', obj.url, obj);
-				}.bind(this)
+				enable_cb: function(url) { return this.loaded; }.bind(this)
 			}, options);
 			this.router = new Composer.Router(config.routes, options);
-			this.router.bind_links({
-				filter_trailing_slash: true,
-				do_state_change: function(a_tag)
-				{
-					path = new String(a_tag.get('href'));
-					path.rewrite = function(str) {
-						this._string_value = str;
-					}.bind(path);
-					path.rewrite(null);
-					turtl.controllers.pages.trigger('onroute', path);
-					//turtl.controllers.pages.on_route(path);
-					//if(path._string_value) a_tag.set('href', path._string_value);
-					return true;
-				}
-			});
-			this.router.register_callback(this.route_callback.bind(this));
+			this.router.bind_links({ filter_trailing_slash: true });
+			this.router.bind('route', this.route_callback.bind(this));
 			this.router.bind('preroute', function(url) {
 				this.controllers.pages.trigger('preroute', url);
 			}.bind(this));
+			this.router.bind('fail', function(obj) {
+				log.error('route failed:', obj.url, obj);
+				console.trace();
+			});
 		}
 	},
 

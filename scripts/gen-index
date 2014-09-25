@@ -1,0 +1,73 @@
+#!/bin/bash
+
+### This script generates index.html, which loads all needed javascript and
+### css for the app.
+
+## -----------------------------------------------------------------------------
+## generate CSS links
+## -----------------------------------------------------------------------------
+
+css=""
+cssfiles="`find css -name '*.css' \
+	| sort \
+	| grep -v 'template.css' \
+	| grep -v 'general.css' \
+	| grep -v 'reset.css' `"
+for cssfile in $cssfiles; do
+	css=`echo -ne "$css\n<link rel=\"stylesheet\" href=\"/$cssfile\">"`
+done
+
+## -----------------------------------------------------------------------------
+## generate JS includes
+## -----------------------------------------------------------------------------
+js=""
+function print_js() {
+	jsfile=$1
+	jsfile="`echo $jsfile | sed 's|___| |g'`"
+	js="$js\n<script src=\"/$jsfile\"></script>"
+}
+
+function path_to_js() {
+	path=$1
+	files="`find $path -name '*.js' | sort | sed 's| |___|g'`"
+	js=`echo -e "$js"`
+	for jsfile in $files; do
+		print_js $jsfile
+	done
+}
+
+jsfiles="`find library -name '*.js' \
+	| sort \
+	| grep -v 'ignore' \
+	| grep -v 'mootools-' \
+	| grep -v 'composer' \
+	| grep -v 'cowcrypt' \
+	| grep -v 'tcrypt.thread' \
+	| grep -v 'bookmarklet' \
+	| grep -v 'bluebird' \
+	| grep -v 'mathjax' \
+	| sed 's| |___|g' `"
+for jsfile in $jsfiles; do print_js $jsfile; done
+
+print_js "turtl.js"
+path_to_js "turtl"
+path_to_js "handlers"
+path_to_js "controllers"
+path_to_js "models"
+
+## -----------------------------------------------------------------------------
+## put it all together
+## -----------------------------------------------------------------------------
+echo "$css" > /tmp/.gen-index.css
+echo "$js" > /tmp/.gen-index.js
+
+index="`cat views/layouts/default.html`"
+index="`echo \"$index\" | sed -e '/{{gencss}}/ r /tmp/.gen-index.css' -e '/{{gencss}}/d'`"
+index="`echo \"$index\" | sed -e '/{{genjs}}/ r /tmp/.gen-index.js' -e '/{{genjs}}/d'`"
+
+# cleanup
+rm -f /tmp/.gen-index.css /tmp/.gen-index.js
+
+# send our generated data into their restecpive files
+echo -ne "$index" > index.html
+
