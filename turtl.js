@@ -560,7 +560,7 @@ var markdown = null;
 window.addEvent('domready', function() {
 	window.port = window.port || false;
 	window.__site_url = window.__site_url || '';
-	window.__api_url = window.__api_url || '';
+	window.__api_url = config.api_url || window.__api_url || '';
 	window.__api_key = window.__api_key || '';
 	window._base_url = window._base_url || '';
 	turtl.site_url = __site_url || '';
