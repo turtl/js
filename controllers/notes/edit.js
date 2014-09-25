@@ -149,7 +149,7 @@ var NoteEditController = Composer.Controller.extend({
 		{
 			var board = null;
 			if(this.track_last_board) board = this.board;
-			this.board_controller = new BoardsController({
+			this.board_controller = new BoardsDropdownController({
 				inject: this.board_container,
 				profile: turtl.profile,
 				add_bare: true,
