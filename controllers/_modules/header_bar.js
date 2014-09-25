@@ -26,7 +26,6 @@ var HeaderBarController = Composer.Controller.extend({
 	{
 		this._do_close = function(e)
 		{
-			console.log('e: ', e);
 			if(e.direction && e.direction != 'left') return;
 			if(e.type == 'click' && Composer.find_parent('div.menu', e.target)) return;
 			this.toggle_menu();
