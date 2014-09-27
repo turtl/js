@@ -31,16 +31,10 @@ var HeaderBarController = Composer.Controller.extend({
 			this.toggle_menu();
 		}.bind(this);
 
-		turtl.user.bind(['login', 'logout'], this.render.bind(this), 'header_bar:user:render');
+		this.with_bind(turtl.user, ['login', 'logout'], this.render.bind(this));
 		this.render();
-	},
 
-	release: function()
-	{
-		turtl.user.unbind(['login', 'logout'], 'header_bar:user:render');
-		if(this.notifications) this.notifications.release();
-		if(this.size_controller) this.size_controller.release();
-		this.parent.apply(this, arguments);
+		this.bind_once('release', this.close_menu.bind(this));
 	},
 
 	render: function()
@@ -50,19 +44,18 @@ var HeaderBarController = Composer.Controller.extend({
 		});
 		this.html(content);
 
-		if(this.size_controller) this.size_controller.release();
-		this.size_controller = new AccountProfileSizeController({
-			inject: this.size_container
-		});
+		this.track_subcontroller('size', function() {
+			return new AccountProfileSizeController({
+				inject: this.size_container
+			});
+		}.bind(this));
 
-		if(!window._in_ext)
-		{
-			if(this.notifications) this.notifications.release();
-			this.notifications = new NotificationsController({
+		this.track_subcontroller('notifications', function() {
+			return new NotificationsController({
 				button: document.getElement('header h1'),
 				inject: document.getElement('header')
-			});
-		}
+			})
+		}.bind(this));
 	},
 
 	toggle_menu: function(e)
@@ -70,9 +63,7 @@ var HeaderBarController = Composer.Controller.extend({
 		if(e) e.stop();
 		if(document.body.hasClass('settings'))
 		{
-			document.body.removeClass('settings');
-			document.body.removeEvent('swipe', this._do_close);
-			document.body.removeEvent('click:relay(#app)', this._do_close);
+			this.close_menu();
 		}
 		else
 		{
@@ -80,6 +71,13 @@ var HeaderBarController = Composer.Controller.extend({
 			document.body.addEvent('swipe', this._do_close);
 			document.body.addEvent('click:relay(#app)', this._do_close);
 		}
+	},
+
+	close_menu: function()
+	{
+		document.body.removeClass('settings');
+		document.body.removeEvent('swipe', this._do_close);
+		document.body.removeEvent('click:relay(#app)', this._do_close);
 	},
 
 	open_account: function(e)

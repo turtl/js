@@ -80,15 +80,7 @@ var turtl = {
 
 	init: function()
 	{
-		this.initial_load();
-	},
-
-	initial_load: function()
-	{
-		if(this.loaded)
-		{
-			return false;
-		}
+		if(this.loaded) return false;
 
 		// setup the API tracker (for addon API requests)
 		turtl.api.tracker.attach();
@@ -115,12 +107,7 @@ var turtl = {
 		this.setup_profile({initial_route: initial_route});
 
 		// if a user exists, log them in
-		if(window._in_ext)
-		{
-			this.user.login_from_auth(window._auth);
-			window._auth = null;	// clear, because i'm paranoid
-		}
-		else if(!window._disable_cookie)
+		if(!window._disable_cookie)
 		{
 			this.user.login_from_cookie();
 		}
@@ -129,7 +116,7 @@ var turtl = {
 
 		this.loaded = true;
 		if(window.port) window.port.send('loaded');
-		if(!window._in_ext) this.route(initial_route);
+		this.route(initial_route);
 	},
 
 	setup_profile: function(options)
@@ -139,7 +126,7 @@ var turtl = {
 		// update the user_profiles collection on login
 		this.user.bind('login', function() {
 			// if the user is logged in, we'll put their auth info into the api object
-			if(!window._in_ext && !window._disable_cookie)
+			if(!window._disable_cookie)
 			{
 				turtl.user.bind('change', turtl.user.write_cookie.bind(turtl.user), 'user:write_changes_to_cookie');
 			}
@@ -334,13 +321,7 @@ var turtl = {
 
 	loading: function(show)
 	{
-		var show = show ? true : false;
-		var fn = show ? 'addClass' : 'removeClass';
-		$E('html')[fn]('loading');
-		$$('img.loading').each(function(el) {
-			if(show)	el.setStyle('visibility', 'visible');
-			else		el.setStyle('visibility', '');
-		});
+		return false;
 	},
 
 	setup_syncing: function()
@@ -369,7 +350,7 @@ var turtl = {
 
 		// only sync against the remote DB if we're in the standalone app OR if
 		// we're in the background thread of an addon
-		if(turtl.do_sync && (!window._in_ext || window._in_background) && !window._in_app)
+		if(turtl.do_sync)
 		{
 			var notes = new Notes();
 			notes.start();	// poll for note recrods without files
@@ -494,7 +475,6 @@ var turtl = {
 			}.bind(this));
 			this.router.bind('fail', function(obj) {
 				log.error('route failed:', obj.url, obj);
-				console.trace();
 			});
 		}
 	},
@@ -570,22 +550,8 @@ window.addEvent('domready', function() {
 	Template.initialize();
 
 	// create the modal object
-	modal = new modal_interface({
-		width: 750,
-		// stick it in #wrap instead of body, which fixes various problems with
-		// controllers expecting wrap to be there (for instance, the Likes
-		// controller).
-		entry_element: 'body',
-		overlay: true,
-		load_icon: img('/images/site/icons/load_42x11.gif')	// not that it's needed anymore...
-	});
-	modal.addEvent('complete', function() {
-		var footer = $E('#footer');
-		if(footer) footer.setStyle('visibility', 'hidden');
-	});
-	modal.addEvent('close', function () {
-		var footer = $E('#footer');
-		if(footer) footer.setStyle('visibility', '');
+	modal = new TurtlModal({
+		inject: '#app'
 	});
 
 	// create the barfr

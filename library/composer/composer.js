@@ -521,6 +521,7 @@
 			var fn = is_fn ?  function_or_name : this._handler_names[lookup_name];
 			if(!fn) return this;
 			if(!is_fn) delete this._handler_names[lookup_name];
+			if(!this._handlers[event_name]) return this;
 
 			var idx = this._handlers[event_name].indexOf(fn);
 			if(idx < 0) return this;

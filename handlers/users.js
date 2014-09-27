@@ -1,15 +1,13 @@
 var users = {
 	login: function()
 	{
-		turtl.controllers.pages.load(UserIndexController);
+		turtl.controllers.pages.load(new UserIndexController());
 	},
 
-	/*
 	join: function()
 	{
-		turtl.controllers.pages.load(UserJoinController);
+		turtl.controllers.pages.load(new UserJoinController());
 	},
-	*/
 
 	logout: function()
 	{
