@@ -16,9 +16,6 @@ var TurtlModal = Composer.Event.extend({
 
 		this.elements.container = new Element('div');
 		this.elements.container.id = 'turtl-modal';
-		this.elements.container.setStyles({
-			display: 'none'
-		});
 		document.getElement(this.options.inject).appendChild(this.elements.container);
 	},
 

@@ -24,23 +24,9 @@ var extend_error = function(extend, errname)
 	return err;
 }
 
-/**
- * HACK: Mootools internals!
- * Allows using this.parent() async
- *
- * before:
- *   this.parent.apply(this, arguments);
- *
- * after:
- *   get_parent(this).apply(this, arguments);
- */
 function get_parent(obj)
 {
-	var name = obj.$caller.$name,
-	parent = obj.$caller.$owner.parent,
-	previous = (parent) ? parent.prototype[name] : null;
-	if (!previous) throw new Error('The method "' + name + '" has no parent.');
-	return previous;
+	return obj.$get_parent();
 }
 
 /**

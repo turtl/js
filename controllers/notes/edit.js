@@ -78,12 +78,9 @@ var NoteEditController = Composer.Controller.extend({
 		if(this.edit_in_modal)
 		{
 			modal.open(this.el);
-			modal.objects.container.removeClass('bare');
-			var close_fn = function() {
+			modal.bind_once('close', function() {
 				this.release();
-				modal.removeEvent('close', close_fn);
-			}.bind(this);
-			modal.addEvent('close', close_fn);
+			}.bind(this));
 		}
 		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
 
