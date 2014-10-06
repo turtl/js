@@ -1,12 +1,15 @@
 <div class="actions">
-	<? if(user.id) { ?>
-		<a class="menu" href="#menu" alt="Menu"><icon>&#9776;</icon></a>
+	{{#if user.id}}
+		<a class="menu" href="#menu" alt="Menu">
+			<img src="{{url '/images/template/logo.svg'}}" width="28" height="28" alt="Turtl">
+			<icon>&#9776;</icon>
+		</a>
 		<div class="menu">
 			<div class="gutter">
 				<div class="top">
 					<div class="size-container"></div>
 					<? if(config.enable_promo) { ?>
-						<a href="#invite" class="invite">Invite friends to get more storage</a>
+						<a href="#invite">Invite friends to get more storage</a>
 					<? } ?>
 				</div>
 				<ul>
@@ -43,5 +46,5 @@
 				</ul>
 			</div>
 		</div>
-	<? } ?>
+	{{/if}}
 </div>

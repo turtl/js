@@ -97,6 +97,10 @@ var NoteEditController = Composer.Controller.extend({
 				this.render_tags();
 			}.bind(this), 'notes:edit:change-board');
 		}
+
+		this.bind('release', function() {
+			if(this.edit_in_modal) modal.close();
+		}.bind(this));
 	},
 
 	release: function()

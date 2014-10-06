@@ -21,6 +21,7 @@
 		<script src="/library/composer/composer.js"></script>
 		<script src="/library/composer/composer.keyboard.js"></script>
 		<script src="/library/bluebird.js"></script>
+		<script src="/library/handlebars.runtime-v1.3.0.js"></script>
 
 		<script src="/config/config.js"></script>
 		<script src="/config/auth.js"></script>
@@ -47,7 +48,8 @@
 			});
 		</script>
 		<script src="/library/mathjax/MathJax.js"></script>
-		<script src="/library/templates.js"></script>
+		<script src="/library/templates/html.js"></script>
+		<script src="/library/templates/handlebars.js"></script>
 	</head>
 	<body class="initial">
 		<div id="loading-overlay">
@@ -56,7 +58,10 @@
 
 		<div id="app">
 			<header class="clear">
-				<h1><a href="/"><span>Turtl</span></a></h1>
+				<h1>
+					<!--<a href="#"><span>Turtl</span></a>-->
+					<em>Turtl</em>
+				</h1>
 			</header>
 
 			<div id="main" class="maincontent tex2jax_ignore"></div>

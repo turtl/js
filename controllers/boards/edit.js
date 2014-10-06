@@ -1,13 +1,10 @@
-var BoardEditController = Composer.Controller.extend({
+var BoardEditController = FormController.extend({
 	elements: {
 		'input[type="text"]': 'inp_title'
 	},
 
 	events: {
 		'submit form': 'edit_board',
-		'keyup input[type=text]': 'test_key',
-		'click a[href=#submit]': 'edit_board',
-		'click a[href=#cancel]': 'cancel',
 		'click .settings a[href=#delete]': 'delete_board'
 	},
 
@@ -15,53 +12,32 @@ var BoardEditController = Composer.Controller.extend({
 	profile: null,
 
 	// if true, brings up an inline-editing interface
-	bare: false,
-	edit_in_modal: true,
 	show_settings: false,
 
 	title: false,
+	formclass: 'board-edit',
 
 	init: function()
 	{
 		if(!this.board) this.board = new Board();
-		this.render();
-		if(this.bare)
-		{
-			this.el.addClass('board-bare');
-		}
-		else if(this.edit_in_modal)
-		{
-			modal.open(this.el);
-			var close_fn = function() {
-				this.release();
-				modal.removeEvent('close', close_fn);
-			}.bind(this);
-			modal.addEvent('close', close_fn);
-		}
-		this.inp_title.focus();
-		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
-	},
-
-	release: function()
-	{
-		if(modal.is_open && this.edit_in_modal) modal.close();
-		turtl.keyboard.attach(); // re-enable shortcuts
-		this.parent.apply(this, arguments);
+		var action = this.board.is_new() ? 'Add' : 'Edit';
+		this.title = this.title ? this.title : action + ' board';
+		this.parent();
 	},
 
 	render: function()
 	{
-		var content = Template.render('boards/edit', {
+		var content = view.render('boards/edit', {
 			board: toJSON(this.board),
-			bare: this.bare,
+			action: this.board.is_new() ? 'Add' : 'Edit',
 			title: this.title,
 			show_settings: this.show_settings
 		});
-		this.html(content);
-		(function() { this.inp_title.focus(); }).delay(10, this);
+		this.parent(content);
+		(function() { this.inp_title.focus(); }).delay(100, this);
 	},
 
-	edit_board: function(e)
+	submit: function(e)
 	{
 		if(e) e.stop();
 		var title = this.inp_title.get('value');
@@ -123,11 +99,6 @@ var BoardEditController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		this.release();
-	},
-
-	test_key: function(e)
-	{
-		if(this.bare && e.key == 'esc') this.release();
 	}
 });
 

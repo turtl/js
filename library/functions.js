@@ -224,6 +224,21 @@ var parse_querystring = function(qs)
 };
 
 var view = {
+	render: function(tpl, data, options)
+	{
+		data || (data = {});
+		options || (options = {});
+
+		if(TurtlTemplates[tpl])
+		{
+			return TurtlTemplates[tpl](data);
+		}
+		else
+		{
+			return Template.render(tpl, data, options);
+		}
+	},
+
 	escape: function(str)
 	{
 		return str;

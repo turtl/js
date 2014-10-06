@@ -1,8 +1,8 @@
 (ql:quickload '(:cl-async :wookie))
 
-(defpackage :admin-server
+(defpackage :turtl-server
   (:use :cl :wookie :wookie-plugin-export))
-(in-package :admin-server)
+(in-package :turtl-server)
 
 (load-plugins)
 

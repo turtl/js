@@ -44,8 +44,8 @@ var turtl = {
 	do_sync: true,
 	do_remote_sync: true,
 
-	// if true, tells the app to mirror data to local storage
-	mirror: false,
+	// holds the title breadcrumbs
+	titles: [],
 
 	// -------------------------------------------------------------------------
 	// Data section
@@ -500,21 +500,26 @@ var turtl = {
 		this.controllers.pages.trigger('route', url);
 	},
 
-	set_title: function(title)
+	_set_title: function()
 	{
-		var regex = new RegExp('(\\s*\\|\\s*'+(turtl.base_window_title).escapeRegExp()+')*(\\s*\\|)?$', 'g');
-		title = title.clean().replace(regex, '');
-		if(title == '') title = this.base_window_title;
-		else title = title + ' | ' + this.base_window_title;
+		var title = 'Turtl';
+		if(turtl.titles[0]) title = turtl.titles[0];
+		var inner = '<em>'+title+'</em>';
+
 		document.title = title;
+		document.getElement('header h1').set('html', inner);
 	},
 
-	prepend_title: function(prepend)
+	push_title: function(title)
 	{
-		prepend = prepend.clean();
-		if(prepend == '') return false;
-		title = document.title;
-		document.title = prepend + ' | ' + title;
+		turtl.titles.unshift(title);
+		turtl._set_title();
+	},
+
+	pop_title: function()
+	{
+		turtl.titles.shift()
+		turtl._set_title();
 	}
 };
 

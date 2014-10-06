@@ -1,0 +1,49 @@
+var FormController = Composer.Controller.extend({
+	events: {
+		'click .button.submit': 'submit',
+		'click .button.cancel': 'cancel'
+	},
+
+	title: 'Turtl gave me a name',
+	formclass: 'generic-form',
+
+	init: function()
+	{
+		turtl.push_title(this.title);
+		this.render();
+		modal.open(this.el);
+		modal.bind_once('close', function() {
+			if(this.el) this.release();
+		}.bind(this));
+		turtl.keyboard.detach();	// disable keyboard shortcuts while editing
+		return this.parent.apply(this, arguments);
+	},
+
+	release: function()
+	{
+		setTimeout(function() { modal.close(); }, 1);
+		turtl.pop_title();
+		turtl.keyboard.attach();	// re-enable shortcuts
+		return this.parent.apply(this, arguments);
+	},
+
+	render: function(content)
+	{
+		this.html(view.render('modules/form_layout', {
+			formclass: this.formclass,
+			content: content
+		}));
+	},
+
+	submit: function(e)
+	{
+		console.error('override me');
+	},
+
+	cancel: function(e)
+	{
+		this.trigger('cancel');
+		this.release();
+	}
+});
+

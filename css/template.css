@@ -10,7 +10,6 @@ html {
 
 html.loading {cursor: progress;}
 html.loading a {cursor: progress;}
-html.loading header div.loading {visibility: visible;}
 
 html, body {height: 100%;}
 
@@ -28,25 +27,29 @@ body.bare footer {display: none;}
 
 a { text-decoration: none; }
 
-/* custom icon font(s) */
-@font-face { font-family: 'Entypo'; font-weight: 400; src: url(../images/font/entypo.fontello.ttf); }
+/* custom font(s) */
+@font-face {font-family: 'Entypo'; font-weight: 400; src: url(../images/font/entypo.fontello.ttf);}
+@font-face {font-family: 'Raleway'; font-style: normal; font-weight: 400; src: local('Raleway'), url(../images/font/raleway.woff) format('woff');}
+@font-face {font-family: 'Raleway'; font-style: normal; font-weight: 600; src: local('Raleway SemiBold'), local('Raleway-SemiBold'), url(../images/font/raleway-semibold.woff) format('woff');}
 
 /* settings menu slide in */
 body.settings {overflow: hidden;}
 body.settings #app {left: 90%;}
 body.settings header div.actions div.menu {right: 10%;}
-body.settings header div.actions a.menu {transform: rotate(-90deg);}
+body.settings header div.actions a.menu icon {transform: rotate(90deg);}
 
 /* modal box slide in */
 body.modal {overflow: hidden;}
 body.modal #main {left: -100%;}
 body.modal #turtl-modal {left: 0;}
+body.settings.modal #turtl-modal {left: 90%;}
 
 #app {position: relative; left: 0; transition: left .3s;}
 
 header {position: relative; width: 100%; height: 52px; margin: 0 0 22px 0; padding: 4px 0 0 0; background: #222; border-bottom: 1px solid #222;}
-header h1 {position: absolute; left: 50%; margin: 5px 0 0 -19px;}
-header h1 a {display: block; width: 38px; height: 38px; background: url(../images/template/logo.svg) 0 0 no-repeat; background-size: 100% 100%;}
+header h1 {position: absolute; width: 100%; margin: 8px 0 0 0; text-align: center; font-family: 'raleway'; font-weight: normal; font-size: 1.4em;}
+header h1 em {display: inline-block; padding-top: 7px; color: #8fc46a;}
+header h1 a {display: inline-block; width: 32px; height: 32px; background: url(../images/template/logo.svg) center center no-repeat; background-size: 100% 100%;}
 header h1 span {display: none;}
 header h1 {color: #eee; color: #92b579;}
 header h1.active {cursor: pointer;}
@@ -55,21 +58,26 @@ header div.loading {visibility: hidden; float: left; margin: 15px 16px 0 16px;}
 
 /* header menu */
 header div.actions {position: relative; float: left; margin: 0 0 0 14px;}
-header div.actions a.menu {display: inline-block; height: 36px; margin: 5px 0 0 0; opacity: .9; transition: transform .3s;}
-header div.actions a.menu icon {padding: 9px 0 0 0; font-size: 2.6em; color: #8fc46a;}
-header div.actions div.menu {position: fixed; top: 0; right: 100%; z-index: 10; width: 90%; height: 100%; overflow: auto; background: #1c1c1c; transition: right .3s;}
+header div.actions a.menu {display: inline-block; height: 36px; margin: 5px 0 0 18px; opacity: .9;}
+header div.actions a.menu img {position: absolute; margin: 3px 0 0 -18px;}
+header div.actions a.menu icon {margin: 9px 0 0 0; font-size: 2.4em; color: #8fc46a; transition: transform .3s;}
+header div.actions div.menu {position: fixed; top: 0; right: 100%; z-index: 13; width: 90%; height: 100%; overflow: auto; background: #1c1c1c; transition: right .3s;}
 header div.actions div.menu .gutter {padding: 0;}
-header div.actions div.menu .top {margin: 0 0 8px 0; padding: 32px 36px 14px 36px; text-align: center;}
+header div.actions div.menu .top {margin: 0 0 8px 0; padding: 32px 24px 14px 24px; text-align: center;}
 header div.actions div.menu .top .size-container {margin-bottom: 18px;}
 header div.actions div.menu .top a {font-size: 1.2em;}
 header div.actions div.menu ul {list-style: none;}
 header div.actions div.menu ul li {border-top: 1px solid #121212;}
-header div.actions div.menu ul a {display: block; padding: 24px 36px; font-size: 1.6em; color: #fff; text-transform: uppercase;}
+header div.actions div.menu ul a {display: block; padding: 24px 36px; font-size: 1.3em; color: #fff; text-transform: uppercase;}
 header div.actions div.menu ul a icon {margin: 0 20px 0 0; color: #fff; font-size: 1.3em;}
 
-#turtl-modal {position: fixed; top: 56px; left: 100%; z-index: 10; width: 100%; height: 100%; overflow: auto; transition: left .3s;}
+#turtl-modal {position: fixed; top: 56px; left: 100%; z-index: 10; width: 100%; height: 100%; overflow: auto; background: #fff; transition: left .3s;}
+#turtl-modal .modal-gutter {padding: 4%;}
 
 #main {position: relative; left: 0; transition: left .3s;}
 
 footer {display: block; margin: 32px 0 0 0; padding: 16px; font-size: 10px; color: #777; text-align: right;}
+
+@media only screen and (max-device-width: 320px) {
+}
 

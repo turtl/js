@@ -1,0 +1,20 @@
+<div class="board-index">
+	{{#if boardz}}
+		<ul>
+			{{#each boards}}
+				<li>
+					<h2>{{title}}</h2>
+				</li>
+			{{/each}}
+		</ul>
+	{{else}}
+		<div class="interface">
+			<p>
+				<div class="button add" title="Add a new board">
+					<span><icon>&oplus;</icon> Add a board</span>
+				</div>
+			</p>
+			<h2>You have no boards</h2>
+		</div>
+	{{/if}}
+</div>

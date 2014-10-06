@@ -45,6 +45,7 @@ jsfiles="`find library -name '*.js' \
 	| grep -v 'tcrypt.thread' \
 	| grep -v 'bookmarklet' \
 	| grep -v 'bluebird' \
+	| grep -v 'handlebars.runtime' \
 	| grep -v 'mathjax' \
 	| sed 's| |___|g' `"
 for jsfile in $jsfiles; do print_js $jsfile; done
@@ -56,24 +57,6 @@ path_to_js "controllers"
 path_to_js "models"
 
 ## -----------------------------------------------------------------------------
-## generate templates
-## -----------------------------------------------------------------------------
-views="var _templates = {};"
-viewfiles="`find views/ -name '*.html' | sort | sed 's| |___|g'`"
-for viewfile in $viewfiles; do
-	content=$( cat $viewfile \
-		| awk '{ prev_line = line; line = $0; } NR > 1 { print prev_line; } END { ORS = ""; print line; }' \
-		| sed 's|</script>|</%script%>|g' \
-		| sed 's|<script|<%script%|g' \
-		| sed 's|\\|\\\\|g' \
-		| sed "s|'|\\\'|g" \
-		| tr -d '\r' \
-		| sed ':a;N;$!ba;s/\n/\\\n/g' )
-	name="`echo $viewfile | sed 's|views/||' | sed 's|\.html||' `"
-	views="${views}"'\n\n'"_templates['${name}'] = '${content}"'\\n'"';"
-done
-
-## -----------------------------------------------------------------------------
 ## put it all together
 ## -----------------------------------------------------------------------------
 echo "$css" > /tmp/.gen-index.css
@@ -82,12 +65,6 @@ echo "$js" > /tmp/.gen-index.js
 index="`cat views/layouts/default.html`"
 index="`echo \"$index\" | sed -e '/{{gencss}}/ r /tmp/.gen-index.css' -e '/{{gencss}}/d'`"
 index="`echo \"$index\" | sed -e '/{{genjs}}/ r /tmp/.gen-index.js' -e '/{{genjs}}/d'`"
-# yuck. newline madness...
-echo "$views" \
-	| sed 's|\\\\\\n|____{NEWLINE}____|g' \
-	| sed 's|\\n|\n|g' \
-	| sed 's|____{NEWLINE}____|\\\\\\n|g' \
-	> library/templates.js \
 
 # cleanup
 rm -f /tmp/.gen-index.css /tmp/.gen-index.js

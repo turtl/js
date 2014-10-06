@@ -1,11 +1,14 @@
 var TurtlModal = Composer.Event.extend({
 	options: {
+		inject: 'body'
 	},
 
 	elements: {
-		inject: 'body',
-		container: null
+		container: null,
+		gutter: null
 	},
+
+	is_open: false,
 
 	initialize: function(options)
 	{
@@ -16,13 +19,19 @@ var TurtlModal = Composer.Event.extend({
 
 		this.elements.container = new Element('div');
 		this.elements.container.id = 'turtl-modal';
+		this.elements.gutter = new Element('div')
+			.addClass('modal-gutter')
+			.inject(this.elements.container);
 		document.getElement(this.options.inject).appendChild(this.elements.container);
+
+		this.bind('open', function() { this.is_open = true; }.bind(this));
+		this.bind('close', function() { this.is_open = false; }.bind(this));
 	},
 
 	open: function(element)
 	{
-		this.elements.container.set('html', '');
-		this.elements.container.appendChild(element);
+		this.elements.gutter.set('html', '');
+		this.elements.gutter.appendChild(element);
 
 		document.body.addClass('modal');
 		this.trigger('open');
@@ -30,6 +39,8 @@ var TurtlModal = Composer.Event.extend({
 
 	close: function()
 	{
+		if(!this.is_open) return;
+		// slide out
 		document.body.removeClass('modal');
 		this.trigger('close');
 	}

@@ -1,0 +1,27 @@
+#!/bin/bash
+
+## -----------------------------------------------------------------------------
+## generate templates
+## -----------------------------------------------------------------------------
+views="var _templates = {};"
+viewfiles="`find views/ -name '*.html' | sort | sed 's| |___|g'`"
+for viewfile in $viewfiles; do
+	content=$( cat $viewfile \
+		| awk '{ prev_line = line; line = $0; } NR > 1 { print prev_line; } END { ORS = ""; print line; }' \
+		| sed 's|</script>|</%script%>|g' \
+		| sed 's|<script|<%script%|g' \
+		| sed 's|\\|\\\\|g' \
+		| sed "s|'|\\\'|g" \
+		| tr -d '\r' \
+		| sed ':a;N;$!ba;s/\n/\\\n/g' )
+	name="`echo $viewfile | sed 's|views/||' | sed 's|\.html||' `"
+	views="${views}"'\n\n'"_templates['${name}'] = '${content}"'\\n'"';"
+done
+
+# yuck. newline madness...
+echo "$views" \
+	| sed 's|\\\\\\n|____{NEWLINE}____|g' \
+	| sed 's|\\n|\n|g' \
+	| sed 's|____{NEWLINE}____|\\\\\\n|g' \
+	> library/templates/html.js 
+

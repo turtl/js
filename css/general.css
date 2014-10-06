@@ -23,6 +23,8 @@ img.loading {visibility: hidden;}
 icon {display: inline-block; margin: 0 0 0 0; padding: 0; font-family: Entypo; font-weight: 300; font-size: 18px; line-height: .6em; vertical-align: baseline;}
 a icon {color: #222;}
 
+.interface {line-height: 1.4em; text-align: left; font-family: 'raleway';}
+
 .content {line-height: 1.4em; text-align: left;}
 .content h2 {margin-bottom: 8px; font-size: 17px;}
 .content h3 {font-size: 14px;}
@@ -47,15 +49,20 @@ a icon {color: #222;}
 .content table th {background: #eee;}
 .content .warn {color: #922;}
 
-form.standard-form input[type=text] {width: 95%;}
-form.standard-form textarea {width: 95%;}
-form.standard-form .form-note {color: #aaa;}
-form.standard-form input[type=submit] {float: right;}
-form.standard-form .error {border-color: #f88;}
-form.standard-form img.load {display: none; float: right; position: absolute; margin: 6px 0 0 -21px;}
+form.standard-form {padding-top: 32px;}
+form.standard-form input[type=text],
+form.standard-form textarea {width: 96%; padding: 2%; font-size: 1.4em; font-family: 'raleway'; border: 1px solid #666; border-radius: 0;}
+form.standard-form .button-row {position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(0, 0, 0, .8);}
+form.standard-form .button-row .button {width: 44%; background: 0; border: 0;}
+form.standard-form .button-row .button span {padding: 14px;}
+form.standard-form .button-row .button span icon {margin: 0; font-size: 1.4em;}
+form.standard-form .button-row .button.submit {float: right; text-align: right;}
+form.standard-form .button-row .button.submit icon {color: #72f865; font-size: 1.3em;}
+form.standard-form .button-row .button.cancel {float: left;}
+form.standard-form .button-row .button.cancel icon {color: #ff3333;}
 
 /* generic (non-header) buttons */
-div.button {display: inline-block; cursor: pointer; line-height: 10px; border: 1px solid #111; border-radius: 5px;}
+div.button {display: inline-block; width: 70%; cursor: pointer; line-height: 10px; border: 1px solid #111; border-radius: 12px;}
 div.button {
 	background: #333; /* Old browsers */
 	background: -moz-linear-gradient(top, #444444 1%, #222222 100%); /* FF3.6+ */
@@ -73,8 +80,8 @@ div.button:hover {
 	background: #222; /* Old browsers */
 	border-right: 1px solid #111;
 }
-div.button icon {float: left; margin: 0px 5px 0 0; color: #fff;}
-div.button span {display: inline-block; padding: 8px 8px 8px 6px; color: #ddd; text-transform: uppercase; font-weight: bold; font-size: 11px;}
+div.button icon {float: left; margin: -2px 16px 0 0; color: #fff; font-size: 1.2em; vertical-align: baseline;}
+div.button span {display: inline-block; padding: 16px; color: #ddd; text-transform: none; font-size: 1.4em; font-weight: normal;}
 div.button.add icon {color: #72b865;}
 div.button.share icon {color: #f761c7;}
 

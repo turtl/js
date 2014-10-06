@@ -6,7 +6,8 @@ var NotesController = TrackController.extend({
 	},
 
 	events: {
-		'click div.button.note.add': 'open_add_note',
+		'click a.add': 'open_add_note',
+		'click a.search': 'open_search',
 		'click div.button.note.share': 'share_board',
 		'click .sort a': 'change_sort',
 		'click ul.list-type a': 'change_list_type',
@@ -213,6 +214,11 @@ var NotesController = TrackController.extend({
 		new NoteEditController({
 			board: this.board
 		});
+	},
+
+	open_search: function(e)
+	{
+		if(e) e.stop();
 	},
 
 	share_board: function(e)
