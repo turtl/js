@@ -85,18 +85,7 @@ var turtl = {
 		// setup the API tracker (for addon API requests)
 		turtl.api.tracker.attach();
 
-		if(History.enabled)
-		{
-			var initial_route = window.location.pathname+window.location.search;
-			if(initial_route == '/' && window.location.hash.match(/^#!\//))
-			{
-				initial_route = new String(window.location.hash).replace(/^[#!]+/, '');
-			}
-		}
-		else
-		{
-			var initial_route = window.location.hash != '' ? window.location.hash : window.location.pathname;
-		}
+		var initial_route = '/';
 
 		// load the global keyboard handler
 		this.keyboard = new Composer.Keyboard({meta_bind: true});
@@ -165,7 +154,7 @@ var turtl = {
 							turtl.controllers.pages.release();
 							turtl.last_url = '';
 							turtl.search.reindex();
-							var initial_route = options.initial_route || '';
+							var initial_route = options.initial_route || '/';
 							if(initial_route.match(/^\/users\//)) initial_route = '/';
 							if(initial_route.match(/index.html/)) initial_route = '/';
 							if(initial_route.match(/background.html/)) initial_route = '/';
