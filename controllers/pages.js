@@ -48,7 +48,7 @@ var PagesController = Composer.Controller.extend({
 			tmp.setStyles({transition: ''})
 				.setStyles({left: slide == 'left' ? '-100%' : '100%'});
 			main.setStyles({transition: ''})
-				.setStyles({left: '0%'});
+				.setStyles({left: ''});
 			(function() {
 				document.body.removeClass('page-slide');
 				tmp.destroy();
