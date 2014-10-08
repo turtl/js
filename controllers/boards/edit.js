@@ -14,6 +14,7 @@ var BoardEditController = FormController.extend({
 	// if true, brings up an inline-editing interface
 	show_settings: false,
 
+	modal: true,
 	title: false,
 	formclass: 'board-edit',
 
@@ -33,7 +34,7 @@ var BoardEditController = FormController.extend({
 			title: this.title,
 			show_settings: this.show_settings
 		});
-		this.parent(content);
+		this.html(content);
 		(function() { this.inp_title.focus(); }).delay(100, this);
 	},
 

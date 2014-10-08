@@ -1,9 +1,12 @@
 var FormController = Composer.Controller.extend({
 	events: {
+		'submit form': 'submit',
 		'click .button.submit': 'submit',
 		'click .button.cancel': 'cancel'
 	},
 
+	modal: false,
+	buttons: true,
 	title: 'Turtl gave me a name',
 	formclass: 'generic-form',
 
@@ -11,26 +14,30 @@ var FormController = Composer.Controller.extend({
 	{
 		turtl.push_title(this.title);
 		this.render();
-		modal.open(this.el);
-		modal.bind_once('close', function() {
-			if(this.el) this.release();
-		}.bind(this));
+		if(this.modal)
+		{
+			modal.open(this.el);
+			modal.bind_once('close', function() {
+				if(this.el) this.release();
+			}.bind(this));
+		}
 		turtl.keyboard.detach();	// disable keyboard shortcuts while editing
 		return this.parent.apply(this, arguments);
 	},
 
 	release: function()
 	{
-		setTimeout(function() { modal.close(); }, 1);
+		if(this.modal) setTimeout(function() { modal.close(); }, 1);
 		turtl.pop_title();
 		turtl.keyboard.attach();	// re-enable shortcuts
 		return this.parent.apply(this, arguments);
 	},
 
-	render: function(content)
+	html: function(content)
 	{
-		this.html(view.render('modules/form_layout', {
+		this.parent(view.render('modules/form_layout', {
 			formclass: this.formclass,
+			buttons: this.buttons,
 			content: content
 		}));
 	},

@@ -6,14 +6,14 @@ var boards = {
 			turtl.controllers.pages.trigger('loaded');
 			return;
 		}
-		turtl.controllers.pages.load(new BoardsController({}));
+		turtl.controllers.pages.load(BoardsController, {});
 	},
 
 	view: function(board)
 	{
-		turtl.controllers.pages.load(new BoardsViewController({
+		turtl.controllers.pages.load(BoardsViewController, {
 			current_board: board
-		}));
+		});
 	}
 };
 

@@ -1,23 +1,28 @@
-var UserJoinController = Composer.Controller.extend({
-	inject: turtl.main_container_selector,
-
+var UserJoinController = FormController.extend({
 	elements: {
 		'input[name=username]': 'inp_username',
 		'input[name=password]': 'inp_password',
 		'input[name=confirm]': 'inp_confirm',
 		'input[name=promo]': 'inp_promo',
-		'input[type=submit]': 'submit',
 		'div.promo': 'promo_section'
 	},
 
 	events: {
-		'submit form': 'do_join',
-		'click a[href=#open-promo]': 'open_promo'
+		'click a[href=#open-promo]': 'open_promo',
+		'click .button.join': 'submit',
+		'click .button.confirm': 'finalize'
 	},
+
+	model: false,
+	promo: null,
+
+	buttons: false,
+	title: 'Join',
+	formclass: 'user-join',
 
 	init: function()
 	{
-		this.render();
+		this.parent();
 
 		// check for promo codes
 		var check_promo = function()
@@ -36,7 +41,7 @@ var UserJoinController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var content = Template.render('users/join', {
+		var content = view.render('users/join', {
 			enable_promo: config.enable_promo,
 			promo: localStorage.promo
 		});
@@ -46,10 +51,17 @@ var UserJoinController = Composer.Controller.extend({
 			this.promo_section.set('slide', {duration: 250, mode: 'horizontal'});
 			this.promo_section.get('slide').hide();
 		}
-		//this.inp_username.focus();
+		(function() { this.inp_username.focus(); }).delay(100, this);
 	},
 
-	do_join: function(e)
+	render_confirm: function()
+	{
+		var content = view.render('users/join-confirm', {
+		});
+		this.html(content);
+	},
+
+	submit: function(e)
 	{
 		if(e) e.stop();
 		var username = this.inp_username.get('value');
@@ -78,13 +90,22 @@ var UserJoinController = Composer.Controller.extend({
 
 		this.submit.disabled = true;
 
-		var user = new User({
+		this.user = new User({
 			username: username,
 			password: password
 		});
+
+		this.promo = promo;
+		this.render_confirm();
+	},
+
+	finalize: function(e)
+	{
+		if(e) e.stop();
+
 		turtl.loading(true);
-		user.join({
-			promo: promo,
+		this.user.join({
+			promo: this.promo,
 			success: function(userdata) {
 				var data = user.toJSON();
 				data.id = userdata.id;

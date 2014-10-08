@@ -1,33 +1,25 @@
-var UserLoginController = Composer.Controller.extend({
-	inject: turtl.main_container_selector,
-
+var UserLoginController = FormController.extend({
 	elements: {
 		'input[name=username]': 'inp_username',
 		'input[name=password]': 'inp_password'
 	},
 
 	events: {
-		'submit form': 'do_login'
+		'click .button.login': 'submit'
 	},
 
-	redirect: '/',
-
-	init: function()
-	{
-		var qs = parse_querystring();
-		if(qs.redirect) this.redirect = Base64.decode(qs.redirect);
-		this.render();
-	},
+	buttons: false,
+	title: 'Login',
+	formclass: 'user-login',
 
 	render: function()
 	{
-		// TODO: save redirect in JOIN link
-		var content = Template.render('users/login');
+		var content = view.render('users/login');
 		this.html(content);
-		this.inp_username.focus.delay(100, this.inp_username);
+		(function() { this.inp_username.focus(); }).delay(100, this);
 	},
 
-	do_login: function(e)
+	submit: function(e)
 	{
 		if(e) e.stop();
 		var username = this.inp_username.get('value');
@@ -48,7 +40,6 @@ var UserLoginController = Composer.Controller.extend({
 				});
 				turtl.user.login(data);
 				turtl.loading(false);
-				turtl.route(this.redirect);
 			}.bind(this),
 			error: function(e) {
 				barfr.barf('Login failed.');
@@ -57,3 +48,4 @@ var UserLoginController = Composer.Controller.extend({
 		});
 	}
 });
+

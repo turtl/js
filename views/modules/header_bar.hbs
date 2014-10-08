@@ -1,9 +1,11 @@
 <div class="actions">
-	{{#if user.id}}
-		<a class="menu" href="#menu" alt="Menu">
-			<img src="{{url '/images/template/logo.svg'}}" width="28" height="28" alt="Turtl">
+	<a class="menu" href="#menu" alt="Menu">
+		<img src="{{url '/images/template/logo.svg'}}" width="28" height="28" alt="Turtl">
+		{{#if user.id}}
 			<icon>&#9776;</icon>
-		</a>
+		{{/if}}
+	</a>
+	{{#if user.id}}
 		<div class="menu">
 			<div class="gutter">
 				<div class="top">

@@ -1,12 +1,18 @@
 var users = {
 	login: function()
 	{
-		turtl.controllers.pages.load(new UserIndexController());
+		var slide = turtl.controllers.pages.is(UserJoinController) ? 'right' : false;
+		turtl.controllers.pages.load(UserLoginController, {}, {
+			slide: slide
+		});
 	},
 
 	join: function()
 	{
-		turtl.controllers.pages.load(new UserJoinController());
+		var slide = turtl.controllers.pages.is(UserLoginController) ? 'left' : false;
+		turtl.controllers.pages.load(UserJoinController, {}, {
+			slide: slide
+		});
 	},
 
 	logout: function()

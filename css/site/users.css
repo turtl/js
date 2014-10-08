@@ -1,3 +1,8 @@
+.user-join .button,
+.user-login .button {margin: 32px 0 16px 0;}
+.user-join .confirm-text {text-align: left;}
+.user-join .confirm-text h2 {text-align: left;}
+
 .user-main {width: 700px; margin: 60px auto 0 auto;}
 .user-main .login-main {float: left;}
 .user-main .join-main {float: right; padding-left: 50px; border-left: 1px solid #ccc;}

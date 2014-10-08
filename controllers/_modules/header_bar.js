@@ -61,6 +61,8 @@ var HeaderBarController = Composer.Controller.extend({
 	toggle_menu: function(e)
 	{
 		if(e) e.stop();
+		if(!turtl.user.logged_in) return;
+
 		if(document.body.hasClass('settings'))
 		{
 			this.close_menu();
