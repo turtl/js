@@ -54,20 +54,13 @@ var UserJoinController = FormController.extend({
 		(function() { this.inp_username.focus(); }).delay(100, this);
 	},
 
-	render_confirm: function()
-	{
-		var content = view.render('users/join-confirm', {
-		});
-		this.html(content);
-	},
-
 	submit: function(e)
 	{
 		if(e) e.stop();
 		var username = this.inp_username.get('value');
 		var password = this.inp_password.get('value');
 		var pconfirm = this.inp_confirm.get('value');
-		var promo = this.inp_promo.get('value');
+		var promo = this.inp_promo ? this.inp_promo.get('value') : null;
 
 		if(password != pconfirm)
 		{
@@ -90,22 +83,14 @@ var UserJoinController = FormController.extend({
 
 		this.submit.disabled = true;
 
-		this.user = new User({
+		var user = new User({
 			username: username,
 			password: password
 		});
 
-		this.promo = promo;
-		this.render_confirm();
-	},
-
-	finalize: function(e)
-	{
-		if(e) e.stop();
-
 		turtl.loading(true);
-		this.user.join({
-			promo: this.promo,
+		user.join({
+			promo: promo,
 			success: function(userdata) {
 				var data = user.toJSON();
 				data.id = userdata.id;
