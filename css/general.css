@@ -47,11 +47,11 @@ a icon {color: #222;}
 .content table th {background: #eee;}
 .content .warn {color: #922;}
 
-form.standard-form {padding: 16px 4% 4% 4%;}
+form.standard-form {padding: 16px 4% 16px 4%;}
 form.standard-form input[type=text],
 form.standard-form input[type=password],
 form.standard-form input[type=email],
-form.standard-form textarea {width: 92%; margin: 0 0 12px 0; padding: 3% 4%; font-size: 1.4em; font-family: 'raleway'; background: #ededed; border: 0; border-bottom: 1px solid #bbb; border-radius: 0;}
+form.standard-form textarea {width: 92%; margin: 0 0 12px 0; padding: 9px 4%; font-size: 1.4em; font-family: 'raleway'; background: #ededed; border: 0; border-bottom: 1px solid #bbb; border-radius: 0;}
 form.standard-form .button-row {position: fixed; bottom: 0; left: 0; width: 100%; text-align: left; background: rgba(0, 0, 0, .8);}
 form.standard-form .button-row .button {width: 44%; background: 0; border: 0;}
 form.standard-form .button-row .button span {padding: 14px;}
