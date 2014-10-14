@@ -17,7 +17,7 @@ var UserJoinController = FormController.extend({
 	promo: null,
 
 	buttons: false,
-	title: 'Join',
+	title: ['Join', '/users/login'],
 	formclass: 'user-join',
 
 	init: function()
