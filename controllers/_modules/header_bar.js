@@ -58,12 +58,15 @@ var HeaderBarController = Composer.Controller.extend({
 			});
 		}.bind(this));
 
+		/*
+		 * TODO: mobile: enable notifications
 		this.track_subcontroller('notifications', function() {
 			return new NotificationsController({
 				button: document.getElement('header h1'),
 				inject: document.getElement('header')
 			})
 		}.bind(this));
+		*/
 	},
 
 	toggle_menu: function(e)

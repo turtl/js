@@ -14,8 +14,6 @@ var NotificationsController = Composer.Controller.extend({
 
 	init: function()
 	{
-		return this.release();
-
 		var notifications = function()
 		{
 			if(!turtl.messages || !turtl.invites) return false;
