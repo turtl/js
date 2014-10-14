@@ -65,7 +65,7 @@ ul.item-list {list-style: none;}
 ul.item-list li {display: block; border-bottom: 1px solid #ddd;}
 ul.item-list li h2 {font-size: 1.3em;}
 ul.item-list li a {display: block; padding: 22px 12px; color: #262;}
-ul.item-list li a icon {float: right; margin: 3px 0 0 0;}
+ul.item-list li a icon {float: right; margin: 3px 0 0 0; color: #aaa;}
 
 /* generic (non-header) buttons */
 div.button {display: inline-block; width: 70%; cursor: pointer; line-height: 10px; background: #83b362; border-radius: 8px;}
