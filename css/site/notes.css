@@ -1,5 +1,6 @@
-.notes {padding: 3px 0 16px 0;}
+.notes {padding: 4px 0 16px 0;}
 .notes div.filters {display: none;}
+.notes ul.note_list > li {font-family: arial;}
 
 /* individual note actions */
 .notes div.actions {display: none; z-index: 2; position: absolute; top: 0; right: 0; height: 24px; padding: 0 0 0 4px; opacity: .95; background: #222; border: 1px solid #333;}
@@ -198,13 +199,14 @@ ul.note_list.list_masonry .note a.img {display: block; width: 232px; line-height
 	ul.note_list.list_masonry > li {
 		float: left;
 		width: 48%;
-		margin: 0 0 4px 4px;
+		margin: 0 0 2px 2px;
+		border: 1px solid #ccc;
 	}
 	ul.note_list.list_masonry > li > div.gutter {
 		max-height: 275px;
 	}
 
-	ul.note_list.list_masonry > li.image {width: 49%; margin: 0 0 2px 2px;}
+	ul.note_list.list_masonry > li.image {width: 49%; margin: 0 0 2px 2px; border: 0;}
 	ul.note_list.list_masonry .note a.img {width: 100%;}
 }
 
