@@ -524,7 +524,7 @@ var turtl = {
 	{
 		var entry = turtl.titles.shift()
 		turtl._set_title();
-		if(entry.back && do_route_back)
+		if(entry && entry.back && do_route_back)
 		{
 			var back = entry.back;
 			console.log('back: ', back);
