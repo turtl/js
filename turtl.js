@@ -502,7 +502,7 @@ var turtl = {
 		var html = title;
 		if(back)
 		{
-			html = '<a href="'+ back +'" rel="back"><icon>&#59229;</icon> '+ html +'</a>';
+			html = '<a href="'+ back +'" rel="back"><icon>&#59229;</icon>&nbsp;&nbsp;'+ html +'</a>';
 		}
 		var html = '<em>'+html+'</em>';
 
