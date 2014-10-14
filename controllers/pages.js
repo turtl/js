@@ -14,6 +14,8 @@ var PagesController = Composer.Controller.extend({
 		var main_sel = turtl.main_container_selector;
 		var main = document.getElement(main_sel);
 
+		modal.close();
+
 		var content = null;
 		if(options.slide)
 		{
