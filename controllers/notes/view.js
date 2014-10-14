@@ -16,6 +16,7 @@ var NoteViewController = BaseNoteItem.extend({
 		this.parent.apply(this, arguments);
 		this.render();
 
+		turtl.push_title(this.model.get('title') || 'Note', '#modal.close');
 		modal.open(this.el);
 		modal.objects.container.addClass('bare');
 		var modalclose = function() {
@@ -33,6 +34,7 @@ var NoteViewController = BaseNoteItem.extend({
 	release: function()
 	{
 		if(modal.is_open) modal.close();
+		turtl.pop_title();
 		turtl.keyboard.unbind('e', 'notes:view:shortcut:edit_note');
 		turtl.keyboard.unbind('m', 'notes:view:shortcut:move_note');
 		turtl.keyboard.unbind('delete', 'notes:view:shortcut:delete_note');

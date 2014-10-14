@@ -526,7 +526,16 @@ var turtl = {
 		turtl._set_title();
 		if(entry.back && do_route_back)
 		{
-			(function () { turtl.route(entry.back); }).delay(0, this);
+			var back = entry.back;
+			console.log('back: ', back);
+			if(back == '#modal.close')
+			{
+				modal.close();
+			}
+			else
+			{
+				turtl.route(entry.back);
+			}
 		}
 	}
 };

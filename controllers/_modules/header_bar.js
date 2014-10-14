@@ -33,7 +33,7 @@ var HeaderBarController = Composer.Controller.extend({
 		}.bind(this);
 
 		this.with_bind(turtl.user, ['login', 'logout'], this.render.bind(this));
-		document.body.addEvent('click:relay(header h1 a[rel=back])', this.go_back);
+		document.body.getElement('header').addEvent('click:relay(h1 a[rel=back])', this.go_back);
 		this.render();
 
 		this.bind_once('release', this.close_menu.bind(this));
@@ -41,7 +41,7 @@ var HeaderBarController = Composer.Controller.extend({
 
 	release: function()
 	{
-		document.body.removeEvent('click:relay(header h1 a[rel=back])', this.go_back);
+		document.body.getElement('header').removeEvent('click:relay(h1 a[rel=back])', this.go_back);
 		return this.parent.apply(this, arguments);
 	},
 

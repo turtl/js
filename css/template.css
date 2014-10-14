@@ -41,7 +41,7 @@ body.page-slide #tmp-slide {display: block;}
 #app {position: relative; left: 0; transition: left .3s;}
 
 header {position: fixed; z-index: 13; width: 100%; height: 40px; margin: 0 0 0 0; padding: 4px 0 0 0; background: #222; border-bottom: 1px solid #222;}
-header h1 {position: absolute; width: 100%; margin: 3px 0 0 0; text-align: center; font-weight: normal; font-size: 1.15em;}
+header h1 {position: absolute; width: 100%; margin: 3px 0 0 0; text-align: center; font-weight: normal; font-size: 1.15em; line-height: 1.2em;}
 header h1 em {display: inline-block; max-width: 40%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-top: 7px; color: #8fc46a;}
 header h1 em a {color: #8fc46a;}
 header h1 em a icon {vertical-align: -8%; color: #8fc46a;}
@@ -64,7 +64,7 @@ header div.actions div.menu ul a icon {margin: 0 20px 0 0; color: #fff; font-siz
 /*.bar-actions {display: block; height: 40px; margin: 0 0 16px 0; padding: 7px 0 0 0;}*/
 .bar-actions {position: fixed; z-index: 21; top: 0; right: 0; transition: opacity .3s;}
 .bar-actions a {display: block; float: left; width: 44px; height: 44px; text-align: center; border-left: 1px solid rgba(255, 255, 255, .1);}
-.bar-actions a icon {padding-top: 16px; font-size: 1.9em; color: #fff;}
+.bar-actions a icon {padding-top: 16px; font-size: 1.9em; color: #e4e4e4;}
 .bar-actions a.search icon {font-size: 1.8em;}
 
 #turtl-modal {position: absolute; top: 44px; left: 100%; z-index: 10; width: 100%; min-height: 100%; overflow: visible; transition: left .3s;}
