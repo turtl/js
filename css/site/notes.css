@@ -1,3 +1,4 @@
+.notes {padding: 3px 0 16px 0;}
 .notes div.filters {display: none;}
 
 /* individual note actions */
@@ -191,4 +192,19 @@ ul.note_list.list_masonry .note img {max-width: 100%;}
 ul.note_list.list_masonry .note a.img {display: block; width: 232px; line-height: 0; text-align: center; background: #000;}
 
 .notes .MathJax_Display {padding: 4px; overflow-x: auto;}
+
+@media only screen and (max-device-width: 640px) {
+	ul.note_list {margin: 0;}
+	ul.note_list.list_masonry > li {
+		float: left;
+		width: 48%;
+		margin: 0 0 4px 4px;
+	}
+	ul.note_list.list_masonry > li > div.gutter {
+		max-height: 275px;
+	}
+
+	ul.note_list.list_masonry > li.image {width: 49%; margin: 0 0 2px 2px;}
+	ul.note_list.list_masonry .note a.img {width: 100%;}
+}
 
