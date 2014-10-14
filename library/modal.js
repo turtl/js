@@ -43,6 +43,9 @@ var TurtlModal = Composer.Event.extend({
 		// slide out
 		document.body.removeClass('modal');
 		this.trigger('close');
+		(function() {
+			this.elements.gutter.set('html', '');
+		}).delay(500, this);
 	}
 });
 
