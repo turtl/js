@@ -169,6 +169,9 @@ var NotesController = TrackController.extend({
 		// TODO: enable both to allow sorting again.
 		this.update_display_type();
 		//this.setup_sort();
+
+		this._resize_fn = this.update_display_type.bind(this);
+		window.addEvent('resize', this._resize_fn);
 	},
 
 	release: function()
@@ -193,6 +196,7 @@ var NotesController = TrackController.extend({
 		if(this.masonry) this.masonry.detach();
 		if(this.masonry_timer) this.masonry_timer.end = null;
 		if(this.search_timer) this.search_timer.end = null;
+		window.removeEvent('resize', this._resize_fn);
 		this.parent.apply(this, arguments);
 	},
 

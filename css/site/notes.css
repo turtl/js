@@ -1,4 +1,4 @@
-.notes {padding: 4px 0 16px 0;}
+.notes {padding: 16px 0 16px 0;}
 .notes div.filters {display: none;}
 .notes ul.note_list > li {font-family: arial;}
 
@@ -194,7 +194,8 @@ ul.note_list.list_masonry .note a.img {display: block; width: 232px; line-height
 
 .notes .MathJax_Display {padding: 4px; overflow-x: auto;}
 
-@media only screen and (max-device-width: 640px) {
+@media only screen and (max-device-width: 800px) {
+	.notes {padding-top: 4px;}
 	ul.note_list {margin: 0;}
 	ul.note_list.list_masonry > li {
 		float: left;
