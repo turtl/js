@@ -34,7 +34,7 @@ body.modal .bar-actions {display: none;}
 body.settings.modal #turtl-modal {left: 90%;}
 
 /* body page slide shite */
-#tmp-slide {position: absolute; display: none; width: 100%; transition: left .3s;}
+#tmp-slide {position: absolute; top: 44px; display: none; width: 100%; transition: left .3s;}
 body.page-slide {overflow: hidden;}
 body.page-slide #tmp-slide {display: block;}
 
