@@ -22,7 +22,7 @@ var BoardEditController = FormController.extend({
 	{
 		if(!this.board) this.board = new Board();
 		var action = this.board.is_new() ? 'Add' : 'Edit';
-		this.title = this.title ? this.title : action + ' board';
+		this.title = [this.title ? this.title : action + ' board', '/'];
 		this.parent();
 	},
 

@@ -12,7 +12,14 @@ var FormController = Composer.Controller.extend({
 
 	init: function()
 	{
-		turtl.push_title(this.title);
+		var title = this.title;
+		var back = false;
+		if(Array.isArray(this.title))
+		{
+			title = this.title[0];
+			back = this.title[1];
+		}
+		turtl.push_title(title, back);
 		this.render();
 		if(this.modal)
 		{
