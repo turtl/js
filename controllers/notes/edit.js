@@ -1,4 +1,4 @@
-var NoteEditController = Composer.Controller.extend({
+var NoteEditController = FormController.extend({
 	elements: {
 		'.note-edit .boards': 'board_container',
 		'.note-edit form div.tags': 'tags',
@@ -32,6 +32,8 @@ var NoteEditController = Composer.Controller.extend({
 		'text':  ['text', 'upload'],
 		'image': ['url', 'title', 'text', 'upload']
 	},
+
+	formclass: 'note-edit',
 
 	edit_in_modal: true,
 	show_tabs: true,

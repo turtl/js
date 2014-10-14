@@ -17,6 +17,7 @@ var AccountController = Composer.Controller.extend({
 	{
 		this.render();
 
+		turtl.push_title('Account');
 		modal.open(this.el);
 		modal.objects.container.removeClass('bare');
 		var close_fn = function() {
@@ -30,6 +31,7 @@ var AccountController = Composer.Controller.extend({
 
 	release: function()
 	{
+		turtl.pop_title();
 		turtl.keyboard.attach(); // re-enable shortcuts
 		return this.parent.apply(this, arguments);
 	},

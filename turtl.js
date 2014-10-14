@@ -492,23 +492,42 @@ var turtl = {
 	_set_title: function()
 	{
 		var title = 'Turtl';
-		if(turtl.titles[0]) title = turtl.titles[0];
-		var inner = '<em>'+title+'</em>';
+		var back = false;
+		if(turtl.titles[0])
+		{
+			title = turtl.titles[0].title;
+			back = turtl.titles[0].back;
+		}
+
+		var html = title;
+		if(back)
+		{
+			html = '<a href="'+ back +'" rel="back"><icon>&#59229;</icon> '+ html +'</a>';
+		}
+		var html = '<em>'+html+'</em>';
 
 		document.title = title;
-		document.getElement('header h1').set('html', inner);
+		var header = document.getElement('header h1');
+		header.set('html', html);
 	},
 
-	push_title: function(title)
+	push_title: function(title, backurl)
 	{
-		turtl.titles.unshift(title);
+		turtl.titles.unshift({
+			title: title,
+			back: backurl
+		});
 		turtl._set_title();
 	},
 
-	pop_title: function()
+	pop_title: function(do_route_back)
 	{
-		turtl.titles.shift()
+		var entry = turtl.titles.shift()
 		turtl._set_title();
+		if(entry.back && do_route_back)
+		{
+			(function () { turtl.route(entry.back); }).delay(0, this);
+		}
 	}
 };
 

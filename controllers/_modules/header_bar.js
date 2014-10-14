@@ -21,6 +21,7 @@ var HeaderBarController = Composer.Controller.extend({
 	size_controller: null,
 
 	_do_close: null,
+	swipe: null,
 
 	init: function()
 	{
@@ -32,9 +33,16 @@ var HeaderBarController = Composer.Controller.extend({
 		}.bind(this);
 
 		this.with_bind(turtl.user, ['login', 'logout'], this.render.bind(this));
+		document.body.addEvent('click:relay(header h1 a[rel=back])', this.go_back);
 		this.render();
 
 		this.bind_once('release', this.close_menu.bind(this));
+	},
+
+	release: function()
+	{
+		document.body.removeEvent('click:relay(header h1 a[rel=back])', this.go_back);
+		return this.parent.apply(this, arguments);
 	},
 
 	render: function()
@@ -70,16 +78,26 @@ var HeaderBarController = Composer.Controller.extend({
 		else
 		{
 			document.body.addClass('settings');
-			document.body.addEvent('swipe', this._do_close);
+			this.menu.addEvent('swipe', this._do_close);
+			this.menu.addEvent('touchmove', this.cancel);
 			document.body.addEvent('click:relay(#app)', this._do_close);
+			modal.bind('open', this.close_menu.bind(this), 'header-bar:modal:close-menu');
 		}
 	},
 
 	close_menu: function()
 	{
 		document.body.removeClass('settings');
-		document.body.removeEvent('swipe', this._do_close);
+		this.menu.removeEvent('swipe', this._do_close);
+		this.menu.removeEvent('touchmove', this.cancel);
 		document.body.removeEvent('click:relay(#app)', this._do_close);
+		modal.unbind('open', 'header-bar:modal:close-menu');
+	},
+
+	cancel: function(e)
+	{
+		e.preventDefault();
+		e.stopPropagation();
 	},
 
 	open_account: function(e)
@@ -113,5 +131,11 @@ var HeaderBarController = Composer.Controller.extend({
 				turtl.user.logout();
 			}
 		});
+	},
+
+	go_back: function(e)
+	{
+		if(e) e.stop();
+		turtl.pop_title(true);
 	}
 });

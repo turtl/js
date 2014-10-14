@@ -2,88 +2,57 @@ var BoardsViewController = Composer.Controller.extend({
 	inject: turtl.main_container_selector,
 
 	elements: {
-		'.boards': 'boards',
-		'.categories': 'categories',
-		'.tags': 'tags',
-		'.notes': 'notes',
-		'.menu': 'menu'
+		'.notes': 'notes'
 	},
 
-	// profile
-	profile: null,
-
-	current_board: null,
-
-	boards_controller: null,
-	categories_controller: null,
-	tags_controller: null,
+	board_id: null,
+	board: null,
 
 	init: function()
 	{
+		var board = null;
+		if(this.board_id)
+		{
+			board = turtl.profile.get('boards').find_by_id(this.board_id);
+		}
+		if(!board) board = turtl.profile.get_current_board();
+		if(!board)
+		{
+			barfr.barf('Board not found.');
+			return this.release();
+		}
+		this.board = board;
+
+		turtl.push_title(board.get('title'), '/');
+
 		this.render();
 
-		this.profile = turtl.profile;
+		turtl.controllers.pages.trigger('loaded');
 
-		var do_load = function() {
-			var current = this.profile.get_current_board();
+		this.with_bind(turtl.profile.get('boards'), 'remove', function(board) {
+			if(this.board == board) this.release(true);
+		}.bind(this));
 
-			this.notes_controller = new NotesController({
-				inject: this.notes,
-				board: current
-			});
-
-			turtl.controllers.pages.trigger('loaded');
-		}.bind(this);
-
-		turtl.loading(true);
-		var has_load = false;
-		this.profile.bind('change:current_board', function() {
-			this.soft_release();
-			var current = this.profile.get_current_board();
-			if(current && !has_load)
-			{
-				has_load = true;
-				current.bind('notes_updated', function() {
-					turtl.loading(false);
-					current.unbind('notes_updated', 'board:loading:notes_updated');
-				}, 'board:loading:notes_updated');
-			}
-			do_load();
-		}.bind(this), 'dashboard:change_board');
-
-		this.profile.bind_relational('boards', 'remove', function() {
-			if(this.profile.get('boards').models().length > 0) return;
-			this.profile.trigger('change:current_board');
-		}.bind(this), 'dashboard:boards:remove');
-
-		turtl.keyboard.bind('S-/', this.open_help.bind(this), 'dashboard:shortcut:open_help');
-
-		this.profile.trigger('change:current_board');
+		this.with_bind(turtl.keyboard, 'S-/', this.open_help.bind(this));
 	},
 
-	soft_release: function()
+	release: function(back_to_boards)
 	{
-		if(this.categories_controller) this.categories_controller.release();
-		if(this.tags_controller) this.tags_controller.release();
-		if(this.notes_controller) this.notes_controller.release();
-	},
-
-	release: function()
-	{
-		this.soft_release();
-		if(this.boards_controller) this.boards_controller.release();
-		this.profile.unbind('change:current_board', 'dashboard:change_board');
-		this.profile.unbind_relational('boards', 'remove', 'dashboard:boards:remove');
-		turtl.keyboard.unbind('S-/', 'dashboard:shortcut:open_help');
-		turtl.user.unbind('logout', 'dashboard:logout:clear_timer');
-
-		this.parent.apply(this, arguments);
+		turtl.pop_title(back_to_boards === true);
+		return this.parent.apply(this, arguments);
 	},
 
 	render: function()
 	{
-		var content = Template.render('dashboard/index');
+		var content = view.render('boards/view');
 		this.html(content);
+
+		this.track_subcontroller('notes', function() {
+			return new NotesController({
+				inject: this.notes,
+				board: this.board
+			});
+		}.bind(this));
 	},
 
 	open_help: function()

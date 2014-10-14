@@ -10,7 +10,7 @@ html {}
 
 html, body {height: 100%;}
 
-body {font-size: 13px; font-family: helvetica, arial, sans-serif; background: #ededed;}
+body {font-size: 13px; font-family: 'raleway', helvetica, arial, sans-serif; background: #ededed;}
 
 a { text-decoration: none; }
 
@@ -20,15 +20,17 @@ a { text-decoration: none; }
 @font-face {font-family: 'Raleway'; font-style: normal; font-weight: 600; src: local('Raleway SemiBold'), local('Raleway-SemiBold'), url(../images/font/raleway-semibold.woff) format('woff');}
 
 /* settings menu slide in */
-body.settings {overflow: hidden;}
+body.settings {}
 body.settings #app {left: 90%;}
 body.settings header div.actions div.menu {right: 10%;}
 body.settings header div.actions a.menu icon {transform: rotate(90deg);}
+body.settings .bar-actions {display: none;}
 
 /* modal box slide in */
-body.modal {overflow: hidden;}
-body.modal #main {left: -100%;}
+body.modal {}
+body.modal #main {left: -100%; height: 100%; overflow: hidden;}
 body.modal #turtl-modal {left: 0;}
+body.modal .bar-actions {display: none;}
 body.settings.modal #turtl-modal {left: 90%;}
 
 /* body page slide shite */
@@ -38,35 +40,37 @@ body.page-slide #tmp-slide {display: block;}
 
 #app {position: relative; left: 0; transition: left .3s;}
 
-header {position: relative; width: 100%; height: 52px; margin: 0 0 22px 0; padding: 4px 0 0 0; background: #222; border-bottom: 1px solid #222;}
-header h1 {position: absolute; width: 100%; margin: 8px 0 0 0; text-align: center; font-family: 'raleway'; font-weight: normal; font-size: 1.4em;}
-header h1 em {display: inline-block; padding-top: 7px; color: #8fc46a;}
-header h1 a {display: inline-block; width: 32px; height: 32px; background: url(../images/template/logo.svg) center center no-repeat; background-size: 100% 100%;}
-header h1 span {display: none;}
-header h1 {color: #eee; color: #92b579;}
-header h1.active {cursor: pointer;}
-header h1 small {position: absolute; z-index: 4; right: 0; bottom: 0; display: block; padding: 1px 4px; font-size: 11px; font-weight: bold; color: #fff; background: #d22;}
-header div.loading {visibility: hidden; float: left; margin: 15px 16px 0 16px;}
+header {position: fixed; z-index: 13; width: 100%; height: 40px; margin: 0 0 0 0; padding: 4px 0 0 0; background: #222; border-bottom: 1px solid #222;}
+header h1 {position: absolute; width: 100%; margin: 3px 0 0 0; text-align: center; font-weight: normal; font-size: 1.15em;}
+header h1 em {display: inline-block; max-width: 40%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-top: 7px; color: #8fc46a;}
+header h1 em a {color: #8fc46a;}
+header h1 em a icon {vertical-align: -8%; color: #8fc46a;}
 
 /* header menu */
 header div.actions {position: relative; float: left; margin: 0 0 0 14px;}
-header div.actions a.menu {display: inline-block; height: 36px; margin: 5px 0 0 18px; opacity: .9;}
+header div.actions a.menu {display: inline-block; height: 36px; margin: 0px 0 0 18px; opacity: .9;}
 header div.actions a.menu img {position: absolute; z-index: 2; margin: 3px 0 0 -18px;}
-header div.actions a.menu icon {z-index: 1; margin: 9px 0 0 0; font-size: 2.4em; color: #8fc46a; transition: transform .3s;}
+header div.actions a.menu icon {z-index: 1; margin: 10px 0 0 0; font-size: 2.0em; color: #8fc46a; transition: transform .3s;}
 header div.actions div.menu {position: fixed; top: 0; right: 100%; z-index: 13; width: 90%; height: 100%; overflow: auto; background: #1c1c1c; transition: right .3s;}
 header div.actions div.menu .gutter {padding: 0;}
 header div.actions div.menu .top {margin: 0 0 8px 0; padding: 32px 24px 14px 24px; text-align: center;}
 header div.actions div.menu .top .size-container {margin-bottom: 18px;}
-header div.actions div.menu .top a {font-size: 1.2em;}
+header div.actions div.menu .top a {font-size: 1.1em;}
 header div.actions div.menu ul {list-style: none;}
 header div.actions div.menu ul li {border-top: 1px solid #121212;}
 header div.actions div.menu ul a {display: block; padding: 24px 36px; font-size: 1.3em; color: #fff; text-transform: uppercase;}
 header div.actions div.menu ul a icon {margin: 0 20px 0 0; color: #fff; font-size: 1.3em;}
 
-#turtl-modal {position: fixed; top: 56px; left: 100%; z-index: 10; width: 100%; height: 100%; overflow: auto; transition: left .3s;}
+/*.bar-actions {display: block; height: 40px; margin: 0 0 16px 0; padding: 7px 0 0 0;}*/
+.bar-actions {position: fixed; z-index: 21; top: 0; right: 0; transition: opacity .3s;}
+.bar-actions a {display: block; float: left; width: 44px; height: 44px; text-align: center; border-left: 1px solid rgba(255, 255, 255, .1);}
+.bar-actions a icon {padding-top: 16px; font-size: 1.9em; color: #fff;}
+.bar-actions a.search icon {font-size: 1.8em;}
+
+#turtl-modal {position: absolute; top: 44px; left: 100%; z-index: 10; width: 100%; min-height: 100%; overflow: visible; transition: left .3s;}
 #turtl-modal .modal-gutter {padding: 0;}
 
-#main {position: relative; left: 0; transition: left .3s;}
+#main {position: absolute; top: 44px; left: 0; width: 100%; transition: left .3s;}
 
 footer {display: block; margin: 32px 0 0 0; padding: 16px; font-size: 10px; color: #777; text-align: right;}
 

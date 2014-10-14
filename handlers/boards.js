@@ -9,11 +9,9 @@ var boards = {
 		turtl.controllers.pages.load(BoardsController, {});
 	},
 
-	view: function(board)
+	view: function(board_id)
 	{
-		turtl.controllers.pages.load(BoardsViewController, {
-			current_board: board
-		});
+		turtl.controllers.pages.load(BoardsViewController, {board_id: board_id});
 	}
 };
 

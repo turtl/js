@@ -19,11 +19,11 @@ img.loading {visibility: hidden;}
 icon {display: inline-block; margin: 0 0 0 0; padding: 0; font-family: Entypo; font-weight: 300; font-size: 18px; line-height: .6em; vertical-align: baseline;}
 a icon {color: #222;}
 
-.interface {line-height: 1.4em; text-align: center; font-family: 'raleway';}
+.interface {line-height: 1.4em; text-align: center;}
 .interface h2 {font-size: 1.4em; margin: 0 0 16px 0;}
 .interface p {margin: 0 0 16px 0; font-size: 1.3em; line-height: 1.4em;}
 
-.content {line-height: 1.4em; text-align: left; font-family: arial;}
+.content {line-height: 1.4em; text-align: left;}
 .content h2 {margin-bottom: 8px; font-size: 17px;}
 .content h3 {font-size: 14px;}
 .content h4 {font-size: 12px;}
@@ -47,11 +47,11 @@ a icon {color: #222;}
 .content table th {background: #eee;}
 .content .warn {color: #922;}
 
-form.standard-form {padding: 16px 4% 16px 4%;}
+form.standard-form {padding: 38px 4% 16px 4%;}
 form.standard-form input[type=text],
 form.standard-form input[type=password],
 form.standard-form input[type=email],
-form.standard-form textarea {width: 92%; margin: 0 0 12px 0; padding: 9px 4%; font-size: 1.4em; font-family: 'raleway'; background: #ededed; border: 0; border-bottom: 1px solid #bbb; border-radius: 0;}
+form.standard-form textarea {width: 92%; margin: 0 0 12px 0; padding: 9px 4%; font-size: 1.3em; background: #ededed; border: 0; border-bottom: 1px solid #bbb; border-radius: 0;}
 form.standard-form .button-row {position: fixed; bottom: 0; left: 0; width: 100%; text-align: left; background: rgba(0, 0, 0, .8);}
 form.standard-form .button-row .button {width: 44%; background: 0; border: 0;}
 form.standard-form .button-row .button span {padding: 14px;}
@@ -60,6 +60,12 @@ form.standard-form .button-row .button.submit {float: right; text-align: right;}
 form.standard-form .button-row .button.submit icon {color: #72f865; font-size: 1.3em;}
 form.standard-form .button-row .button.cancel {float: left;}
 form.standard-form .button-row .button.cancel icon {color: #ff3333;}
+
+ul.item-list {list-style: none;}
+ul.item-list li {display: block; border-bottom: 1px solid #ddd;}
+ul.item-list li h2 {font-size: 1.3em;}
+ul.item-list li a {display: block; padding: 22px 12px; color: #262;}
+ul.item-list li a icon {float: right; margin: 3px 0 0 0;}
 
 /* generic (non-header) buttons */
 div.button {display: inline-block; width: 70%; cursor: pointer; line-height: 10px; background: #83b362; border-radius: 8px;}
@@ -83,7 +89,7 @@ span.tooltip {display: inline; cursor: help; color: #73b8d1;}
 .tip-text em {color: #d6a587; font-style: normal;}
 
 /* LOADING overlay */
-#loading-overlay {display: none; z-index: 2; position: fixed; left: 0; top: 56px; min-width: 100%; height: 100%; margin: 0 auto; padding: 0; text-align: center; background: rgba(255, 255, 255, .7);}
+#loading-overlay {display: none; z-index: 2; position: fixed; left: 0; top: 44px; min-width: 100%; height: 100%; margin: 0 auto; padding: 0; text-align: center; background: rgba(255, 255, 255, .7);}
 #loading-overlay > div {display: table-cell; vertical-align: middle;}
 #loading-overlay span {display: inline-block; margin-bottom: 120px;}
 #loading-overlay span.spin {display: none;}

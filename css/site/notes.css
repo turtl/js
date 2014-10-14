@@ -1,9 +1,3 @@
-/*.notes div.note-actions {display: block; height: 40px; margin: 0 0 16px 0; padding: 7px 0 0 0;}*/
-.notes div.note-actions {position: absolute; top: 0; right: 0;}
-.notes div.note-actions a {display: block; float: left; width: 56px; height: 56px; text-align: center; border-left: 1px solid rgba(255, 255, 255, .1);}
-.notes div.note-actions a icon {padding-top: 18px; font-size: 2.6em; color: #fff;}
-.notes div.note-actions a.search icon {font-size: 2.2em;}
-
 .notes div.filters {display: none;}
 
 /* individual note actions */

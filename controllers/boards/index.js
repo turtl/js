@@ -2,7 +2,8 @@ var BoardsController = Composer.Controller.extend({
 	inject: turtl.main_container_selector,
 
 	events: {
-		'click .button.add': 'open_add'
+		'click .button.add': 'open_add',
+		'click .bar-actions a.add': 'open_add'
 	},
 
 	init: function()
