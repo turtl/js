@@ -1,13 +1,20 @@
+@theme_gutter: #ededed;
+@theme_sheet: #fff;
 @theme_black: #444;
 @theme_primary: #83b362;
-@theme_accent: #6288b3;
+@theme_accent: #65a5ee;
+@theme_border: #eee;
 
 @transition_standard: 0.2s;
 
-@shadow_opacity: .4;
-.layer-flat () {box-shadow: 0 1px 2px rgba(0, 0, 0, @shadow_opacity);}
-.layer-rest () {box-shadow: 0 2px 3px rgba(0, 0, 0, @shadow_opacity);}
-.layer-hover () {box-shadow: 0 4px 6px rgba(0, 0, 0, @shadow_opacity);}
+@shadow_opacity: .3;
+@shadow_gray: 20;
+.layer-flat () {box-shadow: 0 1px 4px rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
+.layer-rest () {box-shadow: 0 2px 4px rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
+.layer-hover () {box-shadow: 0 4px 4px rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
 
 .border-radius (@radius: 2px) { border-radius: @radius; }
+
+.sheet () {background: @theme_sheet;}
+.card () {.sheet(); .border-radius(); .layer-rest();}
 

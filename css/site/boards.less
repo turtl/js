@@ -1,3 +1,5 @@
+@import '../variables';
+
 .board-index .interface {padding: 100px 0 0 0;}
 .board-index .interface h2 {margin: 44px 0 0 0; font-size: 1.8em; color: #888;}
 
@@ -13,27 +15,37 @@
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eee', endColorstr='#222222',GradientType=0 ); /* IE6-9 */
 }
 .board-list.open {background: #ded;}
-.board-list a.main {display: block; padding: 8px 8px; color: #555; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-.board-list a.main icon {float: right; margin-top: 2px; color: #777;}
-.board-list a.main:hover icon {color: #333;}
-.board-list .dropdown {display: none; position: absolute; z-index: 5; overflow: auto; width: 290px; margin: 6px 0 0 0; padding: 10px; background: #f5f5f5; border: 1px solid #aaa; box-shadow: 0 0 8px 0 #000;}
-.board-list .dropdown.open {display: block;}
-.board-list .dropdown .header {margin: 0 0 16px 0; padding: 5px 0 12px 0; border-bottom: 1px solid #e2e2e2;}
-.board-list .dropdown .add-board {padding: 5px 0 14px 0;}
-.board-list .dropdown .button.add {float: right; margin: -8px 0 0 0;}
-.board-list .dropdown h3 {font-size: 16px; margin: 0; padding: 0; font-weight: bold; text-align: left; color: #999;}
-.board-list .dropdown .actions {margin: 0 0 6px 0; padding: 0 0 5px 0; color: #666;}
-.board-list .dropdown .actions input[type=text] {width: 98%; font-size: 16px;}
-.board-list .dropdown ul {list-style: none;}
-.board-list .dropdown ul li ul {float: right; margin: 9px 0 0 0;}
-.board-list .dropdown ul li ul li {display: inline-block;}
-.board-list .dropdown ul li ul li icon {opacity: .16; margin-top: 0;}
-.board-list .dropdown ul li ul li.active icon {opacity: .4; margin-top: 0; color: #060;}
-.board-list .dropdown ul li ul li:hover icon {opacity: 1;}
-.board-list .dropdown ul li a.board {display: block; padding: 8px 0; font-weight: bold; font-size: 14px; border-bottom: 1px solid #eee;}
-.board-list .dropdown ul li a.board:hover {text-decoration: underline;}
-.board-list .dropdown ul li a.board.current {font-weight: bold; color: #555;}
-.board-list .add.first {font-weight: bold;}
+.board-list {
+	a.main {display: block; padding: 8px 8px; color: #555; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+	a.main icon {float: right; margin-top: 2px; color: #777;}
+	a.main:hover icon {color: #333;}
+	.dropdown {display: none; position: absolute; z-index: 5; overflow: auto; width: 290px; margin: 6px 0 0 0; padding: 10px; background: #f5f5f5; border: 1px solid #aaa; box-shadow: 0 0 8px 0 #000;}
+	.dropdown.open {display: block;}
+	.dropdown {
+		.header {margin: 0 0 16px 0; padding: 5px 0 12px 0; border-bottom: 1px solid #e2e2e2;}
+		.add-board {padding: 5px 0 14px 0;}
+		.button.add {float: right; margin: -8px 0 0 0;}
+		h3 {font-size: 16px; margin: 0; padding: 0; font-weight: bold; text-align: left; color: #999;}
+		.actions {margin: 0 0 6px 0; padding: 0 0 5px 0; color: #666;}
+		.actions input[type=text] {width: 98%; font-size: 16px;}
+		ul {list-style: none;}
+		ul {
+			li {
+				ul {float: right; margin: 9px 0 0 0;}
+				ul {
+					li {display: inline-block;}
+					li icon {opacity: .16; margin-top: 0;}
+					li.active icon {opacity: .4; margin-top: 0; color: #060;}
+					li:hover icon {opacity: 1;}
+				}
+			}
+			li a.board {display: block; padding: 8px 0; font-weight: bold; font-size: 14px; border-bottom: 1px solid #eee;}
+			li a.board:hover {text-decoration: underline;}
+			li a.board.current {font-weight: bold; color: #555;}
+		}
+	}
+	.add.first {font-weight: bold;}
+}
 
 /*
 .board-manage .button {float: right; margin-top: -7px;}
@@ -65,3 +77,4 @@
 .board-share .share-to.open {display: block;}
 .board-share .share-to .personas li {cursor: pointer;}
 .board-share .share-to input[type=submit] {margin-right: 20px;}
+

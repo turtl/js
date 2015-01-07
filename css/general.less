@@ -71,11 +71,13 @@ form.standard-form {
 	}
 }
 
-ul.item-list {list-style: none;}
-ul.item-list li {display: block; border-bottom: 1px solid #ddd;}
-ul.item-list li h2 {font-size: 1.3em;}
-ul.item-list li a {display: block; padding: 22px 12px; color: #262;}
-ul.item-list li a icon {float: right; margin: 3px 0 0 0; color: #aaa;}
+ul.item-list {list-style: none; .sheet();}
+ul.item-list {
+	li {display: block; border-bottom: 1px solid @theme_border;}
+	li h2 {font-size: 1.3em;}
+	li a {display: block; padding: 22px 12px; color: #262;}
+	li a icon {float: right; margin: 3px 0 0 0; color: #aaa;}
+}
 
 /* generic (non-header) buttons */
 div.button {display: inline-block; cursor: pointer; line-height: 10px; background: @theme_primary; .border-radius(); .layer-rest();}
@@ -99,7 +101,7 @@ span.tooltip {display: inline; cursor: help; color: #73b8d1;}
 .tip-text em {color: #d6a587; font-style: normal;}
 
 /* LOADING overlay */
-#loading-overlay {display: none; z-index: 2; position: fixed; left: 0; top: 44px; min-width: 100%; height: 100%; margin: 0 auto; padding: 0; text-align: center; background: rgba(255, 255, 255, .7);}
+#loading-overlay {display: none; z-index: 2; position: fixed; left: 0; top: 44px; min-width: 100%; height: 100%; margin: 0 auto; padding: 0; text-align: center; background: rgba(red(@theme_gutter), green(@theme_gutter), blue(@theme_gutter), .7);}
 #loading-overlay > div {display: table-cell; vertical-align: middle;}
 #loading-overlay span {display: inline-block; margin-bottom: 120px;}
 #loading-overlay span.spin {display: none;}

@@ -1,4 +1,8 @@
-.notes {padding: 16px 0 16px 0;}
+@import '../variables';
+
+@note_margin: 4px;
+
+.notes {padding: 4px 0 16px 0;}
 .notes div.filters {display: none;}
 .notes ul.note_list > li {font-family: arial;}
 
@@ -138,7 +142,7 @@ ul.note_list .note.image .color {margin: 0;}*/
 /* note listing */
 ul.list-type {display: none;}
 
-ul.note_list {list-style: none; -webkit-transform: translateZ(0); margin-left: 16px;}
+ul.note_list {list-style: none; -webkit-transform: translateZ(0); margin-left: @note_margin;}
 ul.note_list > li {position: relative;}
 ul.note_list > li:hover > div.actions {display: inline-block;}
 ul.note_list > li.hide {position: absolute !important; display: none !important;}
@@ -162,46 +166,46 @@ ul.note_list .note h1 a {
 ul.note_list .note span.break {font-size: 1px;}
 
 /* masonry */
-ul.note_list.list_masonry > li {
-	position: absolute;		/* makes masonry JS a bit faster */
-	float: left;
-	display: block;
-	width: 232px;
-	margin: 0 16px 16px 0;
-	padding: 0;
-	background: #fff;
+ul.note_list.list_masonry {
+	> li {
+		position: absolute;		/* makes masonry JS a bit faster */
+		float: left;
+		display: block;
+		width: 48.6%;
+		margin: 0 @note_margin @note_margin 0;
+		padding: 0;
+		.card();
+	}
+	> li > .gutter {padding: 16px;}
+	> li.empty > .gutter {}
+	> li.image {padding: 0;}
+	> li.image > div.gutter {padding: 0;}
+	> li > div.gutter {max-height: 500px; overflow: hidden;}
+	> li.image > div.gutter {width: 100%; overflow: hidden;}
+	> li.image h2 {display: none; position: absolute; bottom: 0; width: 96%; height: 26px; margin: 0; padding: 6px 2% 0 2%; line-height: 1em; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background: url(../../images/site/trans_000_50.png) 0 0;}
+	> li.image:hover h2 {display: block;}
+
+	li.note.empty .gutter {display: none;}
+	.note {
+		h1 {margin-bottom: 6px;}
+		ul {list-style: disc;}
+		ul,
+		ol {margin: 0 0 16px 32px;}
+		p {padding: 0 0 16px 0;}
+		p:first-child {padding: 0 0 0 0; margin: 0;}
+		img {max-width: 100%;}
+		a.img {display: block; width: 100%; line-height: 0; text-align: center; background: #000;}
+	}
 }
-ul.note_list.list_masonry > li > .gutter {padding: 16px;}
-ul.note_list.list_masonry > li.empty > .gutter {}
-ul.note_list.list_masonry > li.image {width: 232px; padding: 0;}
-ul.note_list.list_masonry > li.image > div.gutter {padding: 0;}
-ul.note_list.list_masonry > li > div.gutter {max-height: 500px; overflow: hidden;}
-ul.note_list.list_masonry > li.image > div.gutter {width: 100%; overflow: hidden;}
-ul.note_list.list_masonry > li.image h2 {display: none; position: absolute; bottom: 0; width: 96%; height: 26px; margin: 0; padding: 6px 2% 0 2%; line-height: 1em; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background: url(../../images/site/trans_000_50.png) 0 0;}
-ul.note_list.list_masonry > li.image:hover h2 {display: block;}
-/* pretty impossible to sort masonry notes */
-ul.note_list.list_masonry > li div.actions a.sort {display: none;}
 
-ul.note_list.list_masonry li.note.empty .gutter {display: none;}
-ul.note_list.list_masonry .note h1 {margin-bottom: 6px;}
-ul.note_list.list_masonry .note ul {list-style: disc;}
-ul.note_list.list_masonry .note ul,
-ul.note_list.list_masonry .note ol {margin: 0 0 16px 32px;}
-ul.note_list.list_masonry .note p {padding: 0 0 16px 0;}
-ul.note_list.list_masonry .note p:first-child {padding: 0 0 0 0; margin: 0;}
-ul.note_list.list_masonry .note img {max-width: 100%;}
-ul.note_list.list_masonry .note a.img {display: block; width: 232px; line-height: 0; text-align: center; background: #000;}
-
-.notes .MathJax_Display {padding: 4px; overflow-x: auto;}
-
+/*
 @media only screen and (max-device-width: 800px) {
 	.notes {padding-top: 4px;}
 	ul.note_list {margin: 0;}
 	ul.note_list.list_masonry > li {
 		float: left;
-		width: 48%;
+		width: 46%;
 		margin: 0 0 2px 2px;
-		border: 1px solid #ccc;
 	}
 	ul.note_list.list_masonry > li > div.gutter {
 		max-height: 275px;
@@ -210,4 +214,7 @@ ul.note_list.list_masonry .note a.img {display: block; width: 232px; line-height
 	ul.note_list.list_masonry > li.image {width: 49%; margin: 0 0 2px 2px; border: 0;}
 	ul.note_list.list_masonry .note a.img {width: 100%;}
 }
+*/
+
+.notes .MathJax_Display {padding: 4px; overflow-x: auto;}
 
