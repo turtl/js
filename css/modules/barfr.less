@@ -1,3 +1,5 @@
+@import '../variables';
+
 /**
  *	Barfer.js - Mootools notifications library
  */
@@ -12,6 +14,7 @@
 .barfr ul {
 	padding: 0;
 }
+.barfr ul > div {padding: 0 8px 8px 8px;}
 .barfr ul li {
 	display: block;
 
@@ -23,8 +26,8 @@
 	line-height: 1.4em;
 
 	background: rgba(0, 0, 0, .7);
-	box-shadow: 0px 0px 10px rgba(0, 0, 0, .6);
 	border-radius: 4px;
+	.layer-hover();
 }
 .barfr ul li:last-child {margin-bottom: 0;}
 
@@ -38,15 +41,5 @@
 	color: white;
 	border-bottom: 1px dotted white;
 }
-.barfr ul li a.close {
-	position: absolute;
-	display: none;
-	right: 6px;
-	top: 6px;
-	width: 24px;
-	height: 24px;
-	background-image: url(../../images/barfr/close.png);
-	border-bottom: 0px none transparent;
-	opacity: .7;
-}
+.barfr ul li a.close { display: none; }
 

@@ -29,7 +29,7 @@ var Barfr = new Class({
 	 */
 	options: {
 		// "persist" | "timeout" :: whether to keep messages open by default
-		message_persist:	'timeout',
+		persist:	'timeout',
 
 		// the default timeout for messages
 		timeout:			5000,
@@ -178,7 +178,7 @@ var Barfr = new Class({
 
 			init_timer: function()
 			{
-				if (this.options.message_persist == 'persist')
+				if (this.options.persist)
 					return false;
 
 				this.timer = new Timer(this.options.timeout);

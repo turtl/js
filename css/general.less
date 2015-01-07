@@ -1,3 +1,5 @@
+@import 'variables';
+
 .clearMe {display: block; height: 0; clear: both; font-size: 0;}
 .clear:after {content: "."; display: block; height: 0; clear: both; visibility: hidden;}
 .clear {display: inline-block;}
@@ -48,18 +50,26 @@ a icon {color: #222;}
 .content .warn {color: #922;}
 
 form.standard-form {padding: 38px 4% 16px 4%;}
-form.standard-form input[type=text],
-form.standard-form input[type=password],
-form.standard-form input[type=email],
-form.standard-form textarea {width: 92%; margin: 0 0 12px 0; padding: 9px 4%; font-size: 1.3em; background: #ededed; border: 0; border-bottom: 1px solid #bbb; border-radius: 0;}
-form.standard-form .button-row {position: fixed; bottom: 0; left: 0; width: 100%; text-align: left; background: rgba(0, 0, 0, .8);}
-form.standard-form .button-row .button {width: 44%; background: 0; border: 0;}
-form.standard-form .button-row .button span {padding: 14px;}
-form.standard-form .button-row .button span icon {margin: 0; font-size: 1.4em;}
-form.standard-form .button-row .button.submit {float: right; text-align: right;}
-form.standard-form .button-row .button.submit icon {color: #72f865; font-size: 1.3em;}
-form.standard-form .button-row .button.cancel {float: left;}
-form.standard-form .button-row .button.cancel icon {color: #ff3333;}
+form.standard-form {
+	input[type=text],
+	input[type=password],
+	input[type=email],
+	textarea {width: 92%; margin: 0 0 12px 0; padding: 9px 4%; font-size: 1.3em; background: #ededed; border: 0; border-bottom: 1px solid #bbb; border-radius: 0; transition: border @transition_standard;}
+	input[type=text]:focus,
+	input[type=password]:focus,
+	input[type=email]:focus,
+	textarea:focus {border-bottom: 1px solid @theme_accent;}
+	.button-row {position: fixed; bottom: 0; left: 0; width: 100%; text-align: left; background: rgba(0, 0, 0, .8);}
+	.button-row {
+		.button {width: 44%; background: 0; border: 0;}
+		.button span {padding: 14px;}
+		.button span icon {margin: 0; font-size: 1.4em;}
+		.button.submit {float: right; text-align: right;}
+		.button.submit icon {color: #72f865; font-size: 1.3em;}
+		.button.cancel {float: left;}
+		.button.cancel icon {color: #ff3333;}
+	}
+}
 
 ul.item-list {list-style: none;}
 ul.item-list li {display: block; border-bottom: 1px solid #ddd;}
@@ -68,10 +78,10 @@ ul.item-list li a {display: block; padding: 22px 12px; color: #262;}
 ul.item-list li a icon {float: right; margin: 3px 0 0 0; color: #aaa;}
 
 /* generic (non-header) buttons */
-div.button {display: inline-block; width: 70%; cursor: pointer; line-height: 10px; background: #83b362; border-radius: 8px;}
-div.button:hover { }
+div.button {display: inline-block; cursor: pointer; line-height: 10px; background: @theme_primary; .border-radius(); .layer-rest();}
+div.button:active {.layer-flat();}
 div.button icon {float: left; margin: -1px 8px 0 0; color: rgba(255, 255, 255, .6); font-size: 1.2em; vertical-align: baseline;}
-div.button span {display: inline-block; padding: 16px 0 14px 0; color: #fff; text-transform: none; font-size: 1.4em; font-weight: normal;}
+div.button span {display: inline-block; padding: 16px 32px 14px 32px; color: #fff; text-transform: none; font-size: 1.4em; font-weight: normal;}
 
 /* modal styles */
 .modalcontent {background: #fff url(../images/site/modal/header.png) 0 0 repeat-x !important;}
