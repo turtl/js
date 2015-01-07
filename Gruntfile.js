@@ -1,6 +1,20 @@
 module.exports = function(grunt) {
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
+		less: {
+			development: {
+				options: {
+					paths: ['css']
+				},
+				files: [{
+					expand: true,
+					cwd: 'css/',
+					src: ['**/*.less'],
+					dest: 'css/',
+					ext: '.css'
+				}]
+			}
+		},
 		handlebars: {
 			options: {
 				namespace: 'TurtlTemplates',
@@ -25,6 +39,15 @@ module.exports = function(grunt) {
 		watch: {
 			options: {
 				cwd: './'
+			},
+			css: {
+				files: [
+					'css/**/*.less'
+				],
+				tasks: ['less'],
+				options: {
+					nospawn: true
+				}
 			},
 			index: {
 				files: [
@@ -63,11 +86,12 @@ module.exports = function(grunt) {
 		}
 	});
 
+	grunt.loadNpmTasks('grunt-contrib-less');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-handlebars');
 	grunt.loadNpmTasks('grunt-exec');
 
-	grunt.registerTask('generate', ['handlebars', 'exec:index', 'exec:html_templates']);
+	grunt.registerTask('generate', ['less', 'handlebars', 'exec:index', 'exec:html_templates']);
 	grunt.registerTask('default', ['watch']);
 };
 
