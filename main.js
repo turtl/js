@@ -15,6 +15,8 @@ Composer.cid = function() { return 'z.' + (new Date().getTime()).toString(16) + 
 var cid_match = /^z\.[0-9a-f]+\.c[0-9]+$/;
 
 var turtl = {
+	client_id: null,
+
 	site_url: null,
 
 	events: new Composer.Event(),
@@ -80,9 +82,6 @@ var turtl = {
 	{
 		if(this.loaded) return false;
 
-		// setup the API tracker (for addon API requests)
-		turtl.api.tracker.attach();
-
 		var initial_route = window.location.pathname;
 
 		// load the global keyboard handler
@@ -145,8 +144,8 @@ var turtl = {
 			turtl.setup_local_db({
 				complete: function() {
 					// database is setup, populate the profile
-					turtl.profile.populate({
-						complete: function() {
+					turtl.profile.populate()
+						.then(function() {
 							// move keys from the user's settings into the keychain
 							turtl.show_loading_screen(false);
 							turtl.controllers.pages.release();
@@ -160,8 +159,7 @@ var turtl = {
 							turtl.setup_syncing();
 							turtl.setup_background_panel();
 							if(window.port) window.port.send('profile-load-complete');
-						}.bind(turtl)
-					});
+						});
 
 				}.bind(this)
 			});
@@ -543,6 +541,8 @@ var barfr = null;
 var markdown = null;
 
 window.addEvent('domready', function() {
+	Composer.promisify();
+
 	window.port = window.port || false;
 	window.__site_url = window.__site_url || '';
 	window.__api_url = config.api_url || window.__api_url || '';
@@ -570,9 +570,7 @@ window.addEvent('domready', function() {
 	Template.initialize();
 
 	// create the modal object
-	modal = new TurtlModal({
-		inject: '#app'
-	});
+	modal = new TurtlModal({ inject: '#app' });
 
 	// create the barfr
 	barfr = new Barfr('barfr', {});
@@ -608,8 +606,13 @@ window.addEvent('domready', function() {
 		smartLists: true
 	});
 
-	// init it LOL
-	turtl.init.delay(50, turtl);
+	var clid = localStorage.client_id;
+	if(!clid)
+	{
+		clid = localStorage.client_id = tcrypt.random_hash();
+	}
+	turtl.client_id = clid;
+	turtl.init();
 });
 
 // set up a global error handler that XHRs shit to the API so we know when bugs

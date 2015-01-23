@@ -1,73 +1,3 @@
-var ApiTracker = new Class({
-	id: 0,
-
-	requests: {},
-	attached: false,
-
-	initialize: function()
-	{
-		this.attach();
-	},
-
-	attach: function()
-	{
-		if(!port) return false;
-		if(this.attached) return false;
-		port.bind('xhr-response', function(id, result) {
-			this.finish(id, result);
-		}.bind(this));
-		this.attached = true;
-	},
-
-	send: function(request)
-	{
-		var id = this.id++;
-		var msgargs = {
-			id:	id,
-			url: request.url,
-			method: request.method,
-			headers: request.headers,
-			data: Object.toQueryString(request.data)
-		};
-
-		// track the request
-		this.requests[id] = new Request(request);
-
-		port.send('xhr', msgargs);
-	},
-
-	finish: function(id, result)
-	{
-		var request = this.requests[id];
-		delete this.requests[id];
-		if(!request) return false;
-
-		var status = result.status;
-		var text = result.text;
-
-		if(window._net_log)
-		{
-			console.log('--- '+request.options.method+' '+request.options.url +'?'+ request.options.data);
-			console.log(text);
-		}
-
-		if(200 <= status && status < 300)
-		{
-			// success
-			request.success(text, '');
-		}
-		else
-		{
-			// trick the Request into having the "correct" xhr info
-			request.xhr = {
-				status: status,
-				responseText: text
-			};
-			request.failure();
-		}
-	}
-});
-
 var Api = new Class({
 	// the base url all resources are pulled from (NEVER a trailing slash!)
 	// NOTE: this must be set by the app
@@ -96,7 +26,6 @@ var Api = new Class({
 		this.api_url = url;
 		this.api_key = key;
 		this.cb_wrap = cb_wrap;
-		this.tracker = new ApiTracker();
 		// JS hax LAWL omgawrsh gawrsh shhwarshhrwsh
 		this['delete'] = function()
 		{
@@ -149,111 +78,95 @@ var Api = new Class({
 		data || (data = {});
 		params || (params = {});
 
-		// should we auth to the server? we don't want to unless we have to
-		var send_auth = this.test_auth_needed(method, resource);
+		return new Promise(function(resolve, reject) {
+			// should we auth to the server? we don't want to unless we have to
+			var send_auth = this.test_auth_needed(method, resource);
 
-		var url = api_url + '/' + resource.replace(/^\//, '');
+			var url = api_url + '/' + resource.replace(/^\//, '');
 
-		if(!['post', 'get'].contains(method.toLowerCase()))
-		{
-			// add method GET var (MUST be GET (Wookie restriction))
-			if(url.match(/\?/))
-				url += '&_method='+method;
-			else
-				url += '?_method='+method;
-		}
-
-		var request = {
-			url: url,
-			method: (method.toLowerCase() == 'get' ? 'GET' : 'POST'),
-			emulation: false,
-			headers: params.headers || {},
-			data: data,
-			responseType: params.responseType,
-			onSuccess: function(res)
+			if(!['post', 'get'].contains(method.toLowerCase()))
 			{
-				if(!params.responseType)
+				// add method GET var (MUST be GET (Wookie restriction))
+				if(url.match(/\?/))
+					url += '&_method='+method;
+				else
+					url += '?_method='+method;
+			}
+
+			var request = {
+				url: url,
+				method: (method.toLowerCase() == 'get' ? 'GET' : 'POST'),
+				emulation: false,
+				headers: params.headers || {},
+				data: data,
+				responseType: params.responseType,
+				onSuccess: function(res)
 				{
-					try
+					if(!params.responseType)
 					{
-						res = JSON.parse(res);
+						try
+						{
+							res = JSON.parse(res);
+						}
+						catch(e)
+						{
+							var err = 'api: error parsing resonse: '+ res
+							log.debug(err);
+							reject(err);
+							return;
+						}
 					}
-					catch(e)
-					{
-						var err = 'api: error parsing resonse: '+ res
-						log.debug(err);
-						if(params.error) params.error(err);
-						return;
-					}
-				}
-				if(params.success) params.success(res);
-			},
-			onFailure: function(xhr)
-			{
-				var res = xhr;
-				if(!params.responseType && xhr)
+					resolve(res);
+				},
+				onFailure: function(xhr)
 				{
-					try
+					var res = xhr;
+					if(!params.responseType && xhr)
 					{
-						res = JSON.parse(xhr.responseText);
+						try
+						{
+							res = JSON.parse(xhr.responseText);
+						}
+						catch(e)
+						{
+							res = 'error parsing error response: '+ xhr.responseText;
+							log.debug('api: ', res);
+						}
 					}
-					catch(e)
-					{
-						res = 'error parsing error response: '+ xhr.responseText;
-						log.debug('api: ', res);
-					}
-				}
-				if(params.error) params.error(res, xhr);
-			},
-			onProgress: function(event, xhr)
+					reject({res: res, xhr: xhr});
+				},
+				onProgress: function(event, xhr)
+				{
+					var progress = {total: event.total, loaded: event.loaded};
+					if(params.progress) params.progress(progress, xhr);
+				},
+				onUploadprogress: function(event, xhr)
+				{
+					var progress = {total: event.total, loaded: event.loaded};
+					if(params.uploadprogress) params.uploadprogress(progress, xhr);
+				},
+				evalScripts: false,
+				evalResponse: false
+			};
+
+			if(params.rawUpload)
 			{
-				var progress = {total: event.total, loaded: event.loaded};
-				if(params.progress) params.progress(progress, xhr);
-			},
-			onUploadprogress: function(event, xhr)
+				request.urlEncoded = false;
+				request.encoding = false;
+				request.processData = false;
+			}
+
+			// fill in the client we're using
+			request.headers['X-Turtl-Client'] = config.client + '-' + config.version;
+
+			// if we're sending auth AND we're logged in, authenticate
+			if(this.user && send_auth)
 			{
-				var progress = {total: event.total, loaded: event.loaded};
-				if(params.uploadprogress) params.uploadprogress(progress, xhr);
-			},
-			evalScripts: false,
-			evalResponse: false
-		};
-
-		if(params.rawUpload)
-		{
-			request.urlEncoded = false;
-			request.encoding = false;
-			request.processData = false;
-		}
-
-		// fill in the client we're using
-		request.headers['X-Turtl-Client'] = config.client + '-' + config.version;
-
-		// if we're sending auth AND we're logged in, authenticate
-		if(this.user && send_auth)
-		{
-			request.headers['X-Auth-Api-Key'] = this.api_key;
-			request.headers['Authorization'] = 'Basic ' + Base64.encode('user:' + this.user.auth_key);
-		}
-
-		//var user_cookie = Cookie.read(config.user_cookie);
-		//Cookie.dispose(config.user_cookie);
-		this.send_request(request);
-		//if(user_cookie) Cookie.write(config.user_cookie, user_cookie);
-
-		return null;
-	},
-
-	send_request: function(request)
-	{
-		if(window._in_ext && window._enable_api_tracker)
-		{
-			this.tracker.send(request);
-		}
-		else
-		{
+				request.headers['X-Auth-Api-Key'] = this.api_key;
+				request.headers['Authorization'] = 'Basic ' + Base64.encode('user:' + this.user.auth_key);
+			}
 			new Request(request).send();
-		}
+		})
 	},
 
 	// given a method and resource (and also config.auth in /config/auth.js),
