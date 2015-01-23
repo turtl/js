@@ -26,48 +26,49 @@ a icon {color: #222;}
 .interface p {margin: 0 0 16px 0; font-size: 1.3em; line-height: 1.4em;}
 
 .content {line-height: 1.4em; text-align: left;}
-.content h2 {margin-bottom: 8px; font-size: 17px;}
-.content h3 {font-size: 14px;}
-.content h4 {font-size: 12px;}
-.content h5 {font-size: 11px;}
-.content h5 {font-weight: bold;}
-.content ul {list-style: disc;}
-.content ul,
-.content ol {margin: 0 0 16px 32px;}
-.content p {padding: 0 0 16px 0;}
-.content em {font-style: italic;}
-.content strong {font-weight: bold;}
-.content img {max-width: 100%;}
-.content blockquote {display: block; margin: 0 0 16px 0; padding: 6px 6px 6px 10px; background: #f5f5f5;}
-.content blockquote p:last-child {padding-bottom: 0;}
-.content hr {display: block; height: 0; margin-bottom: 16px; background: 0; border: 0; border-bottom: 1px solid #999;}
-.content pre {overflow-x: auto; margin: 0 0 16px 0; padding: 6px; font-family: monospace; color: #611; background-color: #f5f5f5;}
-.content code {display: inline-block; margin: 0 2px; padding: 1px 4px; font-family: monospace; color: #611; background-color: #f5f5f5;}
-.content kbd {padding: .1em .6em; font-size: .9em; background: #f7f7f7; border: 1px solid #ccc; border-radius: 3px; box-shadow: 0 1px 0px rgba(0, 0, 0, 0.2),0 0 0 2px #ffffff inset;}
-.content table {margin: 0 0 16px 0; border-collapse: collapse;}
-.content table th, td {padding: 6px 4px; border: 1px solid #ddd;}
-.content table th {background: #eee;}
-.content .warn {color: #922;}
+.content {
+	h2 {margin-bottom: 8px; font-size: 17px;}
+	h3 {font-size: 14px;}
+	h4 {font-size: 12px;}
+	h5 {font-size: 11px;}
+	h5 {font-weight: bold;}
+	ul {list-style: disc;}
+	ul,
+	ol {margin: 0 0 16px 32px;}
+	p {padding: 0 0 16px 0;}
+	em {font-style: italic;}
+	strong {font-weight: bold;}
+	img {max-width: 100%;}
+	blockquote {display: block; margin: 0 0 16px 0; padding: 6px 6px 6px 10px; background: #f5f5f5;}
+	blockquote p:last-child {padding-bottom: 0;}
+	hr {display: block; height: 0; margin-bottom: 16px; background: 0; border: 0; border-bottom: 1px solid #999;}
+	pre {overflow-x: auto; margin: 0 0 16px 0; padding: 6px; font-family: monospace; color: #611; background-color: #f5f5f5;}
+	code {display: inline-block; margin: 0 2px; padding: 1px 4px; font-family: monospace; color: #611; background-color: #f5f5f5;}
+	kbd {padding: .1em .6em; font-size: .9em; background: #f7f7f7; border: 1px solid #ccc; border-radius: 3px; box-shadow: 0 1px 0px rgba(0, 0, 0, 0.2),0 0 0 2px #ffffff inset;}
+	table {margin: 0 0 16px 0; border-collapse: collapse;}
+	table th, td {padding: 6px 4px; border: 1px solid #ddd;}
+	table th {background: #eee;}
+	.warn {color: #922;}
+}
 
 form.standard-form {padding: 38px 4% 16px 4%;}
 form.standard-form {
 	input[type=text],
 	input[type=password],
 	input[type=email],
-	textarea {width: 92%; margin: 0 0 12px 0; padding: 9px 4%; font-size: 1.3em; background: #ededed; border: 0; border-bottom: 1px solid #bbb; border-radius: 0; transition: border @transition_standard;}
+	textarea {width: 92%; margin: 0 0 12px 0; padding: 9px 4%; font-size: 1.3em; background: #ededed; border: 0; border-bottom: 1px solid #bbb; border-radius: 0; .transition(border);}
 	input[type=text]:focus,
 	input[type=password]:focus,
 	input[type=email]:focus,
 	textarea:focus {border-bottom: 1px solid @theme_accent;}
-	.button-row {position: fixed; bottom: 0; left: 0; width: 100%; text-align: left; background: rgba(0, 0, 0, .8);}
+	.button-row {position: fixed; bottom: 0; left: 0; width: 100%; text-align: left; background: rgba(255, 255, 255, .7); .layer-rest-bottom();}
 	.button-row {
-		.button {width: 44%; background: 0; border: 0;}
-		.button span {padding: 14px;}
-		.button span icon {margin: 0; font-size: 1.4em;}
-		.button.submit {float: right; text-align: right;}
-		.button.submit icon {color: #72f865; font-size: 1.3em;}
+		.button {width: 49%; text-align: center; background: none; border-radius: 0; box-shadow: none;}
+		.button.submit {float: right; border-left: 1px solid @theme_gray_light;}
 		.button.cancel {float: left;}
-		.button.cancel icon {color: #ff3333;}
+		.button span {font-size: 1.2em; color: @theme_black;}
+		.button.submit span {font-weight: bold; .success;}
+		.button.cancel span {color: @theme_gray;}
 	}
 }
 
@@ -80,10 +81,12 @@ ul.item-list {
 }
 
 /* generic (non-header) buttons */
-div.button {display: inline-block; cursor: pointer; line-height: 10px; background: @theme_primary; .border-radius(); .layer-rest();}
-div.button:active {.layer-flat();}
-div.button icon {float: left; margin: -1px 8px 0 0; color: rgba(255, 255, 255, .6); font-size: 1.2em; vertical-align: baseline;}
-div.button span {display: inline-block; padding: 16px 32px 14px 32px; color: #fff; text-transform: none; font-size: 1.4em; font-weight: normal;}
+div.button {display: inline-block; cursor: pointer; line-height: 10px; background: @theme_primary; .border-radius(); .layer-rest(); .transition(box-shadow, .1s);}
+div.button {
+	&:active {.layer-flat();}
+	icon {float: left; margin: -1px 8px 0 0; color: rgba(255, 255, 255, .6); font-size: 1.2em; vertical-align: baseline;}
+	span {display: inline-block; padding: 16px 32px 14px 32px; color: #fff; text-transform: none; font-size: 1.4em; font-weight: normal;}
+}
 
 /* modal styles */
 .modalcontent {background: #fff url(../images/site/modal/header.png) 0 0 repeat-x !important;}

@@ -22,17 +22,19 @@ a { text-decoration: none; }
 @font-face {font-family: 'Raleway'; font-style: normal; font-weight: 600; src: local('Raleway SemiBold'), local('Raleway-SemiBold'), url(../images/font/raleway-semibold.woff) format('woff');}
 
 /* settings menu slide in */
-body.settings {}
-body.settings #app {left: 90%;}
-body.settings header div.actions div.menu {right: 10%;}
-body.settings header div.actions a.menu icon {transform: rotate(90deg);}
-body.settings .bar-actions {display: none;}
+body.settings {
+	#app {left: 90%;}
+	header div.actions div.menu {right: 10%;}
+	header div.actions a.menu icon {transform: rotate(90deg);}
+	.bar-actions {display: none;}
+}
 
 /* modal box slide in */
-body.modal {}
-body.modal #main {left: -100%; height: 100%; overflow: hidden;}
-body.modal #turtl-modal {left: 0;}
-body.modal .bar-actions {display: none;}
+body.modal {
+	#main {left: -100%; height: 100%; overflow: hidden;}
+	#turtl-modal {left: 0;}
+	.bar-actions {display: none;}
+}
 body.settings.modal #turtl-modal {left: 90%;}
 
 /* body page slide shite */
@@ -43,31 +45,48 @@ body.page-slide #tmp-slide {display: block;}
 #app {position: relative; left: 0; transition: left .3s;}
 
 header {position: fixed; z-index: 13; width: 100%; height: 40px; margin: 0 0 0 0; padding: 4px 0 0 0; background: #222; .layer-rest();}
-header h1 {position: absolute; width: 100%; margin: 3px 0 0 0; text-align: center; font-weight: normal; font-size: 1.15em; line-height: 1.2em;}
-header h1 em {display: inline-block; max-width: 40%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-top: 7px; color: #8fc46a;}
-header h1 em a {color: #8fc46a;}
-header h1 em a icon {vertical-align: -8%; color: #8fc46a;}
-
-/* header menu */
-header div.actions {position: relative; float: left; margin: 0 0 0 14px;}
-header div.actions a.menu {display: inline-block; height: 36px; margin: 0px 0 0 18px; opacity: .9;}
-header div.actions a.menu img {position: absolute; z-index: 2; margin: 3px 0 0 -18px;}
-header div.actions a.menu icon {z-index: 1; margin: 10px 0 0 0; font-size: 2.0em; color: #8fc46a; transition: transform .3s;}
-header div.actions div.menu {position: fixed; top: 0; right: 100%; z-index: 13; width: 90%; height: 100%; overflow: auto; background: #1c1c1c; transition: right .3s;}
-header div.actions div.menu .gutter {padding: 0;}
-header div.actions div.menu .top {margin: 0 0 8px 0; padding: 32px 24px 14px 24px; text-align: center;}
-header div.actions div.menu .top .size-container {margin-bottom: 18px;}
-header div.actions div.menu .top a {font-size: 1.1em;}
-header div.actions div.menu ul {list-style: none;}
-header div.actions div.menu ul li {border-top: 1px solid #121212;}
-header div.actions div.menu ul a {display: block; padding: 24px 36px; font-size: 1.3em; color: #fff; text-transform: uppercase;}
-header div.actions div.menu ul a icon {margin: 0 20px 0 0; color: #fff; font-size: 1.3em;}
+header {
+	h1 {position: absolute; width: 100%; margin: 1px 0 0 0; text-align: center; font-weight: normal; font-size: 1.15em; line-height: 1.2em;}
+	h1 {
+		em {display: inline-block; max-width: 40%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-top: 7px; color: #8fc46a;}
+		em {
+			a {color: #8fc46a;}
+			a icon {vertical-align: -8%; color: #8fc46a;}
+		}
+	}
+	/* header menu */
+	div.actions {position: relative; float: left; margin: 0 0 0 14px;}
+	div.actions {
+		a.menu {display: inline-block; height: 36px; margin: 0px 0 0 18px; opacity: .9;}
+		a.menu {
+			img {position: absolute; z-index: 2; margin: 3px 0 0 -18px;}
+			icon {z-index: 1; margin: 10px 0 0 0; font-size: 2.0em; color: #8fc46a; transition: transform .3s;}
+		}
+		div.menu {position: fixed; top: 0; right: 100%; z-index: 13; width: 90%; height: 100%; overflow: auto; background: #1c1c1c; transition: right .3s;}
+		div.menu {
+			.gutter {padding: 0;}
+			.top {margin: 0 0 8px 0; padding: 32px 24px 14px 24px; text-align: center;}
+			.top {
+				.size-container {margin-bottom: 18px;}
+				a {font-size: 1.1em;}
+			}
+			ul {list-style: none;}
+			ul {
+				li {border-top: 1px solid #121212;}
+				a {display: block; padding: 24px 36px; font-size: 1.3em; color: #fff; text-transform: uppercase;}
+				a icon {margin: 0 20px 0 0; color: #fff; font-size: 1.3em;}
+			}
+		}
+	}
+}
 
 /*.bar-actions {display: block; height: 40px; margin: 0 0 16px 0; padding: 7px 0 0 0;}*/
 .bar-actions {position: fixed; z-index: 21; top: 0; right: 0; transition: opacity .3s;}
-.bar-actions a {display: block; float: left; width: 44px; height: 44px; text-align: center; border-left: 1px solid rgba(255, 255, 255, .1);}
-.bar-actions a icon {padding-top: 16px; font-size: 1.9em; color: #e4e4e4;}
-.bar-actions a.search icon {font-size: 1.8em;}
+.bar-actions {
+	a {display: block; float: left; width: 44px; height: 44px; text-align: center; border-left: 1px solid rgba(255, 255, 255, .1);}
+	a icon {padding-top: 16px; font-size: 1.9em; color: #e4e4e4;}
+	a.search icon {font-size: 1.8em;}
+}
 
 #turtl-modal {position: absolute; top: 44px; left: 100%; z-index: 10; width: 100%; min-height: 100%; overflow: visible; transition: left .3s;}
 #turtl-modal .modal-gutter {padding: 0;}
@@ -75,7 +94,4 @@ header div.actions div.menu ul a icon {margin: 0 20px 0 0; color: #fff; font-siz
 #main {position: absolute; top: 44px; left: 0; width: 100%; transition: left .3s;}
 
 footer {display: block; margin: 32px 0 0 0; padding: 16px; font-size: 10px; color: #777; text-align: right;}
-
-@media only screen and (max-device-width: 320px) {
-}
 

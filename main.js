@@ -1,5 +1,3 @@
-// MT1.11 Compat - who the fuck would remove these??
-//
 var $E = function(selector, filter){ return ($(filter) || document).getElement(selector); };
 var $ES = function(selector, filter){ return ($(filter) || document).getElements(selector); };
 
@@ -85,7 +83,7 @@ var turtl = {
 		// setup the API tracker (for addon API requests)
 		turtl.api.tracker.attach();
 
-		var initial_route = '/';
+		var initial_route = window.location.pathname;
 
 		// load the global keyboard handler
 		this.keyboard = new Composer.Keyboard({meta_bind: true});

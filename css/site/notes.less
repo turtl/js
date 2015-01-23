@@ -1,8 +1,12 @@
 @import '../variables';
 
 @note_margin: 4px;
+@note_margin_desktop: 16px;
 
-.notes {padding: 4px 0 16px 0;}
+.notes {padding: @note_margin 0 16px 0;}
+@media @desktop {
+	.notes {padding-top: @note_margin_desktop;}
+}
 .notes div.filters {display: none;}
 .notes ul.note_list > li {font-family: arial;}
 
@@ -143,6 +147,9 @@ ul.note_list .note.image .color {margin: 0;}*/
 ul.list-type {display: none;}
 
 ul.note_list {list-style: none; -webkit-transform: translateZ(0); margin-left: @note_margin;}
+@media @desktop {
+	ul.note_list {margin-left: @note_margin_desktop;}
+}
 ul.note_list > li {position: relative;}
 ul.note_list > li:hover > div.actions {display: inline-block;}
 ul.note_list > li.hide {position: absolute !important; display: none !important;}
@@ -182,8 +189,8 @@ ul.note_list.list_masonry {
 	> li.image > div.gutter {padding: 0;}
 	> li > div.gutter {max-height: 500px; overflow: hidden;}
 	> li.image > div.gutter {width: 100%; overflow: hidden;}
-	> li.image h2 {display: none; position: absolute; bottom: 0; width: 96%; height: 26px; margin: 0; padding: 6px 2% 0 2%; line-height: 1em; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background: url(../../images/site/trans_000_50.png) 0 0;}
-	> li.image:hover h2 {display: block;}
+	> li.image h2 {position: absolute; bottom: 0; width: 96%; margin: 0; padding: 8px 2% 8px 2%; line-height: 1em; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; .title-scrim();}
+	> li.image h2 {}
 
 	li.note.empty .gutter {display: none;}
 	.note {
@@ -196,10 +203,24 @@ ul.note_list.list_masonry {
 		img {max-width: 100%;}
 		a.img {display: block; width: 100%; line-height: 0; text-align: center; background: #000;}
 	}
+
+	@media @desktop{
+		> li {
+			width: 232px;
+			margin: 0 @note_margin_desktop @note_margin_desktop 0;
+			padding: 0;
+			.card();
+		}
+		> li.image {width: 232px;}
+		.note {
+			img {max-width: 100%;}
+			a.img {width: 232px;}
+		}
+	}
 }
 
 /*
-@media only screen and (max-device-width: 800px) {
+@media @desktop {
 	.notes {padding-top: 4px;}
 	ul.note_list {margin: 0;}
 	ul.note_list.list_masonry > li {

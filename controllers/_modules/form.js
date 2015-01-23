@@ -9,6 +9,7 @@ var FormController = Composer.Controller.extend({
 	buttons: true,
 	title: 'Turtl gave me a name',
 	formclass: 'generic-form',
+	action: 'Create',
 
 	init: function()
 	{
@@ -43,6 +44,7 @@ var FormController = Composer.Controller.extend({
 	html: function(content)
 	{
 		this.parent(view.render('modules/form_layout', {
+			action: this.action,
 			formclass: this.formclass,
 			buttons: this.buttons,
 			content: content

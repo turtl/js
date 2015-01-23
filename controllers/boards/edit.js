@@ -17,6 +17,7 @@ var BoardEditController = FormController.extend({
 	modal: true,
 	title: false,
 	formclass: 'board-edit',
+	action: 'Save',
 
 	init: function()
 	{

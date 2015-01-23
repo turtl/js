@@ -1,20 +1,28 @@
 @theme_gutter: #ededed;
 @theme_sheet: #fff;
 @theme_black: #444;
+@theme_gray: #888;
+@theme_gray_light: #ddd;
 @theme_primary: #83b362;
 @theme_accent: #65a5ee;
 @theme_border: #eee;
 
 @transition_standard: 0.2s;
+.transition (@property, @time: @transition_standard) {transition: @property @time;}
 
-@shadow_opacity: .3;
+@shadow_opacity: .2;
 @shadow_gray: 20;
 .layer-flat () {box-shadow: 0 1px 4px rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
 .layer-rest () {box-shadow: 0 2px 4px rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
+.layer-rest-bottom () {box-shadow: 0 -2px 4px rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
 .layer-hover () {box-shadow: 0 4px 4px rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
 
 .border-radius (@radius: 2px) { border-radius: @radius; }
 
 .sheet () {background: @theme_sheet;}
 .card () {.sheet(); .border-radius(); .layer-rest();}
+
+.title-scrim () {background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.3) 70%);}
+
+@desktop: ~"only screen and (min-device-width: 640px)";
 

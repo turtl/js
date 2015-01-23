@@ -33,7 +33,10 @@ var NoteEditController = FormController.extend({
 		'image': ['url', 'title', 'text', 'upload']
 	},
 
+	modal: true,
+	title: false,
 	formclass: 'note-edit',
+	action: 'Save',
 
 	edit_in_modal: true,
 	show_tabs: true,
@@ -46,8 +49,6 @@ var NoteEditController = FormController.extend({
 	tag_controller: null,
 	board_controller: null,
 	tips: null,
-
-	title: null,
 
 	init: function()
 	{
@@ -75,6 +76,9 @@ var NoteEditController = FormController.extend({
 		this.note_copy.get('file').key = this.note.key;
 		this.note_copy.get('file').set({blob_url: null});
 		this.note_copy.disable_file_monitoring = true;
+
+		var action = this.note.is_new() ? 'Add' : 'Edit';
+		this.title = [this.title ? this.title : action + ' note', '/'];
 
 		this.render();
 		if(this.edit_in_modal)

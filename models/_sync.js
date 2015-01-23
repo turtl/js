@@ -194,7 +194,6 @@ var Sync = Composer.Model.extend({
 		// NOTE: we used to use hustle for pubsub here, but it's really an
 		// enormous CPU hog in NW so that's no longer an option.
 		this.local_changes.push(msg);
-		console.log('pushed: ', this.local_changes.length, turtl.sync.local_changes.length);
 		log.debug('sync: notify local: send: ', msg);
 	},
 

@@ -50,7 +50,7 @@ jsfiles="`find library -name '*.js' \
 	| sed 's| |___|g' `"
 for jsfile in $jsfiles; do print_js $jsfile; done
 
-print_js "turtl.js"
+print_js "main.js"
 path_to_js "turtl"
 path_to_js "handlers"
 path_to_js "controllers"
