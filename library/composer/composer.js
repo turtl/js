@@ -119,7 +119,7 @@
 			});
 
 			var cls = _extend.call(base, def);
-			Composer.merge_extend(cls, properties);
+			global.Composer.merge_extend(cls, properties);
 			return cls;
 		}
 	};
@@ -151,8 +151,11 @@
 				(fn.bind(bind))(obj[key], key)
 			});
 		},
-		clone: function(obj)
+		clone: function(obj, options)
 		{
+			options || (options = {});
+			if(options.deep) return JSON.parse(JSON.stringify(obj));
+
 			var clone = {};
 			Object.keys(obj).forEach(function(key) {
 				clone[key] = obj[key];
@@ -169,6 +172,49 @@
 				});
 			});
 			return to;
+		},
+		set: function(object, key, value)
+		{
+			object || (object = {});
+			var paths = key.split('.');
+			var obj = object;
+			for(var i = 0, n = paths.length; i < n; i++)
+			{
+				var path = paths[i];
+				if(i == n - 1)
+				{
+					obj[path] = value;
+					break;
+				}
+
+				if(!obj[path])
+				{
+					obj[path] = {};
+				}
+				else if(typeof(obj) != 'object' || Composer.array.is(obj))
+				{
+					obj[path] = {};
+				}
+				obj = obj[path];
+			}
+			return object;
+		},
+		get: function(object, key)
+		{
+			object || (object = {});
+			var paths = key.split('.');
+			var obj = object;
+			for(var i = 0, n = paths.length; i < n; i++)
+			{
+				var path = paths[i];
+				var type = typeof(obj[path]);
+				if(type == 'undefined')
+				{
+					return obj[path];
+				}
+				obj = obj[path];
+			}
+			return obj;
 		}
 	};
 
@@ -183,7 +229,7 @@
 				var names = options.names || ['success', 'error'];
 
 				var _old = Composer[type].prototype[key];
-				Composer[type].prototype[key] = function()
+				global.Composer[type].prototype[key] = function()
 				{
 					var args = Array.prototype.slice.call(arguments, 0);
 					if(args.length < options_idx)
@@ -211,7 +257,7 @@
 		convert_collection_fn('reset_async', {options_idx: 1, names: ['complete']});
 	};
 
-	Composer.exp0rt({
+	this.Composer.exp0rt({
 		sync: sync,
 		cid: cid,
 		wrap_error: wrap_error,
@@ -388,7 +434,7 @@
 	function Class(obj) { return Base.extend(obj); };
 	Class.extend = Class;
 
-	Composer.exp0rt({ Class: Class });
+	this.Composer.exp0rt({ Class: Class });
 
 }).apply((typeof exports != 'undefined') ? exports : this);
 
@@ -421,38 +467,6 @@
 	var Event = Composer.Class({
 		_handlers: {},
 		_handler_names: {},
-		_forwards: [],
-
-		/**
-		 * Forward events from this dispatcher to another. If the second
-		 * dispatcher is given as a function, that function must return either
-		 * another dispatcher or false. This lets you forward specific events at
-		 * runtime based on data within the event.
-		 */
-		forward: function(to_or_function)
-		{
-			this._forwards.push(to_or_function);
-			return this;
-		},
-
-		/**
-		 * Determine if this dispatcher forwards to the given.
-		 */
-		forwards_to: function(to_or_function)
-		{
-			return this._forwards.indexOf(to_or_function) >= 0;
-		},
-
-		/**
-		 * Undo a forward created by forward.
-		 */
-		unforward: function(to_or_function)
-		{
-			var idx = this._forwards.indexOf(to_or_function);
-			if(idx < 0) return this;
-			this._forwards.splice(idx, 1);
-			return this;
-		},
 
 		/**
 		 * Bind a function to an event. Optionally allows naming the binding so
@@ -549,7 +563,6 @@
 			this._handlers = {};
 			this._handler_names = {};
 
-			if(!options.preserve_forwards) this._forwards = [];
 			return this;
 		},
 
@@ -567,29 +580,12 @@
 			catch_all.slice(0).forEach(function(handler) {
 				handler.apply(this, args.slice(0));
 			}.bind(this));
-			if(this._forwards.length > 0)
-			{
-				this._forwards.forEach(function(to) {
-					if(to instanceof Event)
-					{
-						to.trigger.apply(to, args);
-					}
-					else if(to instanceof Function)
-					{
-						var to = to.apply(to, args);
-						if(to instanceof Event)
-						{
-							to.trigger.apply(to, args);
-						}
-					}
-				});
-			}
 			return this;
 		}
 	});
 
 	Event._make_lookup_name = make_lookup_name;
-	Composer.exp0rt({ Event: Event });
+	this.Composer.exp0rt({ Event: Event });
 }).apply((typeof exports != 'undefined') ? exports : this);
 
 /**
@@ -705,8 +701,8 @@
 		}
 	});
 
-	Composer.exp0rt({ Base: Base });
-})();
+	this.Composer.exp0rt({ Base: Base });
+}).apply((typeof exports != 'undefined') ? exports : this);
 
 /**
  * model.js
@@ -1031,7 +1027,7 @@
 		 */
 		clone: function()
 		{
-			return new this.constructor(this.toJSON());
+			return new this.$constructor(this.toJSON());
 		},
 
 		/**
@@ -1039,7 +1035,7 @@
 		 */
 		toJSON: function()
 		{
-			return Composer.object.clone(this.data);
+			return Composer.object.clone(this.data, {deep: true});
 		},
 
 		/**
@@ -1110,8 +1106,8 @@
 		}
 	});
 
-	Composer.exp0rt({ Model: Model });
-})();
+	this.Composer.exp0rt({ Model: Model });
+}).apply((typeof exports != 'undefined') ? exports : this);
 
 /**
  * collection.js
@@ -1239,9 +1235,9 @@
 		 */
 		add: function(data, options)
 		{
-			if (Composer.array.is(data))
+			if(Composer.array.is(data))
 			{
-				return Composer.object.each(data, function(model) { this.add(model, options); }, this);
+				return data.forEach(function(model) { this.add(model, options); }.bind(this));
 			}
 
 			options || (options = {});
@@ -1286,7 +1282,7 @@
 		{
 			if(Composer.array.is(model))
 			{
-				return Composer.object.each(model, function(m) { this.remove(m); }, this);
+				return model.slice(0).forEach(function(m) { this.remove(m, options); }.bind(this));
 			}
 			if(!model) return;
 
@@ -1315,9 +1311,17 @@
 		 * given a model, check if its ID is already in this collection. if so,
 		 * replace is with the given model, otherwise add the model to the collection.
 		 */
-		upsert: function(model, options)
+		upsert: function(data, options)
 		{
+			if(Composer.array.is(data))
+			{
+				return data.forEach(function(model) { this.upsert(model, options); }.bind(this));
+			}
+
 			options || (options = {});
+
+			// if we are passing raw data, create a new model from data
+			var model = data instanceof Composer.Model ? data : new this.model(data, options);
 
 			var existing = this.find_by_id(model.id(), options);
 			if(existing)
@@ -1361,7 +1365,7 @@
 			// if the number actually change, trigger our change event
 			if(this._models.length != num_rec)
 			{
-				this.fire_event('clear', options);
+				this.fire_event('clear', options, options);
 			}
 		},
 
@@ -1373,8 +1377,15 @@
 		{
 			options || (options = {});
 
-			if(!options.append) this.clear(options);
-			this.add(data, options);
+			if(!options.append && !options.upsert) this.clear(options);
+			if(options.upsert)
+			{
+				this.upsert(data, options);
+			}
+			else
+			{
+				this.add(data, options);
+			}
 
 			this.fire_event('reset', options, options);
 		},
@@ -1401,11 +1412,19 @@
 
 			data = data.slice(0);
 
-			if(!options.append) this.clear();
+			if(!options.append && !options.upsert) this.clear();
 			if(data.length > 0)
 			{
-				this.add(data[0], options);
-				data.shift();
+				var batch = options.batch || 1;
+				var slice = data.splice(0, batch);
+				if(options.upsert)
+				{
+					this.upsert(slice, options);
+				}
+				else
+				{
+					this.add(slice, options);
+				}
 			}
 			if(data.length == 0)
 			{
@@ -1438,8 +1457,8 @@
 		},
 
 		/**
-		 * given the current for function and a model passecd in, determine the index
-		 * the model should exist at in the colleciton's model list.
+		 * given the current sort function and a model passecd in, determine the
+		 * index the model should exist at in the collection's model list.
 		 */
 		sort_index: function(model)
 		{
@@ -1447,13 +1466,15 @@
 
 			if(this._models.length == 0) return 0;
 
-			for(var i = 0; i < this._models.length; i++)
+			var sorted = this._models.slice(0).sort(this.sortfn);
+			for(var i = 0; i < sorted.length; i++)
 			{
-				if(this.sortfn(this._models[i], model) > 0) return i;
+				if(model == sorted[i]) return i;
+				if(this.sortfn(sorted[i], model) > 0) return i;
 			}
-			var index = this._models.indexOf(model);
-			if(index == this._models.length - 1) return index;
-			return this._models.length;
+			var index = sorted.indexOf(model);
+			if(index == sorted.length - 1) return index;
+			return sorted.length;
 		},
 
 		/**
@@ -1509,7 +1530,7 @@
 		 */
 		exists: function(callback)
 		{
-			for(var i = 0; i < this.models().length; i++)
+			for(var i = 0; i < this.size(); i++)
 			{
 				if(callback(this.models()[i])) return true;
 			}
@@ -1657,6 +1678,17 @@
 		},
 
 		/**
+		 * given the current sort function, find the model at the given position
+		 */
+		sort_at: function(n)
+		{
+			if(!this.sortfn) return false;
+
+			var sorted = this._models.slice(0).sort(this.sortfn);
+			return sorted[n];
+		},
+
+		/**
 		 * sync the collection with the server.
 		 */
 		fetch: function(options)
@@ -1697,15 +1729,11 @@
 		 */
 		_model_event: function(ev, model, collections, options)
 		{
-			if((ev == 'add' || ev == 'remove') && !(collections.indexOf(this) >= 0)) return;
-			if(ev == 'destroy')
-			{
-				this.remove(model, options);
-			}
+			if(ev == 'destroy') this.remove(model, options);
 			this.trigger.apply(this, arguments);
 		}
 	});
-	Composer.exp0rt({ Collection: Collection });
+	this.Composer.exp0rt({ Collection: Collection });
 }).apply((typeof exports != 'undefined') ? exports : this);
 
 /**
@@ -1889,7 +1917,7 @@
 		return find_parent(selector, par);
 	};
 
-	Composer.exp0rt({
+	this.Composer.exp0rt({
 		find: find,
 		match: match,
 		add_event: add_event,
@@ -1931,6 +1959,9 @@
 		 */
 		__composer_type: 'controller',
 
+		// tracks if this controller has been released
+		_released: false,
+
 		// holds events bound with with_bind
 		_bound_events: [],
 
@@ -1948,6 +1979,9 @@
 
 		// if this.el is empty, create a new element of this type as the container
 		tag: 'div',
+
+		// the initial className to assign to the controller's element (this.el)
+		class_name: false,
 
 		// elements to assign to this controller
 		elements: {},
@@ -1979,9 +2013,11 @@
 				this.attach(options);
 			}
 
-			if(this.className)
+			// backwards compat
+			if(this.className) this.class_name = this.className;
+			if(this.class_name)
 			{
-				this.el.className += ' ' + this.className;
+				this.el.className += ' ' + this.class_name;
 			}
 
 			this.refresh_elements();
@@ -2041,13 +2077,26 @@
 		},
 
 		/**
+		 * legwork function what runs the actual bind
+		 */
+		_with_binder: function(bind_fn, object, ev, fn, name)
+		{
+			name || (name = false);
+			var wrapped = function()
+			{
+				if(this._released) return;
+				fn.apply(this, arguments);
+			}.bind(this);
+			bind_fn.call(object, ev, wrapped, name);
+			this._bound_events.push([object, ev, wrapped]);
+		},
+
+		/**
 		 * bind an event that the controller tracks and unbinds on release
 		 */
 		with_bind: function(object, ev, fn, name)
 		{
-			name || (name = false);
-			object.bind(ev, fn, name);
-			this._bound_events.push([object, ev, fn]);
+			return this._with_binder(object.bind, object, ev, fn, name);
 		},
 
 		/**
@@ -2056,9 +2105,7 @@
 		 */
 		with_bind_once: function(object, ev, fn, name)
 		{
-			name || (name = false);
-			object.bind_once(ev, fn, name);
-			this._bound_events.push([object, ev, fn]);
+			return this._with_binder(object.bind_once, object, ev, fn, name);
 		},
 
 		/**
@@ -2067,14 +2114,21 @@
 		 */
 		track_subcontroller: function(name, create_fn)
 		{
+			var remove_subcontroller = function(name, skip_release)
+			{
+				if(!this._subcontrollers[name]) return
+				if(!skip_release) this._subcontrollers[name].release();
+				delete this._subcontrollers[name];
+			}.bind(this);
+
 			// if we have an existing controller with the same name, release and
 			// remove it.
-			if(this._subcontrollers[name])
-			{
-				this._subcontrollers[name].release();
-				delete this._subcontrollers[name];
-			}
+			remove_subcontroller(name);
+
+			// create the new controller, track it, and make sure if it's
+			// released we untrack it
 			var instance = create_fn();
+			instance.bind('release', function() { remove_subcontroller(name, true); });
 			this._subcontrollers[name] = instance;
 			return instance;
 		},
@@ -2134,6 +2188,7 @@
 
 			// remove all events from controller
 			if(!options.keep_events) this.unbind();
+			this._released = true;
 		},
 
 		/**
@@ -2198,10 +2253,194 @@
 		}
 	});
 
-	Composer.merge_extend(Controller, ['events', 'elements']);
+	this.Composer.merge_extend(Controller, ['events', 'elements']);
 
-	Composer.exp0rt({ Controller: Controller });
-})();
+	this.Composer.exp0rt({ Controller: Controller });
+}).apply((typeof exports != 'undefined') ? exports : this);
+
+/**
+ * listcontroller.js
+ *
+ * Provides a useful abstraction for controllers have have arbitrary lists of
+ * sub-controllers. Especially useful with rendering based off of a collection.
+ * -----------------------------------------------------------------------------
+ *
+ * Composer.js is an MVC framework for creating and organizing javascript
+ * applications. For documentation, please visit:
+ *
+ *     http://lyonbros.github.com/composer.js/
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (c) 2011, Lyon Bros Enterprises, LLC. (http://www.lyonbros.com)
+ *
+ * Licensed under The MIT License.
+ * Redistributions of files must retain the above copyright notice.
+ */
+(function() {
+	"use strict";
+
+	/**
+	 * The controller class sits between views and your models/collections.
+	 * Controllers bind events to your data objects and update views when the data
+	 * changes. Controllers are also responsible for rendering views.
+	 */
+	var ListController = Composer.Controller.extend({
+		/**
+		 * Track this object's type. Useful for debugging, mainly
+		 */
+		__composer_type: 'listcontroller',
+
+		// tracks sub-controllers
+		_subcontroller_list: [],
+		_subcontroller_idx: {},
+
+		// the collection we're tracking
+		_collection: null,
+
+		/**
+		 * Set up tracking on the given collection. When models are added or
+		 * removed to the collection, the change is reflected in the
+		 * subcontrollers. `create_fn` is a function that is given a model and
+		 * must return an instantiated controller (this is used to create the
+		 * actual subcontrollers that are tracked).
+		 */
+		track: function(collection, create_fn, options)
+		{
+			options || (options = {});
+			this.set_options(options);
+			this._collection = collection;
+
+			this.with_bind(collection, 'clear', function(options) {
+				this.clear_subcontrollers();
+			}.bind(this));
+			this.with_bind(collection, 'add', function(model, _, options) {
+				this.add_subcontroller(model, create_fn, options);
+			}.bind(this));
+			this.with_bind(collection, 'remove', function(model) {
+				this.remove_subcontroller(model);
+			}.bind(this));
+			if(options.bind_reset)
+			{
+				this.with_bind(collection, 'reset', function(options) {
+					this.reset_subcontrollers(create_fn, options);
+				}.bind(this));
+			}
+			this.reset_subcontrollers(create_fn);
+		},
+
+		release: function()
+		{
+			this.clear_subcontrollers();
+			return this.parent.apply(this, arguments);
+		},
+
+		/**
+		 * Index a controller so it can be looked up by the model is wraps
+		 */
+		index_controller: function(model, controller)
+		{
+			if(!model) return false;
+			this._subcontroller_idx[model.cid()] = controller;
+			this._subcontroller_list.push(controller);
+		},
+
+		/**
+		 * Unindex a model -> controller lookup
+		 */
+		unindex_controller: function(model, controller)
+		{
+			if(!model) return false;
+			delete this._subcontroller_idx[model.cid()];
+			this._subcontroller_list = this._subcontroller_list.filter(function(c) {
+				return c != controller;
+			});
+		},
+
+		/**
+		 * Lookup a controller by its model
+		 */
+		lookup_controller: function(model)
+		{
+			if(!model) return false;
+			return this._subcontroller_idx[model.cid()];
+		},
+
+		/**
+		 * Untrack all subcontrollers, releasing each one
+		 */
+		clear_subcontrollers: function()
+		{
+			this._subcontroller_list.forEach(function(con) {
+				con.release();
+			});
+			this._subcontroller_list = [];
+			this._subcontroller_idx = {};
+		},
+
+		/**
+		 * Sync the tracked subcontrollers with the items in the wrapped
+		 * collection
+		 */
+		reset_subcontrollers: function(create_fn, options)
+		{
+			this.clear_subcontrollers();
+			this._collection.each(function(model) {
+				this.add_subcontroller(model, create_fn, options);
+			}, this);
+		},
+
+		/**
+		 * Given a model, create a subcontroller that wraps it and inject the
+		 * subcontroller at the correct spot in the DOM (based on the model's
+		 * sort order).
+		 */
+		add_subcontroller: function(model, create_fn, options)
+		{
+			var con = create_fn(model, options);
+			this.index_controller(model, con);
+
+			// if the subcontroller releases itself, be sure to remove it from
+			// tracking
+			con.bind('release', function() {
+				this.unindex_controller(model, con);
+			}.bind(this));
+
+			// inject the controller at the correct position, according to the
+			// collection's sortfn
+			var sort_idx = this._collection.sort_index(model);
+			var before_model = this._collection.sort_at(sort_idx - 1) || false;
+			var before_con = this.lookup_controller(before_model);
+
+			var parent = con.el.parentNode;
+			if(sort_idx == 0)
+			{
+				parent.insertBefore(con.el, parent.firstChild);
+			}
+			else if(before_con)
+			{
+				parent.insertBefore(con.el, before_con.el.nextSibling);
+			}
+			else
+			{
+				parent.appendChild(con.el);
+			}
+		},
+
+		/**
+		 * Given a model, lookup the subcontroller that wraps it and release it,
+		 * also untracking that subcontroller.
+		 */
+		remove_subcontroller: function(model)
+		{
+			var con = this.lookup_controller(model);
+			if(!con) return false;
+			con.release();
+			this.unindex_controller(model, con);
+		}
+	});
+	this.Composer.exp0rt({ ListController: ListController });
+}).apply((typeof exports != 'undefined') ? exports : this);
 
 /**
  * router.js
@@ -2326,7 +2565,7 @@
 			{
 				var path = global.location.pathname+global.location.search;
 			}
-			return this.debasify(path);
+			return this.debasify(unescape(path));
 		},
 
 		/**
@@ -2562,7 +2801,7 @@
 		}
 	});
 
-	Composer.exp0rt({ Router: Router });
+	this.Composer.exp0rt({ Router: Router });
 }).apply((typeof exports != 'undefined') ? exports : this);
 
 /**
@@ -2608,29 +2847,29 @@
 					// objects they refer to.
 					if(relation.model && typeof(relation.model) == 'string')
 					{
-						relation.model = this._get_key(global, relation.model);
+						relation.model = Composer.object.get(global, relation.model);
 					}
 					else if(relation.collection && typeof(relation.collection) == 'string')
 					{
-						relation.collection = this._get_key(global, relation.collection);
+						relation.collection = Composer.object.get(global, relation.collection);
 					}
 					else if(relation.filter_collection && typeof(relation.filter_collection) == 'string')
 					{
 						// set up the filter collection. if one doesn't exist, create a function
 						// that looks within the keys of the relational data to pull a master
 						// collection out of.
-						relation.filter_collection = this._get_key(global, relation.filter_collection);
+						relation.filter_collection = Composer.object.get(global, relation.filter_collection);
 						var master = relation.master;
 						if(typeof(master) == 'string')
 						{
 							var master_key = relation.master;
 							relation.master = function()
 							{
-								var master = this._get_key(this.relation_data, master_key);
+								var master = Composer.object.get(this.relation_data, master_key);
 								if(!master)
 								{
 									master = new this.relations[master_key].collection();
-									this._set_key(this.relation_data, master_key);
+									Composer.object.set(this.relation_data, master_key);
 								}
 								return master;
 							}.bind(this);
@@ -2659,12 +2898,21 @@
 			options || (options = {});
 
 			var data = this.parent();
+			if(options.raw) return data;
 
 			if(this.skip_relational_serialize || options.skip_relational)
 			{
 				Object.keys(this.relations).forEach(function(key) {
 					delete data[key];
 				});
+			}
+			else
+			{
+				Object.keys(this.relations).forEach(function(k) {
+					var obj = Composer.object.get(this.relation_data, k);
+					if(!obj) return;
+					Composer.object.set(data, k, obj.toJSON());
+				}.bind(this));
 			}
 
 			return data;
@@ -2681,7 +2929,7 @@
 			if(this.relations && !options.skip_relational)
 			{
 				Composer.object.each(this.relations, function(relation, k) {
-					var d = this._get_key(data, k);
+					var d = Composer.object.get(data, k);
 					if(typeof(d) == 'undefined') return;
 
 					var options_copy = Composer.object.clone(options);
@@ -2699,7 +2947,7 @@
 		 */
 		get: function(key, def)
 		{
-			var obj = this._get_key(this.relation_data, key);
+			var obj = Composer.object.get(this.relation_data, key);
 			if(typeof(obj) != 'undefined') return obj;
 
 			// call Model.get()
@@ -2716,7 +2964,7 @@
 			if(this.relations && !options.skip_relational)
 			{
 				Composer.object.each(this.relations, function(relation, k) {
-					var obj = this._get_key(this.relation_data, k);
+					var obj = Composer.object.get(this.relation_data, k);
 					if(typeof(obj) == 'undefined') return;
 					if(obj.clear && typeof(obj.clear) == 'function') obj.clear();
 				}, this);
@@ -2750,7 +2998,7 @@
 			if(!relation) return false;
 
 			// grab the object and unbind the event
-			var obj = this._get_key(this.relation_data, key);
+			var obj = Composer.object.get(this.relation_data, key);
 			if(!obj) return false;
 			var args = Array.prototype.slice.call(arguments, 0);
 			obj.unbind.apply(obj, args.slice(1));
@@ -2793,7 +3041,7 @@
 			{
 				// data passed is just a plain old object (or, at least, not a
 				// Composer object). set the data into the relation object.
-				var obj = this._get_key(this.relation_data, obj_key);
+				var obj = Composer.object.get(this.relation_data, obj_key);
 				var collection_or_model = (relation.collection || relation.filter_collection) ?
 											'collection' : 'model';
 				switch(collection_or_model)
@@ -2801,7 +3049,7 @@
 				case 'model':
 					obj || (obj = new relation.model());
 					if(options.set_parent) this.set_parent(this, obj);	// NOTE: happens BEFORE setting data
-					if(_data) obj.set(_data);
+					if(_data) obj.set(_data, options);
 					break;
 				case 'collection':
 					if(!obj)
@@ -2822,73 +3070,16 @@
 			}
 
 			// set the object back into our relational data objects
-			this._set_key(this.relation_data, obj_key, obj);
+			Composer.object.set(this.relation_data, obj_key, obj);
 			this.trigger('relation', obj, obj_key);
 			this.trigger('relation:'+obj_key, obj);
-			return obj;
-		},
-
-
-		/**
-		 * wrapper around data[key] = value (equivelant:
-		 *   _set_key(data, key, value)
-		 * the VALUE ADD is that you can do things like:
-		 *   _set_key(data, 'key.subkey', value)
-		 * which yields:
-		 *   {key: {subkey: value}}
-		 */
-		_set_key: function(object, key, value)
-		{
-			object || (object = {});
-			var paths = key.split('.');
-			var obj = object;
-			for(var i = 0, n = paths.length; i < n; i++)
-			{
-				var path = paths[i];
-				if(i == n - 1)
-				{
-					obj[path] = value;
-					break;
-				}
-
-				if(!obj[path])
-				{
-					obj[path] = {};
-				}
-				else if(typeof(obj) != 'object' || Composer.array.is(obj))
-				{
-					obj[path] = {};
-				}
-				obj = obj[path];
-			}
-			return object;
-		},
-
-		/**
-		 * the getter version of _set_key
-		 */
-		_get_key: function(object, key)
-		{
-			object || (object = {});
-			var paths = key.split('.');
-			var obj = object;
-			for(var i = 0, n = paths.length; i < n; i++)
-			{
-				var path = paths[i];
-				var type = typeof(obj[path]);
-				if(type == 'undefined')
-				{
-					return obj[path];
-				}
-				obj = obj[path];
-			}
 			return obj;
 		}
 	});
 
-	Composer.merge_extend(RelationalModel, ['relations']);
+	this.Composer.merge_extend(RelationalModel, ['relations']);
 
-	Composer.exp0rt({
+	this.Composer.exp0rt({
 		HasOne: -1,		// no longer used but needed for backwards compat
 		HasMany: -1,	// " "
 		RelationalModel: RelationalModel
@@ -3076,7 +3267,7 @@
 			options || (options = {});
 
 			// see if this model even belongs to this collection
-			if(!model || this.models().indexOf(model) < 0 || !this.filter(model, this)) return false;
+			if(!model || (this.models().indexOf(model) < 0 && !this.filter(model, this))) return false;
 
 			// track the current number of items and reloda the data
 			var num_items = this._models.length;
@@ -3289,5 +3480,6 @@
 		}
 	});
 
-	Composer.exp0rt({ FilterCollection: FilterCollection });
-})();
+	this.Composer.exp0rt({ FilterCollection: FilterCollection });
+}).apply((typeof exports != 'undefined') ? exports : this);
+
