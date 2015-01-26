@@ -89,9 +89,8 @@ var UserJoinController = FormController.extend({
 		});
 
 		turtl.loading(true);
-		user.join({
-			promo: promo,
-			success: function(userdata) {
+		user.join({ promo: promo }).bind(this)
+			.then(function(userdata) {
 				var data = user.toJSON();
 				data.id = userdata.id;
 				turtl.user.set({
@@ -99,14 +98,14 @@ var UserJoinController = FormController.extend({
 					password: user.get('password')
 				});
 				turtl.user.login(data);
-				turtl.loading(false);
 				turtl.route('/');
-			}.bind(this),
-			error: function() {
-				turtl.loading(false);
+			})
+			.catch(function() {
 				this.submit.disabled = false;
-			}.bind(this)
-		});
+			})
+			.finally(function() {
+				turtl.loading(false);
+			});
 	},
 
 	open_promo: function(e)

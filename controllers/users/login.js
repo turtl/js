@@ -30,8 +30,8 @@ var UserLoginController = FormController.extend({
 		});
 
 		turtl.loading(true);
-		user.test_auth({
-			success: function(id) {
+		user.test_auth().bind(this)
+			.then(function(id) {
 				var data = user.toJSON();
 				data.id = id;
 				turtl.user.set({
@@ -39,13 +39,14 @@ var UserLoginController = FormController.extend({
 					password: user.get('password')
 				});
 				turtl.user.login(data);
-				turtl.loading(false);
-			}.bind(this),
-			error: function(e) {
+			})
+			.catch(function(e) {
 				barfr.barf('Login failed.');
 				turtl.loading(false);
-			}.bind(this)
-		});
+			})
+			.finally(function() {
+				turtl.loading(false);
+			});
 	}
 });
 

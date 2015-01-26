@@ -156,7 +156,7 @@ var Sync = Composer.Model.extend({
 		var sync_id = this.get('sync_id');
 		turtl.db.sync.update(
 			{key: 'sync_id', value: sync_id}
-		).fail(function(e) {
+		).catch(function(e) {
 			log.error('Sync.save: problem persisting sync record: ', e);
 		});
 	},
@@ -246,7 +246,7 @@ var Sync = Composer.Model.extend({
 		if(!turtl.user.logged_in) return false;
 
 		// only run pollers if syncing is active
-		if(turtl.do_sync && turtl.do_remote_sync && turtl.db)
+		if(turtl.sync_to_api && turtl.poll_api_for_changes && turtl.db)
 		{
 			this.pollers.each(function(fn) {
 				fn();
@@ -303,7 +303,7 @@ var Sync = Composer.Model.extend({
 	{
 		if(!turtl.user.logged_in || !this.enabled) return false;
 
-		if(!turtl.do_sync) return false;
+		if(!turtl.sync_to_api) return false;
 
 		var get_tracker = function(type)
 		{
@@ -322,7 +322,7 @@ var Sync = Composer.Model.extend({
 			tube: 'outgoing',
 			delay: this.hustle_poll_delay,
 			enable_fn: function() {
-				return turtl.user.logged_in && this.enabled && turtl.do_sync;
+				return turtl.user.logged_in && this.enabled && turtl.sync_to_api;
 			}.bind(this),
 			error: function(e) {
 				log.error('sync: sync_to_api: consumer: error: ', e);
@@ -355,7 +355,7 @@ var Sync = Composer.Model.extend({
 			this.sync_from_api.delay(this.sync_from_api_delay, this);
 
 			// if sync disabled, NEVERMIND
-			if(!turtl.do_sync || !turtl.do_remote_sync) return false;
+			if(!turtl.sync_to_api || !turtl.poll_api_for_changes) return false;
 
 			turtl.api.post('/sync', {sync_id: sync_id}, {
 				success: function(sync) {
@@ -423,11 +423,11 @@ var Sync = Composer.Model.extend({
 			// hmmmmmmmmmmmmmmMMmmMmMm we don't have a sync time. see if we can
 			// grab it from the local db
 			turtl.db.sync.get('sync_id')
-				.done(function(timerec) {
+				.then(function(timerec) {
 					this.set({sync_id: timerec.value});
 					do_sync();
 				}.bind(this))
-				.fail(function(e) {
+				.catch(function(e) {
 					barfr.barf('Error starting syncing: can\'t grab sync id: '+ e);
 					log.error('Sync.sync_from_api: ', e);
 				}.bind(this))
@@ -672,13 +672,13 @@ var SyncCollection = Composer.Collection.extend({
 
 		var table = turtl.db[this.local_table];
 		table.remove(cid)
-			.done(function() {
+			.then(function() {
 				modeldata.cid = cid;
 				var model = this.create_remote_model(modeldata);
 				if(model.sync_post_create) model.sync_post_create();
 				if(options.success) options.success();
 			}.bind(this))
-			.fail(options.error ? options.error : function() {});
+			.catch(options.error ? options.error : function() {});
 	},
 
 	/**
@@ -730,8 +730,8 @@ var SyncCollection = Composer.Collection.extend({
 				log.info('save: '+ this.local_table +': api -> db ');
 			}
 			table.update(modeldata)
-				.done(function() { if(options.success) options.success(); })
-				.fail(function(e) { if(options.error) options.error(e); });
+				.then(function() { if(options.success) options.success(); })
+				.catch(function(e) { if(options.error) options.error(e); });
 		}.bind(this);
 
 		if(action == 'create')
@@ -820,7 +820,7 @@ var SyncCollection = Composer.Collection.extend({
 				// set the record as local_modified again so we can
 				// try again next run
 				var item_id = options.model_key || model.id();
-				table.get(item_id).done(function(obj) {
+				table.get(item_id).then(function(obj) {
 					if(!obj)
 					{
 						log.error('sync_record_to_api: missing local item: ', item_id);
@@ -938,7 +938,7 @@ var SyncCollection = Composer.Collection.extend({
 				// matching the CID. if found, delete the record and recreate it
 				// with the actual id (replacing the CID)
 				table.get(item._sync.cid)
-					.done(function(record) {
+					.then(function(record) {
 						if(!record)
 						{
 							do_sync();
@@ -957,7 +957,7 @@ var SyncCollection = Composer.Collection.extend({
 							});
 						}
 					})
-					.fail(function(e) {
+					.catch(function(e) {
 						log.error('sync: '+ this.local_table +': api -> db: error updating CID -> ID (get '+ item._sync.cid +')');
 						// keep going anyway
 						do_sync();

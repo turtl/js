@@ -11,8 +11,12 @@ sjcl.beware['CBC mode is dangerous because it doesn\'t protect message integrity
 // NOTE: *DO NOT* change the cid scheme without updating the cid_match regex
 // below!
 var _cid = Composer.cid;
-Composer.cid = function() { return 'z.' + (new Date().getTime()).toString(16) + '.' + _cid(); };
-var cid_match = /^z\.[0-9a-f]+\.c[0-9]+$/;
+Composer.cid = function() {
+	return (new Date().getTime().toString(16)) +
+		turtl.client_id +
+		parseInt(_cid().substr(1)).toString(16);
+};
+var cid_match = /[0-9a-f]+/;
 
 var turtl = {
 	client_id: null,
@@ -41,8 +45,8 @@ var turtl = {
 	scroll_to_top: true,
 
 	// whether or not to sync data w/ server
-	do_sync: true,
-	do_remote_sync: true,
+	sync_to_api: false,
+	poll_api_for_changes: false,
 
 	// holds the title breadcrumbs
 	titles: [],
@@ -140,29 +144,34 @@ var turtl = {
 
 			turtl.show_loading_screen(true);
 
-			// sets up local storage (indexeddb)
-			turtl.setup_local_db({
-				complete: function() {
-					// database is setup, populate the profile
-					turtl.profile.populate()
-						.then(function() {
-							// move keys from the user's settings into the keychain
-							turtl.show_loading_screen(false);
-							turtl.controllers.pages.release();
-							turtl.last_url = '';
-							turtl.search.reindex();
-							var initial_route = options.initial_route || '/';
-							if(initial_route.match(/^\/users\//)) initial_route = '/';
-							if(initial_route.match(/index.html/)) initial_route = '/';
-							if(initial_route.match(/background.html/)) initial_route = '/';
-							if(!window._in_background) turtl.route(initial_route);
-							turtl.setup_syncing();
-							turtl.setup_background_panel();
-							if(window.port) window.port.send('profile-load-complete');
-						});
-
-				}.bind(this)
-			});
+			// sets up local storage
+			turtl.setup_local_db()
+				.then(function() {
+					// save user to the local DB
+					return turtl.user.save();
+				})
+				.then(function() {
+					return turtl.profile.load();
+				})
+				.then(function() {
+					// move keys from the user's settings into the keychain
+					turtl.show_loading_screen(false);
+					turtl.controllers.pages.release();
+					turtl.last_url = '';
+					turtl.search.reindex();
+					var initial_route = options.initial_route || '/';
+					if(initial_route.match(/^\/users\//)) initial_route = '/';
+					if(initial_route.match(/index.html/)) initial_route = '/';
+					if(initial_route.match(/background.html/)) initial_route = '/';
+					if(!window._in_background) turtl.route(initial_route);
+					turtl.setup_syncing();
+					turtl.setup_background_panel();
+					if(window.port) window.port.send('profile-load-complete');
+				})
+				.catch(function(e) {
+					barfr.barf('There was a problem with the initial load of your profile: '+ e);
+					log.error(e);
+				});
 
 			// logout shortcut
 			turtl.keyboard.bind('S-l', function() {
@@ -224,36 +233,32 @@ var turtl = {
 		}.bind(turtl));
 	},
 
-	setup_local_db: function(options)
+	setup_local_db: function()
 	{
-		options || (options = {});
-
-		// hijack the complete function to set our shiny new database into the
-		// turtl scope.
-		var complete = options.complete || function() {};
-		options.complete = function(server)
-		{
-			turtl.db = server;
-			if(turtl.db && turtl.hustle) complete(server);
-		};
-
 		var hustle = new Hustle({
 			tubes: ['incoming', 'outgoing', 'files'],
 			db_name: 'hustle_user_'+turtl.user.id(),
 			db_version: 2,
 			maintenance_delay: 5000
 		});
-		hustle.open({
-			success: function() {
-				turtl.hustle = hustle;
-				if(turtl.db && turtl.hustle) complete(turtl.db);
-			},
-			error: function(e) {
-				console.error('problem opening Hustle: ', e);
-			}
-		});
+		var actions = [];
+		actions.push(new Promise(function(resolve, reject) {
+			hustle.open({
+				success: function() {
+					resolve(hustle);
+				},
+				error: function(e) {
+					reject(e);
+				}
+			});
+		}));
+		actions.push(database.setup());
 
-		return database.setup(options);
+		return Promise.all(actions)
+			.spread(function(hustle, db) {
+				turtl.hustle = hustle;
+				turtl.db = db;
+			});
 	},
 
 	wipe_local_db: function(options)
@@ -333,9 +338,7 @@ var turtl = {
 		// later it will be synced to our background process.
 		turtl.sync.sync_from_db();
 
-		// only sync against the remote DB if we're in the standalone app OR if
-		// we're in the background thread of an addon
-		if(turtl.do_sync)
+		if(turtl.sync_to_api)
 		{
 			var notes = new Notes();
 			notes.start();	// poll for note recrods without files

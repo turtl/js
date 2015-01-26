@@ -112,7 +112,7 @@ var Api = new Class({
 						{
 							var err = 'api: error parsing resonse: '+ res
 							log.debug(err);
-							reject(err);
+							reject(new Error(err));
 							return;
 						}
 					}
@@ -166,7 +166,7 @@ var Api = new Class({
 				request.headers['Authorization'] = 'Basic ' + Base64.encode('user:' + this.user.auth_key);
 			}
 			new Request(request).send();
-		})
+		}.bind(this))
 	},
 
 	// given a method and resource (and also config.auth in /config/auth.js),

@@ -58,18 +58,17 @@ var User = Protected.extend({
 		}
 
 		// now grab the user record by ID from the API.
-		// TODO: persist to local storage for offline mode.
+		// TODO: OFFLINE: persist to local storage for offline mode.
 		turtl.api.set_auth(this.get_auth());
-		turtl.api.get('/users/'+this.id(), {}, {
-			success: function(user) {
+		turtl.api.get('/users/'+this.id(), {}).bind(this)
+			.then(function(user) {
 				this.set(user);
 				this.write_cookie({duration: duration});
 				if (!silent) this.trigger('login', this);
-			}.bind(this),
-			error: function(_, e) {
+			})
+			.catch(function(_, e) {
 				log.error('user: problem grabbing user record: ', e);
-			}
-		});
+			});
 		turtl.api.clear_auth();
 	},
 
@@ -86,10 +85,8 @@ var User = Protected.extend({
 	login_from_cookie: function()
 	{
 		var cookie = localStorage[config.user_cookie];
-		if(cookie == null)
-		{
-			return false;
-		}
+		if(!cookie) return false;
+
 		var userdata = JSON.decode(cookie);
 		var key = tcrypt.key_to_bin(userdata.k);
 		var auth = userdata.a;
@@ -267,15 +264,12 @@ var User = Protected.extend({
 		return auth;
 	},
 
-	test_auth: function(options)
+	test_auth: function()
 	{
-		options || (options = {});
 		turtl.api.set_auth(this.get_auth());
-		turtl.api.post('/auth', {}, {
-			success: options.success,
-			error: options.error
-		});
+		var promise = turtl.api.post('/auth', {});
 		turtl.api.clear_auth();
+		return promise;
 	}
 });
 

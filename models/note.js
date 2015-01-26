@@ -79,7 +79,7 @@ var Note = Protected.extend({
 					.only(this.id())
 					.modify({has_file: has_file})
 					.execute()
-					.fail(function(e) {
+					.catch(function(e) {
 						log.error('note: set has_file: ', e)
 					});
 			}
@@ -285,7 +285,7 @@ var Note = Protected.extend({
 		turtl.db.files.query('note_id')
 			.only(this.id())
 			.execute()
-			.done(function(files) {
+			.then(function(files) {
 				files.each(function(filedata) {
 					if(options.exclude && options.exclude.contains(filedata.id)) return;
 					delete filedata.body;
@@ -293,7 +293,7 @@ var Note = Protected.extend({
 					file.destroy(options);
 				});
 			})
-			.fail(options.error || function() {});
+			.catch(options.error || function() {});
 	},
 
 	find_key: function(keys, search, options)
@@ -321,13 +321,13 @@ var Note = Protected.extend({
 			.only(hash)
 			.modify({note_id: this.id()})
 			.execute()
-			.done(function(filedata) {
+			.then(function(filedata) {
 				if(!filedata || !filedata[0]) return false;
 				filedata = filedata[0];
 				delete filedata.body;
 				turtl.sync.queue_remote_change('files', 'create', filedata);
 			})
-			.fail(function(e) {
+			.catch(function(e) {
 				log.error('Error uploading file: ', hash, e);
 			});
 	}
@@ -396,7 +396,7 @@ var Notes = SyncCollection.extend({
 			.query('has_file')
 			.only(1)		// only query notes that we're uncertain if it has matching file record
 			.execute()
-			.done(function(res) {
+			.then(function(res) {
 				res.each(function(notedata) {
 					if(!notedata || !notedata.file || !notedata.file.hash) return false;
 
@@ -405,26 +405,26 @@ var Notes = SyncCollection.extend({
 						note_id: notedata.id,
 						has_data: 0
 					};
-					turtl.db.files.get(filedata.id).done(function(file) {
+					turtl.db.files.get(filedata.id).then(function(file) {
 						// mark note as definitely having file record
 						turtl.db.notes
 							.query()
 							.only(notedata.id)
 							.modify({has_file: 2})
 							.execute()
-							.fail(function(e) {
+							.catch(function(e) {
 								log.error('sync: notes: set has_file = 2', e);
 							}.bind(this));
 						// no need to mess with the file record if we've got one already
 						if(file) return false;
 						// file record doesn't exist! add it.
-						turtl.db.files.update(filedata).fail(function(e) {
+						turtl.db.files.update(filedata).catch(function(e) {
 							log.error('sync: files: insert file record: ', e);
 						}.bind(this));
 					}.bind(this));
 				}.bind(this));
 			}.bind(this))
-			.fail(function(e) {
+			.catch(function(e) {
 				log.error('sync: '+ this.local_table +': add file records: ', e);
 			});
 	}

@@ -39,7 +39,7 @@ var NoteFile = Protected.extend({
 		}
 
 		turtl.db.files.get(this.get('hash'))
-			.done(function(filedata) {
+			.then(function(filedata) {
 				if(!filedata)
 				{
 					if(options.error) options.error('to_array: file data not present');
@@ -61,7 +61,7 @@ var NoteFile = Protected.extend({
 					}.bind(this)
 				});
 			}.bind(this))
-			.fail(function(e) {
+			.catch(function(e) {
 				if(options.error) options.error(e);
 			})
 	},
@@ -101,7 +101,7 @@ var FileData = ProtectedThreaded.extend({
 		if(options.api_save)
 		{
 			var save_fn = get_parent(this);
-			turtl.db.files.get(this.id()).done(function(filedata) {
+			turtl.db.files.get(this.id()).then(function(filedata) {
 				if(!filedata)
 				{
 					log.error('files: save: missing file: ', this.id());
@@ -131,7 +131,7 @@ var FileData = ProtectedThreaded.extend({
 				options.uploadprogress = function(ev) {
 					console.log('progress: ', ev);
 				};
-				turtl.db.notes.get(this.get('note_id')).done(function(note_data) {
+				turtl.db.notes.get(this.get('note_id')).then(function(note_data) {
 					if(!note_data) return false;
 					var persona_id = false;
 					if(note_data.meta && note_data.meta.persona)
@@ -155,7 +155,7 @@ var FileData = ProtectedThreaded.extend({
 		if(options.api_save)
 		{
 			var parent_fn = get_parent(this);
-			turtl.db.notes.get(this.get('note_id')).done(function(note_data) {
+			turtl.db.notes.get(this.get('note_id')).then(function(note_data) {
 				if(!note_data) note_data = {};
 				var persona_id = false;
 				if(!options.args) options.args = {};
@@ -235,7 +235,7 @@ var FileData = ProtectedThreaded.extend({
 		options || (options = {});
 
 		if(!this.get('note_id') || !this.get('id')) return false;
-		turtl.db.notes.get(this.get('note_id')).done(function(note_data) {
+		turtl.db.notes.get(this.get('note_id')).then(function(note_data) {
 			if(!note_data) return false;
 			var persona_id = false;
 			if(note_data.meta && note_data.meta.persona)
@@ -265,7 +265,7 @@ var FileData = ProtectedThreaded.extend({
 
 					// save the file data into the db
 					turtl.db.files.update(data)
-						.done(function() {
+						.then(function() {
 							// now update the note so it knows it has file contents
 							turtl.db.notes
 								.query()
@@ -283,19 +283,19 @@ var FileData = ProtectedThreaded.extend({
 									has_file: 2
 								})
 								.execute()
-								.done(function(notedata) {
+								.then(function(notedata) {
 									if(notedata && notedata[0])
 									{
 										turtl.sync.notify_local_change('notes', 'update', notedata[0]);
 									}
 									if(options.success) options.success(this);
 								}.bind(this))
-								.fail(function(e) {
+								.catch(function(e) {
 									console.error('file: download: save error: ', e);
 									if(options.error) options.error(e);
 								});
 						}.bind(this))
-						.fail(function(_, e) {
+						.catch(function(_, e) {
 							console.error('file: download: save error: ', e);
 							if(options.error) options.error(e);
 						});
@@ -361,7 +361,7 @@ var Files = SyncCollection.extend({
 		}.bind(this), {
 			tube: 'files',
 			delay: turtl.sync.hustle_poll_delay,
-			enable_fn: function() { return turtl.user.logged_in && turtl.do_remote_sync; }
+			enable_fn: function() { return turtl.user.logged_in && turtl.poll_api_for_changes; }
 		});
 	},
 
@@ -385,7 +385,7 @@ var Files = SyncCollection.extend({
 			.only(hash)
 			.modify({synced: 1, has_data: 1})
 			.execute()
-			.done(function() {
+			.then(function() {
 				turtl.db.notes
 					.query()
 					.only(note_id)
@@ -398,19 +398,19 @@ var Files = SyncCollection.extend({
 						},
 					})
 					.execute()
-					.done(function(notedata) {
+					.then(function(notedata) {
 						if(notedata && notedata[0])
 						{
 							turtl.sync.notify_local_change('notes', 'update', notedata[0]);
 						}
 						if(options.success) options.success();
 					})
-					.fail(function(e) {
+					.catch(function(e) {
 						log.error('file: update from api save: update note: ', e);
 						if(options.error) options.error(e);
 					});
 			})
-			.fail(function(e) {
+			.catch(function(e) {
 				console.error('file: error setting file.synced = true', e);
 				if(options.error) options.error(e);
 			});
@@ -425,7 +425,7 @@ var Files = SyncCollection.extend({
 			.only(0)
 			.modify({has_data: -1})		// -1 means "in downloading limbo"
 			.execute()
-			.done(function(res) {
+			.then(function(res) {
 				res.each(function(filedata) {
 					if(!filedata.note_id) return false;
 					var failues = 0;
@@ -449,7 +449,7 @@ var Files = SyncCollection.extend({
 					do_add_queue_item();
 				}.bind(this));
 			}.bind(this))
-			.fail(function(e) {
+			.catch(function(e) {
 				console.error('sync: '+ this.local_table +': download: ', e);
 			});
 	},
