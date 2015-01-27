@@ -218,8 +218,10 @@
 		}
 	};
 
-	var promisify = function()
+	var promisify = function(poptions)
 	{
+		poptions || (poptions = {});
+
 		var create_converter = function(type)
 		{
 			return function(key)
@@ -242,6 +244,10 @@
 					var _self = this;
 					var options = args[options_idx];
 					if(options.promisified) return _old.apply(_self, args);
+					if(poptions.warn && (options[names[0]] || options[names[1]]))
+					{
+						console.warn('Composer: promisify: attempting to pass callbacks to promisified function: ', type, key);
+					}
 					return new Promise(function(resolve, reject) {
 						if(names[0]) options[names[0]] = resolve;
 						if(names[1]) options[names[1]] = function(_, err) { reject(err); };
@@ -289,8 +295,6 @@
  */
 (function() {
 	"use strict";
-
-	var global = this;
 
 	/**
 	 * like typeof, but returns if it's an array or null

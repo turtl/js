@@ -161,15 +161,16 @@ var BoardListController = Composer.Controller.extend({
 
 		this.close_boards();
 		turtl.loading(true);
-		board.leave_board(persona, {
-			success: function() {
-				turtl.loading(false);
+		board.leave_board(persona).bind(this)
+			.then(function() {
 				barfr.barf('You have successfully UNshared yourself from the board.');
-			}.bind(this),
-			error: function(err) {
-				turtl.loading(false);
+			})
+			.catch(function(err) {
+				log.error('error: leave board: ', err);
 				barfr.barf('There was a problem leaving the board: '+ err);
-			}
-		});
+			})
+			.finally(function() {
+				turtl.loading(false);
+			});
 	}
 });

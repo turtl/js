@@ -45,6 +45,7 @@ var NoteMoveController = Composer.Controller.extend({
 		this.html(content);
 	},
 
+	// TODO: is this used???
 	select_board: function(e)
 	{
 		if(e) e.stop();
@@ -65,17 +66,18 @@ var NoteMoveController = Composer.Controller.extend({
 		], {silent: true});
 
 		turtl.loading(true);
-		this.note.save({
-			success: function(note) {
-				turtl.loading(false);
+		this.note.save().bind(this)
+			.then(function(note) {
 				modal.close();
-			}.bind(this),
-			error: function(e) {
+			})
+			.catch(function(e) {
 				barfr.barf('There was a problem moving your note: '+ e);
 				turtl.loading(false);
 				// restore our note's keys
 				this.note.set({keys: keys, board_id: curbid});
-			}.bind(this)
-		});
+			})
+			.finally(function() {
+				turtl.loading(false);
+			});
 	}
 });

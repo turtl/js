@@ -104,9 +104,8 @@ var PersonaEditController = Composer.Controller.extend({
 		this.model.set(set);
 		if(is_new) this.model.generate_ecc_key();
 		turtl.loading(true);
-		this.model.save({
-			success: function() {
-				turtl.loading(false);
+		this.model.save().bind(this)
+			.then(function() {
 				if(is_new)
 				{
 					this.collection.add(this.model);
@@ -121,13 +120,14 @@ var PersonaEditController = Composer.Controller.extend({
 				{
 					this.open_personas();
 				}
-			}.bind(this),
-			error: function(model, err) {
-				turtl.loading(false);
+			})
+			.catch(function(err) {
 				barfr.barf('There was a problem '+ (is_new ? 'adding' : 'updating') +' your persona: '+ err);
 				this.inp_submit.disabled = false;
-			}.bind(this)
-		});
+			})
+			.finally(function() {
+				turtl.loading(false);
+			});
 	},
 
 	get_email: function()
@@ -183,9 +183,9 @@ var PersonaEditController = Composer.Controller.extend({
 		this.model.get_by_email(email, {
 			// don't want this persona to trigger a "email taken" error if
 			// if already owns the email
-			ignore_this_persona: true,
-
-			success: function(res) {
+			ignore_this_persona: true
+		}).bind(this)
+			.then(function(res) {
 				this.email_loading.setStyle('display', '');
 				if(!this.email_valid(this.inp_email.get('value')))
 				{
@@ -193,10 +193,11 @@ var PersonaEditController = Composer.Controller.extend({
 				}
 				this.email_msg('That email is taken =\'[.');
 				this.inp_email.addClass('error');
-			}.bind(this),
-			error: function(err, xhr) {
+			})
+			.catch(function(err) {
+				var xhr = err.xhr;
 				this.email_loading.setStyle('display', '');
-				if(xhr.status == 404)
+				if(xhr && xhr.status == 404)
 				{
 					if(!this.email_valid(this.inp_email.get('value')))
 					{
@@ -206,10 +207,10 @@ var PersonaEditController = Composer.Controller.extend({
 				}
 				else
 				{
+					log.error('error: problem checking email: ', err);
 					barfr.barf('There was an error checking the availability of that email. Try again.');
 				}
-			}.bind(this)
-		});
+			});
 	},
 
 	open_personas: function(e)

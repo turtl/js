@@ -62,15 +62,12 @@ var Messages = Composer.Collection.extend({
 	sync: function(options)
 	{
 		options || (options = {});
-		turtl.user.get('personas').each(function(persona) {
-			persona.get_messages({
-				after: this.last_id,
-				success: options.success,
-				error: function(err, xhr) {
+		return turtl.user.get('personas').map(function(persona) {
+			return persona.get_messages({ after: this.last_id }).bind(this)
+				.catch(function(err) {
+					log.error('error: syncing messages: ', err);
 					barfr.barf('There was a problem grabbing messages from your persona '+persona.get('email')+': '+ err);
-					if(options.error) options.error();
-				}.bind(this)
-			});
+				});
 		}.bind(this));
 	}
 });

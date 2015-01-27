@@ -129,11 +129,8 @@ var HeaderBarController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		if(!confirm('Really wipe out local data and log out? All unsynced changes will be lost!')) return false;
-		turtl.wipe_local_db({
-			complete: function() {
-				turtl.user.logout();
-			}
-		});
+		turtl.wipe_local_db()
+			.then(turtl.user.logout.bind(turtl.user));
 	},
 
 	go_back: function(e)

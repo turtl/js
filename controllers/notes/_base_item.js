@@ -137,13 +137,14 @@ var BaseNoteItem = Composer.Controller.extend({
 		if(confirm('Really delete this note FOREVER?!'))
 		{
 			turtl.loading(true);
-			this.model.destroy({
-				success: function() { turtl.loading(false); },
-				error: function(_, err) {
-					turtl.loading(false);
+			return this.model.destroy()
+				.catch(function(err) {
+					log.error('error: note: delete_note: ', err);
 					barfr.barf('There was a problem deleting the note: '+ err);
-				}
-			});
+				})
+				.finally(function() {
+					turtl.loading(false);
+				});
 		}
 	},
 
@@ -158,8 +159,8 @@ var BaseNoteItem = Composer.Controller.extend({
 		var icon = this.attachment.getElement('img');
 		var icon_src = icon.src;
 		icon.src = img('/images/site/icons/load_16x16.gif');
-		this.model.get('file').to_blob({
-			success: function(blob) {
+		this.model.get('file').to_blob().bind(this)
+			.then(function(blob) {
 				icon.src = icon_src;
 				atag.removeClass('decrypting');
 				atag.setProperties({title: ''});
@@ -182,8 +183,7 @@ var BaseNoteItem = Composer.Controller.extend({
 					URL.revokeObjectURL(url);
 					download.destroy();
 				}).delay(5000, this);
-			}.bind(this)
-		});
+			});
 	},
 
 	// TODO: move somewhere more central

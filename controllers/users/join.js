@@ -100,8 +100,9 @@ var UserJoinController = FormController.extend({
 				turtl.user.login(data);
 				turtl.route('/');
 			})
-			.catch(function() {
+			.catch(function(e) {
 				this.submit.disabled = false;
+				barfr.barf('Error adding user: '+ e);
 			})
 			.finally(function() {
 				turtl.loading(false);

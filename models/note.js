@@ -91,8 +91,8 @@ var Note = Protected.extend({
 			// generate a preview
 			if(this.get('file').get('has_data') > 0 && this.get('file').get('type', '').match(/^image/))
 			{
-				this.get('file').to_blob({
-					success: function(blob) {
+				this.get('file').to_blob().bind(this)
+					.then(function(blob) {
 						var blob_url = URL.createObjectURL(blob)
 						if(Browser.chrome)
 						{
@@ -104,11 +104,10 @@ var Note = Protected.extend({
 						}
 						this.get('file').set({blob_url: blob_url});
 						this.trigger('change', this);
-					}.bind(this),
-					error: function(e) {
+					})
+					.catch(function(e) {
 						log.error('note: file: problem converting to blob: ', e);
-					}.bind(this)
-				});
+					});
 			}
 		}.bind(this));
 
@@ -217,8 +216,7 @@ var Note = Protected.extend({
 			var board = turtl.profile.get('boards').find_by_id(this.get('board_id'));
 			if(!board && !options.force_save)
 			{
-				if(options.error) options.error('Problem finding board for that note.');
-				return false;
+				return Promise.reject(new Error('Problem finding board for that note.'));
 			}
 
 			if(board && board.get('shared', false) && this.get('user_id') != turtl.user.id())
@@ -258,8 +256,7 @@ var Note = Protected.extend({
 			var board = turtl.profile.get('boards').find_by_id(this.get('board_id'));
 			if(!board && !options.force_save)
 			{
-				if(options.error) options.error('Problem finding board for that note.');
-				return false;
+				return Promise.reject(new Error('Problem finding board for that note.'));
 			}
 
 			if(board && board.get('shared', false) && this.get('user_id') != turtl.user.id())
@@ -292,8 +289,7 @@ var Note = Protected.extend({
 					var file = new FileData(filedata);
 					file.destroy(options);
 				});
-			})
-			.catch(options.error || function() {});
+			});
 	},
 
 	find_key: function(keys, search, options)
@@ -340,6 +336,7 @@ var Notes = SyncCollection.extend({
 	sortfn: function(a, b) { return a.id().localeCompare(b.id()); },
 
 	/*
+	// TODO: promisify, if we ever re-enable
 	// used for tracking batch note saves
 	batch_track: null,
 
@@ -367,6 +364,7 @@ var Notes = SyncCollection.extend({
 		{
 			args.persona = options.persona.id();
 		}
+		// TODO: promisify, if we ever re-enable
 		turtl.api.put('/notes/batch', args, {
 			success: options.success,
 			error: options.error

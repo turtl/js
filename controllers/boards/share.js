@@ -139,17 +139,18 @@ var BoardShareController = Composer.Controller.extend({
 		var persona = this.board.get('personas').find_by_id(pid);
 		if(!persona) return false;
 		turtl.loading(true);
-		this.board.share_with(this.from_persona, persona, 0, {
-			success: function() {
-				turtl.loading(false);
+		this.board.share_with(this.from_persona, persona, 0).bind(this)
+			.then(function() {
 				barfr.barf('User successfully removed from board.');
 				this.board.get('personas').remove(persona);
-			}.bind(this),
-			error: function(err) {
-				turtl.loading(false);
+			})
+			.catch(function(err) {
+				log.error('error: boards: remove_user: ', err);
 				barfr.barf('There was a problem removing that user from the board: '+ err);
-			}.bind(this)
-		});
+			})
+			.finally(function() {
+				turtl.loading(false);
+			});
 	},
 
 	cancel_invite: function(e)
@@ -161,11 +162,6 @@ var BoardShareController = Composer.Controller.extend({
 
 		var iid = next_tag_up('li', next_tag_up('li', e.target).getParent()).className.replace(/^.*invite_([0-9a-f-]+).*?$/, '$1');
 		var invite = new BoardInvite({id: iid});
-		invite.cancel(this.board, {
-			success: function() {
-			},
-			error: function() {
-			}
-		});
+		invite.cancel(this.board);
 	}
 });

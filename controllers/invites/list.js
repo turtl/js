@@ -102,22 +102,22 @@ var InvitesListController = Composer.Controller.extend({
 		if(!board_key || !this.key_valid(board_key)) return false;
 
 		invite.set({item_key: board_key});
-		invite.accept(this.persona, {
-			success: function() {
+		invite.accept(this.persona).bind(this)
+			.then(function() {
 				this.collection.remove(invite);
-			}.bind(this),
-			error: function(err, xhr) {
-				if(xhr.status == 404)
+			})
+			.catch(function(err) {
+				if(err.xhr && err.xhr.status == 404)
 				{
 					barfr.barf('That invite wasn\'t found.');
 					this.collection.remove(invite);
 				}
 				else
 				{
+					log.error('error: accepting invite: ', err);
 					barfr.barf('Error accepting invite: '+ err);
 				}
-			}.bind(this)
-		});
+			});
 	},
 
 	deny_invite: function(e)
@@ -128,22 +128,22 @@ var InvitesListController = Composer.Controller.extend({
 		var invite_id = this.get_invite_id_from_el(e.target);
 		var invite = this.collection.find_by_id(invite_id);
 		if(!invite) return;
-		invite.deny(this.persona, {
-			success: function() {
+		invite.deny(this.persona).bind(this)
+			.then(function() {
 				this.collection.remove(invite);
-			}.bind(this),
-			error: function(err, xhr) {
-				if(xhr.status == 404)
+			})
+			.catch(function(err) {
+				if(err.xhr && err.xhr.status == 404)
 				{
 					// invite doesn't exist. can it.
 					this.collection.remove(invite);
 				}
 				else
 				{
+					log.error('error: debying invite: ', err);
 					barfr.barf('Error denying invite: '+ err);
 				}
-			}.bind(this)
-		});
+			});
 	},
 
 	unlock_invite: function(e)
@@ -177,14 +177,14 @@ var InvitesListController = Composer.Controller.extend({
 		}
 
 		invite.set({item_key: board_key});
-		invite.accept(this.persona, {
-			success: function() {
+		invite.accept(this.persona).bind(this)
+			.then(function() {
 				this.collection.remove(invite);
-			}.bind(this),
-			error: function(err) {
+			})
+			.catch(function(err) {
+				log.error('error: accepting invite: ', err);
 				barfr.barf('Error accepting invite: '+ err);
-			}
-		});
+			});
 	},
 
 	accept_message_invite: function(e)
@@ -214,9 +214,8 @@ var InvitesListController = Composer.Controller.extend({
 			});
 			board.key = board_key;
 			turtl.loading(true);
-			board.accept_share(persona, {
-				success: function() {
-					turtl.loading(false);
+			board.accept_share(persona).bind(this)
+				.then(function() {
 					// removeing the message from turtl.messages isn't necessary,
 					// but is less visually jarring since otherwise we'd have to
 					// wait for a sync to remove it
@@ -225,12 +224,14 @@ var InvitesListController = Composer.Controller.extend({
 					// actually delete the message
 					persona.delete_message(message);
 					barfr.barf('Invite accepted!');
-				}.bind(this),
-				error: function(err) {
-					turtl.loading(false);
+				})
+				.catch(function(err) {
+					log.error('error: accept invite: ', err);
 					barfr.barf('There was a problem accepting the invite: '+ err);
-				}.bind(this)
-			});
+				})
+				.finally(function() {
+					turtl.loading(false);
+				});
 			break;
 		default:
 			return false;
@@ -254,10 +255,8 @@ var InvitesListController = Composer.Controller.extend({
 			var persona = turtl.user.get('personas').find_by_id(message.get('to'));
 			if(!persona) return false;
 			turtl.loading(true);
-			persona.delete_message(message, {
-				success: function() { turtl.loading(false); },
-				error: function() { turtl.loading(false); }
-			});
+			persona.delete_message(message).bind(this)
+				.finally(function() { turtl.loading(false); });
 			break;
 		default:
 			return false;

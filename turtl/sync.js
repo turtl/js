@@ -79,25 +79,19 @@ Composer.sync = function(method, model, options)
 	switch(method)
 	{
 	case 'read':
-		turtl.db[table].get(model.id()).then(success, error);
+		turtl.db[table].get(model.id()).then(success).catch(error);
 		break;
 	case 'create':
-		// set the CID into the ID field. the API will ignore this field, except
-		// to add it to the "sync" table, which will allow us to match the local
-		// record with the remote record in the rare case that the object is
-		// added to the API but the response (with the ID) doesn't update in the
-		// local db (becuase of the client being closed, for instance, or the
-		// server handling the request crashing after the record is added)
 		model._cid = model.cid();
 		modeldata.id = model.cid();
 
-		turtl.db[table].add(modeldata).then(success, error);
+		turtl.db[table].add(modeldata).then(success).catch(error);
 		break;
 	case 'delete':
-		turtl.db[table].remove(model.id()).then(success, error);
+		turtl.db[table].remove(model.id()).then(success).catch(error);
 		break;
 	case 'update':
-		turtl.db[table].update(modeldata).then(success, error);
+		turtl.db[table].update(modeldata).then(success).catch(error);
 		break;
 	default:
 		throw new SyncError('Bad method passed to Composer.sync: '+ method);
@@ -171,11 +165,14 @@ var api_sync = function(method, model, options)
 	}
 
 	// call the API!
-	turtl.api[method](url, args, {
+	return turtl.api[method](url, args, {
 		rawUpload: options.rawUpload,
 		responseType: options.responseType,
 		headers: headers,
-		success: function(res) {
+		progress: options.progress,
+		uploadprogress: options.uploadprogress,
+	}).bind(this)
+		.tap(function(res) {
 			// if we got sync_ids back, set them into our remote sync's ignore.
 			// this ensures that although we'll get back the sync record(s) for
 			// the changes we just made, we can ignore them when they come in.
@@ -185,21 +182,16 @@ var api_sync = function(method, model, options)
 					turtl.sync.ignore_on_next_sync(sync_id, {type: 'remote'});
 				});
 			}
-			// carry on
-			if(options.success) options.success.apply(this, arguments);
-		},
-		progress: options.progress,
-		uploadprogress: options.uploadprogress,
-		error: function(err, xhr) {
+		})
+		.catch(function(err) {
+			var xhr = err.xhr || {};
 			if(method == '_delete' && xhr.status == 404)
 			{
 				// ok, we tried to delete it and it's not there. success? yes,
 				// great success.
-				if(options.success) options.success.apply(this, arguments);
 				return;
 			}
-			if(options.error) options.error.apply(this, arguments);
-		}
-	});
+			throw err;
+		});
 };
 

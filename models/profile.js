@@ -114,32 +114,13 @@ var Profile = Composer.RelationalModel.extend({
 		var num_added = 0;
 
 		// populates a collection of data into a table. collects all errors as
-		// it goes along. when finished, calls options.complete.
-		var populate = function(table, collection, options)
+		// it goes along
+		var populate = function(table, collection)
 		{
-			options || (options = {});
-
-			num_items++;
-			if(!collection)
-			{
-				if(options.complete) options.complete([]);
-				return;
-			}
-
-			var errors = [];
-			turtl.db[table].update.apply(turtl.db[table], collection).then(
-				function(recs) {
-					if(options.complete) options.complete(errors);
-				},
-				function(errs) {
-					if(!errs instanceof Array) errs = [errs];
-					errors.concat(errs);
-				}
-			);
+			return turtl.db[table].update.apply(turtl.db[table], collection);
 		};
 
-		// sets a particular key/value entry into a table, calls
-		// options.complete when finished.
+		// sets a particular key/value entry into a table
 		var set_key = function(table, key, value, options)
 		{
 			options || (options = {});
@@ -149,37 +130,26 @@ var Profile = Composer.RelationalModel.extend({
 			clone['key'] = key;
 
 			// let populate do the work
-			populate(table, [clone], options);
-		};
-
-		// called when our individual saves below finish
-		var complete_fn = function(name) {
-			return function(errors) {
-				if(errors.length > 0) barfr.barf('Error(s) persisting profile '+ name +': '+ errors.join(', '));
-				num_added++;
-				if(num_added < num_items) return false;
-
-				// only set the sync time once all data has been saved
-				turtl.sync.set({sync_id: profile.sync_id});
-				turtl.sync.save();
-
-				// continue
-				if(options.complete) options.complete();
-			};
+			return populate(table, [clone], options);
 		};
 
 		// run the actual data persists
-		set_key('user', 'user', profile.user, {complete: complete_fn('user')});
-		populate('keychain', profile.keychain, {complete: complete_fn('keychain')});
-		populate('personas', profile.personas, {complete: complete_fn('personas')});
-		populate('boards', profile.boards, {complete: complete_fn('boards')});
-		populate('notes', profile.notes, {complete: complete_fn('notes')});
-		populate('files', profile.files, {complete: complete_fn('files')});
+		return Promise.all([
+			set_key('user', 'user', profile.user),
+			populate('keychain', profile.keychain),
+			populate('personas', profile.personas),
+			populate('boards', profile.boards),
+			populate('notes', profile.notes),
+			populate('files', profile.files)
+		])
+			.then(function() {
+				turtl.sync.set({sync_id: profile.sync_id});
+				return turtl.sync.save();
+			});
 	},
 
 	/**
-	 * When we get a set of profile data, load it incrementally here, calling
-	 * options.complete() when finished.
+	 * When we get a set of profile data, load it incrementally here.
 	 *
 	 * this function also does some basic setup, such as selecting the first
 	 * board as the current board.
@@ -259,7 +229,7 @@ var Profile = Composer.RelationalModel.extend({
 			})
 			.catch(function(e) {
 				log.error('profile: calculate_size: problem grabbing notes for board: ', board.id, e);
-				if(options.error) options.error(e);
+				throw e;
 			});
 	},
 

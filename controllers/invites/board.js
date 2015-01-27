@@ -93,27 +93,26 @@ var InviteBoardController = Composer.Controller.extend({
 
 		turtl.loading(true);
 		var perms = 2;
-		this.model.share_with(from, this.persona, perms, {
-			success: function() {
-				from.send_message(message, {
-					success: function() {
-						turtl.loading(false);
-						barfr.barf('Invite sent.');
-						this.trigger('sent');
-						this.release();
-					}.bind(this),
-					error: function() {
-						turtl.loading(false);
-						barfr.barf('There was a problem sending your invite: '+ err);
-					}.bind(this)
-				});
-			}.bind(this),
-			error: function(err) {
-				turtl.loading(false);
+		this.model.share_with(from, this.persona, perms).bind(this)
+			.then(function() {
+				return from.send_message(message)
+					.catch(function(err) {
+						log.error('error: invites: send message: ', err);
+						throw err;
+					});
+			})
+			.then(function() {
+				barfr.barf('Invite sent.');
+				this.trigger('sent');
+				this.release();
+			})
+			.catch(function(err) {
 				barfr.barf('There was a problem sharing this board: '+ err);
 				this.inp_submit.disabled = false;
-			}.bind(this)
-		});
+			})
+			.finally(function() {
+				turtl.loading(false);
+			});
 	},
 
 	send_invite_email: function()
@@ -131,18 +130,19 @@ var InviteBoardController = Composer.Controller.extend({
 		// TODO: fix persona assumption
 		var persona = turtl.user.get('personas').first();
 		turtl.loading(true);
-		this.invite.send(persona, this.model, question, secret, {
-			success: function() {
-				turtl.loading(false);
+		this.invite.send(persona, this.model, question, secret).bind(this)
+			.then(function() {
 				barfr.barf('Invite sent to '+ this.invite.get('email'));
 				this.trigger('sent');
 				this.release();
-			}.bind(this),
-			error: function(err, xhr) {
-				turtl.loading(false);
+			})
+			.catch(function(err) {
+				log.error('error: send email invite: ', err);
 				barfr.barf('There was a problem sending your invite: '+ err);
-			}.bind(this)
-		});
+			})
+			.finally(function() {
+				turtl.loading(false);
+			});
 	},
 
 	toggle_secure: function(e)

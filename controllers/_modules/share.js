@@ -74,13 +74,13 @@ var ShareController = Composer.Controller.extend({
 		this.email_loading.setStyle('display', '');
 		if(email == '') return false;
 		this.email_loading.setStyle('display', 'inline');
-		new Persona().get_by_email(email, {
-			require_pubkey: true,
-			success: function(persona) {
+		new Persona().get_by_email(email, {require_pubkey: true}).bind(this)
+			.then(function(persona) {
 				this.email_loading.setStyle('display', '');
 				this.update(persona);
-			}.bind(this),
-			error: function(err, xhr) {
+			})
+			.catch(function(err) {
+				var xhr = err.xhr || {};
 				this.email_loading.setStyle('display', '');
 				// simple not found error, setup invite screen
 				if(xhr.status == 404)
@@ -88,9 +88,9 @@ var ShareController = Composer.Controller.extend({
 					this.update();
 					return;
 				}
+				log.error('error: grabbing persona: ', err);
 				barfr.barf('There was a problem pulling out that persona. Soooo sorry.');
-			}.bind(this)
-		});
+			});
 	},
 
 	update: function(persona_data)

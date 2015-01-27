@@ -129,8 +129,8 @@ var User = Protected.extend({
 			data.promo = promo;
 		}
 
-		turtl.api.post('/users', data, {
-			success: function(user) {
+		return turtl.api.post('/users', data).bind(this)
+			.tap(function(user) {
 				if(data.promo)
 				{
 					// if we used a promo, track it to make sure this client
@@ -160,13 +160,11 @@ var User = Protected.extend({
 					}.bind(this);
 					check_db.delay(1, this);
 				}.bind(this), 'user:join:add_local_record');
-				if(options.success) options.success.apply(this, arguments);
-			}.bind(this),
-			error: function(e) {
-				barfr.barf('Error adding user: '+ e);
-				if(options.error) options.error(e);
-			}.bind(this)
-		});
+			})
+			.catch(function(err) {
+				log.error('error: user: join: ', err);
+				throw err;
+			});
 	},
 
 	write_cookie: function(options)
@@ -211,14 +209,14 @@ var User = Protected.extend({
 
 	save_settings: function()
 	{
-		this.save({
-			success: function(res) {
+		this.save().bind(this)
+			.then(function(res) {
 				this.trigger('saved', res);
-			}.bind(this),
-			error: function(model, err) {
-				barfr.barf('There was an error saving your user settings: '+ err);
-			}.bind(this)
-		});
+			})
+			.catch(function(err) {
+				log.error('error: user.save_settings: ', err);
+				throw err;
+			});
 	},
 
 	get_key: function()

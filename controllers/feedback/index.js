@@ -78,17 +78,17 @@ var FeedbackController = Composer.Controller.extend({
 		});
 		this.inp_submit.disabled = true;
 		turtl.loading(true);
-		feedback.save({
-			success: function(res) {
-				turtl.loading(false);
+		feedback.save().bind(this)
+			.then(function(res) {
 				this.render_thanks(from);
-			}.bind(this),
-			error: function(err) {
-				turtl.loading(false);
+			})
+			.catch(function(err) {
 				barfr.barf('There was a problem sending your feedback: '+ err +'. Please try again!');
 				this.inp_submit.disabled = false;
-			}.bind(this)
-		});
+			})
+			.finally(function() {
+				turtl.loading(false);
+			});
 	},
 
 	close: function(e)

@@ -142,7 +142,11 @@ var PersonasController = Composer.Controller.extend({
 
 		// update the settings silently (otherwise dropdown will disappear)
 		persona.set({settings: settings}, {silent: true});
-		persona.save({silent: true});
+		persona.save({silent: true})
+			.catch(function(e) {
+				log.error('error: persona: update email setting: ', e);
+				barfr.barf('There was a problem updating your persona settings.');
+			})
 	},
 
 	make_keypair: function(e)

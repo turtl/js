@@ -147,17 +147,14 @@ var Board = Composer.RelationalModel.extend({
 		options || (options = {});
 		this.get('notes').clear();
 		this.track_tags(false);
-		this.get('notes').reset_async(note_data, {
-			silent: true,
-			complete: function() {
+		return this.get('notes').reset_async(note_data, { silent: true }).bind(this)
+			.then(function() {
 				this.get('notes').trigger('reset');
 				this.track_tags(true);
 				this.get('tags').refresh_from_notes(this.get('notes'), {silent: true});
 				this.get('tags').trigger('reset');
 				this.trigger('notes_updated');
-				if(options.complete) options.complete();
-			}.bind(this)
-		})
+			});
 	},
 
 	share_with: function(from_persona, to_persona, permissions, options)
@@ -167,21 +164,16 @@ var Board = Composer.RelationalModel.extend({
 		// must be 0-2
 		permissions = parseInt(permissions);
 
-		turtl.api.put('/boards/'+this.id()+'/invites/persona/'+to_persona.id(), {
+		return turtl.api.put('/boards/'+this.id()+'/invites/persona/'+to_persona.id(), {
 			permissions: permissions,
 			from_persona: from_persona.id()
-		}, {
-			success: function(priv) {
+		}).bind(this)
+			.tap(function(priv) {
 				var privs = Object.clone(this.get('privs', {}));
 				privs[to_persona.id()] = priv;
 				this.set({privs: privs});
 				this.get('personas').add(to_persona);
-				if(options.success) options.success.apply(this, arguments);
-			}.bind(this),
-			error: function(err) {
-				if(options.error) options.error(err);
-			}
-		});
+			});
 	},
 
 	from_share: function(board_data)
@@ -198,60 +190,59 @@ var Board = Composer.RelationalModel.extend({
 		this.set(board_data);
 
 		turtl.profile.get('boards').add(this);
-		this.save({
-			skip_remote_sync: true,
-			success: function() {
+		return this.save({skip_remote_sync: true}).bind(this)
+			.then(function() {
 				// save the notes into the board (really, this just adds them to the
 				// global turtl.profile.notes collection). once done, we *make sure*
 				// the notes are persisted to the local db
 				_notes = turtl.sync.process_data({notes: _notes}).notes;
-				this.update_notes(_notes, {
-					complete: function() {
-						this.get('notes').each(function(note) {
-							note.save({ skip_remote_sync: true });
+				return this.update_notes(_notes);
+			})
+			.then(function() {
+				this.get('notes').each(function(note) {
+					note.save({ skip_remote_sync: true })
+						.catch(function(err) {
+							log.error('error: boards: from_share: save note: ', err);
 						});
-						// force a refresh on the board in case it doesn't pick
-						// up the changed notes
-						(function() {
-							turtl.sync.notify_local_change('boards', 'refresh', {id: this.id()}, {track: true});
-						}).delay(200, this);
-					}.bind(this)
 				});
-			}.bind(this)
-		});
+				// force a refresh on the board in case it doesn't pick
+				// up the changed notes
+				(function() {
+					turtl.sync.notify_local_change('boards', 'refresh', {id: this.id()}, {track: true});
+				}).delay(200, this);
+			})
+			.catch(function(e) {
+				log.error('error: board: from_share: ', e);
+				throw e;
+			});
 	},
 
 	accept_share: function(persona, options)
 	{
 		options || (options = {});
 
-		turtl.api.put('/boards/'+this.id()+'/persona/'+persona.id(), {}, {
-			success: function(board) {
+		return turtl.api.put('/boards/'+this.id()+'/persona/'+persona.id(), {}).bind(this)
+			.then(function(board) {
 				if(turtl.profile.get('boards').find_by_id(board.id))
 				{
 					// board's already shared with them, must be a double invite.
 					// ignore.
-					if(options.success) options.success();
 					return;
 				}
 
 				// save the board key into the user's data
 				turtl.profile.get('keychain').add_key(this.id(), 'board', this.key);
 
-				this.from_share(board);
-
-				if(options.success) options.success();
-			}.bind(this),
-			error: options.error
-		});
+				return this.from_share(board);
+			});
 	},
 
 	leave_board: function(persona, options)
 	{
 		options || (options = {});
 
-		turtl.api._delete('/boards/'+this.id()+'/persona/'+persona.id(), {}, {
-			success: function(sync_ids) {
+		return turtl.api._delete('/boards/'+this.id()+'/persona/'+persona.id(), {}).bind(this)
+			.then(function(sync_ids) {
 				// track the sync twice: once in a while wires will get crossed
 				// and a board we *just left* will come through in a sync that
 				// start just before leaving. this way, if we track the board
@@ -267,13 +258,7 @@ var Board = Composer.RelationalModel.extend({
 						turtl.sync.ignore_on_next_sync(sync_id, {type: 'remote'});
 					});
 				}
-
-				if(options.success) options.success();
-			}.bind(this),
-			error: function(err) {
-				if(options.error) options.error(err);
-			}
-		});
+			});
 	},
 
 	/**
@@ -335,16 +320,12 @@ var Board = Composer.RelationalModel.extend({
 		cats.clear();
 	},
 
-	destroy: function(options)
+	destroy: function()
 	{
-		options || (options = {});
-		var success = options.success;
-		options.success = function()
-		{
-			this.destroy_submodels();
-			if(success) success.apply(this, arguments);
-		}.bind(this);
-		return this.parent.apply(this, [options]);
+		return this.parent.apply(this, arguments)
+			.tap(function() {
+				this.destroy_submodels();
+			}.bind(this));
 	},
 
 	get_selected_tags: function()

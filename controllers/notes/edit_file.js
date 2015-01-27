@@ -33,11 +33,10 @@ var NoteEditFileController = Composer.Controller.extend({
 		var file = this.model.get('file');
 		if(file && !file.get('blob_url') && file.get('type', '').match(/^image/))
 		{
-			file.to_blob({
-				success: function(blob) {
+			file.to_blob().bind(this)
+				.then(function(blob) {
 					file.set({blob_url: URL.createObjectURL(blob)});
-				}
-			});
+				});
 		}
 		var content = Template.render('notes/edit_file', {
 			file: toJSON(this.model.get('file')),

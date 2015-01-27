@@ -357,8 +357,8 @@ var Sync = Composer.Model.extend({
 			// if sync disabled, NEVERMIND
 			if(!turtl.sync_to_api || !turtl.poll_api_for_changes) return false;
 
-			turtl.api.post('/sync', {sync_id: sync_id}, {
-				success: function(sync) {
+			turtl.api.post('/sync', {sync_id: sync_id}).bind(this)
+				.then(function(sync) {
 					// save our last sync id (graciously provided by the API)
 					if(sync.sync_id) this.set({sync_id: sync.sync_id});
 					this.save();
@@ -393,8 +393,9 @@ var Sync = Composer.Model.extend({
 
 						tracker.sync_from_api(syncdata);
 					});
-				}.bind(this),
-				error: function(e, xhr) {
+				})
+				.catch(function(e) {
+					var xhr = e.xhr || {};
 					if(xhr.status == 0)
 					{
 						barfr.barf('Error connecting with server. Your changes may not be saved.');
@@ -403,8 +404,7 @@ var Sync = Composer.Model.extend({
 					{
 						barfr.barf('Error syncing user profile with server: '+ e);
 					}
-				}
-			});
+				});
 
 			// sync user's persona messages. not super related to the sync
 			// process since messages don't ever touch the main syncing
@@ -671,14 +671,12 @@ var SyncCollection = Composer.Collection.extend({
 		options || (options = {});
 
 		var table = turtl.db[this.local_table];
-		table.remove(cid)
+		table.remove(cid).bind(this)
 			.then(function() {
 				modeldata.cid = cid;
 				var model = this.create_remote_model(modeldata);
-				if(model.sync_post_create) model.sync_post_create();
-				if(options.success) options.success();
-			}.bind(this))
-			.catch(options.error ? options.error : function() {});
+				if(model.sync_post_create) return model.sync_post_create();
+			});
 	},
 
 	/**
@@ -720,20 +718,7 @@ var SyncCollection = Composer.Collection.extend({
 		var table = turtl.db[this.local_table];
 		var action = options.action;
 
-		// saves the model into the database
-		var run_update = function()
-		{
-			//console.log(this.local_table + '.sync_record_to_api: got: ', modeldata);
-			if(_sync_debug_list.contains(this.local_table))
-			{
-				//log.info('save: '+ this.local_table +': api -> db ', modeldata);
-				log.info('save: '+ this.local_table +': api -> db ');
-			}
-			table.update(modeldata)
-				.then(function() { if(options.success) options.success(); })
-				.catch(function(e) { if(options.error) options.error(e); });
-		}.bind(this);
-
+		var promise = Promise.resolve(true);
 		if(action == 'create')
 		{
 			// if the record was just added, we have a new ID for it
@@ -745,20 +730,22 @@ var SyncCollection = Composer.Collection.extend({
 			// when the local sync process finds the record, it will
 			// check not only the id, but the cid when trying to match
 			// it to a model.
-			this.cid_to_id_rename(modeldata, record.cid, {
-				success: function() {
-					run_update();
-				},
-				error: function(e) {
-					barfr.barf('Error removing stubbed record: '+this.local_table+'.'+model.id()+': '+ e)
-					log.error(this.local_table +'.sync_model_to_api: error removing stubbed record: ', model.id(), e);
-				}.bind(this)
+			promise = this.cid_to_id_rename(modeldata, record.cid);
+		}
+		promise.bind(this)
+			.then(function() {
+				//console.log(this.local_table + '.sync_record_to_api: got: ', modeldata);
+				if(_sync_debug_list.contains(this.local_table))
+				{
+					//log.info('save: '+ this.local_table +': api -> db ', modeldata);
+					log.info('save: '+ this.local_table +': api -> db ');
+				}
+				return table.update(modeldata);
+			})
+			.catch(function(e) {
+				barfr.barf('Error removing stubbed record: '+this.local_table+'.'+model.id()+': '+ e)
+				log.error(this.local_table +'.sync_model_to_api: error removing stubbed record: ', model.id(), e);
 			});
-		}
-		else
-		{
-			run_update();
-		}
 	},
 
 	/**
@@ -785,10 +772,18 @@ var SyncCollection = Composer.Collection.extend({
 			turtl.hustle.Queue.delete(queue_item.id);
 		};
 
+		var options = { api_save: true };
+		if(action == 'delete')
+		{
+			var promise = model.destroy(options);
+		}
+		else
+		{
+			var promise = model.save(options);
+		}
 		var table = turtl.db[this.local_table];
-		var options = {
-			api_save: true,
-			success: function(model, res) {
+		return promise.bind(this)
+			.then(function(model) {
 				// save done, delete the queue item
 				delete_queue_item();
 
@@ -803,65 +798,51 @@ var SyncCollection = Composer.Collection.extend({
 				// User model)
 				if(record.key) modeldata.key = record.key;
 
-				this.update_record_from_api_save(modeldata, record, {
-					action: action,
-					success: function() {
-						turtl.sync.notify_local_change(this.local_table, 'update', modeldata);
-					}.bind(this),
-					error: function(e) {
-						log.error(this.local_table + '.sync_model_to_api: error saving model in '+ this.local_table +'.'+ model.id() +' (local -> API): ', e);
-					}
-				});
-
-			}.bind(this),
-			error: function(xhr, err) {
+				return this.update_record_from_api_save(modeldata, record, { action: action });
+			})
+			.then(function() {
+				return turtl.sync.notify_local_change(this.local_table, 'update', modeldata);
+			})
+			.catch(function(err) {
+				var xhr = err.xhr || {};
 				barfr.barf('Error syncing model to API: '+ err);
 				log.error('sync_record_to_api: error saving: ', err, xhr);
 				// set the record as local_modified again so we can
 				// try again next run
 				var item_id = options.model_key || model.id();
-				table.get(item_id).then(function(obj) {
-					if(!obj)
-					{
-						log.error('sync_record_to_api: missing local item: ', item_id);
-						delete_queue_item();
-						return false;
-					}
-					if(xhr && xhr.status >= 500)
-					{
-						if(queue_item.releases >= 2 || queue_item.timeouts >= 2)
+				return table.get(item_id)
+					.then(function(obj) {
+						if(!obj)
 						{
-							log.error('sync_record_to_api: queue item reached max retry limit: ', this.local_table, item_id);
+							log.error('sync_record_to_api: missing local item: ', item_id);
 							delete_queue_item();
 							return false;
 						}
-
-						log.debug('sync_record_to_api: releasing queue item: ', queue_item.id);
-						hustle.Queue.release(queue_item.id, {
-							delay: 10,
-							error: function(e) {
-								log.error('sync_record_to_api: error releasing queue item: ', queue_item);
+						if(xhr && xhr.status >= 500)
+						{
+							if(queue_item.releases >= 2 || queue_item.timeouts >= 2)
+							{
+								log.error('sync_record_to_api: queue item reached max retry limit: ', this.local_table, item_id);
+								delete_queue_item();
+								return false;
 							}
-						});
-					}
-					else
-					{
-						// TODO: possibly delete local object??
-						log.warn('sync_record_to_api: either remote object doesn\'t exist or we don\'t have access. giving up!'); 
-						delete_queue_item();
-					}
-				}.bind(this));
-			}.bind(this)
-		};
 
-		if(action == 'delete')
-		{
-			model.destroy(options);
-		}
-		else
-		{
-			model.save(options);
-		}
+							log.debug('sync_record_to_api: releasing queue item: ', queue_item.id);
+							hustle.Queue.release(queue_item.id, {
+								delay: 10,
+								error: function(e) {
+									log.error('sync_record_to_api: error releasing queue item: ', queue_item);
+								}
+							});
+						}
+						else
+						{
+							// TODO: possibly delete local object??
+							log.warn('sync_record_to_api: either remote object doesn\'t exist or we don\'t have access. giving up!'); 
+							delete_queue_item();
+						}
+					});
+			});
 	},
 
 	/**
@@ -945,18 +926,10 @@ var SyncCollection = Composer.Collection.extend({
 						}
 						else
 						{
-							this.cid_to_id_rename(item, item._sync.cid, {
-								success: function() {
-									do_sync();
-								},
-								error: function(e) {
-									log.error('sync: '+ this.local_table +': api -> db: error updating CID -> ID (remove '+ item._sync.cid +')');
-									// keep going anyway
-									do_sync();
-								}.bind(this)
-							});
+							return this.cid_to_id_rename(item, item._sync.cid);
 						}
 					})
+					.then(do_sync)
 					.catch(function(e) {
 						log.error('sync: '+ this.local_table +': api -> db: error updating CID -> ID (get '+ item._sync.cid +')');
 						// keep going anyway

@@ -140,17 +140,17 @@ var BoardManageController = Composer.Controller.extend({
 		if(!confirm('Really the board "'+board.get('title')+'", and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
 
 		turtl.loading(true);
-		board.destroy({
-			success: function() {
-				turtl.loading(false);
-
+		board.destroy()
+			.then(function() {
 				var next = this.collection.first() || false;
 				turtl.profile.set_current_board(next);
-			}.bind(this),
-			error: function() {
+			})
+			.catch(function(e) {
+				log.error('error: boards: manage: delete_board: ', e);
+			})
+			.finally(function() {
 				turtl.loading(false);
-			}
-		});
+			});
 	},
 
 	leave_board: function(e)
@@ -165,15 +165,16 @@ var BoardManageController = Composer.Controller.extend({
 		if(!confirm('Really leave this board? You won\'t be able to access it again until the owner invites you again!')) return false;
 
 		turtl.loading(true);
-		board.leave_board(persona, {
-			success: function() {
-				turtl.loading(false);
+		board.leave_board(persona).bind(this)
+			.then(function() {
 				barfr.barf('You have successfully UNshared yourself from the board.');
-			}.bind(this),
-			error: function(err) {
-				turtl.loading(false);
+			})
+			.catch(function(err) {
+				log.error('error: leave board: ', err);
 				barfr.barf('There was a problem leaving the board: '+ err);
-			}
-		});
+			})
+			.finally(function() {
+				turtl.loading(false);
+			});
 	}
 });

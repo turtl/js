@@ -158,9 +158,8 @@ var NotificationsController = Composer.Controller.extend({
 			});
 			board.key = board_key;
 			turtl.loading(true);
-			board.accept_share(persona, {
-				success: function() {
-					turtl.loading(false);
+			board.accept_share(persona).bind(this)
+				.then(function() {
 					// removeing the message from turtl.messages isn't necessary,
 					// but is less visually jarring since otherwise we'd have to
 					// wait for a sync to remove it
@@ -169,12 +168,14 @@ var NotificationsController = Composer.Controller.extend({
 					// actually delete the message
 					persona.delete_message(message);
 					barfr.barf('Invite accepted!');
-				}.bind(this),
-				error: function(err) {
-					turtl.loading(false);
+				})
+				.catch(function(err) {
+					log.error('error: invite: accept: ', err);
 					barfr.barf('There was a problem accepting the invite: '+ err);
-				}.bind(this)
-			});
+				})
+				.finally(function() {
+					turtl.loading(false);
+				});
 			break;
 		default:
 			return false;
@@ -198,10 +199,8 @@ var NotificationsController = Composer.Controller.extend({
 			var persona = turtl.user.get('personas').find_by_id(message.get('to'));
 			if(!persona) return false;
 			turtl.loading(true);
-			persona.delete_message(message, {
-				success: function() { turtl.loading(false); },
-				error: function() { turtl.loading(false); }
-			});
+			persona.delete_message(message).bind(this)
+				.finally(function() { turtl.loading(false); });
 			break;
 		default:
 			return false;

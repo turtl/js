@@ -176,8 +176,9 @@ var Protected = Composer.RelationalModel.extend({
 		delete obj[this.body_key];
 		var ret = this.parent.apply(this, [obj, options]);
 		if(_body != undefined) obj[this.body_key] = _body;
-		if(!options.ignore_body) this.process_body(obj, options);
-		return ret;
+		var promise;
+		if(!options.ignore_body) promise = this.process_body(obj, options);
+		return promise || ret;
 	},
 
 	/**
@@ -262,6 +263,7 @@ var Protected = Composer.RelationalModel.extend({
 		// serialize the body (encrypted)
 		var encbody = this.serialize(_body, newdata, options);
 
+		if(encbody instanceof Promise) return encbody;
 		newdata[this.body_key] = encbody;
 		return newdata;
 	},
@@ -460,45 +462,48 @@ var ProtectedThreaded = Protected.extend({
 		options || (options = {});
 		if(!this.key) return false;
 
-		// generate a random seed for sjcl
-		var seed = new Uint32Array(32);
-		window.crypto.getRandomValues(seed);
+		return new Promise(function(resolve, reject) {
+			// generate a random seed for sjcl
+			var seed = new Uint32Array(32);
+			window.crypto.getRandomValues(seed);
 
-		var worker = new Worker(window._base_url + '/library/tcrypt.thread.js');
-		this.workers.push(worker);
-		worker.postMessage({
-			cmd: 'decrypt',
-			args: [this.key, data],
-			seed: seed
-		});
-		worker.addEventListener('message', function(e) {
-			var res = e.data;
-			if(res.type != 'success')
-			{
-				var dec = false;
-				log.error('tcrypt.thread: err: ', res, e.stack);
-			}
-			else
-			{
-				// if we only have one private field, assume that field was
-				// encrypted *without* JSON serialization (and shove it into a
-				// new object)
-				if(this.private_fields.length == 1)
+			var worker = new Worker(window._base_url + '/library/tcrypt.thread.js');
+			this.workers.push(worker);
+			worker.postMessage({
+				cmd: 'decrypt',
+				args: [this.key, data],
+				seed: seed
+			});
+			worker.addEventListener('message', function(e) {
+				var res = e.data;
+				if(res.type != 'success')
 				{
-					var dec = {};
-					dec[this.private_fields[0]] = res.data;
+					var dec = false;
+					log.error('tcrypt.thread: err: ', res, e.stack);
+					reject({res: res, stack: e.stack});
 				}
 				else
 				{
-					var dec = JSON.parse(res.data);
-				}
-			}
-			this.trigger('deserialize', dec);
-			if(options.complete) options.complete(dec);
+					// if we only have one private field, assume that field was
+					// encrypted *without* JSON serialization (and shove it into a
+					// new object)
+					if(this.private_fields.length == 1)
+					{
+						var dec = {};
+						dec[this.private_fields[0]] = res.data;
+					}
+					else
+					{
+						var dec = JSON.parse(res.data);
+					}
 
-			// got a response, clean up
-			worker.terminate();
-			this.workers = this.workers.erase(worker);
+					resolve(dec);
+					this.trigger('deserialize', dec);
+				}
+				// got a response, clean up
+				worker.terminate();
+				this.workers = this.workers.erase(worker);
+			}.bind(this));
 		}.bind(this));
 	},
 
@@ -510,55 +515,59 @@ var ProtectedThreaded = Protected.extend({
 		options || (options = {});
 		if(!this.key) return false;
 
-		// generate a random seed for sjcl
-		var seed = new Uint32Array(32);
-		window.crypto.getRandomValues(seed);
+		return new Promise(function(resolve, reject) {
+			// generate a random seed for sjcl
+			var seed = new Uint32Array(32);
+			window.crypto.getRandomValues(seed);
 
-		var worker = new Worker(window._base_url + '/library/tcrypt.thread.js');
-		this.workers.push(worker);
+			var worker = new Worker(window._base_url + '/library/tcrypt.thread.js');
+			this.workers.push(worker);
 
-		// if we only have 1 (one) private field, forgo JSON serialization and
-		// instead just encrypt that field directly.
-		if(this.private_fields.length == 1)
-		{
-			var enc_data = data[this.private_fields[0]];
-		}
-		else
-		{
-			var enc_data = JSON.stringify(data);
-		}
-
-		worker.postMessage({
-			cmd: 'encrypt+hash',
-			args: [
-				this.key,
-				enc_data, {
-					// can't use window.crypto (for random IV), so generate IV here
-					iv: tcrypt.iv(),
-					utf8_random: tcrypt.random_number()
-				}
-				],
-				seed: seed
-		});
-		worker.addEventListener('message', function(e) {
-			var res = e.data;
-			if(res.type != 'success')
+			// if we only have 1 (one) private field, forgo JSON serialization and
+			// instead just encrypt that field directly.
+			if(this.private_fields.length == 1)
 			{
-				var enc = false;
-				log.error('tcrypt.thread: err: ', res);
+				var enc_data = data[this.private_fields[0]];
 			}
 			else
 			{
-				// TODO: uint8array?
-				var enc = tcrypt.words_to_bin(res.data.c);
-				var hash = res.data.h;
+				var enc_data = JSON.stringify(data);
 			}
-			this.trigger('serialize', enc, hash);
-			if(options.complete) options.complete(enc, hash);
 
-			// got a response, clean up
-			worker.terminate();
-			this.workers = this.workers.erase(worker);
+			worker.postMessage({
+				cmd: 'encrypt+hash',
+				args: [
+					this.key,
+					enc_data, {
+						// can't use window.crypto (for random IV), so generate IV here
+						iv: tcrypt.iv(),
+						utf8_random: tcrypt.random_number()
+					}
+					],
+					seed: seed
+			});
+			worker.addEventListener('message', function(e) {
+				var res = e.data;
+				if(res.type != 'success')
+				{
+					var enc = false;
+					log.error('tcrypt.thread: err: ', res);
+					reject({res: res, stack: e.stack});
+				}
+				else
+				{
+					// TODO: uint8array?
+					var enc = tcrypt.words_to_bin(res.data.c);
+					var hash = res.data.h;
+
+					resolve([enc, hash]);
+					this.trigger('serialize', enc, hash);
+				}
+
+				// got a response, clean up
+				worker.terminate();
+				this.workers = this.workers.erase(worker);
+			}.bind(this));
 		}.bind(this));
 	},
 
@@ -574,34 +583,35 @@ var ProtectedThreaded = Protected.extend({
 
 		if(!this.ensure_key_exists(obj.keys)) return false;
 
-		var finish_fn = function(_body)
-		{
-			if(typeOf(_body) == 'object')
+		return new Promise(function(resolve, reject) {
+			var finish_fn = function(_body)
 			{
-				this.set(_body, Object.merge({ignore_body: true}, options));
-				Object.each(_body, function(v, k) {
-					var _body = this.get('_body');
-					var set = {};
-					set[k] = v;
-					_body.set(set);
-				}.bind(this));
-				if(options.async_success) options.async_success(this);
-			}
-		}.bind(this);
-
-		if(typeOf(_body) == 'string')
-		{
-			// decrypt/deserialize the body
-			this.deserialize(_body, obj, {
-				complete: function(body) {
-					finish_fn(body);
+				if(typeOf(_body) == 'object')
+				{
+					this.set(_body, Object.merge({ignore_body: true}, options));
+					Object.each(_body, function(v, k) {
+						var _body = this.get('_body');
+						var set = {};
+						set[k] = v;
+						_body.set(set);
+					}.bind(this));
+					resolve(this);
 				}
-			});
-		}
-		else
-		{
-			finish_fn(_body);
-		}
+			}.bind(this);
+
+			if(typeOf(_body) == 'string')
+			{
+				// decrypt/deserialize the body
+				this.deserialize(_body, obj)
+					.then(function(body) {
+						finish_fn(body);
+					});
+			}
+			else
+			{
+				finish_fn(_body);
+			}
+		});
 	},
 
 	toJSON: function(options)
@@ -623,19 +633,23 @@ var ProtectedThreaded = Protected.extend({
 	 * Wraps Protected.toJSON(), serializing the model async (in a thread) and
 	 * then running the finish_cb once complete.
 	 */
-	toJSONAsync: function(finish_cb, options)
+	toJSONAsync: function(options)
 	{
 		options || (options = {});
 		var data = {};
 
-		var do_finish = function(encrypted, hash)
-		{
-			data[this.body_key] = encrypted;
-			// cache (before we call the finish cb)
-			this._cached_serialization = data;
-			finish_cb(data, hash);
-		}.bind(this);
-		data = this.toJSON(Object.merge({}, options, {skip_cache: true, complete: do_finish}));
+		return new Promise(function(resolve, reject) {
+			var do_finish = function(encrypted, hash)
+			{
+				data[this.body_key] = encrypted;
+				// cache (before we call the finish cb)
+				this._cached_serialization = data;
+				resolve([data, hash]);
+			}.bind(this);
+			this.toJSON(Object.merge({}, options, {skip_cache: true}))
+				.spread(do_finish)
+				.catch(reject);
+		}.bind(this));
 	}
 });
 

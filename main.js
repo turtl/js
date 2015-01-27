@@ -1,3 +1,8 @@
+// TODO: keychain.add_key/remove_key are treated sync, should be factored in as
+//       async.
+//
+// -----------------------------------------------------------------------------
+
 var $E = function(selector, filter){ return ($(filter) || document).getElement(selector); };
 var $ES = function(selector, filter){ return ($(filter) || document).getElements(selector); };
 
@@ -279,15 +284,11 @@ var turtl = {
 		turtl.hustle = null;
 		if(options.restart)
 		{
-			turtl.setup_local_db({
-				complete: function() {
-					if(options.complete) options.complete();
-				}
-			});
+			return turtl.setup_local_db()
 		}
 		else
 		{
-			if(options.complete) options.complete();
+			return Promise.resolve();
 		}
 	},
 
@@ -544,7 +545,7 @@ var barfr = null;
 var markdown = null;
 
 window.addEvent('domready', function() {
-	Composer.promisify();
+	Composer.promisify({warn: true});
 
 	window.port = window.port || false;
 	window.__site_url = window.__site_url || '';
@@ -629,14 +630,13 @@ if(config.catch_global_errors)
 		log.error('remote error log: ', arguments);
 		// remove filesystem info
 		url = url.replace(/^.*\/data\/app/, '/data/app');
-		turtl.api.post('/log/error', {data: {client: config.client, version: config.version, msg: msg, url: url, line: line}}, {
-			error: function(err) {
-				log.error(err);
+		turtl.api.post('/log/error', {data: {client: config.client, version: config.version, msg: msg, url: url, line: line}})
+			.catch(function(err) {
+				log.error('error catcher: error posting (how ironic): ', err);
 				// error posting, disable log for 30s
 				enable_errlog = false;
 				(function() { enable_errlog = true; }).delay(30000);
-			}
-		});
+			});
 	};
 }
 

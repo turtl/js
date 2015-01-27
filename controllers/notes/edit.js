@@ -357,9 +357,8 @@ var NoteEditController = FormController.extend({
 
 			// save the note copy, and on success, set the resulting data back into
 			// the original note
-			note_copy.save({
-				// make sure we pass if we have a file or not
-				success: function() {
+			note_copy.save().bind(this)
+				.then(function() {
 					this.note.key = note_copy.key;
 					var copy_json = note_copy.toJSON();
 					copy_json.mod = Math.round(new Date().getTime() / 1000);
@@ -384,13 +383,12 @@ var NoteEditController = FormController.extend({
 					{
 						do_close();
 					}
-				}.bind(this),
-				error: function(e) {
+				})
+				.catch(function(err) {
+					turtl.loading(false);
 					this.inp_submit.disabled = false;
 					barfr.barf('There was a problem saving your note: '+ e);
-					turtl.loading(false);
-				}
-			});
+				});
 		}.bind(this);
 
 		if(file_set)
@@ -404,6 +402,7 @@ var NoteEditController = FormController.extend({
 			note_copy.clear_files({skip_remote_sync: true});
 			var filedata = new FileData({data: file_bin});
 			filedata.key = note_copy.key;
+
 			filedata.toJSONAsync(function(res, hash) {
 				// we now have the encrypted data + hash, set the hash as the
 				// ID. note we're not setting it directly into filedata here,
@@ -433,21 +432,18 @@ var NoteEditController = FormController.extend({
 				file_size = res.body.length;
 
 				// save the file contents into local db then save the note
-				filedata.save({
-					skip_remote_sync: note_copy.is_new(),
-					success: function() {
-						// give the note's file object a ref to the file's id
+				return filedata.save({skip_remote_sync: note_copy.is_new()}).bind(this)
+					.then(function() {
 						var has_data = this.note.get('file').get('has_data', 0);
 						file.set({hash: hash, has_data: has_data + 1});
 						do_note_save({no_close: true});
-					}.bind(this),
-					error: function(e) {
+					})
+					.catch(function(e) {
 						this.inp_submit.disabled = false;
 						barfr.barf('There was a problem saving the attached file: '+ e);
 						log.error('note: edit: file save: ', e);
 						turtl.loading(false);
-					}
-				});
+					});
 			}.bind(this));
 			do_close();
 		}

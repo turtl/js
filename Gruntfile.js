@@ -92,6 +92,6 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-exec');
 
 	grunt.registerTask('generate', ['less', 'handlebars', 'exec:index', 'exec:html_templates']);
-	grunt.registerTask('default', ['watch']);
+	grunt.registerTask('default', ['generate', 'watch']);
 };
 
