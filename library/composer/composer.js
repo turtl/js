@@ -1769,25 +1769,11 @@
 	var has_moo = !!global.MooTools;
 
 	var find = (function() {
-		if(has_moo)
+		if('querySelector' in document)
 		{
 			return function(context, selector) {
 				context || (context = document);
-				return document.id(context).getElement(selector);
-			};
-		}
-		else if(has_jquery)
-		{
-			return function(context, selector) {
-				context || (context = document);
-				return jQuery(context).find(selector)[0];
-			};
-		}
-		else if(has_sizzle)
-		{
-			return function(context, selector) {
-				context || (context = document);
-				return Sizzle.select(selector, context)[0];
+				return context.querySelector(selector);
 			};
 		}
 		else if(has_slick)
@@ -1797,15 +1783,31 @@
 				return Slick.find(context, selector);
 			};
 		}
-		throw new Error('No selector engine present. Include Sizzle/jQuery or Slick/Mootools before loading composer.');
+		else if(has_sizzle)
+		{
+			return function(context, selector) {
+				context || (context = document);
+				return Sizzle.select(selector, context)[0];
+			};
+		}
+		else if(has_jquery)
+		{
+			return function(context, selector) {
+				context || (context = document);
+				return jQuery(context).find(selector)[0];
+			};
+		}
+		throw new Error('No selector engine present. Include Sizzle/jQuery or Slick/Mootools before loading composer (or use a modern browser with document.querySelector).');
 	})();
 
 	var match = (function() {
-		if(has_sizzle)
+		if('querySelector' in document)
 		{
 			return function(element, selector) {
 				element || (element = document);
-				return Sizzle.matchesSelector(element, selector);
+				if('matches' in element) var domatch = element.matches;
+				if('msMatchesSelector' in element) var domatch = element.msMatchesSelector;
+				return domatch.call(element, selector);
 			};
 		}
 		else if(has_slick)
@@ -1813,6 +1815,13 @@
 			return function(element, selector) {
 				element || (element = document);
 				return Slick.match(element, selector);
+			};
+		}
+		else if(has_sizzle)
+		{
+			return function(element, selector) {
+				element || (element = document);
+				return Sizzle.matchesSelector(element, selector);
 			};
 		}
 		else if(has_jquery)
@@ -1825,68 +1834,31 @@
 		throw new Error('No selector engine present. Include Sizzle/jQuery or Slick/Mootools before loading composer.');
 	})();
 
-	var add_event = (function() {
-		if(has_jquery)
-		{
-			return function(el, ev, fn, selector) {
-				if(selector) return jQuery(el).on(ev, selector, fn);
-				else return jQuery(el).on(ev, fn);
-			};
-		}
-		else if(has_moo)
-		{
-			return function(el, ev, fn, selector) {
-				var _fn = fn;
-				fn = function()
-				{
-					_fn.apply(this, arguments);
-				};
 
-				if(selector) return document.id(el).addEvent(ev+':relay('+selector+')', fn);
-				else return document.id(el).addEvent(ev, fn);
-			};
-		}
-		else
-		{
-			return function(el, ev, fn, selector) {
-				if(selector)
-				{
-					el.addEventListener(ev, function(event) {
-						var target = event.target || event.srcElement;
-						if(event.__composer_handled || !match(target, selector)) return false;
-						event.__composer_handled = true;
-						fn.apply(this, [event].concat(event.params || []));
-					});
-				}
-				else
-				{
-					el.addEventListener(ev, function(event) {
-						fn.apply(this, [event].concat(event.params || []));
-					}, false);
-				}
-			};
-		}
+	var add_event = (function() {
+		return function(el, ev, fn, selector) {
+			if(selector)
+			{
+				el.addEventListener(ev, function(event) {
+					var target = event.target || event.srcElement;
+					if(event.__composer_handled || !match(target, selector)) return false;
+					event.__composer_handled = true;
+					fn.apply(this, [event].concat(event.params || []));
+				});
+			}
+			else
+			{
+				el.addEventListener(ev, function(event) {
+					fn.apply(this, [event].concat(event.params || []));
+				}, false);
+			}
+		};
 	})();
 
 	var remove_event = (function() {
-		if(has_jquery)
-		{
-			return function(el, ev, fn) {
-				jQuery(el).off(ev, fn);
-			};
-		}
-		else if(has_moo)
-		{
-			return function(el, ev, fn) {
-				document.id(el).removeEvent(ev, fn);
-			};
-		}
-		else
-		{
-			return function(el, ev, fn) {
-				el.removeEventListener(ev, fn, false);
-			};
-		}
+		return function(el, ev, fn) {
+			el.removeEventListener(ev, fn, false);
+		};
 	})();
 
 	var fire_event = (function() {
