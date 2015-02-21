@@ -328,16 +328,16 @@
 	 * Wraps an overriding method to track its state so get_parent() can pull
 	 * out the right function.
 	 */
-	var wrapfn = function(origfn, k)
+	var extend_parent = function(to, from, k)
 	{
 		return function()
 		{
-			if(!this.$state.levels[k]) this.$state.levels[k] = 0;
-			this.$state.levels[k]++;
-			this.$state.fn.unshift(k);
-			var val = origfn.apply(this, arguments);
-			this.$state.fn.shift();
-			this.$state.levels[k]--;
+			if(!this.$state.parents[k]) this.$state.parents[k] = [];
+			this.$state.parents[k].push(from);
+			this.$state.fn.push(k);
+			var val = to.apply(this, arguments);
+			this.$state.fn.pop();
+			this.$state.parents[k].pop();
 			return val;
 		};
 	};
@@ -350,7 +350,7 @@
 		return merge(to_prototype, from_prototype, {
 			transform: function(into, from, k) {
 				if(typeof into[k] != 'function' || into[k].prototype.$parent || typeof from[k] != 'function' || from[k].prototype.$parent) return false;
-				from[k] = wrapfn(from[k], k);
+				from[k] = extend_parent(from[k], into[k], k);
 				from[k].$parent = into[k];
 			}
 		});
@@ -390,7 +390,7 @@
 		{
 			copy(this);
 			if(cls.$initializing) return this;
-			this.$state = {levels: {}, fn: []};
+			this.$state = {parents: {}, fn: []};
 			if(this.initialize) return this.initialize.apply(this, arguments);
 			else return this;
 		};
@@ -418,17 +418,17 @@
 
 		cls.prototype.$get_parent = function()
 		{
-			var key = this.$state.fn[0];
-			if(!key) return false;
-			var level = this.$state.levels[key];
-			var parent = cls.prototype[key]; for(var i = 0; i < level && parent; i++) { parent = parent.$parent; }
+			var k = this.$state.fn[this.$state.fn.length - 1];
+			if(!k) return false;
+			var parents = this.$state.parents[k];
+			var parent = parents[parents.length - 1];
 			return parent || false;
 		};
 		cls.prototype.parent = function()
 		{
 			var fn = this.$get_parent();
 			if(fn) return fn.apply(this, arguments);
-			throw 'Class.js: Bad parent method: '+ this.$state.fn[0];
+			throw 'Class.js: Bad parent method: '+ this.$state.fn[this.$state.fn.length - 1];
 		};
 
 		return cls;
@@ -1466,9 +1466,14 @@
 		 */
 		sort_index: function(model)
 		{
-			if(!this.sortfn) return false;
-
 			if(this._models.length == 0) return 0;
+
+			if(!this.sortfn)
+			{
+				var idx = this.index_of(model);
+				if(idx === false || idx < 0) return this.size();
+				return idx;
+			}
 
 			var sorted = this._models.slice(0).sort(this.sortfn);
 			for(var i = 0; i < sorted.length; i++)
@@ -1769,14 +1774,7 @@
 	var has_moo = !!global.MooTools;
 
 	var find = (function() {
-		if('querySelector' in document)
-		{
-			return function(context, selector) {
-				context || (context = document);
-				return context.querySelector(selector);
-			};
-		}
-		else if(has_slick)
+		if(has_slick)
 		{
 			return function(context, selector) {
 				context || (context = document);
@@ -1797,20 +1795,23 @@
 				return jQuery(context).find(selector)[0];
 			};
 		}
+		else if('querySelector' in document)
+		{
+			var scope = false;
+			try { document.querySelector(':scope > h1'); scope = true; }
+			catch(e) {}
+
+			return function(context, selector) {
+				context || (context = document);
+				if(scope) selector = ':scope '+selector;
+				return context.querySelector(selector);
+			};
+		}
 		throw new Error('No selector engine present. Include Sizzle/jQuery or Slick/Mootools before loading composer (or use a modern browser with document.querySelector).');
 	})();
 
 	var match = (function() {
-		if('querySelector' in document)
-		{
-			return function(element, selector) {
-				element || (element = document);
-				if('matches' in element) var domatch = element.matches;
-				if('msMatchesSelector' in element) var domatch = element.msMatchesSelector;
-				return domatch.call(element, selector);
-			};
-		}
-		else if(has_slick)
+		if(has_slick)
 		{
 			return function(element, selector) {
 				element || (element = document);
@@ -1831,6 +1832,17 @@
 				return jQuery(element).is(selector);
 			};
 		}
+		else if('querySelector' in document)
+		{
+			return function(element, selector) {
+				element || (element = document);
+				if('matches' in element) var domatch = element.matches;
+				if('msMatchesSelector' in element) var domatch = element.msMatchesSelector;
+				if('mozMatchesSelector' in element) var domatch = element.mozMatchesSelector;
+				if('webkitMatchesSelector' in element) var domatch = element.webkitMatchesSelector;
+				return domatch.call(element, selector);
+			};
+		}
 		throw new Error('No selector engine present. Include Sizzle/jQuery or Slick/Mootools before loading composer.');
 	})();
 
@@ -1841,9 +1853,19 @@
 			{
 				el.addEventListener(ev, function(event) {
 					var target = event.target || event.srcElement;
-					if(event.__composer_handled || !match(target, selector)) return false;
-					event.__composer_handled = true;
-					fn.apply(this, [event].concat(event.params || []));
+					while(target)
+					{
+						if(match(target, selector))
+						{
+							fn.apply(this, [event].concat(event.params || []));
+							break;
+						}
+						target = target.parentNode;
+						if(target == el.parentNode || target == document.body.parentNode)
+						{
+							target = false;
+						}
+					}
 				});
 			}
 			else
@@ -2393,7 +2415,7 @@
 			{
 				parent.insertBefore(con.el, parent.firstChild);
 			}
-			else if(before_con)
+			else if(before_con && before_con.el.parentNode == parent)
 			{
 				parent.insertBefore(con.el, before_con.el.nextSibling);
 			}
