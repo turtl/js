@@ -1852,6 +1852,8 @@
 			if(selector)
 			{
 				el.addEventListener(ev, function(event) {
+					// if we have a mootools event class, wrap the event in it
+					if(event && window.MooTools && window.DOMEvent) event = new DOMEvent(event);
 					var target = event.target || event.srcElement;
 					while(target)
 					{
