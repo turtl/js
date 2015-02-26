@@ -1,6 +1,6 @@
 @import 'variables';
 
-html {}
+html, body {width: 100%; height: 100%;}
 
 ::selection {background: #bfe1de;}
 ::-moz-selection {background: #bfe1de;}
@@ -9,8 +9,6 @@ html {}
 	-webkit-tap-highlight-color: transparent;
 }
 *:focus {outline: 0;}
-
-html, body {height: 100%;}
 
 body {font-size: 13px; font-family: 'raleway', helvetica, arial, sans-serif; background: @theme_gutter;}
 
@@ -21,28 +19,10 @@ a { text-decoration: none; }
 @font-face {font-family: 'Raleway'; font-style: normal; font-weight: 400; src: local('Raleway'), url(../images/font/raleway.woff) format('woff');}
 @font-face {font-family: 'Raleway'; font-style: normal; font-weight: 600; src: local('Raleway SemiBold'), local('Raleway-SemiBold'), url(../images/font/raleway-semibold.woff) format('woff');}
 
-/* settings menu slide in */
-body.settings {
-	#app {left: 90%;}
-	header div.actions div.menu {right: 10%;}
-	header div.actions a.menu icon {transform: rotate(90deg);}
-	.bar-actions {display: none;}
-}
-
-/* modal box slide in */
-body.modal {
-	#main {left: -100%; height: 100%; overflow: hidden;}
-	#turtl-modal {left: 0;}
-	.bar-actions {display: none;}
-}
-body.settings.modal #turtl-modal {left: 90%;}
-
-/* body page slide shite */
-#tmp-slide {position: absolute; top: 44px; display: none; width: 100%; transition: left .3s;}
-body.page-slide {overflow: hidden;}
-body.page-slide #tmp-slide {display: block;}
-
-#app {position: relative; left: 0; transition: left .3s;}
+//#wrap {position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: scroll;}
+#wrap {position: absolute; width: 100%; min-height: 100%; overflow-x: hidden; .hide-scroll();}
+#app {position: relative; top: 0; left: 0; width: 100%; min-height: 100%; transition: left .3s;}
+#main {position: absolute; top: @header_height; left: 0; width: 100%; transition: left .3s;}
 
 header {position: fixed; z-index: 13; width: 100%; height: 40px; margin: 0 0 0 0; padding: 4px 0 0 0; background: #222; .layer-rest();}
 header {
@@ -83,15 +63,32 @@ header {
 /*.bar-actions {display: block; height: 40px; margin: 0 0 16px 0; padding: 7px 0 0 0;}*/
 .bar-actions {position: fixed; z-index: 21; top: 0; right: 0; transition: opacity .3s;}
 .bar-actions {
-	a {display: block; float: left; width: 44px; height: 44px; text-align: center; border-left: 1px solid rgba(255, 255, 255, .1);}
+	a {display: block; float: left; width: @header_height; height: @header_height; text-align: center; border-left: 1px solid rgba(255, 255, 255, .1);}
 	a icon {padding-top: 16px; font-size: 1.9em; color: #e4e4e4;}
 	a.search icon {font-size: 1.8em;}
 }
 
-#turtl-modal {position: absolute; top: 44px; left: 100%; z-index: 10; width: 100%; min-height: 100%; overflow: visible; transition: left .3s;}
-#turtl-modal .modal-gutter {padding: 0;}
-
-#main {position: absolute; top: 44px; left: 0; width: 100%; transition: left .3s;}
+#turtl-modal {position: fixed; top: 0; left: 100%; z-index: 10; width: 100%; height: 100%; overflow-x: hidden; background: @theme_gutter; transition: left .3s;}
+#turtl-modal .modal-gutter {padding: @header_height 0 0 0;}
 
 footer {display: block; margin: 32px 0 0 0; padding: 16px; font-size: 10px; color: #777; text-align: right;}
+
+/* settings menu slide in */
+body.settings {
+	#app {left: 90%;}
+	header div.actions div.menu {right: 10%;}
+	header div.actions a.menu icon {transform: rotate(90deg);}
+	.bar-actions {display: none;}
+}
+/* modal box slide in */
+body.modal {
+	#main {}
+	#turtl-modal {left: 00%;}
+	.bar-actions {display: none;}
+}
+body.settings.modal #turtl-modal {left: 90%;}
+/* body page slide shite */
+#tmp-slide {position: absolute; top: @header_height; display: none; width: 100%; transition: left .3s;}
+body.page-slide {overflow: hidden;}
+body.page-slide #tmp-slide {display: block;}
 

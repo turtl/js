@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# this sorts files *properly* when running grunt, otherwise _underscore files
+# show up last, which fucks everything up.
+export LC_COLLATE=C
+
+grunt generate
+echo "Generating prod css, js, and index.html files..."
+./scripts/prod-index
+echo "Done."
+

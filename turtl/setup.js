@@ -1,6 +1,3 @@
-// force JSON.decode in MT to use JSON.parse (instead of eval)
-JSON.secure = true;
-
 Composer.suppress_warnings = true;
 
 if(window._in_desktop)

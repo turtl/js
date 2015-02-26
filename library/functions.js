@@ -53,7 +53,7 @@ function uint8array_to_string(array)
  */
 function data_from_addon(data)
 {
-	return JSON.decode(JSON.encode(data));
+	return JSON.parse(JSON.stringify(data));
 }
 
 // get the next tag of type "type" in the chain up the dom
@@ -229,14 +229,8 @@ var view = {
 		data || (data = {});
 		options || (options = {});
 
-		if(TurtlTemplates[tpl])
-		{
-			return TurtlTemplates[tpl](data);
-		}
-		else
-		{
-			return Template.render(tpl, data, options);
-		}
+		if(!TurtlTemplates[tpl]) throw new Error('missing template: '+ tpl);
+		return TurtlTemplates[tpl](data);
 	},
 
 	escape: function(str)

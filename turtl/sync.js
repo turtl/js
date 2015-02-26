@@ -1,9 +1,6 @@
 // extend_error is in functions.js
 var SyncError = extend_error(Error, 'SyncError');
 
-// helps us track local changes so we don't double-apply
-var local_sync_id = 0;
-
 /**
  * Default sync function, persists items to the local DB
  */
@@ -21,11 +18,8 @@ Composer.sync = function(method, model, options)
 	if(table == 'users') table = 'user';	// kind of a hack. oh well.
 
 	// some debugging, can make tracking down sync issues easier
-	if(_sync_debug_list.contains(table))
-	{
-		var action = method == 'delete' ? 'delete' : (method == 'create' ? 'add' : 'edit');
-		log.info('save: '+ table +': mem -> db ('+ action +')');
-	}
+	var action = method == 'delete' ? 'delete' : (method == 'create' ? 'add' : 'edit');
+	log.info('save: '+ table +': mem -> db ('+ action +')');
 
 	var error = options.error || function() {};
 	if(!turtl.db)
@@ -44,13 +38,13 @@ Composer.sync = function(method, model, options)
 	{
 		if(['create', 'update', 'delete'].contains(method))
 		{
-			if(!options.skip_local_sync)
+			if(options.skip_local_sync)
 			{
-				turtl.sync.notify_local_change(table, method, modeldata, {track: !options.skip_track});
+				log.warn('sync: using deprecated sync option: skip_local_sync');
 			}
 			if(!options.skip_remote_sync)
 			{
-				turtl.sync.queue_remote_change(table, method, modeldata);
+				turtl.sync.queue_outgoing_change(table, method, modeldata);
 			}
 		}
 
@@ -166,8 +160,7 @@ var api_sync = function(method, model, options)
 
 	// call the API!
 	return turtl.api[method](url, args, {
-		rawUpload: options.rawUpload,
-		responseType: options.responseType,
+		response_type: options.response_type,
 		headers: headers,
 		progress: options.progress,
 		uploadprogress: options.uploadprogress,

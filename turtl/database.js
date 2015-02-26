@@ -12,7 +12,7 @@ var database = {
 		return db.open({
 			// DB has user id in it...client might have multiple users
 			server: 'turtl.'+turtl.user.id(),
-			version: 7,
+			version: 9,
 			schema: function() { log.info('db.js: create schema'); return {
 				// -------------------------------------------------------------
 				// k/v tables - always has "key" field as primary key
@@ -69,6 +69,16 @@ var database = {
 						synced: {},
 						has_data: {},
 					}
+				},
+
+				// these tables hold incoming/outgoing sync data
+				sync_incoming: {
+					key: { keyPath: 'id', autoIncrement: true },
+					indexes: { }
+				},
+				sync_outgoing: {
+					key: { keyPath: 'id', autoIncrement: true },
+					indexes: { }
 				}
 			}}
 		});

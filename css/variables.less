@@ -1,3 +1,6 @@
+// -----------------------------------------------------------------------------
+// theme!
+// -----------------------------------------------------------------------------
 @theme_gutter: #ededed;
 @theme_sheet: #fff;
 @theme_black: #444;
@@ -7,9 +10,20 @@
 @theme_accent: #65a5ee;
 @theme_border: #eee;
 
+// -----------------------------------------------------------------------------
+// transitions
+// -----------------------------------------------------------------------------
 @transition_standard: 0.2s;
 .transition (@property, @time: @transition_standard) {transition: @property @time;}
 
+// -----------------------------------------------------------------------------
+// template
+// -----------------------------------------------------------------------------
+@header_height: 44px;
+
+// -----------------------------------------------------------------------------
+// layering stuff
+// -----------------------------------------------------------------------------
 @shadow_opacity: .2;
 @shadow_gray: 20;
 .layer-flat () {box-shadow: 0 1px 4px rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
@@ -19,10 +33,21 @@
 
 .border-radius (@radius: 2px) { border-radius: @radius; }
 
+// -----------------------------------------------------------------------------
+// material
+// -----------------------------------------------------------------------------
 .sheet () {background: @theme_sheet;}
 .card () {.sheet(); .border-radius(); .layer-rest();}
 
+// -----------------------------------------------------------------------------
+// utils
+// -----------------------------------------------------------------------------
 .title-scrim () {background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.3) 70%);}
 
 @desktop: ~"only screen and (min-device-width: 640px)";
+
+.hide-scroll() {
+	&::-webkit-scrollbar { width: 0 !important; height: 0 !important }
+	//overflow: -moz-scrollbars-none;
+}
 

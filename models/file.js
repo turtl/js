@@ -71,7 +71,7 @@ var NoteFile = Protected.extend({
 	}
 });
 
-var FileData = ProtectedThreaded.extend({
+var FileData = Protected.extend({
 	base_url: '/files',
 
 	public_fields: [
@@ -352,10 +352,7 @@ var Files = SyncCollection.extend({
 	{
 		options || (options = {});
 
-		if(_sync_debug_list.contains(this.local_table))
-		{
-			console.log('save: '+ this.local_table +': api -> db ', modeldata);
-		}
+		log.info('save: '+ this.local_table +': mem -> db ', modeldata);
 
 		// note that we don't need all the cid renaming heeby jeeby here since
 		// we already have an id (the hash) AND the object we're attaching to

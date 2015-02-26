@@ -1,0 +1,13 @@
+#!/bin/bash
+
+### This script creates svg-icons.js, used to inline SVG icons for easier
+### styling
+
+file=./library/svg-icons.js
+
+echo 'var svg_icons = [' > $file
+find ./images/icons -name "*.svg" \
+	| sed 's|.*images/icons/||' \
+	| sed 's|\.svg||' \
+	| sed 's|^\(.*\)$|"\1",|' >> $file
+echo '""];' >> $file

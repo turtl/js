@@ -1,19 +1,19 @@
 var Api = new Class({
 	// the base url all resources are pulled from (NEVER a trailing slash!)
 	// NOTE: this must be set by the app
-	api_url:		null,
-	api_key:		null,
+	api_url: null,
+	api_key: null,
 
-	user:			false,
+	user: false,
 
 	// a tracker that will track all API requests (ONLY IF in an addon)
-	tracker:		null,
+	tracker: null,
 
 	// override this function to determine which callback gets called on a JSONP
 	// return. normall this is done by analyzing the response. the default is to
 	// always run "success" since nothing EVER goes wrong anyway, ever (at least
 	// not when WE program it).
-	cb_wrap:	function(cb_success, cb_fail)
+	cb_wrap: function(cb_success, cb_fail)
 	{
 		return function(data)
 		{
@@ -53,20 +53,20 @@ var Api = new Class({
 	},
 
 	// HTTP status after a call is made
-	status:		null,
+	status: null,
 
 	// error object populated when there is an error
-	error: 		{
-		code:	null,
-		msg:	null,
-		field:	null
+	error: {
+		code: null,
+		msg: null,
+		field: null
 	},
 
 	// set to true to get debug info
-	debug:		false,
+	debug: false,
 
 	// request id counter
-	requests:	0,
+	requests: 0,
 
 	get: function(resource, data, params) { return this._call(this.api_url, 'GET', resource, data, params); },
 	post: function(resource, data, params) { return this._call(this.api_url, 'POST', resource, data, params); },
@@ -78,95 +78,91 @@ var Api = new Class({
 		data || (data = {});
 		params || (params = {});
 
-		return new Promise(function(resolve, reject) {
-			// should we auth to the server? we don't want to unless we have to
-			var send_auth = this.test_auth_needed(method, resource);
+		// should we auth to the server? we don't want to unless we have to
+		var send_auth = this.test_auth_needed(method, resource);
 
-			var url = api_url + '/' + resource.replace(/^\//, '');
+		var url = api_url + '/' + resource.replace(/^\//, '');
 
-			if(!['post', 'get'].contains(method.toLowerCase()))
+		if(!['post', 'get'].contains(method.toLowerCase()))
+		{
+			// add method GET var (MUST be GET (Wookie restriction))
+			if(url.match(/\?/))
+				url += '&_method='+method;
+			else
+				url += '?_method='+method;
+		}
+
+		var request = {
+			url: url,
+			method: (method.toLowerCase() == 'get' ? 'GET' : 'POST'),
+			emulate: true,
+			headers: params.headers || {},
+			data: data,
+			response_type: params.response_type,
+			onSuccess: function(res)
 			{
-				// add method GET var (MUST be GET (Wookie restriction))
-				if(url.match(/\?/))
-					url += '&_method='+method;
-				else
-					url += '?_method='+method;
-			}
-
-			var request = {
-				url: url,
-				method: (method.toLowerCase() == 'get' ? 'GET' : 'POST'),
-				emulation: false,
-				headers: params.headers || {},
-				data: data,
-				responseType: params.responseType,
-				onSuccess: function(res)
-				{
-					if(!params.responseType)
-					{
-						try
-						{
-							res = JSON.parse(res);
-						}
-						catch(e)
-						{
-							var err = 'api: error parsing resonse: '+ res
-							log.debug(err);
-							reject(new Error(err));
-							return;
-						}
-					}
-					resolve(res);
-				},
-				onFailure: function(xhr)
-				{
-					var res = xhr;
-					if(!params.responseType && xhr)
-					{
-						try
-						{
-							res = JSON.parse(xhr.responseText);
-						}
-						catch(e)
-						{
-							res = 'error parsing error response: '+ xhr.responseText;
-							log.debug('api: ', res);
-						}
-					}
-					reject({res: res, xhr: xhr});
-				},
-				onProgress: function(event, xhr)
-				{
-					var progress = {total: event.total, loaded: event.loaded};
-					if(params.progress) params.progress(progress, xhr);
-				},
-				onUploadprogress: function(event, xhr)
+			},
+			onfailure: function(xhr)
+			{
+			},
+			onprogress: function(event, xhr)
+			{
+				var progress = {total: event.total, loaded: event.loaded};
+				if(params.progress) params.progress(progress, xhr);
+			},
+			upload: {
+				onprogress: function(event, xhr)
 				{
 					var progress = {total: event.total, loaded: event.loaded};
 					if(params.uploadprogress) params.uploadprogress(progress, xhr);
-				},
-				evalScripts: false,
-				evalResponse: false
-			};
+				}
+			},
+			evalScripts: false,
+			evalResponse: false
+		};
 
-			if(params.rawUpload)
-			{
-				request.urlEncoded = false;
-				request.encoding = false;
-				request.processData = false;
-			}
+		// fill in the client we're using
+		request.headers['X-Turtl-Client'] = config.client + '-' + config.version;
 
-			// fill in the client we're using
-			request.headers['X-Turtl-Client'] = config.client + '-' + config.version;
-
-			// if we're sending auth AND we're logged in, authenticate
-			if(this.user && send_auth)
-			{
-				request.headers['X-Auth-Api-Key'] = this.api_key;
-				request.headers['Authorization'] = 'Basic ' + Base64.encode('user:' + this.user.auth_key);
-			}
-			new Request(request).send();
-		}.bind(this))
+		// if we're sending auth AND we're logged in, authenticate
+		if(this.user && send_auth)
+		{
+			request.headers['X-Auth-Api-Key'] = this.api_key;
+			request.headers['Authorization'] = 'Basic ' + btoa('user:' + this.user.auth_key);
+		}
+		return Sexhr(request)
+			.then(function(res) {
+				if(!params.response_type)
+				{
+					try
+					{
+						res = JSON.parse(res);
+					}
+					catch(e)
+					{
+						var err = 'api: error parsing resonse: '+ res
+						log.debug(err);
+						throw new Error(err);
+					}
+				}
+				return res;
+			})
+			.catch(function(e) {
+				var xhr = e.xhr;
+				if(!params.response_type && xhr)
+				{
+					try
+					{
+						res = JSON.parse(xhr.responseText);
+					}
+					catch(e)
+					{
+						res = 'error parsing error response: '+ xhr.responseText;
+						log.debug('api: ', res);
+					}
+				}
+				throw {res: res, xhr: xhr};
+			});
 	},
 
 	// given a method and resource (and also config.auth in /config/auth.js),

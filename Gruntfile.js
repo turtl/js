@@ -24,16 +24,13 @@ module.exports = function(grunt) {
 			},
 			all: {
 				files: {
-					'library/templates/handlebars.js': ['views/**/*.hbs']
+					'library/templates.js': ['views/**/*.hbs']
 				}
 			}
 		},
 		exec: {
 			index: {
 				command: 'bash ./scripts/gen-index'
-			},
-			html_templates: {
-				command: 'bash ./scripts/gen-templates'
 			}
 		},
 		watch: {
@@ -58,18 +55,9 @@ module.exports = function(grunt) {
 					'models/**/*.js',
 					'library/**/*.js',
 					'config/**/*.js',
-					'turtl/**/*.js'
+					'css/**/*.less'
 				],
 				tasks: ['exec:index'],
-				options: {
-					nospawn: true
-				}
-			},
-			templates_html: {
-				files: [
-					'views/**/*.html'
-				],
-				tasks: ['exec:html_templates'],
 				options: {
 					nospawn: true
 				}
@@ -91,7 +79,6 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-handlebars');
 	grunt.loadNpmTasks('grunt-exec');
 
-	grunt.registerTask('generate', ['less', 'handlebars', 'exec:index', 'exec:html_templates']);
+	grunt.registerTask('generate', ['less', 'handlebars', 'exec:index']);
 	grunt.registerTask('default', ['generate', 'watch']);
 };
-

@@ -1,19 +1,15 @@
 var Profile = Composer.RelationalModel.extend({
 	relations: {
 		keychain: {
-			type: Composer.HasMany,
 			collection: 'Keychain'
 		},
 		personas: {
-			type: Composer.HasMany,
 			collection: 'Personas'
 		},
 		boards: {
-			type: Composer.HasMany,
 			collection: 'Boards'
 		},
 		notes: {
-			type: Composer.HasMany,
 			collection: 'Notes',
 			options: {
 				forward_all_events: true,
@@ -174,25 +170,7 @@ var Profile = Composer.RelationalModel.extend({
 				return boards.reset_async(data.boards);
 			})
 			.then(function() {
-				boards.each(function(b) { b.track_tags(false); });
-				return notes.reset_async(data.notes);
-			})
-			.then(function() {
 				this.loaded = true;
-				// turn tag tracking back on
-				boards.each(function(b) {
-					b.get('notes').refresh();
-					b.track_tags(true);
-					(function() { 
-						b.get('tags').refresh_from_notes(b.get('notes'), {silent: true});
-						b.get('tags').trigger('reset');
-						b.trigger('notes_updated');
-					}).delay(1, this);
-				});
-				var board = null;
-				if(options.board) board = boards.select_one({id: options.board.clean()});
-				if(!board) board = boards.first();
-				if(board) this.set_current_board(board);
 			});
 	},
 

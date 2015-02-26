@@ -24,6 +24,7 @@ var PagesController = Composer.Controller.extend({
 			sub.el = new Element('div');
 		}
 
+		var scroll = $('wrap').scrollTop;
 		this.trigger('prerelease', options);
 		var controller = this.track_subcontroller('sub', function() {
 			if(!params.inject) params.inject = main_sel;
@@ -31,15 +32,21 @@ var PagesController = Composer.Controller.extend({
 		});
 		this.trigger('load', controller, options);
 
-		if(options.slide) this.slide_content(content, options.slide);
+		if(options.slide) this.slide_content(content, options.slide, scroll);
 	},
 
-	slide_content: function(content, slide)
+	slide_content: function(content, slide, scroll)
 	{
 		if(!content) return false;
 
+		var main_sel = turtl.main_container_selector;
+		var main = document.getElement(main_sel);
+
 		document.body.addClass('page-slide');
-		var tmp = new Element('div#tmp-slide');
+		var maintop = parseInt(main.getStyle('top'));
+		var newtop = maintop - scroll;
+		var tmp = new Element('div#tmp-slide')
+			.setStyles({top: newtop});
 		content.inject(tmp);
 		tmp.inject(main, 'before');
 

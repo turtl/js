@@ -42,6 +42,7 @@ var UserLoginController = FormController.extend({
 			})
 			.catch(function(e) {
 				barfr.barf('Login failed.');
+				log.error('login error: ', e);
 				turtl.loading(false);
 			})
 			.finally(function() {

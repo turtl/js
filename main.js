@@ -1,11 +1,3 @@
-// TODO: keychain.add_key/remove_key are treated sync, should be factored in as
-//       async.
-//
-// -----------------------------------------------------------------------------
-
-var $E = function(selector, filter){ return ($(filter) || document).getElement(selector); };
-var $ES = function(selector, filter){ return ($(filter) || document).getElements(selector); };
-
 // we need CBC for backwards compat
 sjcl.beware['CBC mode is dangerous because it doesn\'t protect message integrity.']();
 
@@ -15,12 +7,16 @@ sjcl.beware['CBC mode is dangerous because it doesn\'t protect message integrity
 //
 // NOTE: *DO NOT* change the cid scheme without updating the cid_match regex
 // below!
-var _cid = Composer.cid;
-Composer.cid = function() {
-	return (new Date().getTime().toString(16)) +
-		turtl.client_id +
-		parseInt(_cid().substr(1)).toString(16);
-};
+Composer.cid = (function() {
+	var counter = 0;
+	return function() {
+		counter++;
+		return (new Date().getTime().toString(16)) +
+			turtl.client_id +
+			counter.toString(16);
+	};
+})();
+
 var cid_match = /[0-9a-f]+/;
 
 var turtl = {
@@ -36,18 +32,11 @@ var turtl = {
 	// holds the DOM object that turtl does all of its operations within
 	main_container_selector: '#main',
 
-	// a place to reference composer controllers by name
-	controllers: {},
-
 	// global key handler for attaching keyboard events to the app
 	keyboard: null,
 
 	loaded: false,
 	router: false,
-
-	// tells the pages controller whether or not to scroll to the top of the
-	// window after a page load
-	scroll_to_top: true,
 
 	// whether or not to sync data w/ server
 	sync_to_api: false,
@@ -56,9 +45,23 @@ var turtl = {
 	// holds the title breadcrumbs
 	titles: [],
 
+	controllers: {},
+
+	controllers: {
+		pages: null,
+		header: null,
+		sidebar: null,
+		sync: null,
+	},
+
+	router: null,
+	api: null,
+
 	// -------------------------------------------------------------------------
 	// Data section
 	// -------------------------------------------------------------------------
+	user: null,
+
 	// holds messages for all the user's personas
 	messages: null,
 
@@ -76,9 +79,6 @@ var turtl = {
 	// which stores files and notes locally).
 	db: null,
 
-	// holds our queue/messaging library
-	hustle: null,
-
 	// Files collection, used to track file uploads/downloads
 	files: null,
 
@@ -91,15 +91,22 @@ var turtl = {
 	{
 		if(this.loaded) return false;
 
+		turtl.user = new User();
+		turtl.controllers.pages = new PagesController();
+		turtl.controllers.header = new HeaderController();
+		turtl.controllers.sidebar = new SidebarController();
+		turtl.controllers.pages.bind('prerelease', function() {
+			$('wrap').scrollTop = 0;
+		});
+
+		turtl.keyboard = new Keyboard({
+			defaultEventType: 'keydown'
+		});
+		turtl.keyboard.attach = turtl.keyboard.activate;
+		turtl.keyboard.detach = turtl.keyboard.deactivate;
+
 		var initial_route = window.location.pathname;
-
-		// load the global keyboard handler
-		this.keyboard = new Composer.Keyboard({meta_bind: true});
-
-		// set up our user object
-		this.user = new User();
-
-		this.setup_profile({initial_route: initial_route});
+		turtl.setup_user({initial_route: initial_route});
 
 		// if a user exists, log them in
 		if(!window._disable_cookie)
@@ -107,14 +114,12 @@ var turtl = {
 			this.user.login_from_cookie();
 		}
 
-		this.setup_header_bar();
-
 		this.loaded = true;
 		if(window.port) window.port.send('loaded');
 		this.route(initial_route);
 	},
 
-	setup_profile: function(options)
+	setup_user: function(options)
 	{
 		options || (options = {});
 
@@ -125,13 +130,13 @@ var turtl = {
 			{
 				turtl.user.bind('change', turtl.user.write_cookie.bind(turtl.user), 'user:write_changes_to_cookie');
 			}
-			turtl.api.set_auth(turtl.user.get_auth());
 			turtl.controllers.pages.release();
 			turtl.sync = new Sync();
 			turtl.messages = new Messages();
 			turtl.profile = new Profile();
 			turtl.search = new Search();
 			turtl.files = new Files();
+			turtl.api.set_auth(turtl.user.get_auth());
 
 			// setup invites and move invites from local storage into collection
 			if(!turtl.invites) turtl.invites = new Invites();
@@ -145,7 +150,8 @@ var turtl = {
 			}.bind(this));
 
 			// init our sync interface (shows updates on syncing/uploads/downloads)
-			this.load_controller('sync', SyncController);
+
+			turtl.controllers.sync = new SyncController;
 
 			turtl.show_loading_screen(true);
 
@@ -168,9 +174,7 @@ var turtl = {
 					if(initial_route.match(/^\/users\//)) initial_route = '/';
 					if(initial_route.match(/index.html/)) initial_route = '/';
 					if(initial_route.match(/background.html/)) initial_route = '/';
-					if(!window._in_background) turtl.route(initial_route);
 					turtl.setup_syncing();
-					turtl.setup_background_panel();
 					if(window.port) window.port.send('profile-load-complete');
 				})
 				.catch(function(e) {
@@ -179,21 +183,9 @@ var turtl = {
 				});
 
 			// logout shortcut
-			turtl.keyboard.bind('S-l', function() {
+			turtl.keyboard.addEvent('S-l', function() {
 				turtl.route('/users/logout');
 			}, 'dashboard:shortcut:logout');
-
-			// notify addon of message changes
-			turtl.messages.bind(['add', 'remove', 'reset', 'change'], function() {
-				var num_messages = turtl.messages.map(function(msg) {
-					return msg.id();
-				});
-				if(window.port) window.port.send('num-messages', num_messages.length);
-			}, 'turtl:messages:counter');
-			turtl.user.bind_relational('personas', ['add', 'remove', 'reset'], function() {
-				var num_personas = turtl.user.get('personas').models().length;
-				if(window.port) window.port.send('num-personas', num_personas);
-			}, 'turtl:personas:counter');
 		}.bind(turtl));
 		turtl.user.bind('logout', function() {
 			// stop syncing
@@ -240,28 +232,8 @@ var turtl = {
 
 	setup_local_db: function()
 	{
-		var hustle = new Hustle({
-			tubes: ['incoming', 'outgoing', 'files'],
-			db_name: 'hustle_user_'+turtl.user.id(),
-			db_version: 2,
-			maintenance_delay: 5000
-		});
-		var actions = [];
-		actions.push(new Promise(function(resolve, reject) {
-			hustle.open({
-				success: function() {
-					resolve(hustle);
-				},
-				error: function(e) {
-					reject(e);
-				}
-			});
-		}));
-		actions.push(database.setup());
-
-		return Promise.all(actions)
-			.spread(function(hustle, db) {
-				turtl.hustle = hustle;
+		return database.setup()
+			.then(function(db) {
 				turtl.db = db;
 			});
 	},
@@ -279,9 +251,7 @@ var turtl = {
 		turtl.sync.stop();
 		if(turtl.db) turtl.db.close();
 		window.indexedDB.deleteDatabase('turtl.'+turtl.user.id());
-		if(turtl.hustle) turtl.hustle.wipe();
 		turtl.db = null;
-		turtl.hustle = null;
 		if(options.restart)
 		{
 			return turtl.setup_local_db()
@@ -290,24 +260,6 @@ var turtl = {
 		{
 			return Promise.resolve();
 		}
-	},
-
-	setup_header_bar: function()
-	{
-		// setup the header bar
-		if(turtl.controllers.HeaderBar) turtl.controllers.HeaderBar.release();
-		turtl.controllers.HeaderBar = new HeaderBarController();
-	},
-
-	load_controller: function(name, controller, params, options)
-	{
-		options || (options = {});
-
-		if(this.controllers[name]) return this.controllers[name];
-
-		// lol this is my comment.
-		this.controllers[name] = new controller(params, options);
-		return this.controllers[name];
 	},
 
 	loading: function(show)
@@ -366,20 +318,6 @@ var turtl = {
 			// handles all file jobs (download mainly)
 			turtl.files.start_consumer();
 		}
-	},
-
-	setup_background_panel: function()
-	{
-		if(!window.port) return false;
-
-		window.port.bind('addon-controller-open', function(controller_name, params) {
-			var controller = turtl.controllers.pages.load(new window[controller_name](params));
-		});
-
-		window.port.bind('get-height', function() {
-			var height = $('background_content').getCoordinates().height + 10;
-			window.port.send('set-height', height);
-		});
 	},
 
 	stop_spinner: false,
@@ -562,7 +500,7 @@ window.addEvent('domready', function() {
 			{
 				if(typeof(data) == 'string')
 				{
-					data = JSON.decode(data);
+					data = JSON.parse(data);
 				}
 				if(data.__error) cb_fail(data.__error);
 				else cb_success(data);
@@ -570,17 +508,11 @@ window.addEvent('domready', function() {
 		}
 	);
 
-	// make sure inline templates are loaded
-	Template.initialize();
-
 	// create the modal object
-	modal = new TurtlModal({ inject: '#app' });
+	modal = new TurtlModal({ inject: '#wrap' });
 
 	// create the barfr
 	barfr = new Barfr('barfr', {});
-
-	// create markdown converter
-	turtl.load_controller('pages', PagesController);
 
 	(function() {
 		if(window.port) window.port.bind('debug', function(code) {

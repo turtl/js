@@ -4,8 +4,7 @@ var User = Protected.extend({
 
 	relations: {
 		personas: {
-			type: Composer.HasMany,
-			filter_collection: 'PersonasFilter',
+			filter_collection: 'Personas',
 			master: function() { return turtl.profile.get('personas'); },
 			options: {
 				filter: function(p) {
@@ -66,7 +65,7 @@ var User = Protected.extend({
 				this.write_cookie({duration: duration});
 				if (!silent) this.trigger('login', this);
 			})
-			.catch(function(_, e) {
+			.catch(function(e) {
 				log.error('user: problem grabbing user record: ', e);
 			});
 		turtl.api.clear_auth();
@@ -87,7 +86,7 @@ var User = Protected.extend({
 		var cookie = localStorage[config.user_cookie];
 		if(!cookie) return false;
 
-		var userdata = JSON.decode(cookie);
+		var userdata = JSON.parse(cookie);
 		var key = tcrypt.key_to_bin(userdata.k);
 		var auth = userdata.a;
 		delete userdata.k;
@@ -182,7 +181,7 @@ var User = Protected.extend({
 			invite_code: this.get('invite_code'),
 			storage: this.get('storage')
 		};
-		localStorage[config.user_cookie] = JSON.encode(save);
+		localStorage[config.user_cookie] = JSON.stringify(save);
 	},
 
 	logout: function()

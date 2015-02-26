@@ -1,0 +1,42 @@
+#!/bin/bash
+
+### This script generates main.js, main.css, and index.html for prod
+### environments.
+
+pwd=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+source $pwd/include.sh
+
+date=$(date +%Y%m%d%H%M%S)
+
+outdir=gen/
+name=app
+cssfile=${name}.v${date}.css
+jsfile=${name}.v${date}.js
+
+mkdir -p $outdir
+rm -f ${outdir}${name}.css
+rm -f ${outdir}${name}.js
+
+for x in $(all_css); do
+	cat $x >> ${outdir}${name}.css
+	echo >> ${outdir}${name}.css
+done
+
+for x in $(all_js); do
+	cat $x >> ${outdir}${name}.js
+	echo >> ${outdir}${name}.js
+done
+
+css="$(print_css ${outdir}${cssfile})"
+js="$(print_js ${outdir}${jsfile})"
+
+## -----------------------------------------------------------------------------
+## put it all together
+## -----------------------------------------------------------------------------
+index="$(cat views/layouts/default.html)"
+index="$(do_replace "$index" '{{gencss}}' "$css")"
+index="$(do_replace "$index" '{{genjs}}' "$js")"
+
+# send our generated data into their restecpive files
+echo -ne "$index" > index.html
+

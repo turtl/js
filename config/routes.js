@@ -6,6 +6,6 @@ config.routes = {
 	'/users/logout': ['users', 'logout'],
 
 	'/': ['boards', 'index'],
-	'/board/([0-9a-f]+)': ['boards', 'view']
+	'/boards/([0-9a-f]+)': ['boards', 'view']
 };
 
