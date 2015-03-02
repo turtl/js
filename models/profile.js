@@ -74,6 +74,13 @@ var Profile = Composer.RelationalModel.extend({
 				turtl.user.set(userdata);
 			})
 			.then(function() {
+				return turtl.db.sync.get('sync_id');
+			})
+			.then(function(res) {
+				// TODO: ok, we have (not) a sync id, do we grab profile from
+				// API, or do we sync it incrementally?
+			})
+			.then(function() {
 				return ['keychain', 'personas', 'boards', 'notes'];
 			})
 			.map(function(itemname) {
@@ -83,6 +90,9 @@ var Profile = Composer.RelationalModel.extend({
 			})
 			.then(function() {
 				return this.load_from_data(profile_data, options);
+			})
+			.then(function() {
+				return this.load_deserialized();
 			})
 			.then(function() {
 				this.trigger('populated');
@@ -172,6 +182,23 @@ var Profile = Composer.RelationalModel.extend({
 			.then(function() {
 				this.loaded = true;
 			});
+	},
+
+	/**
+	 * Decrypt all the in-memory collections we're tracking (keychain, personas,
+	 * boards)
+	 */
+	load_deserialized: function()
+	{
+		var run_dec = function(type)
+		{
+			return Promise.all(this.get(type).map(function(model) {
+				return model.deserialize();
+			}));
+		}.bind(this);
+		return run_dec('keychain')
+			.then(run_dec.bind(this, 'personas'))
+			.then(run_dec.bind(this, 'boards'));
 	},
 
 	calculate_size: function(options)
