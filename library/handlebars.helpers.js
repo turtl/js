@@ -1,11 +1,19 @@
-Handlebars.registerHelper('url', function(url) {
-	if(window._base_url)
+Handlebars.registerHelper('equal', function(val1, val2, options) {
+	if(val1 == val2)
 	{
-		return window._base_url.replace(/\/$/, '') + url;
+		return options.fn(this);
 	}
 	else
 	{
-		return url;
+		return options.inverse(this);
 	}
+});
+
+Handlebars.registerHelper('asset', function(url) {
+	return asset(url);
+});
+
+Handlebars.registerHelper('sluggify', function(url) {
+	return sluggify(url);
 });
 

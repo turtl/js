@@ -1,0 +1,25 @@
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg id="svg2" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 402.89999 402.86249" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <defs id="defs4">
+  <filter id="filter3998" color-interpolation-filters="sRGB">
+   <feFlood id="feFlood4000" result="flood" flood-color="rgb(0,0,0)" flood-opacity="0.4"/>
+   <feComposite id="feComposite4002" operator="in" result="composite1" in2="SourceGraphic" in="flood"/>
+   <feGaussianBlur id="feGaussianBlur4004" stdDeviation="20" result="blur"/>
+   <feOffset id="feOffset4006" result="offset" dx="0" dy="0"/>
+   <feComposite id="feComposite4008" operator="over" result="composite2" in2="offset" in="SourceGraphic"/>
+  </filter>
+ </defs>
+ <metadata id="metadata7">
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g id="layer1" transform="translate(-170.60331,-324.74764)" stroke="#ffffff" stroke-miterlimit="4" stroke-dasharray="none">
+  <path id="path2985" d="m544.71048,576.58032c0,89.95217-72.92064,162.8728-162.8728,162.8728-89.95217,0-162.87281-72.92063-162.87281-162.8728,0-89.95216,72.92064-162.8728,162.87281-162.8728,89.95216,0,162.8728,72.92064,162.8728,162.8728z" transform="translate(-9.7904358,-50.399231)" filter="url(#filter3998)" stroke-width="10" fill="#8fc46a"/>
+  <path id="rect3763" stroke-linejoin="round" d="m366.13257,445.37802,0,74.88361-74.90675,0,0,11.85174,74.90675,0,0,74.88361,11.85175,0,0-74.88361,74.88361,0,0-11.85174-74.88361,0,0-74.88361-11.85175,0z" fill-rule="nonzero" stroke-linecap="round" stroke-width="6" fill="#ffffff"/>
+ </g>
+</svg>

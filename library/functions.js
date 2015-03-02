@@ -67,7 +67,7 @@ function arrdiff(arr1, arr2) { return arr1.filter(function(el) { return !arr2.co
 
 // used in templating. wraps around EVERY image url, and rewrites it to use whatever
 // storage facility we require (probably S3/cloudfront)
-function img(url)
+function asset(url)
 {
 	if(window._base_url)
 	{
@@ -150,6 +150,15 @@ String.implement({
 		return this.replace(/<\/?script(.*?)>/ig, '');
 	}
 });
+
+function sluggify(string)
+{
+	return string.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9\-\_]/g, '-')
+		.replace(/-+/g, '-')
+		.replace(/(^-|-$)/, '');
+};
 
 function clicked_outside(e, obj)
 {
@@ -288,3 +297,4 @@ var view = {
 		return body;
 	}
 };
+

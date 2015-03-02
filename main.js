@@ -51,7 +51,8 @@ var turtl = {
 		pages: null,
 		header: null,
 		sidebar: null,
-		sync: null,
+		action: null,
+		sync: null
 	},
 
 	router: null,
@@ -95,8 +96,13 @@ var turtl = {
 		turtl.controllers.pages = new PagesController();
 		turtl.controllers.header = new HeaderController();
 		turtl.controllers.sidebar = new SidebarController();
+		turtl.controllers.action = new ActionController();
 		turtl.controllers.pages.bind('prerelease', function() {
+			// always scroll to the top of the window on page load
 			$('wrap').scrollTop = 0;
+
+			// always clear out the available actions on each page load
+			turtl.events.trigger('actions:update', false);
 		});
 
 		turtl.keyboard = new Keyboard({
@@ -154,6 +160,7 @@ var turtl = {
 			turtl.controllers.sync = new SyncController;
 
 			turtl.show_loading_screen(true);
+			turtl.update_loading_screen('Initializing Turtl...');
 
 			// sets up local storage
 			turtl.setup_local_db()
@@ -162,24 +169,29 @@ var turtl = {
 					return turtl.user.save();
 				})
 				.then(function() {
+					turtl.update_loading_screen('Loading profile...');
 					return turtl.profile.load();
 				})
 				.then(function() {
-					// move keys from the user's settings into the keychain
-					turtl.show_loading_screen(false);
+					turtl.update_loading_screen('Indexing notes...');
+					return turtl.search.reindex();
+				})
+				.then(function() {
+					return turtl.setup_syncing();
+				})
+				.then(function() {
+					setTimeout(turtl.show_loading_screen.bind(null, false), 200);
 					turtl.controllers.pages.release();
-					turtl.last_url = '';
-					turtl.search.reindex();
 					var initial_route = options.initial_route || '/';
 					if(initial_route.match(/^\/users\//)) initial_route = '/';
 					if(initial_route.match(/index.html/)) initial_route = '/';
 					if(initial_route.match(/background.html/)) initial_route = '/';
-					turtl.setup_syncing();
+					turtl.route(initial_route);
 					if(window.port) window.port.send('profile-load-complete');
 				})
 				.catch(function(e) {
 					barfr.barf('There was a problem with the initial load of your profile: '+ e);
-					log.error(e);
+					log.error(e.stack);
 				});
 
 			// logout shortcut
@@ -283,47 +295,18 @@ var turtl = {
 		turtl.sync.register_local_tracker('personas', turtl.profile.get('personas'));
 		turtl.sync.register_local_tracker('boards', turtl.profile.get('boards'));
 		turtl.sync.register_local_tracker('notes', turtl.profile.get('notes'));
-
-		// always sync from local db => in-mem models, even if syncing is
-		// disabled. this not only keeps memory synchronized with what's being
-		// stored, it allows us to sync changes between pieces of turtl client-
-		// side. for instance, we can save data in an app tab, and a second
-		// later it will be synced to our background process.
-		turtl.sync.sync_from_db();
-
-		if(turtl.sync_to_api)
-		{
-			var notes = new Notes();
-			notes.start();	// poll for note recrods without files
-
-			// note that our remote trackers use brand new instances of the
-			// models/collections we'll be tracking. this enforces a nice
-			// separation between remote syncing and local syncing (and
-			// encourages all data changes to flow through the local db).
-			turtl.sync.register_remote_tracker('user', new Users());
-			turtl.sync.register_remote_tracker('keychain', new Keychain());
-			turtl.sync.register_remote_tracker('personas', new Personas());
-			turtl.sync.register_remote_tracker('boards', new Boards());
-			turtl.sync.register_remote_tracker('notes', notes);
-			turtl.sync.register_remote_tracker('files', new Files());
-
-			// start API -> local db sync process. calls POST /sync, which grabs
-			// all the latest changes for our profile, which are then applied to
-			// our local db.
-			turtl.sync.sync_from_api();
-
-			// start the local db -> API sync process.
-			turtl.sync.sync_to_api();
-
-			// handles all file jobs (download mainly)
-			turtl.files.start_consumer();
-		}
 	},
 
 	stop_spinner: false,
 
 	show_loading_screen: function(show, delay)
 	{
+		if(!$E('body > #loading-overlay'))
+		{
+			var loading = new Element('div#loading-overlay')
+				.set('html', '<div><span></span><ul></ul></div>')
+				.inject(document.body, 'top');
+		}
 		var overlay = $('loading-overlay');
 		if(!overlay) return;
 		var do_show = function()
@@ -332,11 +315,11 @@ var turtl = {
 			if(show)
 			{
 				this.stop_spinner = false;
-				var text = $E('span', overlay);
-				text.addClass('display');
-				var imghtml = '<img src="'+ img('/images/template/logo.svg') +'" width="40" height="40">';
-				text.set('html', imghtml + imghtml + imghtml);
-				var imgs = text.getElements('img');
+				var spinner = $E('span', overlay);
+				spinner.addClass('display');
+				var imghtml = '<img src="'+ asset('/images/template/logo.svg') +'" width="40" height="40">';
+				spinner.set('html', imghtml + imghtml + imghtml);
+				var imgs = spinner.getElements('img');
 				var idx = 0;
 				//var spinner = $E('.spin', overlay);
 				var spin = function()
@@ -351,13 +334,13 @@ var turtl = {
 						if(!img.hasClass('show')) img.addClass('show');
 					});
 
-					if(text.hasClass('display'))
+					if(spinner.hasClass('display'))
 					{
-						text.removeClass('display');
+						spinner.removeClass('display');
 					}
 					else
 					{
-						text.addClass('display');
+						spinner.addClass('display');
 					}
 					spin.delay(750, this);
 				}.bind(this);
@@ -371,6 +354,15 @@ var turtl = {
 
 		if(delay && delay > 0) do_show.delay(delay);
 		else do_show();
+	},
+
+	update_loading_screen: function(msg)
+	{
+		var text = $E('body > #loading-overlay ul');
+		if(!text) return false;
+		if(!msg) return text.set('html', '');
+		var li = new Element('li').set('html', msg).inject(text);
+		setTimeout(function() { li.addClass('show'); }, 10);
 	},
 
 	unload: function()
@@ -396,10 +388,8 @@ var turtl = {
 			}, options);
 			this.router = new Composer.Router(config.routes, options);
 			this.router.bind_links({ filter_trailing_slash: true });
-			this.router.bind('route', this.route_callback.bind(this));
-			this.router.bind('preroute', function(url) {
-				this.controllers.pages.trigger('preroute', url);
-			}.bind(this));
+			this.router.bind('route', this.controllers.pages.trigger.bind(this.controllers.pages, 'route'));
+			this.router.bind('preroute', this.controllers.pages.trigger.bind(this.controllers.pages, 'preroute'));
 			this.router.bind('fail', function(obj) {
 				log.error('route failed:', obj.url, obj);
 			});
@@ -419,12 +409,6 @@ var turtl = {
 			url = '/users/login';
 		}
 		this.router.route(url, options);
-	},
-
-	route_callback: function(url)
-	{
-		this.last_url = url + window.location.search;
-		this.controllers.pages.trigger('route', url);
 	},
 
 	_set_title: function()
@@ -486,15 +470,12 @@ window.addEvent('domready', function() {
 	Composer.promisify({warn: true});
 
 	window.port = window.port || false;
-	window.__site_url = window.__site_url || '';
-	window.__api_url = config.api_url || window.__api_url || '';
-	window.__api_key = window.__api_key || '';
-	window._base_url = window._base_url || '';
-	turtl.site_url = __site_url || '';
+	window._base_url = config.base_url || '';
+	turtl.site_url = config.site_url || '';
 	turtl.base_window_title = document.title.replace(/.*\|\s*/, '');
 	turtl.api = new Api(
-		__api_url || '',
-		__api_key || '',
+		config.api_url,
+		'',
 		function(cb_success, cb_fail) {
 			return function(data)
 			{
@@ -513,14 +494,6 @@ window.addEvent('domready', function() {
 
 	// create the barfr
 	barfr = new Barfr('barfr', {});
-
-	(function() {
-		if(window.port) window.port.bind('debug', function(code) {
-			if(!window._debug_mode) return false;
-			var res = eval(code);
-			console.log('turtl: debug: ', res);
-		});
-	}).delay(100);
 
 	// prevent backspace from navigating back
 	$(document.body).addEvent('keydown', function(e) {
@@ -543,10 +516,7 @@ window.addEvent('domready', function() {
 	});
 
 	var clid = localStorage.client_id;
-	if(!clid)
-	{
-		clid = localStorage.client_id = tcrypt.random_hash();
-	}
+	if(!clid) clid = localStorage.client_id = tcrypt.random_hash();
 	turtl.client_id = clid;
 	turtl.init();
 });

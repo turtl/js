@@ -2775,6 +2775,9 @@
 				// don't run JS links
 				if(a.href.match(/^javascript:/)) return;
 
+				// don't run mailto links
+				if(a.href.match(/^mailto:/)) return;
+
 				// this is an <a href="#"> link, ignore it
 				if(History.emulated.pushState && a.href.replace(/^.*?#/, '') == '') return;
 

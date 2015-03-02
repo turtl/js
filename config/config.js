@@ -6,6 +6,8 @@ var config = {
 	client: 'core',
 
 	api_url: 'http://turtl.dev:8181/api',
+	site_url: 'https://turtl.it',
+	base_url: '',
 
 	// used to tell us where to store auth. this is only used when serving turtl
 	// as a webapp (big no no). the addons do their own auth.

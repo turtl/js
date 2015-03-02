@@ -1,14 +1,6 @@
-/* modalbox stuff */
-#modalbox {position: absolute; display: block; z-index: 2000; margin-bottom: 32px;}
-#modalbox.loading {text-align: center;}
-#modalbox .modalgutter {display: block; padding: 12px;}
-#modalbox .modalgutter .modalcontent {display: block; padding: 16px; overflow: auto; background: #fff; border-radius: 4px;}
-#main .modalcontent > .closelink,
-#modalbox .closelink {position: absolute; top: 18px; right: -9px; display: block; width: 40px; height: 40px; margin: 0; padding: 0; background: url(../../images/site/modal/close_dark.png) 0 0 no-repeat;}
+@import 'variables';
 
-#modalbox-overlay {position: fixed; z-index: 1999; top: 0; left: 0; width: 100%; height: 100%; background: #000; opacity: .85;}
+#turtl-modal {position: fixed; top: 0; left: 100%; z-index: 10; width: 100%; height: 100%; overflow-x: hidden; background: @theme_gutter; transition: left .3s;}
+#turtl-modal .modal-gutter {padding: @header_height 0 0 0;}
 
-#modalbox.bare .modalgutter {padding: 0;}
-#modalbox.bare .modalgutter .modalcontent {min-height: 100px; padding: 0; border-radius: 0; background: #fff !important;}
-/*#modalbox.bare .closelink {position: absolute; top: 4px; right: -22px; display: block; width: 40px; height: 40px; margin: 0; padding: 0; background: url(../../images/site/modal/close_filled.png) 0 0 no-repeat;}*/
-#modalbox.bare .closelink {position: absolute; top: 10px; right: -24px; display: block; width: 20px; height: 20px; margin: 0; padding: 0; background: url(../../images/site/modal/close_filled.png) center center no-repeat;}
+

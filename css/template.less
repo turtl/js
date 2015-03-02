@@ -21,11 +21,19 @@ a { text-decoration: none; }
 
 //#wrap {position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: scroll;}
 #wrap {position: absolute; width: 100%; min-height: 100%; overflow-x: hidden; .hide-scroll();}
+#sidebar {position: absolute; z-index: 12; left: -100%; width: 100%; height: 100%; transition: left .3s;}
 #app {position: relative; top: 0; left: 0; width: 100%; min-height: 100%; transition: left .3s;}
 #main {position: absolute; top: @header_height; left: 0; width: 100%; transition: left .3s;}
 
-header {position: fixed; z-index: 13; width: 100%; height: 40px; margin: 0 0 0 0; padding: 4px 0 0 0; background: #222; .layer-rest();}
+@header_pad_top: 4px;
+header {position: fixed; z-index: 13; width: 100%; height: (@header_height - @header_pad_top); margin: 0 0 0 0; padding: @header_pad_top 0 0 0; background: #222; .layer-rest();}
 header {
+	a.logo {position: absolute; display: block; width: 60px; height: 26px; margin: 3px 0 0 0;}
+	a.logo {
+		img {position: relative; z-index: 2; max-width: 100%; height: 100%; margin: 0 0 0 8px;}
+		icon {position: absolute; z-index: 1; margin: 6px 0 0 -11px; font-size: 2.0em; color: #8fc46a; transition: transform .3s;}
+	}
+
 	h1 {position: absolute; width: 100%; margin: 1px 0 0 0; text-align: center; font-weight: normal; font-size: 1.15em; line-height: 1.2em;}
 	h1 {
 		em {display: inline-block; max-width: 40%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-top: 7px; color: #8fc46a;}
@@ -68,25 +76,23 @@ header {
 	a.search icon {font-size: 1.8em;}
 }
 
-#turtl-modal {position: fixed; top: 0; left: 100%; z-index: 10; width: 100%; height: 100%; overflow-x: hidden; background: @theme_gutter; transition: left .3s;}
-#turtl-modal .modal-gutter {padding: @header_height 0 0 0;}
-
 footer {display: block; margin: 32px 0 0 0; padding: 16px; font-size: 10px; color: #777; text-align: right;}
 
 /* settings menu slide in */
 body.settings {
-	#app {left: 90%;}
-	header div.actions div.menu {right: 10%;}
-	header div.actions a.menu icon {transform: rotate(90deg);}
-	.bar-actions {display: none;}
+	#sidebar {left: 0%;}
+	#sidebar {
+		> .overlay {position: fixed; left: 0;}
+	}
+	header a.logo icon {transform: rotate(90deg);}
 }
 /* modal box slide in */
 body.modal {
 	#main {}
-	#turtl-modal {left: 00%;}
+	#turtl-modal {left: 0%;}
 	.bar-actions {display: none;}
 }
-body.settings.modal #turtl-modal {left: 90%;}
+
 /* body page slide shite */
 #tmp-slide {position: absolute; top: @header_height; display: none; width: 100%; transition: left .3s;}
 body.page-slide {overflow: hidden;}
