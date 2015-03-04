@@ -4,6 +4,24 @@
 	this.CryptoQueue = function(options)
 	{
 		options || (options = {});
+		var num_workers = options.workers || 4;
+
+		var wid = 1;
+		var pool = new Pool({
+			size: num_workers,
+
+			create: function()
+			{
+				var worker = new Worker(window._base_url + '/library/tcrypt.thread.js');
+				worker.id = wid++;
+				return worker;
+			},
+
+			destroy: function(worker)
+			{
+				worker.terminate();
+			}
+		});
 		var queue = new Queue(function(task, done) {
 			var action = task.action;
 			var key = task.key;
@@ -15,10 +33,9 @@
 			var seed = new Uint32Array(32);
 			window.crypto.getRandomValues(seed);
 
-			var worker = new Worker(window._base_url + '/library/tcrypt.thread.js');
-
 			switch(action)
 			{
+			case 'encrypt+hash':
 			case 'encrypt':
 				// if we only have 1 (one) private field, forgo JSON serialization and
 				// instead just encrypt that field directly.
@@ -32,7 +49,7 @@
 				}
 
 				var wmsg = {
-					cmd: 'encrypt+hash',
+					cmd: action,
 					args: [
 						key,
 						enc_data,
@@ -50,9 +67,14 @@
 					if(res.type != 'success')
 					{
 						var enc = false;
-						log.error('tcrypt.thread: err: ', res);
+						log.error('tcrypt.thread: err: ', res, e.stack);
 						return {error: {res: res, stack: e.stack}};
 					}
+
+					// if we didn't hash, return the standard response with null
+					// for hash
+					if(action == 'encrypt') res.data = {c: res.data, h: null};
+
 					// TODO: uint8array?
 					var enc = tcrypt.words_to_bin(res.data.c);
 					var hash = res.data.h;
@@ -72,7 +94,7 @@
 					if(res.type != 'success')
 					{
 						var dec = false;
-						log.error('tcrypt.thread: err: ', res, e.stack);
+						log.error('tcrypt.thread: err: ', res);
 						return {error: {res: res, stack: e.stack}};
 					}
 					// if we only have one private field, assume that field was
@@ -92,20 +114,80 @@
 				};
 				break;
 			}
-			worker.postMessage(wmsg);
-			worker.addEventListener('message', function(e) {
-				try
+
+			if(data.length < 1024 * 128)
+			{
+				var cmd = wmsg.cmd;
+				var args = wmsg.args;
+				var run_cmd = function(cmd)
 				{
-					var res = completefn(e);
-				}
-				catch(err)
+					var parts = cmd.split('.');
+					// only hardcode two levels deep
+					if(parts.length == 1)
+					{
+						var fn = tcrypt[parts[0]];
+					}
+					else if(parts.length == 2)
+					{
+						var fn = tcrypt[parts[0]][parts[1]];
+					}
+
+					return fn.apply(tcrypt, args);
+				};
+
+				setTimeout(function() {
+					var res;
+					try
+					{
+						switch(action)
+						{
+						case 'encrypt+hash':
+							var enc = run_cmd('encrypt');
+							var hash = tcrypt.hash(enc);
+							res = {c: enc, h: hash};
+							break;
+						default:
+							res = run_cmd(cmd);
+							break;
+						}
+						if(!res) res = {type: 'null'};
+						else res = {type: 'success', data: res};
+						res = {data: res};
+						res = completefn(res);
+						done(res);
+					}
+					catch(err)
+					{
+						log.error('tcrypt.sync: err: ', res, derr(err));
+						res = {type: 'error', data: err.message, trace: err.stack};
+						res = {data: res};
+						res = completefn(res);
+					}
+					done(res);
+				});
+			}
+			else
+			{
+				var worker = pool.grab();
+				worker.postMessage(wmsg);
+				var msgfn = function(e)
 				{
-					res = {error: {res: res, data: err.message, stack: err.stack}}
-				}
-				worker.terminate();
-				done(res);
-			}.bind(this));
-		}, options.workers || 4);
+					worker.removeEventListener('message', msgfn);
+					try
+					{
+						var res = completefn(e);
+					}
+					catch(err)
+					{
+						res = {error: {res: res, data: err.message, stack: err.stack}}
+					}
+					pool.release(worker);
+					done(res);
+				}.bind(this);
+				worker.addEventListener('message', msgfn);
+			}
+
+		}, num_workers);
 		this.push = queue.push;
 	};
 }).apply((typeof exports != 'undefined') ? exports : this);
