@@ -131,12 +131,12 @@ span.tooltip {display: inline; cursor: help; color: #73b8d1;}
 .tip-text em {color: #d6a587; font-style: normal;}
 
 /* LOADING overlay */
-#loading-overlay {display: none; z-index: 2; position: fixed; left: 0; top: 44px; min-width: 100%; height: 100%; margin: 0 auto; padding: 0; text-align: center; background: rgba(red(@theme_gutter), green(@theme_gutter), blue(@theme_gutter), 1);}
+#loading-overlay {display: none; z-index: 20; position: fixed; left: 0; top: 0; min-width: 100%; height: 100%; margin: 0 auto; padding: 0; text-align: center; background: rgba(red(@theme_gutter), green(@theme_gutter), blue(@theme_gutter), .8);}
 #loading-overlay {
 	> div {position: relative; top: -30px; display: table-cell; vertical-align: middle;}
 	span {display: block;}
 	span.spin {display: none;}
-	ul {display: block; width: 150px; height: 0; margin: 3px auto 0 auto; text-align: left; font-weight: bold; overflow: visible; list-style: none;}
+	ul {display: block; width: 150px; height: 0; margin: 8px auto 0 auto; text-align: left; font-weight: bold; overflow: visible; list-style: none;}
 	ul {
 		li {opacity: 0; margin: 3px 0 3px 0; padding: 4px 0 7px 0; border-bottom: 1px solid @theme_gray_light; transition: opacity .6s;}
 		li:last-child {border-bottom: 0;}
