@@ -43,7 +43,7 @@ var BoardsItemController = Composer.Controller.extend({
 	delete: function(e)
 	{
 		if(e) e.stop();
-		if(!confirm('Really delete this board, and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
+		if(!confirm('Really delete the board "'+ this.model.get('title') +'" and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
 
 		this.model.destroy()
 			.catch(function(err) {
