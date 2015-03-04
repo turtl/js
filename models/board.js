@@ -33,7 +33,14 @@ var Board = Protected.extend({
 
 	private_fields: [
 		'title'
-	]
+	],
+
+	init: function()
+	{
+		this.bind('destroy', function() {
+			turtl.profile.get('keychain').remove_key(this.id());
+		});
+	}
 });
 
 var Boards = SyncCollection.extend({
