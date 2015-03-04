@@ -217,7 +217,7 @@ var turtl = {
 			turtl.sync.stop();
 
 			turtl.controllers.pages.release_sub();
-			turtl.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
+			turtl.keyboard.removeEvents('shift+l');
 			turtl.messages.unbind(['add', 'remove', 'reset', 'change'], 'turtl:messages:counter');
 			turtl.user.unbind_relational('personas', ['add', 'remove', 'reset'], 'turtl:personas:counter');
 			turtl.show_loading_screen(false);
@@ -241,8 +241,7 @@ var turtl = {
 			// this should give us a clean slate
 			turtl.user.unbind();
 			turtl.user = new User();
-			turtl.setup_profile();
-			turtl.setup_header_bar();
+			turtl.setup_user();
 			turtl.profile.destroy();
 			turtl.profile = null;
 			turtl.search.destroy();
