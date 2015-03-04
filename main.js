@@ -107,6 +107,9 @@ var turtl = {
 			// always clear out the available actions on each page load
 			turtl.events.trigger('actions:update', false);
 		});
+		turtl.controllers.pages.bind('start', function() {
+			modal.close();
+		});
 
 		turtl.events.bind('ui-error', function(msg, err) {
 			barfr.barf(msg + ': ' + err.message);
@@ -143,7 +146,7 @@ var turtl = {
 			{
 				turtl.user.bind('change', turtl.user.write_cookie.bind(turtl.user), 'user:write_changes_to_cookie');
 			}
-			turtl.controllers.pages.release();
+			turtl.controllers.pages.release_sub();
 			turtl.sync = new Sync();
 			turtl.messages = new Messages();
 			turtl.profile = new Profile();
@@ -170,16 +173,18 @@ var turtl = {
 			turtl.update_loading_screen('Initializing Turtl...');
 
 			// sets up local storage
-			turtl.setup_local_db()
+			turtl.setup_local_db().bind({})
 				.then(function() {
 					// save user to the local DB
 					return turtl.user.save();
 				})
 				.then(function() {
 					turtl.update_loading_screen('Loading profile...');
+					this.start = window.performance.now();
 					return turtl.profile.load();
 				})
 				.then(function() {
+					log.info('profile: loaded in: ', window.performance.now() - this.start);
 					turtl.update_loading_screen('Indexing notes...');
 					return turtl.search.reindex();
 				})
@@ -188,7 +193,7 @@ var turtl = {
 				})
 				.then(function() {
 					setTimeout(turtl.show_loading_screen.bind(null, false), 200);
-					turtl.controllers.pages.release();
+					turtl.controllers.pages.release_sub();
 					var initial_route = options.initial_route || '/';
 					if(initial_route.match(/^\/users\//)) initial_route = '/';
 					if(initial_route.match(/index.html/)) initial_route = '/';
@@ -210,7 +215,7 @@ var turtl = {
 			// stop syncing
 			turtl.sync.stop();
 
-			turtl.controllers.pages.release();
+			turtl.controllers.pages.release_sub();
 			turtl.keyboard.unbind('S-l', 'dashboard:shortcut:logout');
 			turtl.messages.unbind(['add', 'remove', 'reset', 'change'], 'turtl:messages:counter');
 			turtl.user.unbind_relational('personas', ['add', 'remove', 'reset'], 'turtl:personas:counter');
@@ -458,15 +463,7 @@ var turtl = {
 		if(entry && entry.back && do_route_back)
 		{
 			var back = entry.back;
-			console.log('back: ', back);
-			if(back == '#modal.close')
-			{
-				modal.close();
-			}
-			else
-			{
-				turtl.route(entry.back);
-			}
+			turtl.route(entry.back);
 		}
 	},
 

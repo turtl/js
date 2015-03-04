@@ -26,6 +26,7 @@ var ItemActionsController = Composer.Controller.extend({
 		if(!Array.isArray(actions[0])) actions = [actions];
 		if(this.close_action) actions.push(['Close']);
 
+		this.with_bind(turtl.controllers.pages, 'start', this.close_url.bind(this));
 		this.html(view.render('modules/item-actions', {
 			title: this.title,
 			actions: actions
@@ -39,7 +40,10 @@ var ItemActionsController = Composer.Controller.extend({
 		this.menu.setStyles({height: 'auto'});
 		var height = this.menu.getCoordinates().height;
 		this.menu.setStyles({height: ''});
+		$E('header').addClass('under');
 		setTimeout(this.menu.setStyles.bind(this.menu, {height: height}));
+		var close = turtl.push_modal_url('/actions');
+		this.bind_once('close', close);
 	},
 
 	close: function(e)
@@ -48,10 +52,18 @@ var ItemActionsController = Composer.Controller.extend({
 		this.close_propagate();
 	},
 
+	close_url: function()
+	{
+		if(turtl.router.cur_path().match(/\-\/actions/)) return;
+		this.close_propagate();
+	},
+
 	close_propagate: function()
 	{
 		this.container.removeClass('open');
 		this.menu.setStyles({height: ''});
+		$E('header').removeClass('under');
+		this.trigger('close');
 	}
 });
 
