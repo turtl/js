@@ -120,6 +120,7 @@ var turtl = {
 		});
 		turtl.keyboard.attach = turtl.keyboard.activate;
 		turtl.keyboard.detach = turtl.keyboard.deactivate;
+		turtl.keyboard.attach();
 
 		var initial_route = window.location.pathname;
 		turtl.setup_user({initial_route: initial_route});
@@ -207,7 +208,7 @@ var turtl = {
 				});
 
 			// logout shortcut
-			turtl.keyboard.addEvent('S-l', function() {
+			turtl.keyboard.addEvent('shift+l', function() {
 				turtl.route('/users/logout');
 			}, 'dashboard:shortcut:logout');
 		}.bind(turtl));
