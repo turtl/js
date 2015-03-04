@@ -40,9 +40,9 @@ var UserLoginController = FormController.extend({
 				});
 				turtl.user.login(data);
 			})
-			.catch(function(e) {
+			.catch(function(err) {
 				barfr.barf('Login failed.');
-				log.error('login error: ', e);
+				log.error('login error: ', derr(err));
 				turtl.loading(false);
 			})
 			.finally(function() {

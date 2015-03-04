@@ -74,9 +74,9 @@ var Keychain = SyncCollection.extend({
 			{
 				return tcrypt.key_to_bin(models[0].get('k'));
 			}
-			catch(e)
+			catch(err)
 			{
-				log.error('keychain: error deserializing key: ', models[0].id(), e.stack);
+				log.error('keychain: error deserializing key: ', models[0].id(), derr(err));
 				return false;
 			}
 		}

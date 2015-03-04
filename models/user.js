@@ -65,8 +65,8 @@ var User = Protected.extend({
 				this.write_cookie({duration: duration});
 				if (!silent) this.trigger('login', this);
 			})
-			.catch(function(e) {
-				log.error('user: problem grabbing user record: ', e);
+			.catch(function(err) {
+				log.error('user: problem grabbing user record: ', derr(err));
 			});
 		turtl.api.clear_auth();
 	},
@@ -161,7 +161,7 @@ var User = Protected.extend({
 				}.bind(this), 'user:join:add_local_record');
 			})
 			.catch(function(err) {
-				log.error('error: user: join: ', err);
+				log.error('error: user: join: ', derr(err));
 				throw err;
 			});
 	},
@@ -213,7 +213,7 @@ var User = Protected.extend({
 				this.trigger('saved', res);
 			})
 			.catch(function(err) {
-				log.error('error: user.save_settings: ', err);
+				log.error('error: user.save_settings: ', derr(err));
 				throw err;
 			});
 	},

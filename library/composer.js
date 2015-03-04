@@ -1158,6 +1158,10 @@
 		// "private" array holding all the models in this collection
 		_models: [],
 
+		// model.id/cid -> model hashes for fast id lookups
+		_id_idx: {},
+		_cid_idx: {},
+
 		// function used for sorting. override to sort on a criteria besides order of
 		// addition to collection
 		sortfn: null,
@@ -1272,7 +1276,10 @@
 			}
 
 			// listen to the model's events so we can propogate them
-			model.bind('all', this._model_event.bind(this), 'collection:'+this.cid()+':listen:model:all');
+			model.bind('all', this._model_event.bind(this, model), 'collection:'+this.cid()+':listen:model:all');
+
+			// index the model (if we have a real id)
+			this._index_model(model);
 
 			this.fire_event('add', options, model, this, options);
 
@@ -1552,7 +1559,9 @@
 		find_by_id: function(id, options)
 		{
 			options || (options = {});
-			return this.find(function(model) {
+			var model = this._id_idx[id];
+			if(options.fast) return model || false;
+			return model || this.find(function(model) {
 				if(model.id(options.strict) == id)
 				{
 					return true;
@@ -1567,9 +1576,12 @@
 		/**
 		 * convenience function to find a model by cid
 		 */
-		find_by_cid: function(cid)
+		find_by_cid: function(cid, options)
 		{
-			return this.find(function(model) {
+			options || (options = {});
+			var model = this._cid_idx[cid];
+			if(options.fast) return model || false;
+			return model || this.find(function(model) {
 				if(model.cid() == cid)
 				{
 					return true;
@@ -1723,10 +1735,40 @@
 		},
 
 		/**
+		 * Index a model by its id/cid
+		 */
+		_index_model: function(model)
+		{
+			var id = model.id(true);
+			if(id)
+			{
+				this._unindex_model(model);
+				// index the new, and track the ids
+				this._id_idx[id] = model;
+				model._tracked_ids.push(id);
+			}
+			this._cid_idx[model.cid()] = model;
+		},
+
+		_unindex_model: function(model)
+		{
+			// unindex old ids
+			if(!model._tracked_ids) model._tracked_ids = [];
+			model._tracked_ids.forEach(function(id) {
+				delete this._id_idx[id];
+			}.bind(this));
+			delete this._cid_idx[model.cid()];
+		},
+
+		/**
 		 * remove all ties between this colleciton and a model
 		 */
 		_remove_reference: function(model)
 		{
+			// unindex the model
+			this._unindex_model(model);
+
+			// defref this collection from the model
 			Composer.array.erase(model.collections, this);
 
 			// don't listen to this model anymore
@@ -1736,10 +1778,15 @@
 		/**
 		 * bound to every model's "all" event, propagates or reacts to certain events.
 		 */
-		_model_event: function(ev, model, collections, options)
+		_model_event: function(model, ev, _)
 		{
-			if(ev == 'destroy') this.remove(model, options);
-			this.trigger.apply(this, arguments);
+			// reindex the model if its id changed
+			if(ev == 'change:'+ model.id_key) this._index_model(model);
+			if(ev == 'destroy') this.remove(model, arguments[4]);
+
+			// forward the event
+			var args = Array.prototype.slice.call(arguments, 1);
+			this.trigger.apply(this, args);
 		}
 	});
 	this.Composer.exp0rt({ Collection: Collection });
@@ -2298,6 +2345,9 @@
 		// the collection we're tracking
 		_collection: null,
 
+		// holds our empty state
+		_empty: true,
+
 		/**
 		 * Set up tracking on the given collection. When models are added or
 		 * removed to the collection, the change is reflected in the
@@ -2310,6 +2360,17 @@
 			options || (options = {});
 			this.set_options(options);
 			this._collection = collection;
+
+			// empty state tracking
+			if(collection.size() > 0) this._empty = false;
+			this.with_bind(collection, ['clear', 'add', 'remove', 'reset'], function() {
+				var empty = collection.size() == 0;
+				if(this._empty && !empty) this.trigger('list:notempty');
+				if(!this._empty && empty) this.trigger('list:empty');
+				this._empty = empty;
+			}.bind(this));
+			// trigger the initial empty state event
+			this.trigger('list:'+(this._empty ? 'empty' : 'notempty'));
 
 			this.with_bind(collection, 'clear', function(options) {
 				this.clear_subcontrollers();
@@ -2326,6 +2387,7 @@
 					this.reset_subcontrollers(create_fn, options);
 				}.bind(this));
 			}
+
 			this.reset_subcontrollers(create_fn);
 		},
 

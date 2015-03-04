@@ -15,7 +15,7 @@ var Note = Protected.extend({
 	public_fields: [
 		'id',
 		'user_id',
-		'board_id',
+		'boards',
 		'file',
 		'has_file',
 		'keys',
@@ -79,8 +79,8 @@ var Note = Protected.extend({
 					.only(this.id())
 					.modify({has_file: has_file})
 					.execute()
-					.catch(function(e) {
-						log.error('note: set has_file: ', e)
+					.catch(function(err) {
+						log.error('note: set has_file: error: ', derr(err))
 					});
 			}
 		}.bind(this));
@@ -105,8 +105,8 @@ var Note = Protected.extend({
 						this.get('file').set({blob_url: blob_url});
 						this.trigger('change', this);
 					})
-					.catch(function(e) {
-						log.error('note: file: problem converting to blob: ', e);
+					.catch(function(err) {
+						log.error('note: file: problem converting to blob: ', derr(err));
 					});
 			}
 		}.bind(this));
@@ -323,8 +323,8 @@ var Note = Protected.extend({
 				delete filedata.body;
 				turtl.sync.queue_remote_change('files', 'create', filedata);
 			})
-			.catch(function(e) {
-				log.error('Error uploading file: ', hash, e);
+			.catch(function(err) {
+				log.error('Error uploading file: ', hash, derr(err));
 			});
 	}
 });
@@ -410,20 +410,20 @@ var Notes = SyncCollection.extend({
 							.only(notedata.id)
 							.modify({has_file: 2})
 							.execute()
-							.catch(function(e) {
-								log.error('sync: notes: set has_file = 2', e);
+							.catch(function(err) {
+								log.error('sync: notes: set has_file = 2', derr(err));
 							}.bind(this));
 						// no need to mess with the file record if we've got one already
 						if(file) return false;
 						// file record doesn't exist! add it.
-						turtl.db.files.update(filedata).catch(function(e) {
-							log.error('sync: files: insert file record: ', e);
+						turtl.db.files.update(filedata).catch(function(err) {
+							log.error('sync: files: insert file record: ', derr(err));
 						}.bind(this));
 					}.bind(this));
 				}.bind(this));
 			}.bind(this))
-			.catch(function(e) {
-				log.error('sync: '+ this.local_table +': add file records: ', e);
+			.catch(function(err) {
+				log.error('sync: '+ this.local_table +': add file records: ', derr(err));
 			});
 	}
 });

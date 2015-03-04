@@ -33,7 +33,6 @@
 			tasks.push({id: id++, task: task, complete: complete});
 			notify();
 		};
-
 	};
 }).apply((typeof exports != 'undefined') ? exports : this);
 

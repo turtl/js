@@ -1,6 +1,7 @@
 var PagesController = Composer.Controller.extend({
 
 	current: null,
+	preserve: false,
 
 	init: function()
 	{
@@ -15,6 +16,12 @@ var PagesController = Composer.Controller.extend({
 		var main = document.getElement(main_sel);
 
 		modal.close();
+		if(!options.force_reload && this.is(controller_class))
+		{
+			this.get_subcontroller('sub').trigger('page:refresh');
+			return;
+		}
+		if((this.preserve || options.preserve) && this.is(controller_class)) return;
 
 		var content = null;
 		if(options.slide)

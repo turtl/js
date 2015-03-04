@@ -1,7 +1,10 @@
+@import 'variables';
+
 .boards-index {
 	@item_height: 56px;
 	@item_pad_top: 6px;
 	@item_pad_side: 9px;
+	p.empty {padding: 64px 24px; font-size: 1.3em; line-height: 1.4em; color: @theme_gray; text-align: center;}
 	ul.item-list {
 		> li {height: (@item_height - (@item_pad_top * 2)); padding: @item_pad_top;}
 		> li {

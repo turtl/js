@@ -210,7 +210,8 @@ var Barfr = new Class({
 	{
 		this.barfs[id].li.removeEvents('click');
 		this.barfs[id].slider = null;
-		this.barfs[id].li.destroy();
+		// the li is wrapped in a div, courtesy of the slider
+		this.barfs[id].li.getParent().destroy();
 		this.barfs[id].li = null;
 		this.barfs[id].timer = null;
 		delete this.barfs[id];

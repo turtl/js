@@ -100,8 +100,8 @@ var Sync = Composer.Model.extend({
 		var sync_id = this.get('sync_id');
 		turtl.db.sync.update(
 			{key: 'sync_id', value: sync_id}
-		).catch(function(e) {
-			log.error('Sync.save: problem persisting sync record: ', e);
+		).catch(function(err) {
+			log.error('Sync.save: problem persisting sync record: ', derr(err));
 		});
 	},
 
@@ -111,6 +111,8 @@ var Sync = Composer.Model.extend({
 	 */
 	queue_outgoing_change: function(table, action, data)
 	{
+// TODO: re-enable when we care about remote syncing
+return false;
 		var msg = {
 			type: table,
 			action: action,
@@ -124,8 +126,8 @@ var Sync = Composer.Model.extend({
 					log.debug('sync: queue remote: send: ', msg);
 					this.trigger('mem->db');
 				})
-				.catch(function(e) {
-					log.error('sync: queue remote: error: ', e);
+				.catch(function(err) {
+					log.error('sync: queue remote: error: ', derr(err));
 					fail_count++;
 					if(fail_count < 3) enqueue.delay(100, this);
 				});
@@ -155,8 +157,8 @@ var Sync = Composer.Model.extend({
 				this.set({sync_id: rec ? rec.value : null})
 				this._remote_poll = setInterval(this.poll_api_for_changes.bind(this), 10000);
 			})
-			.catch(function(e) {
-				log.error('sync: problem grabbing sync_id: ', e.stack);
+			.catch(function(err) {
+				log.error('sync: problem grabbing sync_id: ', derr(err));
 			});
 	},
 

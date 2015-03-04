@@ -285,9 +285,9 @@ var FileData = Protected.extend({
 				}
 				return this;
 			})
-			.catch(function(e) {
-				log.error('file: download: save error: ', e);
-				throw e;
+			.catch(function(err) {
+				log.error('file: download: save error: ', derr(err));
+				throw err;
 			});
 	}
 });
@@ -389,9 +389,9 @@ var Files = SyncCollection.extend({
 					turtl.sync.notify_local_change('notes', 'update', notedata[0]);
 				}
 			})
-			.catch(function(e) {
-				log.error('file: update from api save: update note: ', e);
-				throw e;
+			.catch(function(err) {
+				log.error('file: update from api save: update note: ', derr(err));
+				throw err;
 			});
 	},
 
@@ -413,7 +413,7 @@ var Files = SyncCollection.extend({
 						turtl.hustle.Queue.put({type: 'download', filedata: filedata}, {
 							tube: 'files',
 							error: function(err) {
-								log.error('files: queue download: ', err);
+								log.error('files: queue download: ', derr(err));
 								if(failures >= 2)
 								{
 									log.error('files: queue download: giving up ('+ failures +' fails)');
@@ -491,7 +491,7 @@ var Files = SyncCollection.extend({
 				}
 				catch(e2)
 				{
-					log.error('files: '+type+': caught error while catching error: ', e2);
+					log.error('files: '+type+': caught error while catching error: ', derr(e2));
 				}
 				throw err;
 			});

@@ -24,6 +24,15 @@ var extend_error = function(extend, errname)
 	return err;
 }
 
+/**
+ * Given an error object, return the best piece of it for rendering to console
+ * (usually this is error_object.stack).
+ */
+function derr(error_object)
+{
+	return error_object.stack;
+}
+
 function get_parent(obj)
 {
 	return obj.$get_parent();

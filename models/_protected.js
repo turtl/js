@@ -4,110 +4,11 @@
 var Keys = Composer.Collection.extend({});
 
 // threaded decryption queue
-var cqueue = new Queue(function(task, done) {
-	var action = task.action;
-	var key = task.key;
-	var data = task.data;
-	var private_fields = task.private_fields;
-	var rawdata = task.rawdata;
-
-	// generate a random seed for sjcl
-	var seed = new Uint32Array(32);
-	window.crypto.getRandomValues(seed);
-
-	var worker = new Worker(window._base_url + '/library/tcrypt.thread.js');
-
-	switch(action)
-	{
-	case 'encrypt':
-		// if we only have 1 (one) private field, forgo JSON serialization and
-		// instead just encrypt that field directly.
-		if(private_fields.length == 1)
-		{
-			var enc_data = data[private_fields[0]];
-		}
-		else
-		{
-			var enc_data = JSON.stringify(data);
-		}
-
-		var wmsg = {
-			cmd: 'encrypt+hash',
-			args: [
-				key,
-				enc_data,
-				{
-					// can't use window.crypto (for random IV), so generate IV here
-					iv: tcrypt.iv(),
-					utf8_random: tcrypt.random_number()
-				}
-			],
-			seed: seed
-		};
-		var completefn = function(e)
-		{
-			var res = e.data;
-			if(res.type != 'success')
-			{
-				var enc = false;
-				log.error('tcrypt.thread: err: ', res);
-				return {error: {res: res, stack: e.stack}};
-			}
-			// TODO: uint8array?
-			var enc = tcrypt.words_to_bin(res.data.c);
-			var hash = res.data.h;
-
-			return {success: [enc, hash]};
-		};
-		break;
-	case 'decrypt':
-		var wmsg = {
-			cmd: 'decrypt',
-			args: [key, data],
-			seed: seed
-		};
-		var completefn = function(e)
-		{
-			var res = e.data;
-			if(res.type != 'success')
-			{
-				var dec = false;
-				log.error('tcrypt.thread: err: ', res, e.stack);
-				return {error: {res: res, stack: e.stack}};
-			}
-			// if we only have one private field, assume that field was
-			// encrypted *without* JSON serialization (and shove it into a
-			// new object)
-			if(rawdata)
-			{
-				var dec = {};
-				dec[private_fields[0]] = res.data;
-			}
-			else
-			{
-				var dec = JSON.parse(res.data);
-			}
-
-			return {success: dec};
-		};
-		break;
-	}
-	worker.postMessage(wmsg);
-	worker.addEventListener('message', function(e) {
-		var res = completefn(e);
-		worker.terminate();
-		done(res);
-	}.bind(this));
-}, 4);
+var cqueue = new CryptoQueue({workers: 4});
 
 var Protected = Composer.RelationalModel.extend({
 	relations: {
-		_body: {
-			model: 'Composer.Model'
-		},
-		keys: {
-			collection: 'Keys'
-		}
+		keys: { collection: 'Keys' }
 	},
 
 	// when serializing/deserializing the encrypted payload for the private
@@ -155,14 +56,24 @@ var Protected = Composer.RelationalModel.extend({
 	},
 
 	/**
+	 * copy Composer.model.clone, but set the key as well
+	 */
+	clone: function()
+	{
+		var newmodel = this.parent.apply(this, arguments);
+		newmodel.key = this.key;
+		newmodel._cid = this.cid();
+		return newmodel;
+	},
+
+	/**
 	 * Take the data in our models private_fields and encrypt them into the
 	 * model.body_key field.
 	 */
 	serialize: function(options)
 	{
 		options || (options = {});
-		if(!this.ensure_key_exists(this.get('keys'))) return false;
-
+		if(!this.ensure_key_exists(this.get('keys'))) return Promise.reject(new Error('no key found for '+ this.id()));
 
 		var json = this.toJSON();
 		var data = {};
@@ -170,7 +81,6 @@ var Protected = Composer.RelationalModel.extend({
 			if(typeof json[k] == 'undefined') return;
 			data[k] = json[k];
 		});
-		console.log('seR: data: ', data, json, this.private_fields);
 		return new Promise(function(resolve, reject) {
 			var msg = {
 				action: 'encrypt',
@@ -183,7 +93,11 @@ var Protected = Composer.RelationalModel.extend({
 				var obj = {};
 				obj[this.body_key] = btoa(res.success[0]);
 				this.set(obj);
-				resolve(res.success);
+				this.public_fields.forEach(function(pub) {
+					if(json[pub] === undefined) return;
+					obj[pub] = json[pub];
+				}.bind(this));
+				resolve([obj, res.success[1]]);
 			}.bind(this))
 		}.bind(this));
 	},
@@ -195,7 +109,7 @@ var Protected = Composer.RelationalModel.extend({
 	deserialize: function(options)
 	{
 		options || (options = {});
-		if(!this.ensure_key_exists(this.get('keys'))) return false;
+		if(!this.ensure_key_exists(this.get('keys'))) return Promise.reject(new Error('no key found for '+ this.id()));
 
 		var data = this.detect_old_format(this.get(this.body_key));
 		return new Promise(function(resolve, reject) {

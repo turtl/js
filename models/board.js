@@ -3,11 +3,9 @@ var Board = Protected.extend({
 
 	relations: {
 		tags: {
-			type: Composer.HasMany,
 			collection: 'Tags'
 		},
 		notes: {
-			type: Composer.HasMany,
 			filter_collection: 'NotesFilter',
 			master: function() { return turtl.profile.get('notes'); },
 			options: {
@@ -19,7 +17,6 @@ var Board = Protected.extend({
 			}
 		},
 		personas: {
-			type: Composer.HasMany,
 			collection: 'Personas'
 		}
 	},

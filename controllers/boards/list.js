@@ -7,7 +7,9 @@ var BoardsListController = Composer.ListController.extend({
 
 	init: function()
 	{
-		this.render();
+		this.bind('list:empty', this.render.bind(this, {empty: true}));
+		this.bind('list:notempty', this.render.bind(this));
+
 		this.track(this.collection, function(model, options) {
 			return new BoardsItemController({
 				inject: this.board_list,
@@ -16,9 +18,12 @@ var BoardsListController = Composer.ListController.extend({
 		}.bind(this));
 	},
 
-	render: function()
+	render: function(options)
 	{
-		this.html(view.render('boards/list'));
+		options || (options = {});
+		this.html(view.render('boards/list', {
+			empty: options.empty
+		}));
 	}
 });
 

@@ -1,10 +1,10 @@
 this["TurtlTemplates"] = this["TurtlTemplates"] || {};
 
 this["TurtlTemplates"]["boards/edit"] = Handlebars.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-  var helper, functionType="function", helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression;
-  return "<h1>"
-    + escapeExpression(((helper = (helper = helpers.action || (depth0 != null ? depth0.action : depth0)) != null ? helper : helperMissing),(typeof helper === functionType ? helper.call(depth0, {"name":"action","hash":{},"data":data}) : helper)))
-    + " board</h1>\n";
+  var stack1, lambda=this.lambda, escapeExpression=this.escapeExpression;
+  return "<input type=\"text\" name=\"title\" value=\""
+    + escapeExpression(lambda(((stack1 = (depth0 != null ? depth0.board : depth0)) != null ? stack1.title : stack1), depth0))
+    + "\" placeholder=\"Board title\">\n\n";
 },"useData":true});
 
 this["TurtlTemplates"]["boards/index"] = Handlebars.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
@@ -18,9 +18,16 @@ this["TurtlTemplates"]["boards/item"] = Handlebars.template({"compiler":[6,">= 2
     + "</h2>\n<p>0 notes</p>\n\n";
 },"useData":true});
 
-this["TurtlTemplates"]["boards/list"] = Handlebars.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-  return "<ul class=\"item-list\"></ul>\n";
-  },"useData":true});
+this["TurtlTemplates"]["boards/list"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
+  return "	<p class=\"empty\">You have no boards.<br>Click the add button below!</p>\n";
+  },"3":function(depth0,helpers,partials,data) {
+  return "	<ul class=\"item-list\"></ul>\n";
+  },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+  var stack1, buffer = "";
+  stack1 = helpers['if'].call(depth0, (depth0 != null ? depth0.empty : depth0), {"name":"if","hash":{},"fn":this.program(1, data),"inverse":this.program(3, data),"data":data});
+  if (stack1 != null) { buffer += stack1; }
+  return buffer;
+},"useData":true});
 
 this["TurtlTemplates"]["modules/actions"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
   var helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression;
@@ -50,7 +57,7 @@ this["TurtlTemplates"]["modules/actions"] = Handlebars.template({"1":function(de
   return buffer;
 },"useData":true});
 
-this["TurtlTemplates"]["modules/form_layout"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
+this["TurtlTemplates"]["modules/form-layout"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
   var helper, functionType="function", helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression;
   return "			<div class=\"button-row clear\">\n				<div class=\"button submit\">\n					<span>"
     + escapeExpression(((helper = (helper = helpers.action || (depth0 != null ? depth0.action : depth0)) != null ? helper : helperMissing),(typeof helper === functionType ? helper.call(depth0, {"name":"action","hash":{},"data":data}) : helper)))
@@ -64,7 +71,7 @@ this["TurtlTemplates"]["modules/form_layout"] = Handlebars.template({"1":functio
   buffer += "\n";
   stack1 = helpers['if'].call(depth0, (depth0 != null ? depth0.buttons : depth0), {"name":"if","hash":{},"fn":this.program(1, data),"inverse":this.noop,"data":data});
   if (stack1 != null) { buffer += stack1; }
-  return buffer + "		<input type=\"submit\" value=\"submit\" style=\"display:none;\">\n	</form>\n</div>\n\n";
+  return buffer + "		<input type=\"submit\" value=\"submit\" style=\"display:none;\">\n	</form>\n</div>\n\n\n";
 },"useData":true});
 
 this["TurtlTemplates"]["modules/header"] = Handlebars.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {

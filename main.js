@@ -1,3 +1,6 @@
+var $E = function(selector, filter) {return ($(filter) || document).getElement(selector);};
+var $ES = function(selector, filter) {return ($(filter) || document).getElements(selector);};
+
 // we need CBC for backwards compat
 sjcl.beware['CBC mode is dangerous because it doesn\'t protect message integrity.']();
 
@@ -105,6 +108,10 @@ var turtl = {
 			turtl.events.trigger('actions:update', false);
 		});
 
+		turtl.events.bind('ui-error', function(msg, err) {
+			barfr.barf(msg + ': ' + err.message);
+		});
+
 		turtl.keyboard = new Keyboard({
 			defaultEventType: 'keydown'
 		});
@@ -189,9 +196,9 @@ var turtl = {
 					turtl.route(initial_route);
 					if(window.port) window.port.send('profile-load-complete');
 				})
-				.catch(function(e) {
-					barfr.barf('There was a problem with the initial load of your profile: '+ e);
-					log.error(e.stack);
+				.catch(function(err) {
+					barfr.barf('There was a problem with the initial load of your profile: '+ err.message);
+					log.error(derr(err));
 				});
 
 			// logout shortcut
@@ -376,24 +383,26 @@ var turtl = {
 
 	setup_router: function(options)
 	{
-		options || (options = {});
+		if(this.router) return;
 
-		if(!this.router)
-		{
-			options = Object.merge({
-				base: window._route_base || '',
-				// we'll do our own first route
-				suppress_initial_route: true,
-				enable_cb: function(url) { return turtl.loaded; }
-			}, options);
-			this.router = new Composer.Router(config.routes, options);
-			this.router.bind_links({ filter_trailing_slash: true });
-			this.router.bind('route', this.controllers.pages.trigger.bind(this.controllers.pages, 'route'));
-			this.router.bind('preroute', this.controllers.pages.trigger.bind(this.controllers.pages, 'preroute'));
-			this.router.bind('fail', function(obj) {
-				log.error('route failed:', obj.url, obj);
-			});
-		}
+		options || (options = {});
+		options = Object.merge({
+			base: window._route_base || '',
+			// we'll do our own first route
+			suppress_initial_route: true,
+			enable_cb: function(url) { return turtl.loaded; }
+		}, options);
+		this.router = new Composer.Router(config.routes, options);
+		this.router.bind_links({ filter_trailing_slash: true });
+		this.router.bind('route', this.controllers.pages.trigger.bind(this.controllers.pages, 'route'));
+		this.router.bind('preroute', this.controllers.pages.trigger.bind(this.controllers.pages, 'preroute'));
+		this.router.bind('fail', function(obj) {
+			log.error('route failed:', obj.url, obj);
+		});
+		this.router.bind('preroute', function(boxed) {
+			boxed.path = boxed.path.replace(/\-\-.*$/, '');
+			return boxed;
+		});
 	},
 
 	route: function(url, options)
@@ -459,6 +468,16 @@ var turtl = {
 				turtl.route(entry.back);
 			}
 		}
+	},
+
+	push_modal_url: function(url)
+	{
+		var back = turtl.router.cur_path().replace(/\-\-.*/, '');
+		turtl.route(back + '--' + url);
+		return function()
+		{
+			turtl.route(back);
+		};
 	}
 };
 
@@ -534,7 +553,7 @@ if(config.catch_global_errors)
 		url = url.replace(/^.*\/data\/app/, '/data/app');
 		turtl.api.post('/log/error', {data: {client: config.client, version: config.version, msg: msg, url: url, line: line}})
 			.catch(function(err) {
-				log.error('error catcher: error posting (how ironic): ', err);
+				log.error('error catcher: error posting (how ironic): ', derr(err));
 				// error posting, disable log for 30s
 				enable_errlog = false;
 				(function() { enable_errlog = true; }).delay(30000);

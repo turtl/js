@@ -55,42 +55,47 @@ Composer.sync = function(method, model, options)
 		if(options.success) options.success(res);
 	};
 
+	var promise = Promise.resolve();
 	if(method != 'read')
 	{
 		// serialize our model, and add in any extra data needed
-		modeldata = model.toJSON();
-		if(options.args) modeldata.meta = options.args;
+		promise = model.serialize();
 	}
 
-	// any k/v data that doesn't go by the "id" field should have it's key field
-	// filled in here.
-	if(table == 'user')
-	{
-		modeldata.key = 'user';
-	}
+	promise
+		.spread(function(serialized) {
+			if(serialized) modeldata = serialized;
+			if(modeldata && options.args) modeldata.meta = options.args;
+			// any k/v data that doesn't go by the "id" field should have it's key field
+			// filled in here.
+			if(table == 'user')
+			{
+				modeldata.key = 'user';
+			}
 
-	log.debug('save: '+ table +': '+ method, modeldata);
-	switch(method)
-	{
-	case 'read':
-		turtl.db[table].get(model.id()).then(success).catch(error);
-		break;
-	case 'create':
-		model._cid = model.cid();
-		modeldata.id = model.cid();
+			switch(method)
+			{
+			case 'read':
+				turtl.db[table].get(model.id()).then(success).catch(error);
+				break;
+			case 'create':
+				model.set({id: model.cid()});
+				modeldata.id = model.id();
 
-		turtl.db[table].add(modeldata).then(success).catch(error);
-		break;
-	case 'delete':
-		turtl.db[table].remove(model.id()).then(success).catch(error);
-		break;
-	case 'update':
-		turtl.db[table].update(modeldata).then(success).catch(error);
-		break;
-	default:
-		throw new SyncError('Bad method passed to Composer.sync: '+ method);
-		return false;
-	}
+				turtl.db[table].add(modeldata).then(success).catch(error);
+				break;
+			case 'delete':
+				turtl.db[table].remove(model.id()).then(success).catch(error);
+				break;
+			case 'update':
+				turtl.db[table].update(modeldata).then(success).catch(error);
+				break;
+			default:
+				throw new SyncError('Bad method passed to Composer.sync: '+ method);
+				return false;
+			}
+			log.debug('save: '+ table +': '+ method, modeldata);
+		});
 };
 
 /**

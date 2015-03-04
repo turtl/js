@@ -232,9 +232,9 @@ var Profile = Composer.RelationalModel.extend({
 				}
 				return profile_size;
 			})
-			.catch(function(e) {
-				log.error('profile: calculate_size: problem grabbing notes for board: ', board.id, e);
-				throw e;
+			.catch(function(err) {
+				log.error('profile: calculate_size: problem grabbing notes for board: ', board.id, derr(err));
+				throw err;
 			});
 	},
 

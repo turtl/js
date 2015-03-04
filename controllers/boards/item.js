@@ -15,6 +15,7 @@ var BoardsItemController = Composer.Controller.extend({
 	init: function()
 	{
 		this.render();
+		this.with_bind(this.model, 'change', this.render.bind(this));
 	},
 
 	render: function()
@@ -34,6 +35,9 @@ var BoardsItemController = Composer.Controller.extend({
 	open_edit: function(e)
 	{
 		if(e) e.stop();
+		new BoardsEditController({
+			model: this.model
+		});
 	},
 
 	delete: function(e)
@@ -42,11 +46,8 @@ var BoardsItemController = Composer.Controller.extend({
 		if(!confirm('Really delete this board, and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
 
 		this.model.destroy()
-			.then(function() {
-				barfr.barf('Board deleted!');
-			})
 			.catch(function(err) {
-				log.error('board: delete: ', err.stack);
+				log.error('board: delete: ', derr(err));
 				barfr.barf('There was a problem deleting your board: '+ err.message);
 			});
 	}
