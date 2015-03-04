@@ -321,6 +321,7 @@ var turtl = {
 		}
 		var overlay = $('loading-overlay');
 		if(!overlay) return;
+		turtl.update_loading_screen(false);
 		var do_show = function()
 		{
 			overlay.setStyle('display', show ? 'table' : '');
