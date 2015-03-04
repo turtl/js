@@ -37,6 +37,8 @@ var UserJoinController = FormController.extend({
 			check_promo.delay(500, this);
 		}.bind(this);
 		check_promo();
+
+		this.render();
 	},
 
 	render: function()

@@ -12,6 +12,11 @@ var UserLoginController = FormController.extend({
 	title: 'Login',
 	formclass: 'user-login',
 
+	init: function()
+	{
+		this.render();
+	},
+
 	render: function()
 	{
 		var content = view.render('users/login');
