@@ -15,13 +15,13 @@ var PagesController = Composer.Controller.extend({
 		var main_sel = turtl.main_container_selector;
 		var main = document.getElement(main_sel);
 
-		modal.close();
+		this.trigger('start');
 		if(!options.force_reload && this.is(controller_class))
 		{
+			this.trigger('refresh');
 			this.get_subcontroller('sub').trigger('page:refresh');
 			return;
 		}
-		if((this.preserve || options.preserve) && this.is(controller_class)) return;
 
 		var content = null;
 		if(options.slide)
@@ -75,5 +75,11 @@ var PagesController = Composer.Controller.extend({
 	is: function(type)
 	{
 		return this.get_subcontroller('sub') instanceof type;
+	},
+
+	release_sub: function()
+	{
+		var sub = this.get_subcontroller('sub');
+		if(sub) sub.release();
 	}
 });
