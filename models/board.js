@@ -2,19 +2,8 @@ var Board = Protected.extend({
 	base_url: '/boards',
 
 	relations: {
-		tags: {
-			collection: 'Tags'
-		},
-		notes: {
-			filter_collection: 'NotesFilter',
-			master: function() { return turtl.profile.get('notes'); },
-			options: {
-				filter: function(model, notesfilter) {
-					return model.get('board_id') == notesfilter.get_parent().id();
-				},
-				forward_all_events: true,
-				refresh_on_change: false
-			}
+		boards: {
+			collection: 'Boards'
 		},
 		personas: {
 			collection: 'Personas'
@@ -24,6 +13,7 @@ var Board = Protected.extend({
 	public_fields: [
 		'id',
 		'user_id',
+		'parent_id',
 		'keys',
 		'privs',
 		'personas',

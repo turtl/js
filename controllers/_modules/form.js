@@ -5,7 +5,6 @@ var FormController = Composer.Controller.extend({
 		'click .button.cancel': 'cancel'
 	},
 
-	modal: false,
 	buttons: true,
 	title: 'Turtl gave me a name',
 	formclass: 'standard-form',

@@ -7,11 +7,12 @@ var BoardsEditController = FormController.extend({
 	},
 
 	model: null,
+	formclass: 'boards-edit',
 
 	init: function()
 	{
 		if(!this.model) this.model = new Board();
-		this.action = this.model.is_new() ? 'Add': 'Edit';
+		this.action = this.model.is_new() ? 'Create': 'Edit';
 		this.parent();
 		this.render();
 
@@ -20,16 +21,24 @@ var BoardsEditController = FormController.extend({
 		modal.open(this.el);
 		this.with_bind(modal, 'close', this.release.bind(this));
 
-		turtl.push_title(this.action + ' board', '/');
+		var child = '';
+		if(this.model.get('parent_id')) child = ' child';
+		turtl.push_title(this.action + child + ' board', '/');
 		this.bind('release', turtl.pop_title.bind(turtl, false));
 		this.bind(['cancel', 'close'], close);
 	},
 
 	render: function()
 	{
+		var parent = null, parent_id = null;
+		if(parent_id = this.model.get('parent_id'))
+		{
+			parent = turtl.profile.get('boards').find_by_id(parent_id).toJSON();
+		}
 		this.html(view.render('boards/edit', {
 			action: this.action,
-			board: this.model.toJSON()
+			board: this.model.toJSON(),
+			parent: parent
 		}));
 		if(this.model.is_new()) this.inp_title.focus.delay(10, this.inp_title);
 	},
@@ -63,7 +72,16 @@ var BoardsEditController = FormController.extend({
 			})
 			.then(function() {
 				this.model.set(clone.toJSON());
-				turtl.profile.get('boards').upsert(this.model);
+				var parent_id = this.model.get('parent_id');
+				var parent = turtl.profile.get('boards').find_by_id(parent_id);
+				if(parent)
+				{
+					parent.get('boards').upsert(this.model);
+				}
+				else
+				{
+					turtl.profile.get('boards').upsert(this.model);
+				}
 				this.trigger('close');
 			})
 			.catch(function(err) {

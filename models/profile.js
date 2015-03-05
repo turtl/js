@@ -95,6 +95,9 @@ var Profile = Composer.RelationalModel.extend({
 				return this.load_deserialized();
 			})
 			.then(function() {
+				return this.organize_boards();
+			})
+			.then(function() {
 				this.trigger('populated');
 			});
 	},
@@ -199,6 +202,23 @@ var Profile = Composer.RelationalModel.extend({
 		return run_dec('keychain')
 			.then(run_dec.bind(this, 'personas'))
 			.then(run_dec.bind(this, 'boards'));
+	},
+
+	/**
+	 * Organize the boards in the profile from being flat into a tree structure
+	 */
+	organize_boards: function()
+	{
+		var boards = this.get('boards');
+		boards.models().slice(0).each(function(board) {
+			var parent_id = board.get('parent_id');
+			if(!parent_id) return;
+			var parent = boards.find_by_id(parent_id);
+			if(!parent) return;
+			parent.get('boards').add(board);
+			boards.remove(board);
+		});
+		return boards;
 	},
 
 	calculate_size: function(options)
