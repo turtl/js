@@ -258,14 +258,51 @@ var Protected = Composer.RelationalModel.extend({
 		var keys = [];
 		members.each(function(m) {
 			m = Object.clone(m);
-			var key = m.k;
-			var enc = this.encrypt_key(key, this.key).toString();
+			var encrypting_key = m.k;
+			var enc = this.encrypt_key(encrypting_key, this.key).toString();
 			m.k = enc;
 			keys.push(m);
 		}.bind(this));
 
 		this.set({keys: keys}, options);
 		return keys;
+	},
+
+	// -------------------------------------------------------------------------
+	// NOTE: [encrypt|decrypt]_key() do not use async crypto.
+	//
+	// the rationale behind this is that the data they operate on is predictably
+	// small, and therefor has predictable performance. this eliminates the need
+	// to run in the crypto queue, and the need to be otherwise async.
+	//
+	// consider these functions conscientious objectors to queued crypto.
+	// -------------------------------------------------------------------------
+	/**
+	 * Handles decryption of any/all subkeys.
+	 */
+	decrypt_key: function(decrypting_key, encrypted_key)
+	{
+		var raw = this.detect_old_format(encrypted_key);
+		try
+		{
+			var decrypted = tcrypt.decrypt(decrypting_key, raw, {raw: true});
+		}
+		catch(e)
+		{
+			log.warn('item ('+ (this.id(true) || parentobj.id) +'): ', e.message);
+			return false;
+		}
+		return decrypted;
+	},
+
+	/**
+	 * Handles encryption of any/all subkeys.
+	 */
+	encrypt_key: function(key, key_to_encrypt)
+	{
+		var encrypted = tcrypt.encrypt(key, key_to_encrypt);
+		encrypted = tcrypt.to_base64(encrypted);
+		return encrypted;
 	}
 });
 
