@@ -3,5 +3,4 @@ node_modules
 index.html
 *.css
 !reset.css
-library/templates/html.js
-library/templates/handlebars.js
+library/templates.js
