@@ -7,7 +7,8 @@ var BoardsItemController = Composer.Controller.extend({
 
 	events: {
 		'click .menu a[rel=edit]': 'open_edit',
-		'click .menu a[rel=delete]': 'delete'
+		'click .menu a[rel=delete]': 'delete',
+		'click .menu a[rel=add-child-board]': 'open_add_child'
 	},
 
 	model: null,
@@ -27,7 +28,10 @@ var BoardsItemController = Composer.Controller.extend({
 			return new ItemActionsController({
 				inject: this.actions,
 				title: 'Board menu',
-				actions: [['Edit', 'Delete']]
+				actions: [
+					[{name: 'Edit'}, {name: 'Delete'}],
+					[{name: 'Add child board'}]
+				]
 			});
 		}.bind(this));
 	},
@@ -38,6 +42,11 @@ var BoardsItemController = Composer.Controller.extend({
 		new BoardsEditController({
 			model: this.model
 		});
+	},
+
+	open_add_child: function(e)
+	{
+		if(e) e.stop();
 	},
 
 	delete: function(e)
