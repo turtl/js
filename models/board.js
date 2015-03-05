@@ -29,6 +29,9 @@ var Board = Protected.extend({
 	{
 		this.bind('destroy', function() {
 			turtl.profile.get('keychain').remove_key(this.id());
+			this.get('boards').each(function(board) {
+				board.destroy();
+			});
 		});
 	}
 });
