@@ -9,7 +9,11 @@
 			<div class="row">
 				<ul>
 					{{#each this}}
-						<li><a href="#{{sluggify this}}" rel="{{sluggify this}}">{{this}}</a></li>
+						<li {{#if class}}class="{{class}}"{{/if}}>
+							<a href="#{{sluggify name}}" rel="{{sluggify name}}">
+								{{name}}
+							</a>
+						</li>
 					{{/each}}
 				</ul>
 			</div>

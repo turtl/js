@@ -7,9 +7,9 @@ var ItemActionsController = Composer.Controller.extend({
 
 	events: {
 		'click .item-actions > a': 'open',
-		'click .menu a[rel=close]': 'close',
-		'click .menu a': 'close_propagate',
-		'click .overlay': 'close'
+		'click .overlay': 'close_click',
+		'click .menu a[rel=close]': 'close_click',
+		'click .menu a': 'close',
 	},
 
 	actions: [],
@@ -18,13 +18,17 @@ var ItemActionsController = Composer.Controller.extend({
 	init: function()
 	{
 		this.render();
+
+		var closebind = this.close.bind(this);
+		turtl.keyboard.addEvent('esc', closebind);
+		this.bind('release', function() { turtl.keyboard.removeEvent('esc', closebind); });
 	},
 
 	render: function()
 	{
 		var actions = this.actions.slice(0);
 		if(!Array.isArray(actions[0])) actions = [actions];
-		if(this.close_action) actions.push(['Close']);
+		if(this.close_action) actions.push([{name: 'Close', class: 'close'}]);
 
 		this.with_bind(turtl.controllers.pages, 'start', this.close_url.bind(this));
 		this.html(view.render('modules/item-actions', {
@@ -46,19 +50,19 @@ var ItemActionsController = Composer.Controller.extend({
 		this.bind_once('close', close);
 	},
 
-	close: function(e)
+	close_click: function(e)
 	{
 		if(e) e.stop();
-		this.close_propagate();
+		this.close();
 	},
 
 	close_url: function()
 	{
 		if(turtl.router.cur_path().match(/\-\/actions/)) return;
-		this.close_propagate();
+		this.close();
 	},
 
-	close_propagate: function()
+	close: function()
 	{
 		this.container.removeClass('open');
 		this.menu.setStyles({height: ''});
