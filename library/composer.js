@@ -1920,6 +1920,8 @@
 			else
 			{
 				el.addEventListener(ev, function(event) {
+					// if we have a mootools event class, wrap the event in it
+					if(event && window.MooTools && window.DOMEvent) event = new DOMEvent(event);
 					fn.apply(this, [event].concat(event.params || []));
 				}, false);
 			}
