@@ -22,6 +22,8 @@ Composer.cid = (function() {
 
 var cid_match = /[0-9a-f]+/;
 
+var default_route = '/boards';
+
 var turtl = {
 	client_id: null,
 
@@ -60,6 +62,9 @@ var turtl = {
 
 	router: null,
 	api: null,
+
+	// holds the last successfully routed url
+	last_url: null,
 
 	// -------------------------------------------------------------------------
 	// Data section
@@ -195,10 +200,10 @@ var turtl = {
 				.then(function() {
 					setTimeout(turtl.show_loading_screen.bind(null, false), 200);
 					turtl.controllers.pages.release_sub();
-					var initial_route = options.initial_route || '/';
-					if(initial_route.match(/^\/users\//)) initial_route = '/';
-					if(initial_route.match(/index.html/)) initial_route = '/';
-					if(initial_route.match(/background.html/)) initial_route = '/';
+					var initial_route = options.initial_route || default_route;
+					if(initial_route.match(/^\/users\//)) initial_route = default_route;
+					if(initial_route.match(/index.html/)) initial_route = default_route;
+					if(initial_route.match(/background.html/)) initial_route = default_route;
 					turtl.route(initial_route);
 					if(window.port) window.port.send('profile-load-complete');
 				})
@@ -389,25 +394,45 @@ var turtl = {
 
 	setup_router: function(options)
 	{
-		if(this.router) return;
+		if(turtl.router) return;
 
 		options || (options = {});
 		options = Object.merge({
 			base: window._route_base || '',
 			// we'll do our own first route
 			suppress_initial_route: true,
-			enable_cb: function(url) { return turtl.loaded; }
+			enable_cb: function(url) {
+				var enabled = true;
+				if(turtl.user.logged_in)
+				{
+				}
+
+				if(turtl.user.logged_in && (!turtl.profile || !turtl.profile.profile_data))
+				{
+					turtl.controllers.pages.trigger('loaded');
+					enabled = false;
+				}
+				if(!turtl.loaded) enabled = false;
+				return enabled;
+			}
 		}, options);
-		this.router = new Composer.Router(config.routes, options);
-		this.router.bind_links({ filter_trailing_slash: true });
-		this.router.bind('route', this.controllers.pages.trigger.bind(this.controllers.pages, 'route'));
-		this.router.bind('preroute', this.controllers.pages.trigger.bind(this.controllers.pages, 'preroute'));
-		this.router.bind('fail', function(obj) {
+		turtl.router = new Composer.Router(config.routes, options);
+		turtl.router.bind_links({ filter_trailing_slash: true });
+		turtl.router.bind('route', turtl.controllers.pages.trigger.bind(turtl.controllers.pages, 'route'));
+		turtl.router.bind('preroute', turtl.controllers.pages.trigger.bind(turtl.controllers.pages, 'preroute'));
+		turtl.router.bind('fail', function(obj) {
 			log.error('route failed:', obj.url, obj);
 		});
-		this.router.bind('preroute', function(boxed) {
+		turtl.router.bind('preroute', function(boxed) {
 			boxed.path = boxed.path.replace(/\-\-.*$/, '');
 			return boxed;
+		});
+
+		// save turtl.last_url
+		var route = null;
+		turtl.router.bind('route', function() {
+			turtl.last_url = route;
+			route = window.location.pathname;
 		});
 	},
 

@@ -23,6 +23,7 @@ var NotesListController = Composer.ListController.extend({
 	render: function(options)
 	{
 		options || (options = {});
+		console.log('notes: list: ', options);
 		this.html(view.render('notes/list', {
 			empty: options.empty
 		}));

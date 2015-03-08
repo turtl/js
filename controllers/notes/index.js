@@ -8,19 +8,25 @@ var NotesIndexController = Composer.Controller.extend({
 
 	init: function()
 	{
-		this.board = turtl.profile.get('boards').find_by_id(this.board_id);
-
-		if(!this.board)
+		if(this.board_id == 'all')
 		{
-			this.release();
-			throw new Error('boards: view: missing board ('+this.board_id+')');
+			var title = 'All notes';
+			var back = undefined;
+		}
+		else
+		{
+			this.board = turtl.profile.get('boards').find_by_id(this.board_id);
+			var title = this.board.get('title');
+			var back = '/boards';
 		}
 
-		turtl.push_title(this.board.get('title'));
-		this.bind('release', turtl.pop_title);
+		turtl.push_title(title, back);
+		this.bind('release', turtl.pop_title.bind(null, false));
+
+		this.render();
 
 		turtl.events.trigger('actions:update', [
-			{title: 'Create a board', name: 'add'}
+			{title: 'Add a note', name: 'add'}
 		]);
 		this.with_bind(turtl.events, 'actions:fire', function(action) {
 			switch(action)
@@ -37,7 +43,7 @@ var NotesIndexController = Composer.Controller.extend({
 			return new NotesListController({
 				inject: this.note_list,
 				search: {
-					board_id: this.board.id()
+					board_id: (this.board ? this.board.id() : undefined)
 				},
 				collection: turtl.profile.get('notes')
 			});

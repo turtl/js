@@ -6,7 +6,9 @@ var SidebarController = Composer.Controller.extend({
 	},
 
 	events: {
-		'click > .overlay': 'close'
+		'click > .overlay': 'close',
+		// close when clicking one of the sidebar links
+		'click ul a': 'close'
 	},
 
 	init: function()

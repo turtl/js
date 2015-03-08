@@ -1,23 +1,20 @@
 var boards = {
 	index: function()
 	{
-		if(!turtl.profile || !turtl.profile.profile_data)
+		var slide = false;
+		var page_con = turtl.controllers.pages.get_subcontroller('sub');
+		console.log('page id: ', page_con.board_id);
+		if(page_con instanceof NotesIndexController && page_con.board_id != 'all')
 		{
-			turtl.controllers.pages.trigger('loaded');
-			return;
+			slide = 'right';
 		}
 		turtl.controllers.pages.load(BoardsController, {}, {
-			slide: turtl.controllers.pages.is(NotesIndexController) ? 'right' : null
+			slide: slide
 		});
 	},
 
-	view: function(board_id)
+	notes: function(board_id)
 	{
-		if(!turtl.profile || !turtl.profile.profile_data)
-		{
-			turtl.controllers.pages.trigger('loaded');
-			return;
-		}
 		turtl.controllers.pages.load(NotesIndexController, {board_id: board_id}, {
 			slide: turtl.controllers.pages.is(BoardsController) ? 'left' : null
 		});

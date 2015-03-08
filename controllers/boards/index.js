@@ -8,7 +8,7 @@ var BoardsController = Composer.Controller.extend({
 	init: function()
 	{
 		turtl.push_title('Boards');
-		this.bind('release', turtl.pop_title);
+		this.bind('release', turtl.pop_title.bind(null, false));
 
 		this.render();
 

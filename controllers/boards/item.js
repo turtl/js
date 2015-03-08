@@ -58,7 +58,7 @@ var BoardsItemController = Composer.Controller.extend({
 			return;
 		}
 		if(e) e.stop();
-		turtl.route('/boards/'+this.model.id());
+		turtl.route('/boards/'+this.model.id()+'/notes');
 	},
 
 	open_edit: function(e)
