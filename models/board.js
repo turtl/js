@@ -37,6 +37,7 @@ var Board = Protected.extend({
 });
 
 var Boards = SyncCollection.extend({
-	model: Board
+	model: Board,
+	sortfn: function(a, b) { return a.get('title', '').localeCompare(b.get('title', '')); }
 });
 
