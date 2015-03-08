@@ -8,8 +8,6 @@ var BoardsListController = Composer.ListController.extend({
 
 	init: function()
 	{
-		if(this.child && this.collection.size() == 0) return this.release();
-
 		this.bind('list:empty', this.render.bind(this, {empty: true}));
 		this.bind('list:notempty', this.render.bind(this));
 

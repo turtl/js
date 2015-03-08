@@ -19,7 +19,6 @@ var BoardsItemController = Composer.Controller.extend({
 	{
 		this.render();
 		this.with_bind(this.model, 'change', this.render.bind(this));
-		this.with_bind(this.model.get('boards'), ['add', 'remove', 'reset'], this.render.bind(this));
 	},
 
 	render: function()
@@ -54,7 +53,6 @@ var BoardsItemController = Composer.Controller.extend({
 	{
 		if(e && Composer.find_parent('.board-actions', e.target))
 		{
-			console.log('nevermd');
 			return;
 		}
 		if(e) e.stop();

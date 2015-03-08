@@ -1,5 +1,7 @@
 {{#if empty}}
-	<p class="empty">You have no boards.<br>Click the add button below!</p>
+	{{#unless child}}
+		<p class="empty">You have no boards.<br>Click the add button below!</p>
+	{{/unless}}
 {{else}}
 	<ul class="item-list"></ul>
 {{/if}}
