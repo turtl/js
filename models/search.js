@@ -92,7 +92,6 @@ var Search = Composer.Collection.extend({
 			// do our offsetting/limiting
 			var per_page = search.per_page || 100;
 			var offset = ((search.page || 1) - 1) * per_page;
-			console.log('res: ', res);
 			var res = res.slice(offset, offset + per_page);
 			this.reset(res.map(function(id) { return {id: id}; }), options);
 			resolve(res);

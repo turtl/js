@@ -475,6 +475,10 @@ var turtl = {
 
 	push_title: function(title, backurl)
 	{
+		// if we have no back url then we're routing to a top-level page, so
+		// clear our title stack
+		if(!backurl) turtl.titles = [];
+
 		turtl.titles.unshift({
 			title: title,
 			back: backurl

@@ -1,10 +1,10 @@
 {{#equal actions.length 1}}
-	<a href="#action" rel="main"><img src="{{asset '/images/template/action.svg'}}" alt="action"></a>
+	<a href="#action" title="{{actions.0.title}}" rel="main"><img src="{{asset '/images/template/action.svg'}}" alt="action"></a>
 {{else}}
 	<a href="#action" rel="open"><img src="{{asset '/images/template/action.svg'}}" alt="action"></a>
 	<ul>
 		{{#each actions}}
-			<li><a href="#{{name}}" rel="{{name}}">{{title}}</a></li>
+			<li><a href="#{{name}}" title="{{title}}" rel="{{name}}">{{title}}</a></li>
 		{{/each}}
 	</ul>
 {{/equal}}
