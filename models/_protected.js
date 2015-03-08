@@ -73,7 +73,7 @@ var Protected = Composer.RelationalModel.extend({
 	serialize: function(options)
 	{
 		options || (options = {});
-		if(!this.ensure_key_exists(this.get('keys'))) return Promise.reject(new Error('no key found for '+ this.id()));
+		if(!this.ensure_key_exists()) return Promise.reject(new Error('no key found for '+ this.id()));
 
 		var json = this.toJSON();
 		var data = {};
@@ -92,7 +92,7 @@ var Protected = Composer.RelationalModel.extend({
 				if(res.error) return reject(res.error);
 				var obj = {};
 				obj[this.body_key] = btoa(res.success[0]);
-				this.set(obj);
+				this.set(obj, options);
 				this.public_fields.forEach(function(pub) {
 					if(json[pub] === undefined) return;
 					obj[pub] = json[pub];
@@ -109,7 +109,7 @@ var Protected = Composer.RelationalModel.extend({
 	deserialize: function(options)
 	{
 		options || (options = {});
-		if(!this.ensure_key_exists(this.get('keys'))) return Promise.reject(new Error('no key found for '+ this.id()));
+		if(!this.ensure_key_exists()) return Promise.reject(new Error('no key found for '+ this.id()));
 
 		var data = this.detect_old_format(this.get(this.body_key));
 		return new Promise(function(resolve, reject) {
@@ -121,7 +121,7 @@ var Protected = Composer.RelationalModel.extend({
 			};
 			cqueue.push(msg, function(res) {
 				if(res.error) return reject(res.error);
-				this.set(res.success);
+				this.set(res.success, options);
 				resolve(res.success);
 			}.bind(this))
 		}.bind(this));
@@ -164,7 +164,10 @@ var Protected = Composer.RelationalModel.extend({
 		// processing and without copying it destroys the original key object,
 		// meaning this object can never be decrypted without re-downloading.
 		// not good.
-		var keys = Array.clone(keys);
+		//
+		// Also, grab the keys from this object's key store and concat them to
+		// the key search list
+		var keys = Array.clone(keys || []).concat(this.get('keys').toJSON());
 
 		// automatically add a user entry to the key search
 		if(!search.u) search.u = [];
@@ -174,8 +177,7 @@ var Protected = Composer.RelationalModel.extend({
 		var search_keys = Object.keys(search);
 		var encrypted_key = false;
 		var decrypting_key = false;
-
-		for(var x in keys)
+		for(var x = 0; x < keys.length; x++)
 		{
 			var key = keys[x];
 			if(!key || !key.k) continue;
