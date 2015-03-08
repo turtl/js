@@ -24,7 +24,7 @@ var BoardsEditController = FormController.extend({
 		var child = '';
 		if(this.model.get('parent_id')) child = ' child';
 		turtl.push_title(this.action + child + ' board', '/');
-		this.bind('release', turtl.pop_title.bind(turtl, false));
+		this.bind('release', turtl.pop_title);
 		this.bind(['cancel', 'close'], close);
 	},
 

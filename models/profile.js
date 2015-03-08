@@ -216,7 +216,7 @@ var Profile = Composer.RelationalModel.extend({
 			var parent = boards.find_by_id(parent_id);
 			if(!parent) return;
 			parent.get('boards').add(board);
-			boards.remove(board);
+			//boards.remove(board);
 		});
 		return boards;
 	},

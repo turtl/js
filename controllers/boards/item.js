@@ -7,6 +7,7 @@ var BoardsItemController = Composer.Controller.extend({
 	},
 
 	events: {
+		'click': 'open_board',
 		'click .menu a[rel=edit]': 'open_edit',
 		'click .menu a[rel=delete]': 'delete',
 		'click .menu a[rel=create-child-board]': 'open_create_child'
@@ -26,14 +27,18 @@ var BoardsItemController = Composer.Controller.extend({
 		this.html(view.render('boards/item', {
 			board: this.model.toJSON()
 		}));
+		var actions = [
+			[{name: 'Edit'}, {name: 'Delete'}],
+		];
+		if(!this.model.get('parent_id'))
+		{
+			actions.push([{name: 'Create child board'}]);
+		}
 		this.track_subcontroller('actions', function() {
 			return new ItemActionsController({
 				inject: this.actions,
 				title: 'Board menu',
-				actions: [
-					[{name: 'Edit'}, {name: 'Delete'}],
-					[{name: 'Create child board'}]
-				]
+				actions: actions
 			});
 		}.bind(this));
 		this.track_subcontroller('children', function() {
@@ -43,6 +48,17 @@ var BoardsItemController = Composer.Controller.extend({
 				child: true
 			});
 		}.bind(this))
+	},
+
+	open_board: function(e)
+	{
+		if(e && Composer.find_parent('.board-actions', e.target))
+		{
+			console.log('nevermd');
+			return;
+		}
+		if(e) e.stop();
+		turtl.route('/boards/'+this.model.id());
 	},
 
 	open_edit: function(e)

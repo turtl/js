@@ -7,7 +7,7 @@ var boards = {
 			return;
 		}
 		turtl.controllers.pages.load(BoardsController, {}, {
-			slide: turtl.controllers.pages.is(BoardsViewController) ? 'right' : null
+			slide: turtl.controllers.pages.is(NotesIndexController) ? 'right' : null
 		});
 	},
 
@@ -18,7 +18,7 @@ var boards = {
 			turtl.controllers.pages.trigger('loaded');
 			return;
 		}
-		turtl.controllers.pages.load(BoardsViewController, {board_id: board_id}, {
+		turtl.controllers.pages.load(NotesIndexController, {board_id: board_id}, {
 			slide: turtl.controllers.pages.is(BoardsController) ? 'left' : null
 		});
 	}

@@ -13,7 +13,14 @@ var BoardsListController = Composer.ListController.extend({
 		this.bind('list:empty', this.render.bind(this, {empty: true}));
 		this.bind('list:notempty', this.render.bind(this));
 
-		this.track(this.collection, function(model, options) {
+		var filter = new Composer.FilterCollection(this.collection, {
+			filter: function(board)
+			{
+				return this.child || !board.get('parent_id');
+			}.bind(this)
+		});
+
+		this.track(filter, function(model, options) {
 			return new BoardsItemController({
 				inject: this.board_list,
 				model: model

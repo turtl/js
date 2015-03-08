@@ -8,6 +8,8 @@ var BoardsController = Composer.Controller.extend({
 	init: function()
 	{
 		turtl.push_title('Boards');
+		this.bind('release', turtl.pop_title);
+
 		this.render();
 
 		turtl.events.trigger('actions:update', [
@@ -16,9 +18,7 @@ var BoardsController = Composer.Controller.extend({
 		this.with_bind(turtl.events, 'actions:fire', function(action) {
 			switch(action)
 			{
-				case 'add':
-					this.open_add();
-					break;
+				case 'add': this.open_add(); break;
 			}
 		}.bind(this));
 	},

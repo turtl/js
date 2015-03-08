@@ -9,12 +9,7 @@ var UserWelcomeController = Composer.Controller.extend({
 	{
 		this.render();
 		turtl.push_title('Welcome!', '/users/login');
-	},
-
-	release: function()
-	{
-		turtl.pop_title();
-		return this.parent.apply(this, arguments);
+		this.bind('release', turtl.pop_title);
 	},
 
 	render: function()
