@@ -29,7 +29,6 @@ var PagesController = Composer.Controller.extend({
 			var sub = this.get_subcontroller('sub');
 			content = sub.el;
 			sub.el = new Element('div');
-			console.log('content: ', content);
 		}
 
 		var scroll = $('wrap').scrollTop;

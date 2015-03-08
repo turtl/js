@@ -3,7 +3,6 @@ var boards = {
 	{
 		var slide = false;
 		var page_con = turtl.controllers.pages.get_subcontroller('sub');
-		console.log('page id: ', page_con.board_id);
 		if(page_con instanceof NotesIndexController && page_con.board_id != 'all')
 		{
 			slide = 'right';

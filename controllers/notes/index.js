@@ -43,9 +43,8 @@ var NotesIndexController = Composer.Controller.extend({
 			return new NotesListController({
 				inject: this.note_list,
 				search: {
-					board_id: (this.board ? this.board.id() : undefined)
-				},
-				collection: turtl.profile.get('notes')
+					boards: (this.board ? [this.board.id()] : [])
+				}
 			});
 		}.bind(this));
 	},

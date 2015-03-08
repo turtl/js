@@ -20,7 +20,6 @@ var Note = Protected.extend({
 		'has_file',
 		'keys',
 		'meta',
-		'sort',
 		'mod'
 	],
 
@@ -45,17 +44,6 @@ var Note = Protected.extend({
 
 	init: function()
 	{
-		var save_old = function() {
-			// keep a delayed record of the last tag set
-			(function() {
-				this.set({old_tags: this.get('tags').map(function(t) {
-					return t.get('name');
-				})}, {silent: true});
-			}).delay(0, this);
-		}.bind(this);
-		this.bind('change:tags', save_old);
-		save_old();
-
 		this.bind_relational('file', ['change:hash'], function() {
 			if(this.is_new() || this.disable_file_monitoring) return false;
 
@@ -296,14 +284,15 @@ var Note = Protected.extend({
 	{
 		options || (options = {});
 		search || (search = {});
-		var board_id = this.get('board_id');
-		var board_key = turtl.profile.get('boards').find_by_id(board_id).key;
-		if(!search.b && board_id && board_key)
-		{
-			search.b = [{id: board_id, k: board_key}];
-		}
-		var ret = this.parent(keys, search, options);
-		return ret;
+		search.b || (search.b = []);
+
+		var board_ids = this.get('boards');
+		board_ids.forEach(function(board_id) {
+			var board_key = turtl.profile.get('boards').find_by_id(board_id).key;
+			if(board_key) search.b.push({id: board_id, k: board_key});
+		}.bind(this));
+		console.log('note: find_key: ', search);
+		return this.parent(keys, search, options);
 	},
 
 	// a hook function, called on a remote model when we get a server-generated
@@ -333,46 +322,27 @@ var Notes = SyncCollection.extend({
 	model: Note,
 	local_table: 'notes',
 
-	sortfn: function(a, b) { return a.id().localeCompare(b.id()); },
-
-	/*
-	// TODO: promisify, if we ever re-enable
-	// used for tracking batch note saves
-	batch_track: null,
-
-	start_batch_save: function()
+	/**
+	 * given an array of note ids, either a) load them from local db,
+	 * deserialize them, and add them to this collection, or b) if they already
+	 * exist in this collection, do nothing =]
+	 */
+	load_and_deserialize: function(note_ids, options)
 	{
-		this.batch_track = [];
-		this.bind('change', function(note) {
-			this.batch_track.push(note);
-		}.bind(this), 'notes:collection:batch_track:change');
+		return Promise.all(note_ids.map(function(id) {
+			if(this.find_by_id(id)) return true;
+			var note;
+			return turtl.db.notes.get(id).bind(this)
+				.then(function(notedata) {
+					if(!notedata) return false;
+					note = new Note(notedata);
+					return note.deserialize(options);
+				})
+				.then(function() {
+					this.add(note, options);
+				});
+		}.bind(this)));
 	},
-
-	finish_batch_save: function(options)
-	{
-		options || (options = {});
-		this.unbind('change', 'notes:collection:batch_track:change');
-		if(this.batch_track.length == 0) return;
-
-		var save = this.batch_track.map(function(note) {
-			// we really only care about the id/body
-			return {id: note.id(), body: note.toJSON().body};
-		});
-		// corpses
-		var args = {data: save};
-		if(options.shared && options.persona)
-		{
-			args.persona = options.persona.id();
-		}
-		// TODO: promisify, if we ever re-enable
-		turtl.api.put('/notes/batch', args, {
-			success: options.success,
-			error: options.error
-		});
-
-		this.batch_track = [];
-	},
-	*/
 
 	start: function()
 	{
@@ -426,8 +396,5 @@ var Notes = SyncCollection.extend({
 				log.error('sync: '+ this.local_table +': add file records: ', derr(err));
 			});
 	}
-});
-
-var NotesFilter = Composer.FilterCollection.extend({
 });
 
