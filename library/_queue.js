@@ -5,12 +5,17 @@
 	{
 		var self = this;
 		var tasks = [];
-		var active = 0;
 		var id = 1;
+
+		var workers = [];
+		for(var i = 0; i < concurrency; i++)
+		{
+			workers.push(worker.bind({id: i + 1}));
+		}
 
 		var notify = function()
 		{
-			if(active >= concurrency) return;
+			if(workers.length == 0) return;
 			run_worker();
 		};
 
@@ -18,14 +23,14 @@
 		{
 			var task = tasks.shift();
 			if(!task) return;
+			var worker = workers.shift();
 			var complete = function(res)
 			{
-				active--;
+				workers.push(worker);
 				if(task.complete) task.complete(res);
 				notify();
 			};
-			active++;
-			setTimeout(worker.bind(null, task.task, complete));
+			setTimeout(function() { worker(task.task, complete); });
 		};
 
 		this.push = function(task, complete)

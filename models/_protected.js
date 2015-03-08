@@ -4,7 +4,9 @@
 var Keys = Composer.Collection.extend({});
 
 // threaded decryption queue
-var cqueue = new CryptoQueue({workers: 4});
+var cqueue = new CryptoQueue({
+	workers: 4
+});
 
 var Protected = Composer.RelationalModel.extend({
 	relations: {

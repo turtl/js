@@ -5,24 +5,14 @@
 	{
 		options || (options = {});
 		var num_workers = options.workers || 4;
+		var datafn = options.data || false;
 
 		var wid = 1;
-		var pool = new Pool({
-			size: num_workers,
-
-			create: function()
-			{
-				var worker = new Worker(window._base_url + '/library/tcrypt.thread.js');
-				worker.id = wid++;
-				return worker;
-			},
-
-			destroy: function(worker)
-			{
-				worker.terminate();
-			}
-		});
 		var queue = new Queue(function(task, done) {
+			if(!this.worker)
+			{
+				this.worker = new Worker(window._base_url + '/library/tcrypt.thread.js');
+			}
 			var action = task.action;
 			var key = task.key;
 			var data = task.data;
@@ -168,7 +158,7 @@
 			}
 			else
 			{
-				var worker = pool.grab();
+				var worker = this.worker;
 				worker.postMessage(wmsg);
 				var msgfn = function(e)
 				{
@@ -181,7 +171,6 @@
 					{
 						res = {error: {res: res, data: err.message, stack: err.stack}}
 					}
-					pool.release(worker);
 					done(res);
 				}.bind(this);
 				worker.addEventListener('message', msgfn);
