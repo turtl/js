@@ -12,7 +12,7 @@ var database = {
 		return db.open({
 			// DB has user id in it...client might have multiple users
 			server: 'turtl.'+turtl.user.id(),
-			version: 9,
+			version: 10,
 			schema: function() { log.info('db.js: create schema'); return {
 				// -------------------------------------------------------------
 				// k/v tables - always has "key" field as primary key
@@ -52,7 +52,7 @@ var database = {
 					key: { keyPath: 'id', autoIncrement: false },
 					indexes: {
 						user_id: {},
-						board_id: {},
+						boards: {multiEntry: true},
 						has_file: {},
 					}
 				},

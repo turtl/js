@@ -33,12 +33,38 @@ var Board = Protected.extend({
 
 	init: function()
 	{
-		this.bind('destroy', function() {
+		this.bind('destroy', function(_1, _2, options) {
 			turtl.profile.get('keychain').remove_key(this.id());
 			this.get('boards').each(function(board) {
-				board.destroy();
+				board.destroy(options);
 			});
-		});
+
+			if(options.delete_notes)
+			{
+				// notes may not be loaded into memory, so we need to find them in
+				// the local db
+				var cnotes = turtl.profile.get('notes');
+				turtl.db.notes.query('boards').only(this.id()).execute()
+					.then(function(notes) {
+						(notes || []).forEach(function(note) {
+							var cnote = cnotes.find_by_id(note.id)
+							if(cnote)
+							{
+								// if we have an existing note in-memory, destroy it.
+								// this will also remove the note from any listening
+								// collections
+								cnote.destroy();
+							}
+							else
+							{
+								// we don't have an existing in-mem model, so create
+								// one and then destroy it
+								(new Note(note)).destroy();
+							}
+						});
+					});
+			}
+		}.bind(this));
 	},
 
 	find_key: function(keys, search, options)

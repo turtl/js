@@ -1,4 +1,8 @@
 var BoardsDeleteController = FormController.extend({
+	elements: {
+		'input[name=notes]': 'inp_delete_notes'
+	},
+
 	formclass: 'boards-delete',
 
 	init: function()
@@ -37,7 +41,8 @@ var BoardsDeleteController = FormController.extend({
 	submit: function(e)
 	{
 		if(e) e.stop();
-		this.model.destroy()
+		var delete_notes = this.inp_delete_notes.get('checked');
+		this.model.destroy({delete_notes: delete_notes})
 			.catch(function(err) {
 				log.error('board: delete: ', derr(err));
 				barfr.barf('There was a problem deleting your board: '+ err.message);
