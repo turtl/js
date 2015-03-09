@@ -58,12 +58,23 @@ var BoardsEditController = FormController.extend({
 			return;
 		}
 
+		var parent_id = this.model.get('parent_id');
+		var parent = turtl.profile.get('boards').find_by_id(parent_id);
 		var keypromise = Promise.resolve();
 		if(this.model.is_new())
 		{
 			this.model.generate_key();
 			keypromise = turtl.profile.get('keychain').add_key(this.model.id(), 'board', this.model.key);
+			if(parent)
+			{
+				// if we have a parent board, make sure the child can decrypt
+				// its key via the parent's
+				this.model.generate_subkeys([
+					{b: parent.id(), k: parent.key}
+				]);
+			}
 		}
+
 
 		var clone = this.model.clone();
 		clone.set({title: title});
@@ -73,16 +84,13 @@ var BoardsEditController = FormController.extend({
 			})
 			.then(function() {
 				this.model.set(clone.toJSON());
-				var parent_id = this.model.get('parent_id');
-				var parent = turtl.profile.get('boards').find_by_id(parent_id);
-				if(parent)
-				{
-					parent.get('boards').upsert(this.model);
-				}
-				else
-				{
-					turtl.profile.get('boards').upsert(this.model);
-				}
+
+				// add the board to our main board list
+				turtl.profile.get('boards').upsert(this.model);
+
+				// also add the board ot our parent's board list, if we have one
+				if(parent) parent.get('boards').upsert(this.model);
+
 				this.trigger('close');
 			})
 			.catch(function(err) {

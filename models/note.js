@@ -291,7 +291,6 @@ var Note = Protected.extend({
 			var board_key = turtl.profile.get('boards').find_by_id(board_id).key;
 			if(board_key) search.b.push({id: board_id, k: board_key});
 		}.bind(this));
-		console.log('note: find_key: ', search);
 		return this.parent(keys, search, options);
 	},
 

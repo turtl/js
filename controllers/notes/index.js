@@ -16,7 +16,19 @@ var NotesIndexController = Composer.Controller.extend({
 		else
 		{
 			this.board = turtl.profile.get('boards').find_by_id(this.board_id);
+			if(!this.board)
+			{
+				barfr.barf('Hmm, that board doesn\'t seem to exist');
+				log.error('notes: index: bad board id: ', this.board_id);
+				window.history.go(-1);
+			}
+			var parent_id = this.board.get('parent_id');
+			var parent = turtl.profile.get('boards').find_by_id(parent_id);
 			var title = this.board.get('title');
+			if(parent)
+			{
+				title = parent.get('title') + '/' + title;
+			}
 			var back = '/boards';
 		}
 

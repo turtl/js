@@ -475,6 +475,7 @@ var turtl = {
 
 	push_title: function(title, backurl)
 	{
+		if(!backurl) turtl.titles = turtl.titles.slice(0, 5);
 		turtl.titles.unshift({
 			title: title,
 			back: backurl

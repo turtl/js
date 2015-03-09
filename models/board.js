@@ -33,6 +33,21 @@ var Board = Protected.extend({
 				board.destroy();
 			});
 		});
+	},
+
+	find_key: function(keys, search, options)
+	{
+		options || (options = {});
+		search || (search = {});
+		search.b || (search.b = []);
+
+		var parent_id = this.get('parent_id');
+		var parent = turtl.profile.get('boards').find_by_id(parent_id);
+		if(parent)
+		{
+			search.b.push({id: parent.id(), k: parent.key});
+		}
+		return this.parent(keys, search, options);
 	}
 });
 
