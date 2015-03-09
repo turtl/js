@@ -75,7 +75,6 @@ var BoardsEditController = FormController.extend({
 			}
 		}
 
-
 		var clone = this.model.clone();
 		clone.set({title: title});
 		keypromise.bind(this)
@@ -87,9 +86,6 @@ var BoardsEditController = FormController.extend({
 
 				// add the board to our main board list
 				turtl.profile.get('boards').upsert(this.model);
-
-				// also add the board ot our parent's board list, if we have one
-				if(parent) parent.get('boards').upsert(this.model);
 
 				this.trigger('close');
 			})

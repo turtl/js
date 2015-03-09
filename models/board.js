@@ -3,7 +3,13 @@ var Board = Protected.extend({
 
 	relations: {
 		boards: {
-			collection: 'Boards'
+			filter_collection: 'BoardsFilter',
+			master: function() { return turtl.profile.get('boards'); },
+			options: {
+				filter: function(model, boardfilter) {
+					return model.get('parent_id') == boardfilter.get_parent().id();
+				}
+			}
 		},
 		personas: {
 			collection: 'Personas'
@@ -52,7 +58,10 @@ var Board = Protected.extend({
 });
 
 var Boards = SyncCollection.extend({
-	model: Board,
+	model: Board
+});
+
+var BoardsFilter = Composer.FilterCollection.extend({
 	sortfn: function(a, b) { return a.get('title', '').localeCompare(b.get('title', '')); }
 });
 

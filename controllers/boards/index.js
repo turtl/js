@@ -5,10 +5,16 @@ var BoardsController = Composer.Controller.extend({
 		'.boards': 'board_list'
 	},
 
+	collection: null,
+
 	init: function()
 	{
 		turtl.push_title('Boards');
 		this.bind('release', turtl.pop_title.bind(null, false));
+
+		this.collection = new BoardsFilter(turtl.profile.get('boards'), {
+			filter: function(b) { return !b.get('parent_id'); }
+		});
 
 		this.render();
 
@@ -29,7 +35,7 @@ var BoardsController = Composer.Controller.extend({
 		this.track_subcontroller('list', function() {
 			return new BoardsListController({
 				inject: this.board_list,
-				collection: turtl.profile.get('boards')
+				collection: this.collection
 			});
 		}.bind(this));
 	},
