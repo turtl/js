@@ -1,0 +1,24 @@
+<p class="warn">
+	Are you sure you want to permanently delete <em>{{board.title}}</em>?
+</p>
+{{#if children.length}}
+	<p class="warn child">
+		This will also delete its children:
+	</p>
+	<ul>
+		{{#each children}}
+			<li>{{title}}</li>
+		{{/each}}
+	</ul>
+	<input id="delete_notes_{{board.id}}" type="checkbox" name="notes" value="1">
+	<label for="delete_notes_{{board.id}}">
+		Also delete any notes in the above <strong>{{count}}</strong> boards
+	</label>
+{{else}}
+	<input id="delete_notes_{{board.id}}" type="checkbox" name="notes" value="1">
+	<label for="delete_notes_{{board.id}}">
+		Also delete any notes in <em>{{../board.title}}</em>
+	</label>
+{{/if}}
+
+

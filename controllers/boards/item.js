@@ -9,7 +9,7 @@ var BoardsItemController = Composer.Controller.extend({
 	events: {
 		'click': 'open_board',
 		'click .menu a[rel=edit]': 'open_edit',
-		'click .menu a[rel=delete]': 'delete',
+		'click .menu a[rel=delete]': 'open_delete',
 		'click .menu a[rel=create-child-board]': 'open_create_child'
 	},
 
@@ -75,16 +75,12 @@ var BoardsItemController = Composer.Controller.extend({
 		});
 	},
 
-	delete: function(e)
+	open_delete: function(e)
 	{
 		if(e) e.stop();
-		if(!confirm('Really delete the board "'+ this.model.get('title') +'" and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
-
-		this.model.destroy()
-			.catch(function(err) {
-				log.error('board: delete: ', derr(err));
-				barfr.barf('There was a problem deleting your board: '+ err.message);
-			});
+		new BoardsDeleteController({
+			model: this.model
+		});
 	}
 });
 
