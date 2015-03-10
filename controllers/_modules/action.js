@@ -24,10 +24,12 @@ var ActionController = Composer.Controller.extend({
 			this.html(view.render('modules/actions', {
 				actions: this.actions
 			}));
+			this.el.removeClass('hide');
 		}
 		else
 		{
 			this.html('');
+			this.el.addClass('hide');
 		}
 	},
 

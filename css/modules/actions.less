@@ -1,6 +1,9 @@
 @import 'variables';
 
 @action_size: 32px;
-#main > .action {position: fixed; z-index: 12; bottom: 14px; right: 14px; width: @action_size; height: @action_size; border-radius: (@action_size / 2); .layer-rest();}
-#main > .action:active {.layer-flat();}
+#main {
+	> .action {position: fixed; z-index: 12; bottom: 14px; right: 14px; width: @action_size; height: @action_size; border-radius: (@action_size / 2); .layer-rest();}
+	> .action:active {.layer-flat();}
+	> .action.hide {display: none;}
+}
 
