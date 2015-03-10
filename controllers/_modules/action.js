@@ -8,7 +8,8 @@ var ActionController = Composer.Controller.extend({
 
 	events: {
 		'click a[rel=main]': 'fire_main',
-		'click a[rel=open]': 'toggle_open'
+		'click a[rel=open]': 'toggle_open',
+		'click ul > li': 'fire_action'
 	},
 
 	actions: [],
@@ -41,6 +42,15 @@ var ActionController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		turtl.events.trigger('actions:fire', this.actions[0].name);
+	},
+
+	fire_action: function(e)
+	{
+		if(e) e.stop();
+		var li = Composer.find_parent('.action > ul > li', e.target);
+		if(!li) return false;
+		turtl.events.trigger('actions:fire', li.get('rel'));
+		this.el.removeClass('open');
 	},
 
 	toggle_open: function(e)
