@@ -8,9 +8,11 @@ var NotesEditController = FormController.extend({
 	model: null,
 	formclass: 'notes-edit',
 
+	type: 'text',
+
 	init: function()
 	{
-		if(!this.model) this.model = new Note();
+		if(!this.model) this.model = new Note({type: this.type || 'text'});
 		this.action = this.model.is_new() ? 'Add' : 'Edit';
 		this.parent();
 		this.render();
@@ -28,6 +30,8 @@ var NotesEditController = FormController.extend({
 	render: function()
 	{
 		this.html(view.render('notes/edit', {
+			note: this.model.toJSON(),
+			type: this.model.get('type') || this.type
 		}));
 	}
 });

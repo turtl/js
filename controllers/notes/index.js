@@ -43,10 +43,7 @@ var NotesIndexController = Composer.Controller.extend({
 			{title: 'Image', name: 'image', icon: '&#127748;'}
 		]);
 		this.with_bind(turtl.events, 'actions:fire', function(action) {
-			switch(action)
-			{
-				case 'add': this.open_add(); break;
-			}
+			this.open_add(action);
 		}.bind(this));
 	},
 
@@ -63,9 +60,11 @@ var NotesIndexController = Composer.Controller.extend({
 		}.bind(this));
 	},
 
-	open_add: function()
+	open_add: function(type)
 	{
-		new NotesEditController();
+		new NotesEditController({
+			type: type
+		});
 	}
 });
 
