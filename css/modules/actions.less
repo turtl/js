@@ -1,2 +1,5 @@
-#main > .action {position: fixed; z-index: 12; bottom: 10px; right: 10px; width: 40px; height: 40px;}
+@import 'variables';
+
+@action_size: 32px;
+#main > .action {position: fixed; z-index: 12; bottom: 14px; right: 14px; width: @action_size; height: @action_size; border-radius: (@action_size / 2); .layer-rest();}
 
