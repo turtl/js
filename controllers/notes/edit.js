@@ -9,10 +9,14 @@ var NotesEditController = FormController.extend({
 	formclass: 'notes-edit',
 
 	type: 'text',
+	board_id: null,
 
 	init: function()
 	{
-		if(!this.model) this.model = new Note({type: this.type || 'text'});
+		if(!this.model) this.model = new Note({
+			boards: (this.board_id ? [this.board_id] : []),
+			type: this.type || 'text'
+		});
 		this.action = this.model.is_new() ? 'Add' : 'Edit';
 		this.parent();
 		this.render();

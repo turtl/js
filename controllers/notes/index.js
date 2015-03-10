@@ -63,7 +63,8 @@ var NotesIndexController = Composer.Controller.extend({
 	open_add: function(type)
 	{
 		new NotesEditController({
-			type: type
+			type: type,
+			board_id: this.board_id
 		});
 	}
 });
