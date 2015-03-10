@@ -2,9 +2,13 @@ var ActionController = Composer.Controller.extend({
 	inject: '#main',
 	class_name: 'action',
 
+	elements: {
+		'> ul': 'el_actions'
+	},
+
 	events: {
 		'click a[rel=main]': 'fire_main',
-		'click a[rel=open]': 'open_actions'
+		'click a[rel=open]': 'toggle_open'
 	},
 
 	actions: [],
@@ -19,10 +23,11 @@ var ActionController = Composer.Controller.extend({
 
 	render: function()
 	{
+		console.log('act: rend');
 		if(this.actions)
 		{
 			this.html(view.render('modules/actions', {
-				actions: this.actions
+				actions: this.actions.reverse()
 			}));
 			this.el.removeClass('hide');
 		}
@@ -39,9 +44,17 @@ var ActionController = Composer.Controller.extend({
 		turtl.events.trigger('actions:fire', this.actions[0].name);
 	},
 
-	open_actions: function(e)
+	toggle_open: function(e)
 	{
 		if(e) e.stop();
+		if(this.el.hasClass('open'))
+		{
+			this.el.removeClass('open');
+		}
+		else
+		{
+			this.el.addClass('open');
+		}
 	}
 });
 
