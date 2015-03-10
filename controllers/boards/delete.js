@@ -3,6 +3,12 @@ var BoardsDeleteController = FormController.extend({
 		'input[name=notes]': 'inp_delete_notes'
 	},
 
+	events: {
+		'click .button.delete': 'submit',
+		'click a.cancel': 'cancel'
+	},
+
+	buttons: false,
 	formclass: 'boards-delete',
 
 	init: function()
