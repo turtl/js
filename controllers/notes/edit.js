@@ -37,6 +37,14 @@ var NotesEditController = FormController.extend({
 			note: this.model.toJSON(),
 			type: this.model.get('type') || this.type
 		}));
+	},
+
+	submit: function(e)
+	{
+		if(e) e.stop();
+
+		// TODO: set user_id into Note
+		// TODO: set user_id into Board (in board edit)
 	}
 });
 
