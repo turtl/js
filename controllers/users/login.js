@@ -9,11 +9,13 @@ var UserLoginController = FormController.extend({
 	},
 
 	buttons: false,
-	title: 'Login',
 	formclass: 'user-login',
 
 	init: function()
 	{
+		this.parent();
+		turtl.push_title('Login');
+		this.bind('release', turtl.pop_title.bind(null, false));
 		this.render();
 	},
 

@@ -6,7 +6,6 @@ var FormController = Composer.Controller.extend({
 	},
 
 	buttons: true,
-	title: 'Turtl gave me a name',
 	formclass: 'standard-form',
 	action: 'Create',
 

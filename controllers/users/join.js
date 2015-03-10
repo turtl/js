@@ -17,12 +17,14 @@ var UserJoinController = FormController.extend({
 	promo: null,
 
 	buttons: false,
-	title: ['Join', '/users/login'],
 	formclass: 'user-join',
 
 	init: function()
 	{
 		this.parent();
+
+		turtl.push_title('Join', '/users/login');
+		this.bind('release', turtl.pop_title.bind(null, false));
 
 		// check for promo codes
 		var check_promo = function()
