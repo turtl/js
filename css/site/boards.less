@@ -22,18 +22,21 @@
 	p.child {padding-top: 20px; color: @theme_gray;}
 }
 
+.boards-delete {width: 94%; margin: 16px auto 0 auto; color: @theme_black;}
 .boards-delete {
-	p.warn {padding-top: 20px; color: @theme_black;}
+	.standard-form {.card();}
 	p.warn {
-		em {color: @theme_primary;}
+		em {color: @theme_accent;}
 	}
 	p.child {margin-bottom: 0;}
-	ul {width: 50%; margin: 0 auto 32px auto;}
+	p.cancel {margin: 0;}
+	ul {width: 50%; margin: 0 auto 16px auto; list-style: none;}
 	ul {
-		li {text-align: left; color: @theme_primary;}
+		li {color: @theme_accent;}
 	}
 	label {
-		em {color: @theme_primary;}
+		em {color: @theme_accent;}
 	}
+	a.cancel {font-size: 1.2em; margin: 0 32px 0 0;}
 	.button {margin: 32px 0 16px 0;}
 }

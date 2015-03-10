@@ -37,8 +37,15 @@ var BoardsDeleteController = FormController.extend({
 				return board.get('parent_id') == bid;
 			})
 			.map(function(board) { return board.toJSON(); });
+
+		var parent_name = '';
+		var parent_id = this.model.get('parent_id');
+		var parent = turtl.profile.get('boards').find_by_id(parent_id);
+		if(parent) parent_name = parent.get('title') + '/';
+
 		this.html(view.render('boards/delete', {
 			board: this.model.toJSON(),
+			parentname: parent_name,
 			children: children,
 			count: children.length + 1
 		}));
