@@ -27,7 +27,7 @@ var ActionController = Composer.Controller.extend({
 		if(this.actions)
 		{
 			this.html(view.render('modules/actions', {
-				actions: this.actions.reverse()
+				actions: this.actions
 			}));
 			this.el.removeClass('hide');
 		}
