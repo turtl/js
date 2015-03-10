@@ -7,6 +7,8 @@ config.routes = {
 	'/boards': ['boards', 'index'],
 	'/boards/([0-9a-f]+)/notes': ['boards', 'notes'],
 
+	'/settings': ['settings', 'index'],
+
 	'/': ['notes', 'index']
 };
 
