@@ -23,7 +23,6 @@ var ActionController = Composer.Controller.extend({
 
 	render: function()
 	{
-		console.log('act: rend');
 		if(this.actions)
 		{
 			this.html(view.render('modules/actions', {
