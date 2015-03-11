@@ -53,16 +53,28 @@ var ActionController = Composer.Controller.extend({
 		this.el.removeClass('open');
 	},
 
+	open: function()
+	{
+		this.el.addClass('show-menu');
+		setTimeout(function() { this.el.addClass('open'); }.bind(this));
+	},
+
+	close: function()
+	{
+		this.el.removeClass('open');
+		setTimeout(function() { this.el.removeClass('show-menu'); }.bind(this), 300);
+	},
+
 	toggle_open: function(e)
 	{
 		if(e) e.stop();
 		if(this.el.hasClass('open'))
 		{
-			this.el.removeClass('open');
+			this.close();
 		}
 		else
 		{
-			this.el.addClass('open');
+			this.open();
 		}
 	}
 });
