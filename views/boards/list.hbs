@@ -1,6 +1,10 @@
 {{#if empty}}
 	{{#unless child}}
-		<p class="empty">You have no boards.<br>Click the add button below!</p>
+		<p class="empty">
+			<icon>&#128188;</icon>
+			No boards here!<br>
+			<small>Tap <em>+</em> to start</small>
+		</p>
 	{{/unless}}
 {{else}}
 	<ul class="item-list"></ul>
