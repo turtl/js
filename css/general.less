@@ -61,14 +61,9 @@ form.standard-form {
 	input[type=password]:focus,
 	input[type=email]:focus,
 	textarea:focus {border-bottom: 1px solid @theme_accent;}
-	.button-row {position: fixed; bottom: 0; left: 0; width: 100%; text-align: left; background: rgba(255, 255, 255, .7); .layer-rest-bottom();}
+	.button-row {position: fixed; bottom: 0; left: 0; width: 100%; text-align: right; background: #fff; border-top: 1px solid @theme_border;}
 	.button-row {
-		.button {width: 49%; margin: 0; text-align: center; background: none; border-radius: 0; box-shadow: none;}
-		.button.submit {float: right; border-left: 1px solid @theme_gray_light;}
-		.button.cancel {float: left;}
-		.button span {font-size: 1.2em; color: @theme_black;}
-		.button.submit span {font-weight: bold; .success;}
-		.button.cancel span {color: @theme_gray;}
+		.button {text-align: center; background: none; border-radius: 0; box-shadow: none;}
 	}
 }
 
@@ -115,7 +110,12 @@ div.button {
 	icon {float: left; margin: 0 8px 0 0; color: rgba(255, 255, 255, .6); font-size: 1.2em; line-height: .5em; vertical-align: baseline;}
 	span {display: inline-block; padding: 12px 32px 10px 32px; color: #fff; text-transform: none; font-size: 1.4em; font-weight: normal;}
 }
+div.button.flat {box-shadow: none;}
+div.button.flat {
+	span {padding-left: 16px; padding-right: 16px; font-size: 1.1em; color: @theme_primary;}
+}
 div.button.cancel {background: @theme_gutter;}
+div.button.flat.cancel,
 div.button.cancel {
 	span {color: @theme_gray;}
 }
