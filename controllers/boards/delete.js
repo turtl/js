@@ -5,7 +5,7 @@ var BoardsDeleteController = FormController.extend({
 
 	events: {
 		'click .button.delete': 'submit',
-		'click a.cancel': 'cancel'
+		'click .button.cancel': 'cancel'
 	},
 
 	buttons: false,

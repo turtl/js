@@ -63,7 +63,7 @@ form.standard-form {
 	textarea:focus {border-bottom: 1px solid @theme_accent;}
 	.button-row {position: fixed; bottom: 0; left: 0; width: 100%; text-align: left; background: rgba(255, 255, 255, .7); .layer-rest-bottom();}
 	.button-row {
-		.button {width: 49%; text-align: center; background: none; border-radius: 0; box-shadow: none;}
+		.button {width: 49%; margin: 0; text-align: center; background: none; border-radius: 0; box-shadow: none;}
 		.button.submit {float: right; border-left: 1px solid @theme_gray_light;}
 		.button.cancel {float: left;}
 		.button span {font-size: 1.2em; color: @theme_black;}
@@ -111,11 +111,15 @@ ul.item-list {
 }
 
 /* generic (non-header) buttons */
-div.button {display: inline-block; cursor: pointer; line-height: 10px; background: @theme_primary; .border-radius(); .layer-rest(); .transition(box-shadow, .1s);}
+div.button {display: inline-block; margin: 0 3px; cursor: pointer; line-height: 10px; background: @theme_primary; .border-radius(); .layer-rest(); .transition(box-shadow, .1s);}
 div.button {
 	&:active {.layer-flat();}
 	icon {float: left; margin: 0 8px 0 0; color: rgba(255, 255, 255, .6); font-size: 1.2em; line-height: .5em; vertical-align: baseline;}
 	span {display: inline-block; padding: 12px 32px 10px 32px; color: #fff; text-transform: none; font-size: 1.4em; font-weight: normal;}
+}
+div.button.cancel {background: @theme_gutter;}
+div.button.cancel {
+	span {color: @theme_gray;}
 }
 
 /* LOADING overlay */
