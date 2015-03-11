@@ -20,6 +20,15 @@ var ActionController = Composer.Controller.extend({
 			this.actions = actions;
 			this.render();
 		}.bind(this));
+
+		var click_outside = function(e)
+		{
+			var inside = Composer.find_parent('#main > .action', e.target);
+			if(inside) return;
+			this.close();
+		}.bind(this);
+		document.body.addEvent('click', click_outside);
+		this.bind('release', function() { document.body.removeEvent('click', click_outside); });
 	},
 
 	render: function()
