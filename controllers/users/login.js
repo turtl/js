@@ -23,7 +23,7 @@ var UserLoginController = FormController.extend({
 	{
 		var content = view.render('users/login');
 		this.html(content);
-		(function() { this.inp_username.focus(); }).delay(100, this);
+		(function() { this.inp_username.focus(); }).delay(10, this);
 	},
 
 	submit: function(e)

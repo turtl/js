@@ -1,5 +1,5 @@
 <p class="warn">
-	Are you sure you want to permanently delete <em>{{parentname}}{{board.title}}</em>
+	Are you sure you want to delete the board <em>{{parentname}}{{board.title}}</em>
 	{{#if children.length}}
 		as well as its children:
 		<ul>
@@ -23,11 +23,12 @@
 	</label>
 </div>
 
-<div class="button cancel">
-	<span>Cancel</span>
+<div class="buttons">
+	<div class="button cancel">
+		<span>Cancel</span>
+	</div>
+	<div class="button delete">
+		<span>Delete</span>
+	</div>
 </div>
-<div class="button delete">
-	<span>Delete</span>
-</div>
-
 

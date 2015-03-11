@@ -21,7 +21,7 @@ img.loading {visibility: hidden;}
 icon {display: inline-block; margin: 0 0 0 0; padding: 0; font-family: Entypo; font-weight: 300; font-size: 18px; line-height: .6em; vertical-align: baseline;}
 a icon {color: #222;}
 
-.interface {line-height: 1.4em; text-align: center;}
+.interface {line-height: 1.4em;}
 .interface h2 {font-size: 1.4em; margin: 0 0 16px 0;}
 .interface p {margin: 0 0 16px 0; font-size: 1.3em; line-height: 1.4em;}
 
@@ -51,12 +51,12 @@ a icon {color: #222;}
 	.warn {color: #922;}
 }
 
-form.standard-form {padding: 16px 4% 16px 4%;}
+form.standard-form {padding: 16px 4% 16px 4%; .card();}
 form.standard-form {
 	input[type=text],
 	input[type=password],
 	input[type=email],
-	textarea {width: 92%; margin: 0 0 12px 0; padding: 9px 4%; font-size: 1.3em; background: #ededed; border: 0; border-bottom: 1px solid #bbb; border-radius: 0; .transition(border);}
+	textarea {width: 92%; margin: 0 0 12px 0; padding: 9px 4%; font-size: 1.3em; background: none; border: 0; border-bottom: 1px solid #bbb; border-radius: 0; .transition(border);}
 	input[type=text]:focus,
 	input[type=password]:focus,
 	input[type=email]:focus,
@@ -104,6 +104,7 @@ ul.item-list {
 }
 
 /* generic (non-header) buttons */
+div.buttons {text-align: center;}
 div.button {display: inline-block; margin: 0 3px; cursor: pointer; line-height: 10px; background: @theme_primary; .border-radius(); .layer-rest(); .transition(box-shadow, .1s);}
 div.button {
 	&:active {.layer-flat();}
@@ -112,7 +113,7 @@ div.button {
 }
 div.button.flat {box-shadow: none;}
 div.button.flat {
-	span {padding-left: 16px; padding-right: 16px; font-size: 1.1em; color: @theme_primary;}
+	span {padding-left: 16px; padding-right: 16px; font-size: 1.2em; color: @theme_primary;}
 }
 div.button.cancel {background: @theme_gutter;}
 div.button.flat.cancel,
@@ -121,7 +122,7 @@ div.button.cancel {
 }
 
 /* LOADING overlay */
-#loading-overlay {display: none; z-index: 20; position: fixed; left: 0; top: 0; min-width: 100%; height: 100%; margin: 0 auto; padding: 0; text-align: center; background: rgba(red(@theme_gutter), green(@theme_gutter), blue(@theme_gutter), .8);}
+#loading-overlay {display: none; z-index: 20; position: fixed; left: 0; top: 0; min-width: 100%; height: 100%; margin: 0 auto; padding: 0; text-align: center; background: rgba(255, 255, 255, .8);}
 #loading-overlay {
 	> div {position: relative; top: -30px; display: table-cell; vertical-align: middle;}
 	span {display: block;}

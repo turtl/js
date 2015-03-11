@@ -22,7 +22,7 @@ Composer.cid = (function() {
 
 var cid_match = /[0-9a-f]+/;
 
-var default_route = '/boards';
+var default_route = '/';
 
 var turtl = {
 	client_id: null,
