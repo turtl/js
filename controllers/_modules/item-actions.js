@@ -13,7 +13,7 @@ var ItemActionsController = Composer.Controller.extend({
 	},
 
 	actions: [],
-	close_action: true,
+	close_action: false,
 
 	init: function()
 	{
@@ -22,6 +22,28 @@ var ItemActionsController = Composer.Controller.extend({
 		var closebind = this.close.bind(this);
 		turtl.keyboard.addEvent('esc', closebind);
 		this.bind('release', function() { turtl.keyboard.removeEvent('esc', closebind); });
+
+		this.with_bind(turtl.events, 'menu:open', function(cid) {
+			if(cid == this.cid()) return false;
+			// close this menu without animating
+			this.menu.setStyles({display: 'none'});
+			this.close();
+			setTimeout(function() {
+				this.menu.setStyles({display: ''});
+			}.bind(this), 300);
+		}.bind(this));
+
+		// close the menu when we click outside
+		var inside = function(e)
+		{
+			var is_inside = Composer.find_parent('.item-actions[rel='+this.cid()+']', e.target);
+			if(is_inside) return;
+			this.close();
+		}.bind(this);
+		$(document.body).addEvent('click', inside);
+		this.bind('release', function() { $(document.body).removeEvent('click', inside); });
+
+		this.with_bind(turtl.controllers.pages, 'start', this.close.bind(this, {noroute: true}));
 	},
 
 	render: function()
@@ -30,8 +52,8 @@ var ItemActionsController = Composer.Controller.extend({
 		if(!Array.isArray(actions[0])) actions = [actions];
 		if(this.close_action) actions.push([{name: 'Close', class: 'close'}]);
 
-		this.with_bind(turtl.controllers.pages, 'start', this.close_url.bind(this));
 		this.html(view.render('modules/item-actions', {
+			cid: this.cid(),
 			title: this.title,
 			actions: actions
 		}));
@@ -40,14 +62,18 @@ var ItemActionsController = Composer.Controller.extend({
 	open: function(e)
 	{
 		if(e) e.stop();
+		turtl.events.trigger('menu:open', this.cid());
 		this.container.addClass('open');
 		this.menu.setStyles({height: 'auto'});
 		var height = this.menu.getCoordinates().height;
 		this.menu.setStyles({height: ''});
-		$E('header').addClass('under');
 		setTimeout(this.menu.setStyles.bind(this.menu, {height: height}));
 		var close = turtl.push_modal_url('/actions');
-		this.bind_once('close', close);
+		this.bind_once('close', function(options) {
+			options || (options = {});
+			if(options.noroute) return;
+			close();
+		});
 	},
 
 	close_click: function(e)
@@ -62,12 +88,12 @@ var ItemActionsController = Composer.Controller.extend({
 		this.close();
 	},
 
-	close: function()
+	close: function(options)
 	{
 		this.container.removeClass('open');
 		this.menu.setStyles({height: ''});
 		$E('header').removeClass('under');
-		this.trigger('close');
+		this.trigger('close', options);
 	}
 });
 
