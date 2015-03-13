@@ -67,6 +67,24 @@ var Board = Protected.extend({
 		}.bind(this));
 	},
 
+	init_new: function(options)
+	{
+		options || (options = {});
+
+		var parent_id = this.get('parent_id');
+		var parent = turtl.profile.get('boards').find_by_id(parent_id);
+		this.set({user_id: turtl.user.id()}, options);
+		this.generate_key();
+		keypromise = turtl.profile.get('keychain').add_key(this.id(), 'board', this.key);
+		if(parent)
+		{
+			// if we have a parent board, make sure the child can decrypt
+			// its key via the parent's
+			this.generate_subkeys([{b: parent.id(), k: parent.key}]);
+		}
+		return keypromise;
+	},
+
 	find_key: function(keys, search, options)
 	{
 		options || (options = {});

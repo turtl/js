@@ -8,7 +8,7 @@ var BoardsDeleteController = FormController.extend({
 		'click .button.cancel': 'cancel'
 	},
 
-	buttons: false,
+	buttons: true,
 	formclass: 'boards-delete',
 
 	init: function()

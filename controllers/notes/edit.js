@@ -63,8 +63,21 @@ var NotesEditController = FormController.extend({
 	{
 		if(e) e.stop();
 
-		// TODO: set user_id into Note
-		// TODO: set user_id into Board (in board edit)
+		var data = {};
+		var errors = [];
+
+		var title = this.inp_title.get('value');
+		var url = this.inp_url.get('value');
+		var text = this.inp_text.get('value');
+
+		var keypromise = Promise.resolve();
+		if(this.model.is_new())
+		{
+			keypromise = this.model.init_new({board_id: this.board_id, silent: true});
+		}
+
+		var clone = this.model.clone();
+		clone.set(data);
 	}
 });
 

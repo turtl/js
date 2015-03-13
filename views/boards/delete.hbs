@@ -11,7 +11,7 @@
 	?
 	{{/if}}
 </p>
-<div>
+<div class="fr delete-notes">
 	<input id="delete_notes_{{board.id}}" type="checkbox" name="notes" value="1">
 	<label for="delete_notes_{{board.id}}">
 		Also delete notes in
@@ -21,14 +21,5 @@
 			<em>{{parentname}}{{../board.title}}</em>
 		{{/if}}
 	</label>
-</div>
-
-<div class="buttons">
-	<div class="button cancel">
-		<span>Cancel</span>
-	</div>
-	<div class="button delete">
-		<span>Delete</span>
-	</div>
 </div>
 

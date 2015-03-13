@@ -110,6 +110,27 @@ var Note = Protected.extend({
 		}.bind(this));
 	},
 
+	init_new: function(options)
+	{
+		options || (options = {});
+
+		var data = {user_id: turtl.user.id()};
+
+		this.generate_key();
+		var board = turtl.profile.get('boards').find_by_id(options.board_id);
+		var parent_id = board ? board.get('parent_id') : false;
+		var parent = turtl.profile.get('boards').find_by_id(parent_id);
+		if(board)
+		{
+			var subkeys = [{b: board.id(), k: board.key}];
+			if(parent) subkeys.push({b: parent.id(), k: parent.key});
+			this.generate_subkeys(subkeys);
+			data.boards = [board.id()];
+		}
+		this.set(data, options);
+		return turtl.profile.get('keychain').add_key(this.id(), 'note', this.key);
+	},
+
 	ensure_key_exists: function()
 	{
 		var key = this.parent.apply(this, arguments);
