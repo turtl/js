@@ -28,8 +28,8 @@ var Barfr = new Class({
 	 * Configurable options - these are safe to tweak and change
 	 */
 	options: {
-		// "persist" | "timeout" :: whether to keep messages open by default
-		persist:	'timeout',
+		// if true, barfs don't timeout
+		persist: false,
 
 		// the default timeout for messages
 		timeout:			5000,
@@ -178,11 +178,11 @@ var Barfr = new Class({
 
 			init_timer: function()
 			{
-				if (this.options.persist)
-					return false;
+				if(this.options.persist) return false;
 
+				console.log('barf: timerout', this.options.timeout);
 				this.timer = new Timer(this.options.timeout);
-				this.timer.end = this.timer_end.bind(this);
+				this.timer.bind('fired', this.timer_end.bind(this));
 				this.timer.start();
 			},
 			timer_end: function()
