@@ -14,8 +14,6 @@ var NotesEditController = FormController.extend({
 	type: 'text',
 	board_id: null,
 
-	autogrow: null,
-
 	init: function()
 	{
 		if(!this.model) this.model = new Note({
@@ -35,14 +33,14 @@ var NotesEditController = FormController.extend({
 		this.bind('release', turtl.pop_title.bind(null, false));
 		this.bind(['cancel', 'close'], close);
 		this.bind('release', function() {
-			if(this.autogrow) this.autogrow.detach();
+			Autosize.destroy(this.inp_text);
 		}.bind(this));
 
 		var focus = null;
 		switch(this.type)
 		{
 			case 'text': focus = this.inp_text; break;
-			case 'bookmark': focus = this.inp_url; break;
+			case 'link': focus = this.inp_url; break;
 			case 'image': focus = this.inp_url; break;
 		}
 		if(focus) setTimeout(focus.focus.bind(focus), 10);
@@ -51,17 +49,14 @@ var NotesEditController = FormController.extend({
 	render: function()
 	{
 		var type = this.model.get('type') || this.type;
+		Autosize.destroy(this.inp_text);
 		this.html(view.render('notes/edit', {
 			note: this.model.toJSON(),
-			show_url: ['image', 'bookmark'].contains(type),
+			show_url: ['image', 'link'].contains(type),
 			type: this.model.get('type') || this.type
 		}));
 
-		if(this.autogrow) this.autogrow.detach();
-		if(this.inp_text)
-		{
-			this.autogrow = new Autogrow(this.inp_text);
-		}
+		if(this.inp_text) setTimeout(function() { autosize(this.inp_text); }.bind(this), 10);
 	},
 
 	submit: function(e)
