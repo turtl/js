@@ -1,0 +1,16 @@
+{{{content}}}
+<div class="note-gutter">
+	{{#if empty}}
+		<p class="empty">(empty note)</p>
+	{{else}}
+		<div class="content text">
+			{{#if note.title}}
+				{{{note.title}}}
+			{{/if}}
+			{{#if note.text}}
+				{{{markdown note.text}}}
+			{{/if}}
+		</div>
+	{{/if}}
+</div>
+

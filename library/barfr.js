@@ -180,7 +180,6 @@ var Barfr = new Class({
 			{
 				if(this.options.persist) return false;
 
-				console.log('barf: timerout', this.options.timeout);
 				this.timer = new Timer(this.options.timeout);
 				this.timer.bind('fired', this.timer_end.bind(this));
 				this.timer.start();

@@ -22,6 +22,10 @@ var Search = Composer.Collection.extend({
 	// full-text search
 	ft: null,
 
+	init: function()
+	{
+	},
+
 	reindex: function()
 	{
 		this.ft = lunr(function() {
@@ -31,10 +35,28 @@ var Search = Composer.Collection.extend({
 			this.field('body');
 			this.field('tags', {boost: 10});
 		});
+
+		return turtl.db.notes.query().all().execute().bind(this)
+			.map(function(note) {
+				var note = new Note(note);
+				return note.deserialize()
+					.then(function() { return note; })
+			})
+			.then(function(notes) {
+				var batch = 20;
+				var next = function()
+				{
+					var slice = notes.splice(0, batch);
+					slice.forEach(this.index_note.bind(this));
+					setTimeout(next);
+				}.bind(this);
+				next();
+			});
 	},
 
 	search: function(search, options)
 	{
+		search || (search = {});
 		options || (options = {});
 
 		return new Promise(function(resolve, reject) {
@@ -224,6 +246,7 @@ var Search = Composer.Collection.extend({
 			body: json.text,
 			tags: tags
 		});
+		this.trigger('add', note);
 	},
 
 	/**
@@ -258,6 +281,7 @@ var Search = Composer.Collection.extend({
 			tags: tags
 		});
 		delete this.index_json.notes[id];
+		this.trigger('remove', note);
 	},
 
 	reindex_note: function(note)

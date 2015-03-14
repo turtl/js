@@ -17,3 +17,39 @@ Handlebars.registerHelper('sluggify', function(url) {
 	return sluggify(url);
 });
 
+Handlebars.registerHelper('markdown', function(body) {
+	return view.markdown(body);
+});
+
+Handlebars.registerHelper('note', function(note, options) {
+	options || (options = {});
+	var data = options.hash;
+
+	// TODO: empty state: files
+	var empty =	false;
+	switch(note.type)
+	{
+		case 'text':
+			empty = !note.title && !note.text;
+			break;
+		case 'image':
+		case 'link':
+			empty = !note.title && !note.text && !note.url;
+			break;
+	}
+
+	if(note.type == 'link')
+	{
+		if(!note.title) note.title = note.url;
+		note.title = '<a href="'+note.url+'">'+note.title+'</a>';
+	}
+
+	var content = options.fn(note);
+	var rendered = view.render('notes/types/common', {
+		note: note,
+		empty: empty,
+		content: content
+	});
+	return new Handlebars.SafeString(rendered);
+});
+

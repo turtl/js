@@ -44,6 +44,8 @@ var Note = Protected.extend({
 
 	init: function()
 	{
+		this.bind('destroy', turtl.search.unindex_note.bind(turtl.search));
+
 		this.bind_relational('file', ['change:hash'], function() {
 			if(this.is_new() || this.disable_file_monitoring) return false;
 
@@ -221,19 +223,6 @@ var Note = Protected.extend({
 		else
 		{
 			options.table = 'notes';
-
-			var board = turtl.profile.get('boards').find_by_id(this.get('board_id'));
-			if(!board && !options.force_save)
-			{
-				return Promise.reject(new Error('Problem finding board for that note.'));
-			}
-
-			if(board && board.get('shared', false) && this.get('user_id') != turtl.user.id())
-			{
-				var persona = board.get_shared_persona();
-				args.persona = persona.id();
-			}
-			options.args = args;
 		}
 		return this.parent.call(this, options);
 	},
@@ -259,21 +248,6 @@ var Note = Protected.extend({
 			{
 				URL.revokeObjectURL(this.get('file').get('blob_url'));
 			}
-
-			options.table = 'notes';
-
-			var board = turtl.profile.get('boards').find_by_id(this.get('board_id'));
-			if(!board && !options.force_save)
-			{
-				return Promise.reject(new Error('Problem finding board for that note.'));
-			}
-
-			if(board && board.get('shared', false) && this.get('user_id') != turtl.user.id())
-			{
-				var persona = board.get_shared_persona();
-				args.persona = persona.id();
-			}
-			options.args = args;
 
 			if(this.get('file').get('hash'))
 			{

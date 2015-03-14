@@ -16,6 +16,8 @@ var NotesEditController = FormController.extend({
 
 	init: function()
 	{
+		if(this.board_id == 'all') this.board_id = null;
+
 		if(!this.model) this.model = new Note({
 			boards: (this.board_id ? [this.board_id] : []),
 			type: this.type || 'text'
@@ -63,12 +65,17 @@ var NotesEditController = FormController.extend({
 	{
 		if(e) e.stop();
 
-		var data = {};
 		var errors = [];
 
 		var title = this.inp_title.get('value');
-		var url = this.inp_url.get('value');
+		var url = this.inp_url && this.inp_url.get('value');
 		var text = this.inp_text.get('value');
+
+		var data = {
+			title: title,
+			url: url,
+			text: text
+		};
 
 		var keypromise = Promise.resolve();
 		if(this.model.is_new())
@@ -78,6 +85,23 @@ var NotesEditController = FormController.extend({
 
 		var clone = this.model.clone();
 		clone.set(data);
+		keypromise.bind(this)
+			.then(function() {
+				return clone.save();
+			})
+			.then(function() {
+				this.model.set(clone.toJSON());
+
+				// add the note to our main note list
+				turtl.profile.get('notes').upsert(this.model);
+				turtl.search.reindex_note(this.model);
+
+				this.trigger('close');
+			})
+			.catch(function(err) {
+				turtl.events.trigger('ui-error', 'There was a problem updating that note', err);
+				log.error('note: edit: ', this.model.id(), derr(err));
+			});
 	}
 });
 

@@ -79,7 +79,7 @@ var BoardsEditController = FormController.extend({
 				this.trigger('close');
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', 'There was a problem update that board', err);
+				turtl.events.trigger('ui-error', 'There was a problem updating that board', err);
 				log.error('board: edit: ', this.model.id(), derr(err));
 			});
 	}

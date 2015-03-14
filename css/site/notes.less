@@ -1,6 +1,23 @@
 @import 'variables';
 
 .notes {
+	.list-container {padding: 2% 1%;}
+	ul.note-list {position: relative; width: 100%; margin: 0; padding: 0; list-style: none;}
+	ul.note-list {
+		li {margin: 0 1% 2% 1%; .card();}
+		li.note.text {
+			.note-gutter {padding: 2%;}
+		}
+	}
+
+	ul.note-list.masonry {
+		li {float: left; width: 48%;}
+	}
+	ul.note-list.column {
+	}
+	ul.note-list.list {
+	}
+
 	p.empty {padding: 140px 24px 0 24px; font-size: 1.6em; line-height: 1.4em; color: @theme_gray; text-align: center;}
 	p.empty {
 		small {display: block; font-size: .6em;}
