@@ -43,9 +43,15 @@ header {
 			a icon {vertical-align: -8%; color: #8fc46a;}
 		}
 	}
-	ul.actions {float: right; height: @header_height; list-style: none;}
+	ul.actions {position: absolute; top: 0; right: 0; height: @header_height; list-style: none;}
 	ul.actions {
-		> li {width: 44px;}
+		> li {width: 44px; height: @header_height;}
+		> li {
+			.item-actions {
+				> .menu {top: 8px; right: 8px;}
+				> a {width: 28px; height: @header_height; padding-left: 16px; line-height: @header_height; text-align: center;}
+			}
+		}
 	}
 }
 
