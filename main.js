@@ -506,7 +506,8 @@ var turtl = {
 		{
 			var re = new RegExp('--modal:'+url);
 			if(!turtl.router.cur_path().match(re)) return;
-			turtl.route(back.replace(re, ''));
+			window.History.back();
+			//turtl.route(back.replace(re, ''));
 		};
 	}
 };
