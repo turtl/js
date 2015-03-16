@@ -59,18 +59,16 @@ var Search = Composer.Collection.extend({
 		search || (search = {});
 		options || (options = {});
 
+		clone(search);
 		return new Promise(function(resolve, reject) {
 			// this will hold all search results, as an array of note IDs
 			var res = false;
 
-			// don't want the index searches trying to use this.
-			delete search.text;
-
 			var res_intersect = function(arr)
 			{
-				if(!res) return arr;
-				if(res.length == 0) return res;
-				return intersect(res, arr);
+				if(!res) res = arr;
+				else if(res.length === 0) res = [];
+				else res = intersect(res, arr);
 			};
 
 			// loop over the search criteria and narrow down the results
@@ -79,11 +77,12 @@ var Search = Composer.Collection.extend({
 			{
 				var index = keys[i];
 				var val = search[index];
+				if(!val) continue;
 				if(res && res.length == 0) break;
 				switch(index)
 				{
 					case 'text':
-						res_intersect(this.ft.search(search.text).map(function(r) { return r.ref; }));
+						res_intersect(this.ft.search(val).map(function(r) { return r.ref; }));
 						break;
 					case 'tags':
 					case 'boards':
@@ -131,6 +130,7 @@ var Search = Composer.Collection.extend({
 		for(var ii = 0, nn = vals.length; ii < nn; ii++)
 		{
 			var val = vals[ii];
+			if(!val) continue;
 			var exclude = false;
 			if(val.substr(0, 1) == '!')
 			{
@@ -219,7 +219,7 @@ var Search = Composer.Collection.extend({
 	 */
 	index_note: function(note)
 	{
-		var json = toJSON(note);
+		var json = note.toJSON();
 		if(json.url && json.url.match(/^data:/)) json.url = '';
 		this.index_json.notes[note.id()] = json;
 

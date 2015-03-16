@@ -14,6 +14,7 @@ var ItemActionsController = Composer.Controller.extend({
 
 	actions: [],
 	close_action: false,
+	add_url: false,
 
 	init: function()
 	{
@@ -43,7 +44,7 @@ var ItemActionsController = Composer.Controller.extend({
 		$(document.body).addEvent('click', inside);
 		this.bind('release', function() { $(document.body).removeEvent('click', inside); });
 
-		this.with_bind(turtl.controllers.pages, 'start', this.close.bind(this, {noroute: true}));
+		this.with_bind(turtl.controllers.pages, 'start', this.close_url.bind(this, {noroute: true}));
 	},
 
 	render: function()
@@ -68,7 +69,7 @@ var ItemActionsController = Composer.Controller.extend({
 		var height = this.menu.getCoordinates().height;
 		this.menu.setStyles({height: ''});
 		setTimeout(this.menu.setStyles.bind(this.menu, {height: height}));
-		var close = turtl.push_modal_url('/actions');
+		var close = turtl.push_modal_url('/actions', {add_url: this.add_url});
 		this.bind_once('close', function(options) {
 			options || (options = {});
 			if(options.noroute) return;
@@ -84,7 +85,7 @@ var ItemActionsController = Composer.Controller.extend({
 
 	close_url: function()
 	{
-		if(turtl.router.cur_path().match(/\-\/actions/)) return;
+		if(turtl.router.cur_path().match('-/actions')) return;
 		this.close();
 	},
 

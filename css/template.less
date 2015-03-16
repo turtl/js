@@ -43,29 +43,9 @@ header {
 			a icon {vertical-align: -8%; color: #8fc46a;}
 		}
 	}
-	/* header menu */
-	div.actions {position: relative; float: left; margin: 0 0 0 14px;}
-	div.actions {
-		a.menu {display: inline-block; height: 36px; margin: 0px 0 0 18px; opacity: .9;}
-		a.menu {
-			img {position: absolute; z-index: 2; margin: 3px 0 0 -18px;}
-			icon {z-index: 1; margin: 10px 0 0 0; font-size: 2.0em; color: #8fc46a; transition: transform .3s;}
-		}
-		div.menu {position: fixed; top: 0; right: 100%; z-index: 13; width: 90%; height: 100%; overflow: auto; background: #1c1c1c; transition: right .3s;}
-		div.menu {
-			.gutter {padding: 0;}
-			.top {margin: 0 0 8px 0; padding: 32px 24px 14px 24px; text-align: center;}
-			.top {
-				.size-container {margin-bottom: 18px;}
-				a {font-size: 1.1em;}
-			}
-			ul {list-style: none;}
-			ul {
-				li {border-top: 1px solid #121212;}
-				a {display: block; padding: 24px 36px; font-size: 1.3em; color: #fff; text-transform: uppercase;}
-				a icon {margin: 0 20px 0 0; color: #fff; font-size: 1.3em;}
-			}
-		}
+	ul.actions {float: right; height: @header_height; list-style: none;}
+	ul.actions {
+		> li {width: 44px;}
 	}
 }
 

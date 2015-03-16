@@ -30,10 +30,10 @@ var NotesEditController = FormController.extend({
 		var close = turtl.push_modal_url(url);
 		modal.open(this.el);
 		this.with_bind(modal, 'close', this.release.bind(this));
+		this.bind(['cancel', 'close'], close);
 
 		turtl.push_title(this.action + ' ' + this.type + ' note', turtl.last_url);
 		this.bind('release', turtl.pop_title.bind(null, false));
-		this.bind(['cancel', 'close'], close);
 		this.bind('release', function() {
 			Autosize.destroy(this.inp_text);
 		}.bind(this));

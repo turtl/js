@@ -13,6 +13,7 @@ var NotesListController = Composer.ListController.extend({
 		page: 1,
 		per_page: 100
 	},
+	board_id: null,
 
 	view_mode: 'masonry',
 	masonry: null,
@@ -20,6 +21,8 @@ var NotesListController = Composer.ListController.extend({
 
 	init: function()
 	{
+		if(this.board_id) this.search.boards.push(this.board_id);
+
 		this.masonry_timer = new Timer(10);
 		this.with_bind(this.masonry_timer, 'fired', this.update_masonry.bind(this));
 
@@ -128,7 +131,7 @@ var NotesListController = Composer.ListController.extend({
 				this.this.masonry_timer.reset();
 			}.bind(this);
 		}.bind(this));
-		console.log('masonry time: ', performance.now() - start);
+		//console.log('masonry time: ', performance.now() - start);
 	}
 });
 

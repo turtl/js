@@ -1,0 +1,14 @@
+{{#if actions}}
+	<ul class="actions">
+		{{#each actions}}
+			<li rel="{{name}}">
+				{{#equal name 'menu'}}
+					<div class="menu-actions"></div>
+				{{else}}
+					<a href="#{{name}}"><icon>{{icon}}</icon></a>
+				{{/equal}}
+			</li>
+		{{/each}}
+	</ul>
+{{/if}}
+

@@ -36,7 +36,6 @@ var BoardsItemController = Composer.Controller.extend({
 		this.track_subcontroller('actions', function() {
 			return new ItemActionsController({
 				inject: this.actions,
-				title: 'Board menu',
 				actions: actions
 			});
 		}.bind(this));

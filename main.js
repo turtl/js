@@ -111,9 +111,10 @@ var turtl = {
 
 			// always clear out the available actions on each page load
 			turtl.events.trigger('actions:update', false);
+			turtl.events.trigger('header:set-actions', false);
 		});
 		turtl.controllers.pages.bind('start', function() {
-			modal.close();
+			if(!turtl.router.cur_path().match('modal:')) modal.close();
 		});
 
 		turtl.events.bind('ui-error', function(msg, err) {
@@ -464,7 +465,7 @@ var turtl = {
 		var html = title;
 		if(back)
 		{
-			html = '<a href="'+ back +'" rel="back"><icon>&#59229;</icon>&nbsp;&nbsp;'+ html +'</a>';
+			html = '<a href="'+ back.replace(/--.*/, '') +'" rel="back"><icon>&#59229;</icon>&nbsp;&nbsp;'+ html +'</a>';
 		}
 		var html = '<em>'+html+'</em>';
 
@@ -494,13 +495,19 @@ var turtl = {
 		}
 	},
 
-	push_modal_url: function(url)
+	push_modal_url: function(url, options)
 	{
-		var back = turtl.router.cur_path().replace(/\-\-.*/, '');
-		turtl.route(back + '--' + url);
+		options || (options = {});
+
+		var back = turtl.router.cur_path();
+		if(!options.add_url) back = back.replace(/\-\-.*/, '');
+		back += '--modal:' + url;
+		turtl.route(back);
 		return function()
 		{
-			turtl.route(back);
+			var re = new RegExp('--modal:'+url);
+			if(!turtl.router.cur_path().match(re)) return;
+			turtl.route(back.replace(re, ''));
 		};
 	}
 };

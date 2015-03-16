@@ -53,9 +53,7 @@ var NotesIndexController = Composer.Controller.extend({
 		this.track_subcontroller('list', function() {
 			return new NotesListController({
 				inject: this.note_list,
-				search: {
-					boards: (this.board ? [this.board.id()] : [])
-				}
+				board_id: this.board_id
 			});
 		}.bind(this));
 	},

@@ -1,9 +1,6 @@
-function toJSON(object)
+function clone(obj)
 {
-	window._toJSON_disable_protect = true;
-	var ret = object.toJSON();
-	window._toJSON_disable_protect = false;
-	return ret;
+	return JSON.parse(JSON.stringify(obj));
 }
 
 /**

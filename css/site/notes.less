@@ -5,9 +5,6 @@
 	ul.note-list {position: relative; width: 100%; margin: 0; padding: 0; list-style: none;}
 	ul.note-list {
 		li {margin: 0 1% 2% 1%; .card();}
-		li.note.text {
-			.note-gutter {padding: 2%;}
-		}
 	}
 
 	ul.note-list.masonry {
@@ -25,6 +22,12 @@
 			em {display: inline-block; vertical-align: bottom; margin: 0 0 -1px 0; font-size: 1.8em;}
 		}
 		icon {display: block; font-size: 2.6em; color: @theme_gray_midlight; line-height: 1.5em;}
+	}
+}
+
+.note {
+	&.text {
+		.note-gutter {padding: 2%;}
 	}
 }
 
