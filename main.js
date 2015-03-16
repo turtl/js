@@ -111,7 +111,6 @@ var turtl = {
 
 			// always clear out the available actions on each page load
 			turtl.events.trigger('actions:update', false);
-			turtl.events.trigger('header:set-actions', false);
 		});
 		turtl.controllers.pages.bind('start', function() {
 			if(!turtl.router.cur_path().match('modal:')) modal.close();

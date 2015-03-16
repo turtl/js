@@ -24,6 +24,9 @@ var NotesViewController = Composer.Controller.extend({
 		turtl.events.trigger('header:set-actions', [
 			{name: 'menu', actions: [{name: 'Edit'}, {name: 'Delete'}]}
 		]);
+		this.bind('release', function() {
+			turtl.events.trigger('header:set-actions', false);
+		}.bind(this));
 	},
 
 	render: function()
