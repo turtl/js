@@ -60,6 +60,26 @@ var Search = Composer.Collection.extend({
 		options || (options = {});
 
 		clone(search);
+		if(search.sort && (search.sort[0] == 'id' || this.sort[search.sort[0]]))
+		{
+			var field = search.sort[0];
+			var asc = !(search.sort[1] == 'desc');
+			var lookup = this.sort[field];
+			var sortfn = function(a, b)
+			{
+				a = a instanceof Composer.Model ? a.id() : a;
+				b = b instanceof Composer.Model ? b.id() : b;
+				var a1 = asc ? a : b;
+				var b1 = asc ? b : a;
+				if(field == 'id') return a1.localeCompare(b1);
+
+				var va = lookup[a1];
+				var vb = lookup[b1];
+				return va.localeCompare(vb);
+			}.bind(this)
+			this.sortfn = sortfn;
+		}
+
 		return new Promise(function(resolve, reject) {
 			// this will hold all search results, as an array of note IDs
 			var res = false;
@@ -96,19 +116,7 @@ var Search = Composer.Collection.extend({
 				res = Object.keys(this.index.all_notes);
 			}
 
-			if(search.sort && this.sort[search.sort[0]])
-			{
-				var field = search.sort[0];
-				var asc = !(search.sort[1] == 'desc');
-				var lookup = this.sort[field];
-				res.sort(function(a, b) {
-					var a1 = asc ? a : b;
-					var b1 = asc ? b : a;
-					var va = lookup[a1];
-					var vb = lookup[b1];
-					return va.localeCompare(vb);
-				}.bind(this));
-			}
+			if(this.sortfn) res.sort(sortfn);
 
 			// do our offsetting/limiting
 			var per_page = search.per_page || 100;
@@ -281,7 +289,9 @@ var Search = Composer.Collection.extend({
 			tags: tags
 		});
 		delete this.index_json.notes[id];
-		this.trigger('remove', note);
+		var note_model = this.find_by_id(id);
+		this.remove(note_model, {silent: true});
+		this.trigger('remove', note_model);
 	},
 
 	reindex_note: function(note)
