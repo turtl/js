@@ -7,7 +7,6 @@ var HeaderController = Composer.Controller.extend({
 
 	events: {
 		'click a.logo': 'toggle_sidebar',
-		'click a[rel=back]': 'go_back',
 		'click .actions li': 'fire_action'
 	},
 
@@ -77,12 +76,6 @@ var HeaderController = Composer.Controller.extend({
 		e.stop();
 		if(!rel) return;
 		turtl.events.trigger('header:fire-action', rel);
-	},
-
-	go_back: function(e)
-	{
-		if(e) e.stop();
-		window.History.back();
 	}
 });
 

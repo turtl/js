@@ -28,7 +28,7 @@ var ItemActionsController = Composer.Controller.extend({
 			if(cid == this.cid()) return false;
 			// close this menu without animating
 			this.menu.setStyles({display: 'none'});
-			this.close();
+			this.close({noroute: true});
 			setTimeout(function() {
 				this.menu.setStyles({display: ''});
 			}.bind(this), 300);
@@ -63,13 +63,22 @@ var ItemActionsController = Composer.Controller.extend({
 	open: function(e)
 	{
 		if(e) e.stop();
+		var came_from_actions = turtl.router.cur_path().match('-actions:/menu');
 		turtl.events.trigger('menu:open', this.cid());
 		this.container.addClass('open');
 		this.menu.setStyles({height: 'auto'});
 		var height = this.menu.getCoordinates().height;
 		this.menu.setStyles({height: ''});
 		setTimeout(this.menu.setStyles.bind(this.menu, {height: height}));
-		var close = turtl.push_modal_url('/actions', {add_url: this.add_url});
+		var close = turtl.push_modal_url('/menu', {
+			// use a custom prefix
+			prefix: 'actions',
+			// if we were just in another actions menu, replace the url
+			replace: came_from_actions,
+			// if enable, tack on our url to the current one (instead of
+			// replacing it)
+			add_url: this.add_url
+		});
 		this.bind_once('close', function(options) {
 			options || (options = {});
 			if(options.noroute) return;
@@ -85,7 +94,7 @@ var ItemActionsController = Composer.Controller.extend({
 
 	close_url: function()
 	{
-		if(turtl.router.cur_path().match('-/actions')) return;
+		if(turtl.router.cur_path().match('-actions:/menu')) return;
 		this.close();
 	},
 
@@ -94,7 +103,9 @@ var ItemActionsController = Composer.Controller.extend({
 		this.container.removeClass('open');
 		this.menu.setStyles({height: ''});
 		$E('header').removeClass('under');
-		this.trigger('close', options);
+		setTimeout(function() {
+			this.trigger('close', options);
+		}.bind(this));
 	}
 });
 

@@ -65,6 +65,8 @@ var turtl = {
 
 	// holds the last successfully routed url
 	last_url: null,
+	// holds the last routed url, sans modal junk
+	last_clean_url: null,
 
 	// -------------------------------------------------------------------------
 	// Data section
@@ -432,6 +434,7 @@ var turtl = {
 		var route = null;
 		turtl.router.bind('route', function() {
 			turtl.last_url = route;
+			turtl.last_clean_url = route ? route.replace(/\-\-.*/, '') : null;
 			route = window.location.pathname;
 		});
 	},
@@ -498,16 +501,16 @@ var turtl = {
 	{
 		options || (options = {});
 
+		var prefix = options.prefix || 'modal';
 		var back = turtl.router.cur_path();
 		if(!options.add_url) back = back.replace(/\-\-.*/, '');
-		back += '--modal:' + url;
-		turtl.route(back);
+		back += '--'+prefix+':' + url;
+		turtl.route(back, {replace_state: options.replace});
 		return function()
 		{
-			var re = new RegExp('--modal:'+url);
+			var re = new RegExp('--'+prefix+':'+url);
 			if(!turtl.router.cur_path().match(re)) return;
-			window.History.back();
-			//turtl.route(back.replace(re, ''));
+			turtl.route(back.replace(re, ''));
 		};
 	}
 };
