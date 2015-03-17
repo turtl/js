@@ -26,8 +26,12 @@
 }
 
 .note {
-	&.text {
+	&.text,
+	&.link {
 		.note-gutter {padding: 2%;}
+	}
+	.content {
+		p:last-child {padding-bottom: 0;}
 	}
 }
 
