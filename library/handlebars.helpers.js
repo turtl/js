@@ -41,7 +41,7 @@ Handlebars.registerHelper('note', function(note, options) {
 	if(note.type == 'link')
 	{
 		if(!note.title) note.title = note.url;
-		note.title = '<a href="'+note.url+'">'+note.title+'</a>';
+		note.title = '<a target="_blank" href="'+note.url+'">'+note.title+'</a>';
 	}
 
 	var content = options.fn(note);
