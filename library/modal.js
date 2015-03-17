@@ -33,7 +33,7 @@ var TurtlModal = Composer.Event.extend({
 		this.elements.gutter.set('html', '');
 		this.elements.gutter.appendChild(element);
 
-		document.body.addClass('modal');
+		this.elements.container.addClass('active');
 		this.trigger('open');
 	},
 
@@ -41,7 +41,7 @@ var TurtlModal = Composer.Event.extend({
 	{
 		if(!this.is_open) return;
 		// slide out
-		document.body.removeClass('modal');
+		this.elements.container.removeClass('active');
 		this.trigger('close');
 		(function() {
 			this.elements.gutter.set('html', '');
