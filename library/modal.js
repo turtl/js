@@ -18,7 +18,7 @@ var TurtlModal = Composer.Event.extend({
 		}.bind(this));
 
 		this.elements.container = new Element('div');
-		this.elements.container.id = 'turtl-modal';
+		this.elements.container.addClass('turtl-modal');
 		this.elements.gutter = new Element('div')
 			.addClass('modal-gutter')
 			.inject(this.elements.container);
