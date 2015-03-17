@@ -7,6 +7,7 @@ var HeaderController = Composer.Controller.extend({
 
 	events: {
 		'click a.logo': 'toggle_sidebar',
+		'click .actions li .item-actions li a': 'fire_menu_action',
 		'click .actions li': 'fire_action'
 	},
 
@@ -76,6 +77,15 @@ var HeaderController = Composer.Controller.extend({
 		e.stop();
 		if(!rel) return;
 		turtl.events.trigger('header:fire-action', rel);
+	},
+
+	fire_menu_action: function(e)
+	{
+		if(e) e.stop();
+		var a = Composer.find_parent('a', e.target);
+		var rel = a && a.get('rel');
+		if(!rel) return;
+		turtl.events.trigger('header:menu:fire-action', rel);
 	}
 });
 

@@ -24,6 +24,13 @@ var NotesViewController = Composer.Controller.extend({
 		turtl.events.trigger('header:set-actions', [
 			{name: 'menu', actions: [{name: 'Edit'}, {name: 'Delete'}]}
 		]);
+		this.with_bind(turtl.events, 'header:menu:fire-action', function(action) {
+			switch(action)
+			{
+				case 'edit': this.open_edit(); break;
+				case 'delete': this.open_delete(); break;
+			}
+		});
 		this.bind('release', function() {
 			turtl.events.trigger('header:set-actions', false);
 		}.bind(this));
@@ -42,6 +49,25 @@ var NotesViewController = Composer.Controller.extend({
 		this.el.className = 'note view';
 		this.el.addClass(this.model.get('type'));
 		this.el.set('rel', this.model.id());
+	},
+
+	open_edit: function(e)
+	{
+		if(e) e.stop();
+		new NotesEditController({
+			model: this.model
+		});
+	},
+
+	open_delete: function(e)
+	{
+		if(e) e.stop();
+		if(!confirm('Really delete this note?')) return false;
+		this.model.destroy()
+			.catch(function(err) {
+				log.error('note: delete: ', derr(err));
+				barfr.barf('There was a problem deleting your note: '+ err.message);
+			});
 	}
 });
 
