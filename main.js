@@ -116,6 +116,7 @@ var turtl = {
 		});
 		turtl.controllers.pages.bind('start', function() {
 			if(!turtl.router.cur_path().match('modal:')) modal.close();
+			if(!turtl.router.cur_path().match('modal2:')) modal2.close();
 		});
 
 		turtl.events.bind('ui-error', function(msg, err) {
@@ -231,6 +232,7 @@ var turtl = {
 			turtl.user.unbind('change', 'user:write_changes_to_cookie');
 			turtl.api.clear_auth();
 			modal.close();
+			modal2.close();
 
 			localStorage.invites = '{}';	// wipe local storage
 
@@ -467,7 +469,7 @@ var turtl = {
 		var html = title;
 		if(back)
 		{
-			html = '<a href="'+ back.replace(/--.*/, '') +'" rel="back"><icon>&#59229;</icon>&nbsp;&nbsp;'+ html +'</a>';
+			html = '<a href="'+ back +'" rel="back"><icon>&#59229;</icon>&nbsp;&nbsp;'+ html +'</a>';
 		}
 		var html = '<em>'+html+'</em>';
 
@@ -516,6 +518,7 @@ var turtl = {
 };
 
 var modal = null;
+var modal2 = null;		// if drew ever sees this, he'll cry with happiness
 var barfr = null;
 var markdown = null;
 
@@ -542,8 +545,9 @@ window.addEvent('domready', function() {
 		}
 	);
 
-	// create the modal object
+	// create the modal objects
 	modal = new TurtlModal({ inject: '#wrap' });
+	modal2 = new TurtlModal({ inject: '#wrap' });
 
 	// create the barfr
 	barfr = new Barfr('barfr', {});

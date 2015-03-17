@@ -27,9 +27,9 @@ var NotesEditController = FormController.extend({
 		this.render();
 
 		var url = '/notes/' + this.action.toLowerCase() + '/' + (this.model.is_new() ? '' : this.model.id());
-		var close = turtl.push_modal_url(url);
-		modal.open(this.el);
-		this.with_bind(modal, 'close', this.release.bind(this));
+		var close = turtl.push_modal_url(url, {prefix: 'modal2', add_url: true});
+		modal2.open(this.el);
+		this.with_bind(modal2, 'close', this.release.bind(this));
 		this.bind(['cancel', 'close'], close);
 
 		turtl.push_title(this.action + ' ' + this.type + ' note', turtl.last_url);

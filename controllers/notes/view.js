@@ -1,6 +1,8 @@
 var NotesViewController = Composer.Controller.extend({
 	class_name: 'note',
 
+	modal: null,
+
 	init: function()
 	{
 		if(!this.model)
@@ -31,6 +33,7 @@ var NotesViewController = Composer.Controller.extend({
 				case 'delete': this.open_delete(); break;
 			}
 		});
+		this.with_bind(this.model, 'destroy', close);
 		this.bind('release', function() {
 			turtl.events.trigger('header:set-actions', false);
 		}.bind(this));
