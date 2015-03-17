@@ -26,12 +26,24 @@
 }
 
 .note {
+	@content_pad: 3%;
 	&.text,
-	&.link {
-		.note-gutter {padding: 2%;}
+	&.link,
+	{
+		.note-gutter {padding: @content_pad;}
+	}
+	&.image {
+		.backing {width: 100%; background: #000;}
+		img {display: block; margin: 0 auto; max-width: 100%;}
+		@header_height: 30px;
+		h1 {position: relative; display: block; margin: -(@header_height) 0 0 0; height: @header_height; padding: 0 0 0 6%; line-height: @header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim();}
+		.note-gutter .content .body {padding: @content_pad;}
 	}
 	.content {
-		p:last-child {padding-bottom: 0;}
+		h1:last-child {margin-bottom: 0; padding-bottom: 0;}
+		.body {
+			*:last-child {margin-bottom: 0; padding-bottom: 0;}
+		}
 	}
 }
 
