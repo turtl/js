@@ -9,7 +9,7 @@ var NotesListController = Composer.ListController.extend({
 		text: '',
 		boards: [],
 		tags: [],
-		sort: ['id', 'asc'],
+		sort: ['id', 'desc'],
 		page: 1,
 		per_page: 100
 	},
