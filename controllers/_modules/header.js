@@ -76,7 +76,9 @@ var HeaderController = Composer.Controller.extend({
 		if(rel == 'menu') return;
 		e.stop();
 		if(!rel) return;
-		turtl.events.trigger('header:fire-action', rel);
+		setTimeout(function() {
+			turtl.events.trigger('header:fire-action', rel);
+		});
 	},
 
 	fire_menu_action: function(e)
@@ -85,7 +87,9 @@ var HeaderController = Composer.Controller.extend({
 		var a = Composer.find_parent('a', e.target);
 		var rel = a && a.get('rel');
 		if(!rel) return;
-		turtl.events.trigger('header:menu:fire-action', rel);
+		setTimeout(function() {
+			turtl.events.trigger('header:menu:fire-action', rel);
+		});
 	}
 });
 
