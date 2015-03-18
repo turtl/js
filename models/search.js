@@ -254,7 +254,7 @@ var Search = Composer.Collection.extend({
 			body: json.text,
 			tags: tags
 		});
-		this.trigger('add', note);
+		this.add(note);
 	},
 
 	/**
