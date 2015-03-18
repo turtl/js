@@ -1,10 +1,11 @@
 @import 'variables';
 
 .notes {
-	.list-container {padding: 2% 1%;}
+	@note_list_margin: 3.125px;
+	.list-container {padding: (@note_list_margin * 2) @note_list_margin;}
 	ul.note-list {position: relative; width: 100%; margin: 0; padding: 0; list-style: none;}
 	ul.note-list {
-		li {margin: 0 1% 2% 1%; .card();}
+		li {margin: 0 @note_list_margin (@note_list_margin * 2) @note_list_margin; .card();}
 	}
 
 	ul.note-list.masonry {
@@ -26,7 +27,7 @@
 }
 
 .note {
-	@content_pad: 3%;
+	@content_pad: 4.5px;
 	&.text,
 	&.link,
 	{
