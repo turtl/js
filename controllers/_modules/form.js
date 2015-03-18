@@ -6,6 +6,7 @@ var FormController = Composer.Controller.extend({
 	},
 
 	buttons: true,
+	button_tabindex: null,
 	formclass: 'standard-form',
 	action: 'Create',
 
@@ -21,6 +22,7 @@ var FormController = Composer.Controller.extend({
 			action: this.action,
 			formclass: this.formclass,
 			buttons: this.buttons,
+			tabindex: this.button_tabindex,
 			content: content
 		}));
 	},

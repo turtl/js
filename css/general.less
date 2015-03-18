@@ -52,6 +52,28 @@ a icon {color: #222;}
 	.warn {color: #922;}
 }
 
+/* generic (non-header) buttons */
+div.buttons {text-align: center;}
+div.button {display: inline-block; margin: 0 3px; cursor: pointer; line-height: 10px; background: @theme_primary; .border-radius(); .layer-rest(); .transition(box-shadow, .1s);}
+div.button {
+	&:active {.layer-flat();}
+	icon {float: left; margin: 0 8px 0 0; color: rgba(255, 255, 255, .6); font-size: 1.2em; line-height: .5em; vertical-align: baseline;}
+	input[type="submit"],
+	input[type="button"],
+	span {display: inline-block; padding: 12px 32px 10px 32px; color: #fff; text-transform: none; font-size: 1.4em; font-weight: normal; background: none; border: 0; box-shadow: none;}
+}
+div.button.flat {box-shadow: none;}
+div.button.flat {
+	input[type="submit"],
+	input[type="button"],
+	span {padding-left: 16px; padding-right: 16px; font-size: 1.2em; color: @theme_primary;}
+}
+div.button.cancel {background: @theme_gutter;}
+div.button.flat.cancel,
+div.button.cancel {
+	span {color: @theme_gray;}
+}
+
 form.standard-form {padding: 16px 4% 16px 4%; .card();}
 form.standard-form {
 	input[type=text],
@@ -64,7 +86,7 @@ form.standard-form {
 	textarea:focus {border-bottom: 1px solid @theme_accent;}
 	.button-row {position: fixed; bottom: 0; left: 0; width: 100%; text-align: right; background: #fff; border-top: 1px solid @theme_border;}
 	.button-row {
-		.button {text-align: center; background: none; border-radius: 0; box-shadow: none;}
+		.button {text-align: center; background: none; border-radius: 0; border: 0; box-shadow: none;}
 	}
 }
 
@@ -102,24 +124,6 @@ ul.item-list {
 		ul.item-list {background: none; border-radius: 0; box-shadow: none;}
 	}
 	> li:last-child {border-bottom: 0;}
-}
-
-/* generic (non-header) buttons */
-div.buttons {text-align: center;}
-div.button {display: inline-block; margin: 0 3px; cursor: pointer; line-height: 10px; background: @theme_primary; .border-radius(); .layer-rest(); .transition(box-shadow, .1s);}
-div.button {
-	&:active {.layer-flat();}
-	icon {float: left; margin: 0 8px 0 0; color: rgba(255, 255, 255, .6); font-size: 1.2em; line-height: .5em; vertical-align: baseline;}
-	span {display: inline-block; padding: 12px 32px 10px 32px; color: #fff; text-transform: none; font-size: 1.4em; font-weight: normal;}
-}
-div.button.flat {box-shadow: none;}
-div.button.flat {
-	span {padding-left: 16px; padding-right: 16px; font-size: 1.2em; color: @theme_primary;}
-}
-div.button.cancel {background: @theme_gutter;}
-div.button.flat.cancel,
-div.button.cancel {
-	span {color: @theme_gray;}
 }
 
 /* LOADING overlay */

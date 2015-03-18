@@ -1,6 +1,6 @@
-<input type="text" name="title" value="{{note.title}}" placeholder="Title">
+<input type="text" name="title" value="{{note.title}}" tabindex="1" placeholder="Title">
 {{#if show_url}}
-	<input type="text" name="url" value="{{note.url}}" placeholder="URL">
+	<input type="text" name="url" value="{{note.url}}" tabindex="2" placeholder="URL">
 {{/if}}
-<textarea name="text" rows="1" cols="80" placeholder="Note text">{{note.text}}</textarea>
+<textarea name="text" rows="1" cols="80" tabindex="3" placeholder="Note text">{{note.text}}</textarea>
 

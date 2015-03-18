@@ -10,6 +10,7 @@ var NotesEditController = FormController.extend({
 
 	model: null,
 	formclass: 'notes-edit',
+	button_tabindex: 9,
 
 	type: 'text',
 	board_id: null,
