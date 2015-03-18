@@ -254,7 +254,7 @@ var Note = Protected.extend({
 				this.clear_files();
 			}
 		}
-		return this.parent.call(this, options);
+		return this.parent(options);
 	},
 
 	// remove all file records attached to this note
@@ -281,7 +281,7 @@ var Note = Protected.extend({
 		search || (search = {});
 		search.b || (search.b = []);
 
-		var board_ids = this.get('boards');
+		var board_ids = this.get('boards') || [];
 		board_ids.forEach(function(board_id) {
 			var board_key = turtl.profile.get('boards').find_by_id(board_id).key;
 			if(board_key) search.b.push({id: board_id, k: board_key});

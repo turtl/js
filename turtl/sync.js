@@ -56,7 +56,7 @@ Composer.sync = function(method, model, options)
 	};
 
 	var promise = Promise.resolve();
-	if(method != 'read')
+	if(!['read', 'delete'].contains(method))
 	{
 		// serialize our model, and add in any extra data needed
 		promise = model.serialize();
