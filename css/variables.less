@@ -50,7 +50,8 @@
 // -----------------------------------------------------------------------------
 .title-scrim () {background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.35) 70%);}
 
-@desktop: ~"only screen and (min-device-width: 640px)";
+@landscape: ~"only screen and (min-device-width: 500px)";
+@desktop: ~"only screen and (min-device-width: 800px)";
 
 .hide-scroll() {
 	&::-webkit-scrollbar { width: 0 !important; height: 0 !important }
