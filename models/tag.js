@@ -37,15 +37,11 @@ var Tag = Composer.Model.extend({
 var Tags = Composer.Collection.extend({
 	model: Tag,
 
-	find_by_name: function(tagname)
-	{
-		return this.find(function(t) { return t.get('name') == tagname; });
-	},
-
 	add_tag: function(tag, options)
 	{
 		options || (options = {});
-		var found = this.find_by_name(tag.get('name'));
+		var id = tag.get('name');
+		var found = this.find_by_id(id);
 		if(found)
 		{
 			found.count(1, options);
@@ -53,9 +49,9 @@ var Tags = Composer.Collection.extend({
 		}
 		else
 		{
-			var json = toJSON(tag);
+			var json = tag.toJSON();
 			json.count = 1;
-			var copy = new Tag(json);
+			var copy = new Tag({id: id, count: 1});
 			this.add(copy, options);
 			return copy;
 		}
@@ -65,7 +61,8 @@ var Tags = Composer.Collection.extend({
 	remove_tag: function(tag, options)
 	{
 		options || (options = {});
-		var found = this.find_by_name(tag.get('name'));
+		var id = tag.get('name');
+		var found = this.find_by_name(id);
 		if(!found) return false;  // odd, but worth checking for
 
 		var count = found.count(-1, options);
@@ -122,14 +119,3 @@ var Tags = Composer.Collection.extend({
 	}
 });
 
-var TagsFilter = Composer.FilterCollection.extend({
-	filter: function(m) { return true; },
-	sortfn: function(a, b) {
-		var diff = b.get('count') - a.get('count');
-		// secondary alpha sort
-		if(diff == 0) diff = a.get('name').localeCompare(b.get('name'));
-		return diff;
-	},
-	forward_all_events: false,
-	refresh_on_change: false
-});
