@@ -12,6 +12,7 @@ var NotesEditController = FormController.extend({
 	},
 
 	model: null,
+	clone: null,
 	formclass: 'notes-edit',
 	button_tabindex: 9,
 
@@ -26,7 +27,7 @@ var NotesEditController = FormController.extend({
 			boards: (this.board_id ? [this.board_id] : []),
 			type: this.type || 'text'
 		});
-		this.model = this.model.clone();
+		this.clone = this.model.clone();
 
 		this.action = this.model.is_new() ? 'Add' : 'Edit';
 		this.parent();
@@ -98,7 +99,7 @@ var NotesEditController = FormController.extend({
 			keypromise = this.model.init_new({board_id: this.board_id, silent: true});
 		}
 
-		var clone = this.model.clone();
+		var clone = this.clone;
 		clone.set(data);
 		keypromise.bind(this)
 			.then(function() {
@@ -127,7 +128,7 @@ var NotesEditController = FormController.extend({
 		this.el.getElements('ul.colors li').each(function(el) { el.removeClass('sel'); });
 		li.addClass('sel');
 		var color = li.get('rel');
-		this.model.set({color: color});
+		this.clone.set({color: color});
 	}
 });
 

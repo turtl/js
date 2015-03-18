@@ -37,6 +37,7 @@ Handlebars.registerHelper('note', function(note, options) {
 			empty = !note.title && !note.text && !note.url;
 			break;
 	}
+	var colors = ['none','blue','red','green','purple','pink','brown','black'];
 
 	if(note.type == 'link')
 	{
@@ -44,6 +45,7 @@ Handlebars.registerHelper('note', function(note, options) {
 		note.title = '<a target="_blank" href="'+note.url+'">'+note.title+'</a>';
 	}
 
+	note.color_name = note.color ? colors[note.color] : '';
 	var content = options.fn(note);
 	var rendered = view.render('notes/types/common', {
 		note: note,

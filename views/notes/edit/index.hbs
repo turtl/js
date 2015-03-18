@@ -4,3 +4,11 @@
 {{/if}}
 <textarea name="text" rows="1" cols="80" tabindex="3" placeholder="Note text">{{note.text}}</textarea>
 
+<div class="boards-container"></div>
+<div class="notes-container"></div>
+
+<ul class="colors">
+	{{#each colors}}
+		<li rel="{{@index}}" class="{{this}} {{#equal this note.color}}sel{{/equal}}"><span>&nbsp;</span></li>
+	{{/each}}
+</ul>
