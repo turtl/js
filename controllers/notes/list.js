@@ -32,6 +32,15 @@ var NotesListController = Composer.ListController.extend({
 		this.bind('list:notempty', this.render.bind(this));
 		this.bind('release', function() { this.masonry_timer.unbind(); }.bind(this));
 
+		var resize_timer = new Timer(10);
+		var resize_reset = resize_timer.reset.bind(resize_timer);
+		window.addEvent('resize', resize_reset);
+		this.bind('release', function() {
+			window.removeEvent('resize', resize_reset);
+			resize_timer.unbind();
+		});
+		resize_timer.bind('fired', this.update_masonry.bind(this));
+
 		// run an initial search
 		this.do_search().bind(this)
 			.then(function() {
