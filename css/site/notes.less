@@ -1,8 +1,19 @@
 @import 'variables';
 
+
 .notes {
 	@note_list_margin: 3.125px;
 	.list-container {padding: (@note_list_margin * 2) @note_list_margin;}
+	.list-container {
+		> p.empty {padding: 25.0vh 24px 0 24px; font-size: 1.6em; line-height: 1.4em; color: @theme_gray; text-align: center;}
+		> p.empty {
+			small {display: block; font-size: .6em;}
+			small {
+				em {display: inline-block; vertical-align: bottom; margin: 0 0 -1px 0; font-size: 1.8em;}
+			}
+			icon {display: block; font-size: 2.6em; color: @theme_gray_midlight; line-height: 1.5em;}
+		}
+	}
 	ul.note-list {position: relative; width: 100%; margin: 0; padding: 0; list-style: none;}
 	ul.note-list {
 		li {margin: 0 @note_list_margin (@note_list_margin * 2) @note_list_margin; .card();}
@@ -20,29 +31,19 @@
 	}
 	ul.note-list.list {
 	}
-
-	p.empty {padding: 25.0vh 24px 0 24px; font-size: 1.6em; line-height: 1.4em; color: @theme_gray; text-align: center;}
-	p.empty {
-		small {display: block; font-size: .6em;}
-		small {
-			em {display: inline-block; vertical-align: bottom; margin: 0 0 -1px 0; font-size: 1.8em;}
-		}
-		icon {display: block; font-size: 2.6em; color: @theme_gray_midlight; line-height: 1.5em;}
-	}
 }
 
 .note {
-	@content_pad: 4.5px;
+	@content_pad: 6px;
 	&.text,
-	&.link,
-	{
+	&.link {
 		.note-gutter {padding: @content_pad;}
 	}
 	&.image {
 		.backing {width: 100%; background: #000;}
 		img {display: block; margin: 0 auto; max-width: 100%;}
 		@header_height: 30px;
-		h1 {position: relative; display: block; margin: -(@header_height) 0 0 0; height: @header_height; padding: 0 0 0 6%; line-height: @header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim();}
+		h1 {position: relative; display: block; margin: -(@header_height + 3px) 0 0 0; height: @header_height; padding: 0 0 0 6%; line-height: @header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim();}
 		.note-gutter .content .body {padding: @content_pad;}
 	}
 	.content {
@@ -51,6 +52,16 @@
 			*:last-child {margin-bottom: 0; padding-bottom: 0;}
 		}
 	}
+	.note-color(@color) {border-top: 3px solid @color;}
+	.note-gutter.blue {.note-color(#73b8d1);}
+	.note-gutter.red {.note-color(#e85c5c);}
+	.note-gutter.green {.note-color(#7bde76);}
+	.note-gutter.purple {.note-color(#9476de);}
+	.note-gutter.pink {.note-color(#de76d3);}
+	.note-gutter.brown {.note-color(#7f4e4e);}
+	.note-gutter.black {.note-color(#111);}
+
+	p.empty {color: @theme_gray; text-align: center;}
 }
 
 .notes-edit {
@@ -65,15 +76,15 @@
 		li {
 			span {display: block; width: 20px; height: 20px; border: 1px solid #ccc; border-radius: 4px;}
 		}
-		.color(@color) {background: @color; border-color: @color;}
+		.edit-color(@color) {background: @color; border-color: @color;}
 		.none span {}
-		.blue span {.color(#73b8d1);}
-		.red span {.color(#e85c5c);}
-		.green span {.color(#7bde76);}
-		.purple span {.color(#9476de);}
-		.pink span {.color(#de76d3);}
-		.brown span {.color(#7f4e4e);}
-		.black span {.color(#111);}
+		.blue span {.edit-color(#73b8d1);}
+		.red span {.edit-color(#e85c5c);}
+		.green span {.edit-color(#7bde76);}
+		.purple span {.edit-color(#9476de);}
+		.pink span {.edit-color(#de76d3);}
+		.brown span {.edit-color(#7f4e4e);}
+		.black span {.edit-color(#111);}
 	}
 }
 

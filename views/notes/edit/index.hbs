@@ -9,6 +9,6 @@
 
 <ul class="colors">
 	{{#each colors}}
-		<li rel="{{@index}}" class="{{this}} {{#equal this note.color}}sel{{/equal}}"><span>&nbsp;</span></li>
+		<li rel="{{@index}}" class="{{this}} {{#equal @index ../note.color}}sel{{/equal}}"><span>&nbsp;</span></li>
 	{{/each}}
 </ul>
