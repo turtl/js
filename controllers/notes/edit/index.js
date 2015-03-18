@@ -1,11 +1,14 @@
 var NotesEditController = FormController.extend({
 	elements: {
+		'.boards-container': 'el_boards',
+		'.notes-container': 'el_notes',
 		'input[name=title]': 'inp_title',
 		'input[name=url]': 'inp_url',
 		'textarea[name=text]': 'inp_text'
 	},
 
 	events: {
+		'click ul.colors li': 'switch_color'
 	},
 
 	model: null,
@@ -23,17 +26,20 @@ var NotesEditController = FormController.extend({
 			boards: (this.board_id ? [this.board_id] : []),
 			type: this.type || 'text'
 		});
+		this.model = this.model.clone();
+
 		this.action = this.model.is_new() ? 'Add' : 'Edit';
 		this.parent();
 		this.render();
 
-		var url = '/notes/' + this.action.toLowerCase() + '/' + (this.model.is_new() ? '' : this.model.id());
+		var url = '/notes/' + this.action.toLowerCase() + (this.model.is_new() ? '' : '/' + this.model.id());
 		var close = turtl.push_modal_url(url, {prefix: 'modal2', add_url: true});
 		modal2.open(this.el);
 		this.with_bind(modal2, 'close', this.release.bind(this));
 		this.bind(['cancel', 'close'], close);
 
-		turtl.push_title(this.action + ' ' + this.type + ' note', turtl.last_url);
+		var last = this.model.is_new() ? turtl.last_clean_url : turtl.last_url;
+		turtl.push_title(this.action + ' ' + this.type + ' note', last);
 		this.bind('release', turtl.pop_title.bind(null, false));
 		this.bind('release', function() {
 			Autosize.destroy(this.inp_text);
@@ -52,12 +58,20 @@ var NotesEditController = FormController.extend({
 	render: function()
 	{
 		var type = this.model.get('type') || this.type;
+		var colors = ['none','blue','red','green','purple','pink','brown','black'];
 		Autosize.destroy(this.inp_text);
-		this.html(view.render('notes/edit', {
+		this.html(view.render('notes/edit/index', {
 			note: this.model.toJSON(),
 			show_url: ['image', 'link'].contains(type),
-			type: this.model.get('type') || this.type
+			type: this.model.get('type') || this.type,
+			colors: colors
 		}));
+
+		this.track_subcontroller('tags', function() {
+			return new NotesEditTagsController({
+				inject: this.el_tags
+			});
+		}.bind(this));
 
 		if(this.inp_text) setTimeout(function() { autosize(this.inp_text); }.bind(this), 10);
 	},
@@ -103,6 +117,17 @@ var NotesEditController = FormController.extend({
 				turtl.events.trigger('ui-error', 'There was a problem updating that note', err);
 				log.error('note: edit: ', this.model.id(), derr(err));
 			});
+	},
+
+	switch_color: function(e)
+	{
+		if(e) e.stop();
+		var li = Composer.find_parent('ul.colors li', e.target);
+		if(!li) return;
+		this.el.getElements('ul.colors li').each(function(el) { el.removeClass('sel'); });
+		li.addClass('sel');
+		var color = li.get('rel');
+		this.model.set({color: color});
 	}
 });
 

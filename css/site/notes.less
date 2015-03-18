@@ -57,5 +57,23 @@
 	form {
 		textarea {height: 24px; max-height: 240px;}
 	}
+	ul.colors {margin: 0; padding: 8px 0 0 0; list-style: none;}
+	ul.colors {
+		// 'none','blue','red','green','purple','pink','brown','black'
+		li {display: inline-block; margin: 0 6px 0 0; padding: 0 0 6px 0;}
+		li.sel {padding-bottom: 4px; border-bottom: 2px solid #111;}
+		li {
+			span {display: block; width: 20px; height: 20px; border: 1px solid #ccc; border-radius: 4px;}
+		}
+		.color(@color) {background: @color; border-color: @color;}
+		.none span {}
+		.blue span {.color(#73b8d1);}
+		.red span {.color(#e85c5c);}
+		.green span {.color(#7bde76);}
+		.purple span {.color(#9476de);}
+		.pink span {.color(#de76d3);}
+		.brown span {.color(#7f4e4e);}
+		.black span {.color(#111);}
+	}
 }
 

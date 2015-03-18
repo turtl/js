@@ -505,12 +505,20 @@ var turtl = {
 
 		var prefix = options.prefix || 'modal';
 		var back = turtl.router.cur_path();
-		if(!options.add_url) back = back.replace(/\-\-.*/, '');
-		back += '--'+prefix+':' + url;
+		var add = '--'+prefix+':'+url;
+		if(options.add_url)
+		{
+			back = back.replace(add, '');
+		}
+		else
+		{
+			back = back.replace(/\-\-.*/, '');
+		}
+		back += add;
 		turtl.route(back, {replace_state: options.replace});
 		return function()
 		{
-			var re = new RegExp('--'+prefix+':'+url);
+			var re = new RegExp(add);
 			if(!turtl.router.cur_path().match(re)) return;
 			turtl.route(back.replace(re, ''));
 		};
