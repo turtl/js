@@ -44,9 +44,9 @@ var TurtlModal = Composer.Event.extend({
 		var html_copy = this.elements.gutter.get('html');
 		this.elements.container.removeClass('active');
 		this.trigger('close');
-		this.elements.gutter.set('html', html_copy);
+		this.elements.gutter.set('html', html_copy).addClass('closing');
 		(function() {
-			this.elements.gutter.set('html', '');
+			this.elements.gutter.set('html', '').removeClass('closing');
 		}).delay(500, this);
 	}
 });
