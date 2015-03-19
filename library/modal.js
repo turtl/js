@@ -41,8 +41,10 @@ var TurtlModal = Composer.Event.extend({
 	{
 		if(!this.is_open) return;
 		// slide out
+		var html_copy = this.elements.gutter.get('html');
 		this.elements.container.removeClass('active');
 		this.trigger('close');
+		this.elements.gutter.set('html', html_copy);
 		(function() {
 			this.elements.gutter.set('html', '');
 		}).delay(500, this);
