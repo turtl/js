@@ -36,6 +36,9 @@ var Search = Composer.Collection.extend({
 			this.field('tags', {boost: 10});
 		});
 
+		turtl.profile.get('boards').each(function(b) {
+			this.index.boards[b.id()] = [];
+		}.bind(this));
 		return turtl.db.notes.query().all().execute().bind(this)
 			.map(function(note) {
 				var note = new Note(note);
@@ -88,8 +91,8 @@ var Search = Composer.Collection.extend({
 			{
 				if(!res) res = arr;
 				else if(res.length === 0) res = [];
-				else res = intersect(res, arr);
-			};
+				else res = this.intersect(res, arr);
+			}.bind(this);
 
 			// loop over the search criteria and narrow down the results
 			var keys = Object.keys(search);
@@ -234,9 +237,9 @@ var Search = Composer.Collection.extend({
 		note.get('tags').each(function(tag) {
 			this.index_type('tags', tag.get('name'), note.id());
 		}.bind(this));
-		note.get('boards').each(function(board_id) {
+		note.get('boards').forEach(function(board_id) {
 			this.index_type('boards', board_id, note.id());
-		});
+		}.bind(this));
 
 		this.index.all_notes[note.id()] = true;
 
