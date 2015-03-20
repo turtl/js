@@ -33,7 +33,13 @@ var NotesListController = Composer.ListController.extend({
 		this.bind('release', function() { this.masonry_timer.unbind(); }.bind(this));
 
 		var resize_timer = new Timer(10);
-		var resize_reset = resize_timer.reset.bind(resize_timer);
+		var resize_reset = function()
+		{
+			this.el.getElements('li.note').each(function(el) {
+				el.setStyles({position: 'static'});
+			});
+			resize_timer.reset();
+		}.bind(this);
 		window.addEvent('resize', resize_reset);
 		this.bind('release', function() {
 			window.removeEvent('resize', resize_reset);
@@ -124,20 +130,18 @@ var NotesListController = Composer.ListController.extend({
 		if(!this.view_mode.match(/^masonry/)) return;
 
 		if(this.masonry) this.masonry.detach();
-		this.masonry = null;
-
 		var start = performance.now();
 		this.masonry = this.note_list.masonry({
 			singleMode: true,
 			resizeable: true,
-			itemSelector: '> li.note:not(.hide)'
+			itemSelector: '> li.note'
 		});
-		var images = this.note_list.getElements('> li.note:not(.hide) > .gutter img');
+		var images = this.note_list.getElements('> li.note > .gutter img');
 		images.each(function(img) {
 			if(img.complete || (img.naturalWidth && img.naturalWidth > 0)) return;
 			img.onload = function() {
 				img.onload = null;
-				this.this.masonry_timer.reset();
+				this.masonry_timer.reset();
 			}.bind(this);
 		}.bind(this));
 		//console.log('masonry time: ', performance.now() - start);
