@@ -43,6 +43,7 @@ var SidebarController = Composer.Controller.extend({
 
 	toggle: function()
 	{
+		if(!turtl.user.logged_in) return;
 		if(document.body.hasClass('settings'))
 		{
 			this.close();

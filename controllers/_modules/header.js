@@ -16,6 +16,7 @@ var HeaderController = Composer.Controller.extend({
 	init: function()
 	{
 		this.render();
+		this.with_bind(turtl.user, ['login', 'logout'], this.render.bind(this));
 		this.with_bind(turtl.events, 'header:set-actions', this.set_actions.bind(this));
 	},
 

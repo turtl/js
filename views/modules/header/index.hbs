@@ -1,6 +1,8 @@
 <a class="logo" href="#">
 	<img src="{{asset '/images/template/logo.svg'}}">
-	<icon>&#9776;</icon>
+	{{#if logged_in}}
+		<icon>&#9776;</icon>
+	{{/if}}
 </a>
 <h1><em>Turtl</em></h1>
 
