@@ -45,7 +45,7 @@ Handlebars.registerHelper('note', function(note, options) {
 		note.title = '<a target="_blank" href="'+note.url+'">'+note.title+'</a>';
 	}
 
-	note.color_name = note.color ? colors[note.color] : '';
+	note.color_name = note.color > 0 ? colors[note.color] : '';
 	var content = options.fn(note);
 	var rendered = view.render('notes/types/common', {
 		note: note,

@@ -60,9 +60,11 @@ var NotesEditController = FormController.extend({
 	{
 		var type = this.model.get('type') || this.type;
 		var colors = ['none','blue','red','green','purple','pink','brown','black'];
+		var data = this.model.toJSON();
+		if(!data.color) delete data.color;
 		Autosize.destroy(this.inp_text);
 		this.html(view.render('notes/edit/index', {
-			note: this.model.toJSON(),
+			note: data,
 			show_url: ['image', 'link'].contains(type),
 			type: this.model.get('type') || this.type,
 			colors: colors
@@ -126,8 +128,11 @@ var NotesEditController = FormController.extend({
 		var li = Composer.find_parent('ul.colors li', e.target);
 		if(!li) return;
 		this.el.getElements('ul.colors li').each(function(el) { el.removeClass('sel'); });
-		li.addClass('sel');
-		var color = li.get('rel');
+		var color = parseInt(li.get('rel'));
+		if(color > 0)
+		{
+			li.addClass('sel');
+		}
 		this.clone.set({color: color});
 	}
 });

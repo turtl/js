@@ -1,6 +1,5 @@
 @import 'variables';
 
-
 .notes {
 	@note_list_margin: 3.125px;
 	.list-container {padding: (@note_list_margin * 2) @note_list_margin;}
@@ -35,6 +34,7 @@
 
 .note {
 	@content_pad: 6px;
+	@color_size: 3px;
 	&.text,
 	&.link {
 		.note-gutter {padding: @content_pad;}
@@ -43,8 +43,11 @@
 		.backing {width: 100%; background: #000;}
 		img {display: block; margin: 0 auto; max-width: 100%;}
 		@header_height: 30px;
-		h1 {position: relative; display: block; margin: -(@header_height + 3px) 0 0 0; height: @header_height; padding: 0 0 0 6%; line-height: @header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim();}
+		h1 {position: relative; display: block; margin: -(@header_height) 0 0 0; height: @header_height; padding: 0 0 0 6%; line-height: @header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim();}
 		.note-gutter .content .body {padding: @content_pad;}
+		.note-gutter.color {
+			h1 {margin-top: -(@header_height + @color_size);}
+		}
 	}
 	.content {
 		h1:last-child {margin-bottom: 0; padding-bottom: 0;}
@@ -52,7 +55,7 @@
 			*:last-child {margin-bottom: 0; padding-bottom: 0;}
 		}
 	}
-	.note-color(@color) {border-top: 3px solid @color;}
+	.note-color(@color) {border-top: @color_size solid @color;}
 	.note-gutter.blue {.note-color(#73b8d1);}
 	.note-gutter.red {.note-color(#e85c5c);}
 	.note-gutter.green {.note-color(#7bde76);}
@@ -71,7 +74,7 @@
 	ul.colors {margin: 0; padding: 8px 0 0 0; list-style: none;}
 	ul.colors {
 		// 'none','blue','red','green','purple','pink','brown','black'
-		li {display: inline-block; margin: 0 6px 0 0; padding: 0 0 6px 0;}
+		li {display: inline-block; margin: 0 10px 0 0; padding: 0 0 6px 0; transition: border .3s, padding-bottom .3s;}
 		li.sel {padding-bottom: 4px; border-bottom: 2px solid #111;}
 		li {
 			span {display: block; width: 20px; height: 20px; border: 1px solid #ccc; border-radius: 4px;}
