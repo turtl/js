@@ -1,21 +1,21 @@
 @import 'variables';
 
-@action_size: 3.5rem;
-@action_offset: 1.3rem;
+@action_size: 35rem;
+@action_offset: 13rem;
 #main {
 	> .action {position: fixed; z-index: 12; bottom: @action_offset; right: @action_offset;}
 	> .action {
-		.abutton {position: relative; display: inline-block; width: @action_size; height: @action_size; text-align: center; border: 1px solid #fff; border-radius: (@action_size / 1.9cm); background: @theme_primary; .layer-hover(); transition: box-shadow .3s;}
+		.abutton {position: relative; display: inline-block; width: @action_size; height: @action_size; text-align: center; border: 1px solid #fff; border-radius: (@action_size / 1.9cm); background: @theme_primary; .layer-hover(); .transition(box-shadow .3s);}
 		.abutton {
-			span {display: inline-block; margin: .1rem 0 0 0; line-height: 1.1em; color: #fff; font-family: 'times new roman'; font-size: 3.0rem; font-weight: bold; transition: transform .3s;}
-			icon {line-height: 1.9em; color: #fff; font-size: 1.9rem;}
+			span {display: inline-block; margin: 1rem 0 0 0; line-height: 1.1em; color: #fff; font-family: 'times new roman'; font-size: 30rem; font-weight: bold; .transition(transform .3s);}
+			icon {line-height: 1.9em; color: #fff; font-size: 19rem;}
 		}
 		> a {z-index: 21;}
 		ul {display: none; margin: 0; padding: 0; list-style: none;}
 		ul {
-			li {position: fixed; z-index: 20; bottom: @action_offset; right: @action_offset; opacity: 0; text-align: right; white-space: nowrap; transition: bottom .15s, opacity .15s;}
+			li {position: fixed; z-index: 20; bottom: @action_offset; right: @action_offset; opacity: 0; text-align: right; white-space: nowrap; .transition(bottom .15s, opacity .15s;);}
 			li {
-				h4 {display: none; margin: 0 8px 0 0; padding: 5px; font-size: 1.4rem; color: #fff; background: rgba(0, 0, 0, .75); border-radius: 2px;}
+				h4 {display: none; margin: 0 8px 0 0; padding: 5px; font-size: 14rem; color: #fff; background: rgba(0, 0, 0, .75); border-radius: 2px;}
 			}
 		}
 	}
@@ -23,7 +23,7 @@
 	> .action.open {
 		> a {.layer-flat();}
 		> a {
-			span {transform: rotate(135deg);}
+			span {.transform(rotate(135deg));}
 		}
 		ul {}
 		ul {
@@ -33,7 +33,7 @@
 			}
 			.generate_action_lis(@counter) when (@counter >= 0) {
 				.generate_action_lis((@counter - 1));
-				li.item-@{counter} {bottom: (@action_offset + ((@counter + 1) * 4.5rem));}
+				li.item-@{counter} {bottom: (@action_offset + ((@counter + 1) * 45rem));}
 			}
 			.generate_action_lis(10);
 		}

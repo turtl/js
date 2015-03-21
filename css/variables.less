@@ -15,15 +15,9 @@
 @theme_border: #eee;
 
 // -----------------------------------------------------------------------------
-// transitions
-// -----------------------------------------------------------------------------
-@transition_standard: 0.2s;
-.transition (@property, @time: @transition_standard) {transition: @property @time;}
-
-// -----------------------------------------------------------------------------
 // template
 // -----------------------------------------------------------------------------
-@header_height: 4.4rem;
+@header_height: 44rem;
 @sidebar_travel: 90%;
 
 // -----------------------------------------------------------------------------
@@ -31,12 +25,12 @@
 // -----------------------------------------------------------------------------
 @shadow_opacity: .2;
 @shadow_gray: 20;
-.layer-flat () {box-shadow: 0 0.1rem 0.2rem rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
-.layer-rest () {box-shadow: 0 0.1rem 0.2rem rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
-.layer-rest-bottom () {box-shadow: 0 -0.1rem 0.2rem rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
-.layer-hover () {box-shadow: 0 0.2rem 0.4rem rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
+.layer-flat () {box-shadow: 0 1rem 2rem rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
+.layer-rest () {box-shadow: 0 1rem 2rem rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
+.layer-rest-bottom () {box-shadow: 0 -1rem 2rem rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
+.layer-hover () {box-shadow: 0 2rem 4rem rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
 
-.border-radius (@radius: 0.2rem) { border-radius: @radius; }
+.border-radius (@radius: 2rem) { border-radius: @radius; }
 
 // -----------------------------------------------------------------------------
 // material
@@ -49,6 +43,15 @@
 // utils
 // -----------------------------------------------------------------------------
 .title-scrim () {background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.35) 70%);}
+.transform (@props) {
+	-webkit-transform: @props;
+	transform: @props;
+}
+.transition (@value1,@value2:X,...) {
+	@value: ~`"@{arguments}".replace(/[\[\]]|\,\sX/g, '')`;
+	-webkit-transition: ~`"@{value}".replace(/transform/g, '-webkit-transform')`;
+	transition: @value;
+}
 
 @landscape: ~"only screen and (min-device-width: 500px)";
 @desktop: ~"only screen and (min-device-width: 800px)";

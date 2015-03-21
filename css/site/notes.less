@@ -1,14 +1,14 @@
 @import 'variables';
 
 .notes {
-	@note_list_margin: 3.125px;
+	@note_list_margin: 3.125rem;
 	.list-container {padding: (@note_list_margin * 2) @note_list_margin;}
 	.list-container {
-		> p.empty {padding: 25.0vh 24px 0 24px; font-size: 2.1em; line-height: 1.4em; color: @theme_gray; text-align: center;}
+		> p.empty {padding: 25.0vh 24rem 0 24rem; font-size: 2.1em; line-height: 1.4em; color: @theme_gray; text-align: center;}
 		> p.empty {
 			small {display: block; font-size: .6em;}
 			small {
-				em {display: inline-block; vertical-align: bottom; margin: 0 0 -1px 0; font-size: 1.8em;}
+				em {display: inline-block; vertical-align: bottom; margin: 0 0 -1rem 0; font-size: 1.8em;}
 			}
 			icon {display: block; font-size: 2.6em; color: @theme_gray_midlight; line-height: 1.5em;}
 		}
@@ -33,8 +33,8 @@
 }
 
 .note {
-	@content_pad: 6px;
-	@color_size: 3px;
+	@content_pad: 6rem;
+	@color_size: 3rem;
 	&.text,
 	&.link {
 		.note-gutter {padding: @content_pad;}
@@ -42,7 +42,7 @@
 	&.image {
 		.backing {width: 100%; background: #000;}
 		img {display: block; margin: 0 auto; max-width: 100%;}
-		@header_height: 30px;
+		@header_height: 30rem;
 		h1 {position: relative; display: block; margin: -(@header_height) 0 0 0; height: @header_height; padding: 0 0 0 6%; line-height: @header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim();}
 		.note-gutter .content .body {padding: @content_pad;}
 		.note-gutter.color {
@@ -69,15 +69,15 @@
 
 .notes-edit {
 	form {
-		textarea {height: 24px; max-height: 240px;}
+		textarea {height: 24rem; max-height: 240rem;}
 	}
-	ul.colors {margin: 0; padding: 8px 0 0 0; list-style: none;}
+	ul.colors {margin: 0; padding: 8rem 0 0 0; list-style: none;}
 	ul.colors {
 		// 'none','blue','red','green','purple','pink','brown','black'
-		li {display: inline-block; margin: 0 10px 0 0; padding: 0 0 6px 0; transition: border .3s, padding-bottom .3s;}
-		li.sel {padding-bottom: 4px; border-bottom: 2px solid #111;}
+		li {display: inline-block; margin: 0 10rem 0 0; padding: 0 0 6rem 0; .transition(border .3s, padding-bottom .3s;);}
+		li.sel {padding-bottom: 4rem; border-bottom: 2rem solid #111;}
 		li {
-			span {display: block; width: 20px; height: 20px; border: 1px solid #ccc; border-radius: 4px;}
+			span {display: block; width: 20rem; height: 20rem; border: 1rem solid #ccc; border-radius: 4rem;}
 		}
 		.edit-color(@color) {background: @color; border-color: @color;}
 		.none span {}
