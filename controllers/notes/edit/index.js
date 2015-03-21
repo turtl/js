@@ -46,6 +46,7 @@ var NotesEditController = FormController.extend({
 			Autosize.destroy(this.inp_text);
 		}.bind(this));
 
+		turtl.events.trigger('header:push-actions', false, modal2);
 		var focus = null;
 		switch(this.type)
 		{
