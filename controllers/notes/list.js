@@ -136,7 +136,7 @@ var NotesListController = Composer.ListController.extend({
 			resizeable: true,
 			itemSelector: '> li.note'
 		});
-		var images = this.note_list.getElements('> li.note > .gutter img');
+		var images = this.note_list.getElements('> li.note img');
 		images.each(function(img) {
 			if(img.complete || (img.naturalWidth && img.naturalWidth > 0)) return;
 			img.onload = function() {
