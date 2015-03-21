@@ -7,11 +7,8 @@ var HeaderController = Composer.Controller.extend({
 	},
 
 	events: {
-		'touchstart a.logo': 'toggle_sidebar',
 		'click a.logo': 'toggle_sidebar',
-		'touchstart .actions li .item-actions li a': 'fire_menu_action',
 		'click .actions li .item-actions li a': 'fire_menu_action',
-		'touchstart .actions li': 'fire_action',
 		'click .actions li': 'fire_action'
 	},
 
@@ -36,7 +33,6 @@ var HeaderController = Composer.Controller.extend({
 			actions: this.actions
 		}));
 		this.render_actions();
-		FastClick.attach(this.el_header);
 	},
 
 	render_actions: function()

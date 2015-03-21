@@ -35,6 +35,8 @@ var NotesIndexController = Composer.Controller.extend({
 		turtl.push_title(title, back);
 		this.bind('release', turtl.pop_title.bind(null, false));
 
+		turtl.events.trigger('header:set-actions', false);
+
 		this.render();
 
 		turtl.events.trigger('actions:update', [

@@ -9,10 +9,7 @@ var ActionController = Composer.Controller.extend({
 	events: {
 		'click a[rel=main]': 'fire_main',
 		'click a[rel=open]': 'toggle_open',
-		'touchstart a[rel=main]': 'fire_main',
-		'touchstart a[rel=open]': 'toggle_open',
-		'click ul > li': 'fire_action',
-		'touchstart ul > li': 'fire_action'
+		'click ul > li': 'fire_action'
 	},
 
 	actions: [],

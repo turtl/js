@@ -21,9 +21,6 @@ var SidebarController = Composer.Controller.extend({
 	{
 		this.html(view.render('modules/sidebar', {
 		}));
-		this.el.getElements('li').each(function(li) {
-			FastClick.attach(li);
-		});
 	},
 
 	open: function()
