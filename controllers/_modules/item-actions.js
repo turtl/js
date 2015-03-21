@@ -6,10 +6,14 @@ var ItemActionsController = Composer.Controller.extend({
 	},
 
 	events: {
+		'touchstart .item-actions > a': 'open',
 		'click .item-actions > a': 'open',
+		'touchstart .overlay': 'close_click',
 		'click .overlay': 'close_click',
+		'touchstart .menu a[rel=close]': 'close_click',
 		'click .menu a[rel=close]': 'close_click',
-		'click .menu a': 'close',
+		'touchstart .menu a': 'close',
+		'click .menu a': 'close'
 	},
 
 	actions: [],
@@ -41,8 +45,12 @@ var ItemActionsController = Composer.Controller.extend({
 			if(is_inside) return;
 			this.close();
 		}.bind(this);
+		$(document.body).addEvent('touchstart', inside);
 		$(document.body).addEvent('click', inside);
-		this.bind('release', function() { $(document.body).removeEvent('click', inside); });
+		this.bind('release', function() {
+			$(document.body).removeEvent('touchstart', inside);
+			$(document.body).removeEvent('click', inside);
+		});
 
 		this.with_bind(turtl.controllers.pages, 'start', this.close_url.bind(this, {noroute: true}));
 	},
