@@ -41,7 +41,10 @@ var BoardsEditController = FormController.extend({
 			board: this.model.toJSON(),
 			parent: parent
 		}));
-		this.inp_title.focus.delay(10, this.inp_title);
+		if(this.model.is_new())
+		{
+			this.inp_title.focus.delay(10, this.inp_title);
+		}
 	},
 
 	submit: function(e)

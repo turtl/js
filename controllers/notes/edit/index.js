@@ -47,17 +47,6 @@ var NotesEditController = FormController.extend({
 		}.bind(this));
 
 		turtl.events.trigger('header:push-actions', false, modal2);
-		if(this.model.is_new())
-		{
-			var focus = null;
-			switch(this.type)
-			{
-				case 'text': focus = this.inp_text; break;
-				case 'link': focus = this.inp_url; break;
-				case 'image': focus = this.inp_url; break;
-			}
-			if(focus) setTimeout(focus.focus.bind(focus), 10);
-		}
 	},
 
 	render: function()
@@ -80,7 +69,17 @@ var NotesEditController = FormController.extend({
 			});
 		}.bind(this));
 
-		if(this.inp_text) setTimeout(function() { autosize(this.inp_text); }.bind(this), 10);
+		if(this.model.is_new())
+		{
+			var focus_el = null;
+			switch(this.type)
+			{
+				case 'text': focus_el = this.inp_text; break;
+				case 'link': focus_el = this.inp_url; break;
+				case 'image': focus_el = this.inp_url; break;
+			}
+			if(focus_el) setTimeout(focus_el.focus.bind(focus_el), 10);
+		}
 	},
 
 	submit: function(e)
