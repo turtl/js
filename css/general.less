@@ -95,31 +95,6 @@ form.standard-form {
 	form.standard-form .button-row {left: auto;}
 }
 
-/* modal actions that pop up for any item */
-div.item-actions {position: relative;}
-div.item-actions {
-	> a {float: right; display: block; width: 12rem; line-height: 1.5em;}
-	> a {
-		icon {color: #ccc; font-size: 1.8em; .transform(rotate(90deg));}
-	}
-	> .overlay {display: none; position: fixed; z-index: 50; top: 0; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, .7);}
-	> .menu {position: absolute; z-index: 51; top: 0; right: 0; width: 150rem; height: 0; overflow: hidden; .transition(height .15s); .card();}
-	> .menu {
-		> .row {border-bottom: 1rem solid @theme_border;}
-		> .row:last-child {border-bottom: 0;}
-		> .row {
-			ul {list-style: none; margin: 0; padding: 0;}
-			ul {
-				li {font-size: 1.6em;}
-				li {
-					a {display: block; padding: 12rem 6rem; color: @theme_black;}
-				}
-			}
-		}
-	}
-	//&.open > .overlay {display: block;}
-}
-
 /* generic guttered item list (one per line) */
 ul.item-list {list-style: none; width: 94%; margin: 16rem auto 0 auto; .card();}
 ul.item-list {

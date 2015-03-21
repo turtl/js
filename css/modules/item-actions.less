@@ -1,0 +1,28 @@
+@import '../variables';
+
+/* menu actions that pop up for any item */
+div.item-actions {position: relative;}
+div.item-actions {
+	> a {float: right; display: block; width: 12rem; line-height: 1.5em;}
+	> a {
+		icon {color: #ccc; font-size: 1.8em; .transform(rotate(90deg));}
+	}
+	> .menu {display: none; position: absolute; z-index: 51; top: 0; right: 0; width: 150rem; height: 0; overflow: hidden; .transition(height .15s); .card();}
+	> .menu {
+		> .row {border-bottom: 1rem solid @theme_border;}
+		> .row:last-child {border-bottom: 0;}
+		> .row {
+			ul {list-style: none; margin: 0; padding: 0;}
+			ul {
+				li {font-size: 1.6em;}
+				li {
+					a {display: block; padding: 12rem 6rem; color: @theme_black;}
+				}
+			}
+		}
+	}
+	&.open > .menu {display: block;}
+	//&.open > .overlay {display: block;}
+}
+
+
