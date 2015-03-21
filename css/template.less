@@ -1,6 +1,6 @@
 @import 'variables';
 
-html, body {width: 100%; height: 100%;}
+html, body {width: 100%; height: 100%; font-size: 10px;}
 
 ::selection {background: #bfe1de;}
 ::-moz-selection {background: #bfe1de;}
@@ -10,7 +10,7 @@ html, body {width: 100%; height: 100%;}
 }
 *:focus {outline: 0;}
 
-body {font-size: 13px; font-family: 'raleway', helvetica, arial, sans-serif; background: @theme_gutter;}
+body {font-family: 'raleway', helvetica, arial, sans-serif; background: @theme_gutter;}
 
 a { text-decoration: none; }
 
@@ -29,18 +29,18 @@ a { text-decoration: none; }
 header {position: fixed; z-index: 13; width: 100%; height: (@header_height - @header_pad_top); margin: 0 0 0 0; padding: @header_pad_top 0 0 0; background: #222; .layer-rest();}
 header.under {z-index: 10;}
 header {
-	a.logo {position: absolute; display: block; width: 60px; height: 26px; margin: 3px 0 0 0;}
+	a.logo {position: absolute; display: block; width: 60px; height: 28px; margin: 3px 0 0 0;}
 	a.logo {
 		img {position: relative; z-index: 2; max-width: 100%; height: 100%; margin: 0 0 0 8px;}
-		icon {position: absolute; z-index: 1; margin: 6px 0 0 -11px; font-size: 2.0em; color: #8fc46a; transition: transform .3s;}
+		icon {position: absolute; z-index: 1; margin: 7px 0 0 -11px; font-size: 2.9em; color: #8fc46a; transition: transform .3s;}
 	}
 
-	h1 {position: absolute; width: 100%; margin: 1px 0 0 0; text-align: center; font-weight: normal; font-size: 1.15em; line-height: 1.2em;}
+	h1 {position: absolute; width: 100%; margin: 0 0 0 0; text-align: center; font-weight: normal; font-size: 1.7em; line-height: 1.2em;}
 	h1 {
 		em {display: inline-block; max-width: 50%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-top: 7px; color: #8fc46a;}
 		em {
 			a {color: #8fc46a;}
-			a icon {vertical-align: -8%; color: #8fc46a;}
+			a icon {color: #8fc46a; font-size: 1.0em;}
 		}
 	}
 	ul.actions {position: absolute; top: 0; right: 0; height: @header_height; list-style: none;}
