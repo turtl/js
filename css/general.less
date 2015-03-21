@@ -50,21 +50,21 @@ a icon {color: #222;}
 
 /* generic (non-header) buttons */
 div.buttons {text-align: center;}
-div.button {display: inline-block; margin: 0 3rem; cursor: pointer; line-height: 10rem; background: @theme_primary; .border-radius(); .layer-rest(); .transition(box-shadow .1s);}
+div.button {display: inline-block; margin: 0 3rem; cursor: pointer; line-height: 20rem; background: @theme_primary; .border-radius(); .layer-rest(); .transition(box-shadow .1s);}
 div.button {
 	&:active {.layer-flat();}
-	icon {float: left; margin: 0 8rem 0 0; color: rgba(255, 255, 255, .6); font-size: 1.2em; line-height: .5em; vertical-align: baseline;}
 	input[type="submit"],
 	input[type="button"],
-	span {display: inline-block; padding: 13rem 32rem 11rem 32rem; color: #fff; text-transform: none; font-size: 1.82em; font-weight: normal; background: none; border: 0; box-shadow: none;}
+	span {display: inline-block; padding: 13rem 32rem 11rem 32rem; color: #fff; text-transform: none; line-height: 0.6em; font-size: 1.84em; font-weight: normal; background: none; border: 0; box-shadow: none;}
 	input[type="submit"],
-	input[type="button"] {margin: 0; line-height: .6em; font-family: 'raleway', helvetica, arial, sans-serif;}
+	input[type="button"] {margin: 0; font-family: 'raleway', helvetica, arial, sans-serif;}
+	icon {float: left; margin: 0 8rem 0 0; color: rgba(255, 255, 255, .6); font-size: 1.2em; line-height: .5em; vertical-align: baseline;}
 }
 div.button.flat {box-shadow: none;}
 div.button.flat {
 	input[type="submit"],
 	input[type="button"],
-	span {padding-left: 16rem; padding-right: 16rem; font-size: 1.6em; color: @theme_primary;}
+	span {padding-left: 16rem; padding-right: 16rem; font-size: 1.7em; color: @theme_primary;}
 }
 div.button.cancel {background: @theme_gutter;}
 div.button.flat.cancel,
@@ -84,7 +84,11 @@ form.standard-form {
 	textarea:focus {border-bottom: 1rem solid @theme_accent;}
 	.button-row {position: fixed; bottom: 0; left: 0; width: 100%; text-align: right; background: #fff; border-top: 1rem solid @theme_border;}
 	.button-row {
-		.button {text-align: center; background: none; border-radius: 0; border: 0; box-shadow: none;}
+		.button {text-align: center; line-height: 1em; background: none; border-radius: 0; border: 0; box-shadow: none;}
+		.button {
+			span,
+			input {display: inline; padding-top: 18rem; padding-bottom: 16rem;}
+		}
 	}
 }
 .modal-gutter.closing {

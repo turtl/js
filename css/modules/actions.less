@@ -1,14 +1,14 @@
 @import 'variables';
 
-@action_size: 35rem;
+@action_size: 42rem;
 @action_offset: 13rem;
 #main {
 	> .action {position: fixed; z-index: 12; bottom: @action_offset; right: @action_offset;}
 	> .action {
 		.abutton {position: relative; display: inline-block; width: @action_size; height: @action_size; text-align: center; border: 1px solid #fff; border-radius: (@action_size / 1.9cm); background: @theme_primary; .layer-hover(); .transition(box-shadow .3s);}
 		.abutton {
-			span {display: inline-block; margin: 1rem 0 0 0; line-height: 1.1em; color: #fff; font-family: 'times new roman'; font-size: 30rem; font-weight: bold; .transition(transform .3s);}
-			icon {line-height: 1.9em; color: #fff; font-size: 19rem;}
+			span {display: inline-block; margin: 1rem 0 0 0; line-height: 1.1em; color: #fff; font-size: 36rem; font-family: 'times new roman'; font-weight: bold; .transition(transform .3s);}
+			icon {line-height: 1.9em; color: #fff; font-size: 22rem;}
 		}
 		> a {z-index: 21;}
 		ul {display: none; margin: 0; padding: 0; list-style: none;}
@@ -33,7 +33,7 @@
 			}
 			.generate_action_lis(@counter) when (@counter >= 0) {
 				.generate_action_lis((@counter - 1));
-				li.item-@{counter} {bottom: (@action_offset + ((@counter + 1) * 45rem));}
+				li.item-@{counter} {bottom: (@action_offset + ((@counter + 1) * 56rem));}
 			}
 			.generate_action_lis(10);
 		}
