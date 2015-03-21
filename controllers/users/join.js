@@ -9,7 +9,6 @@ var UserJoinController = FormController.extend({
 
 	events: {
 		'click a[href=#open-promo]': 'open_promo',
-		'click .button.join': 'submit',
 		'click .button.confirm': 'finalize'
 	},
 

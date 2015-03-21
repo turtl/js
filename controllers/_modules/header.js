@@ -20,7 +20,6 @@ var HeaderController = Composer.Controller.extend({
 		this.with_bind(turtl.events, 'header:set-actions', this.set_actions.bind(this));
 		this.with_bind(turtl.events, 'header:push-actions', function(actions, binder) {
 			var old_actions = this.actions;
-			console.log('push: ', actions);
 			this.set_actions(actions);
 			binder.bind('close', this.set_actions.bind(this, old_actions));
 		}.bind(this));

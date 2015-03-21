@@ -4,10 +4,6 @@ var UserLoginController = FormController.extend({
 		'input[name=password]': 'inp_password'
 	},
 
-	events: {
-		'click .button.login': 'submit'
-	},
-
 	buttons: false,
 	formclass: 'user-login',
 
