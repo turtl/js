@@ -531,6 +531,7 @@ var barfr = null;
 var markdown = null;
 
 window.addEvent('domready', function() {
+	FastClick.attach(document.body);
 	window.port = window.port || false;
 	window._base_url = config.base_url || '';
 	turtl.site_url = config.site_url || '';
