@@ -57,14 +57,14 @@
 
 			// set xhr.on[progress|abort|etc]
 			Object.keys(options).forEach(function(k) {
-				if(!k.substr(0, 2) == 'on') return false;
+				if(k.substr(0, 2) != 'on') return false;
 				if(['onload', 'onerror', 'onabort'].indexOf(k) >= 0) return false;
 				var fn = options[k];
 				xhr[k] = function(e) { fn(e, xhr); };
 			});
 			// set xhr.upload.on[progress|abort|etc]
 			Object.keys(options.upload || {}).forEach(function(k) {
-				if(!k.substr(0, 2) == 'on') return false;
+				if(k.substr(0, 2) != 'on') return false;
 				var fn = options[k];
 				xhr.upload[k] = function(e) { fn(e, xhr); };
 			});
