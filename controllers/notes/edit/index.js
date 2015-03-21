@@ -47,14 +47,17 @@ var NotesEditController = FormController.extend({
 		}.bind(this));
 
 		turtl.events.trigger('header:push-actions', false, modal2);
-		var focus = null;
-		switch(this.type)
+		if(this.model.is_new())
 		{
-			case 'text': focus = this.inp_text; break;
-			case 'link': focus = this.inp_url; break;
-			case 'image': focus = this.inp_url; break;
+			var focus = null;
+			switch(this.type)
+			{
+				case 'text': focus = this.inp_text; break;
+				case 'link': focus = this.inp_url; break;
+				case 'image': focus = this.inp_url; break;
+			}
+			if(focus) setTimeout(focus.focus.bind(focus), 10);
 		}
-		if(focus) setTimeout(focus.focus.bind(focus), 10);
 	},
 
 	render: function()
