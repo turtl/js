@@ -1,7 +1,9 @@
 var FormController = Composer.Controller.extend({
 	events: {
 		'submit form': 'submit',
+		'touchstart .button.submit': 'submit',
 		'click .button.submit': 'submit',
+		'touchstart .button.cancel': 'cancel',
 		'click .button.cancel': 'cancel'
 	},
 

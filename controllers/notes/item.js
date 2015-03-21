@@ -3,6 +3,7 @@ var NotesItemController = Composer.Controller.extend({
 	class_name: 'note',
 
 	events: {
+		'touchstart': 'note_click',
 		'click': 'note_click'
 	},
 
