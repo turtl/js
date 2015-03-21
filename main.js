@@ -189,11 +189,11 @@ var turtl = {
 				})
 				.then(function() {
 					turtl.update_loading_screen('Loading profile...');
-					this.start = window.performance.now();
+					this.start = new Date().getTime();
 					return turtl.profile.load();
 				})
 				.then(function() {
-					log.info('profile: loaded in: ', window.performance.now() - this.start);
+					log.info('profile: loaded in: ', (new Date().getTime()) - this.start);
 					turtl.update_loading_screen('Indexing notes...');
 					return turtl.search.reindex();
 				})

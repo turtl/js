@@ -130,7 +130,7 @@ var NotesListController = Composer.ListController.extend({
 		if(!this.view_mode.match(/^masonry/)) return;
 
 		if(this.masonry) this.masonry.detach();
-		var start = performance.now();
+		var start = new Date().getTime();
 		this.masonry = this.note_list.masonry({
 			singleMode: true,
 			resizeable: true,
@@ -144,7 +144,7 @@ var NotesListController = Composer.ListController.extend({
 				this.masonry_timer.reset();
 			}.bind(this);
 		}.bind(this));
-		//console.log('masonry time: ', performance.now() - start);
+		//console.log('masonry time: ', (new Date().getTime()) - start);
 	}
 });
 
