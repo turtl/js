@@ -83,28 +83,13 @@ var Api = new Class({
 
 		var url = api_url + '/' + resource.replace(/^\//, '');
 
-		if(!['post', 'get'].contains(method.toLowerCase()))
-		{
-			// add method GET var (MUST be GET (Wookie restriction))
-			if(url.match(/\?/))
-				url += '&_method='+method;
-			else
-				url += '?_method='+method;
-		}
-
 		var request = {
 			url: url,
-			method: (method.toLowerCase() == 'get' ? 'GET' : 'POST'),
+			method: method,
 			emulate: true,
 			headers: params.headers || {},
 			data: data,
 			response_type: params.response_type,
-			onSuccess: function(res)
-			{
-			},
-			onfailure: function(xhr)
-			{
-			},
 			onprogress: function(event, xhr)
 			{
 				var progress = {total: event.total, loaded: event.loaded};
@@ -116,9 +101,7 @@ var Api = new Class({
 					var progress = {total: event.total, loaded: event.loaded};
 					if(params.uploadprogress) params.uploadprogress(progress, xhr);
 				}
-			},
-			evalScripts: false,
-			evalResponse: false
+			}
 		};
 
 		// fill in the client we're using
