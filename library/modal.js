@@ -1,39 +1,32 @@
-var TurtlModal = Composer.Event.extend({
-	options: {
-		inject: 'body'
-	},
+var TurtlModal = Composer.Controller.extend({
+	inject: 'body',
 
 	elements: {
-		container: null,
-		gutter: null
+		'.turtl-modal': 'container',
+		'.modal-gutter': 'gutter'
 	},
 
 	is_open: false,
 
-	initialize: function(options)
+	init: function()
 	{
-		options || (options = {});
-		Object.keys(options).forEach(function(k) {
-			this.options[k] = options[k];
-		}.bind(this));
-
-		this.elements.container = new Element('div');
-		this.elements.container.addClass('turtl-modal');
-		this.elements.gutter = new Element('div')
-			.addClass('modal-gutter')
-			.inject(this.elements.container);
-		document.getElement(this.options.inject).appendChild(this.elements.container);
+		this.render();
 
 		this.bind('open', function() { this.is_open = true; }.bind(this));
 		this.bind('close', function() { this.is_open = false; }.bind(this));
 	},
 
+	render: function()
+	{
+		this.html('<div class="turtl-modal"><div class="modal-gutter"></div></div>');
+	},
+
 	open: function(element)
 	{
-		this.elements.gutter.set('html', '');
-		this.elements.gutter.appendChild(element);
+		this.gutter.set('html', '');
+		this.gutter.appendChild(element);
 
-		this.elements.container.addClass('active');
+		this.container.addClass('active');
 		this.trigger('open');
 	},
 
@@ -41,12 +34,12 @@ var TurtlModal = Composer.Event.extend({
 	{
 		if(!this.is_open) return;
 		// slide out
-		var html_copy = this.elements.gutter.get('html');
-		this.elements.container.removeClass('active');
+		var html_copy = this.gutter.get('html');
+		this.container.removeClass('active');
 		this.trigger('close');
-		this.elements.gutter.set('html', html_copy).addClass('closing');
+		this.gutter.set('html', html_copy).addClass('closing');
 		(function() {
-			this.elements.gutter.set('html', '').removeClass('closing');
+			this.gutter.set('html', '').removeClass('closing');
 		}).delay(500, this);
 	}
 });
