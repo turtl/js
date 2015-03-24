@@ -20,7 +20,7 @@ body {font-size: 10px; font-family: 'raleway', helvetica, arial, sans-serif; bac
 a { text-decoration: none; }
 
 /* custom font(s) */
-@font-face {font-family: 'Entypo'; font-weight: 400; src: url(../images/font/entypo.fontello.ttf);}
+@font-face {font-family: 'Entypo'; font-weight: 400; src: url(../images/font/turtl-icons.ttf);}
 @font-face {font-family: 'Raleway'; font-style: normal; font-weight: 400; src: local('Raleway'), url(../images/font/raleway.woff) format('woff');}
 @font-face {font-family: 'Raleway'; font-style: normal; font-weight: 600; src: local('Raleway SemiBold'), local('Raleway-SemiBold'), url(../images/font/raleway-semibold.woff) format('woff');}
 
@@ -37,7 +37,7 @@ header {
 	a.logo {position: absolute; display: block; width: 60rem; height: 28rem; margin: 3rem 0 0 0;}
 	a.logo {
 		img {position: relative; z-index: 2; max-width: 100%; height: 100%; margin: 0 0 0 8rem;}
-		icon {position: absolute; z-index: 1; margin: 7rem 0 0 -11rem; font-size: 2.9em; color: #8fc46a; .transition(transform .3s);}
+		icon {position: absolute; z-index: 1; margin: 7rem 0 0 -14rem; font-size: 2.9em; color: #8fc46a; .transition(margin-left .3s);}
 	}
 
 	h1 {position: absolute; width: 100%; margin: 0 0 0 0; text-align: center; font-weight: normal; font-size: 1.7em; line-height: 1.2em;}
@@ -69,7 +69,7 @@ body.settings {
 	#sidebar {
 		> .overlay {position: fixed; left: 0;}
 	}
-	header a.logo icon {.transform(rotate(90deg));}
+	header a.logo icon {margin-left: -20rem;}
 }
 
 /* body page slide shite */
