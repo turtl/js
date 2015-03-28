@@ -40,7 +40,7 @@ var HeaderController = Composer.Controller.extend({
 
 	render_title: function(title, backurl)
 	{
-		var html = title;
+		var html = title || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 		if(backurl)
 		{
 			html = '<a href="'+ backurl +'" rel="back"><icon>&#xe835;</icon><span>&nbsp;&nbsp;'+ html +'</span></a>';
@@ -48,6 +48,7 @@ var HeaderController = Composer.Controller.extend({
 		}
 		else
 		{
+			html = '<span>'+html+'</span>';
 			this.el.removeClass('has-back');
 		}
 		var html = '<em>'+html+'</em>';
