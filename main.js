@@ -57,7 +57,8 @@ var turtl = {
 		header: null,
 		sidebar: null,
 		action: null,
-		sync: null
+		sync: null,
+		loading: null
 	},
 
 	router: null,
@@ -105,6 +106,7 @@ var turtl = {
 		turtl.controllers.header = new HeaderController();
 		turtl.controllers.sidebar = new SidebarController();
 		turtl.controllers.action = new ActionController();
+		turtl.controllers.loading = new LoadingController();
 		turtl.controllers.pages.bind('prerelease', function() {
 			// always scroll to the top of the window on page load
 			$('wrap').scrollTop = 0;
@@ -314,69 +316,21 @@ var turtl = {
 
 	show_loading_screen: function(show, delay)
 	{
-		if(!$E('body > #loading-overlay'))
+		if(delay)
 		{
-			var loading = new Element('div#loading-overlay')
-				.set('html', '<div><span></span><ul></ul></div>')
-				.inject(document.body, 'top');
+			setTimeout(function() {
+				turtl.events.trigger('loading:show', show);
+			}, delay);
 		}
-		var overlay = $('loading-overlay');
-		if(!overlay) return;
-		turtl.update_loading_screen(false);
-		var do_show = function()
+		else
 		{
-			overlay.setStyle('display', show ? 'table' : '');
-			if(show)
-			{
-				this.stop_spinner = false;
-				var spinner = $E('span', overlay);
-				spinner.addClass('display');
-				var imghtml = '<img src="'+ asset('/images/template/logo.svg') +'" width="40" height="40">';
-				spinner.set('html', imghtml + imghtml + imghtml);
-				var imgs = spinner.getElements('img');
-				var idx = 0;
-				//var spinner = $E('.spin', overlay);
-				var spin = function()
-				{
-					idx = (idx + 1) % 4;
-					imgs.each(function(img, i) {
-						if(i >= idx)
-						{
-							img.removeClass('show');
-							return;
-						}
-						if(!img.hasClass('show')) img.addClass('show');
-					});
-
-					if(spinner.hasClass('display'))
-					{
-						spinner.removeClass('display');
-					}
-					else
-					{
-						spinner.addClass('display');
-					}
-					spin.delay(750, this);
-				}.bind(this);
-				spin();
-			}
-			else
-			{
-				this.stop_spinner = true;
-			}
-		};
-
-		if(delay && delay > 0) do_show.delay(delay);
-		else do_show();
+			turtl.events.trigger('loading:show', show);
+		}
 	},
 
 	update_loading_screen: function(msg)
 	{
-		var text = $E('body > #loading-overlay ul');
-		if(!text) return false;
-		if(!msg) return text.set('html', '');
-		var li = new Element('li').set('html', msg).inject(text);
-		setTimeout(function() { li.addClass('show'); }, 10);
+		turtl.events.trigger('loading:log', msg);
 	},
 
 	unload: function()
