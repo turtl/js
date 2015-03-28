@@ -59,13 +59,13 @@ var ActionController = Composer.Controller.extend({
 		var li = Composer.find_parent('.action > ul > li', e.target);
 		if(!li) return false;
 		turtl.events.trigger('actions:fire', li.get('rel'));
-		this.el.removeClass('open');
+		this.close();
 	},
 
 	animate: function(method)
 	{
-		var duration = method == 'open' ? 350 : 50;
-		var ease = method == 'open' ? [10, 3] : null;
+		var duration = method == 'open' ? 350 : 150;
+		var ease = [10, 3];
 		var bottom = parseInt(this.el.getElement('a.abutton').getParent().getStyle('bottom'));
 		var botfn = function(i)
 		{
@@ -99,15 +99,13 @@ var ActionController = Composer.Controller.extend({
 
 	open: function()
 	{
-		this.animate('open')
-			.then(function() {
-			});
-		setTimeout(function() { this.el.addClass('open'); }.bind(this));
+		this.animate('open');
+		this.el.addClass('open');
 	},
 
 	close: function()
 	{
-		this.animate('close').bind(this);
+		this.animate('close');
 		this.el.removeClass('open');
 	},
 
