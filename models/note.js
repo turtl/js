@@ -44,7 +44,12 @@ var Note = Protected.extend({
 
 	init: function()
 	{
+		// if the note is destroyed or edited, update the index
 		this.bind('destroy', turtl.search.unindex_note.bind(turtl.search));
+		this.bind('change', function() {
+			if(!this.id(true)) return;
+			turtl.search.reindex_note(this);
+		}.bind(this));
 
 		this.bind_relational('file', ['change:hash'], function() {
 			if(this.is_new() || this.disable_file_monitoring) return false;

@@ -120,7 +120,6 @@ var NotesEditController = FormController.extend({
 
 				// add the note to our main note list
 				turtl.profile.get('notes').upsert(this.model);
-				turtl.search.reindex_note(this.model);
 
 				this.trigger('close');
 			})

@@ -33,6 +33,12 @@ var Board = Protected.extend({
 
 	init: function()
 	{
+		this.bind('destroy', turtl.search.unindex_board.bind(turtl.search));
+		this.bind('change', function() {
+			if(!this.id(true)) return;
+			turtl.search.reindex_board(this);
+		}.bind(this));
+
 		this.bind('destroy', function(_1, _2, options) {
 			turtl.profile.get('keychain').remove_key(this.id());
 			this.get('boards').each(function(board) {

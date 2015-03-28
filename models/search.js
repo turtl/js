@@ -36,9 +36,7 @@ var Search = Composer.Collection.extend({
 			this.field('tags', {boost: 10});
 		});
 
-		turtl.profile.get('boards').each(function(b) {
-			this.index.boards[b.id()] = [];
-		}.bind(this));
+		turtl.profile.get('boards').each(this.index_board.bind(this));
 		return turtl.db.notes.query().all().execute().bind(this)
 			.map(function(note) {
 				var note = new Note(note);
@@ -61,6 +59,7 @@ var Search = Composer.Collection.extend({
 	{
 		search || (search = {});
 		options || (options = {});
+		console.log('search: ', search);
 
 		clone(search);
 		if(search.sort && (search.sort[0] == 'id' || this.sort[search.sort[0]]))
@@ -302,6 +301,22 @@ var Search = Composer.Collection.extend({
 		// not super graceful, but effective
 		this.unindex_note(note);
 		this.index_note(note);
+	},
+
+	index_board: function(board)
+	{
+		this.index.boards[board.id()] = [];
+	},
+
+	unindex_board: function(board)
+	{
+		delete this.index.boards[board.id()];
+	},
+
+	reindex_board: function(board)
+	{
+		this.unindex_board(board);
+		this.index_board(board);
 	},
 
 	index_type: function(type, index_id, item_id)
