@@ -55,6 +55,9 @@ var NotesListController = Composer.ListController.extend({
 				});
 
 				var notes = turtl.profile.get('notes');
+				this.with_bind(notes, ['add', 'remove', 'reset', 'destroy'], function() {
+					this.trigger('search');
+				}.bind(this))
 				this.track(turtl.search, function(model, options) {
 					// since the search model only deals with IDs, here we pull
 					// out the actual note model from the profile (which was

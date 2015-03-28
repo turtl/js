@@ -256,7 +256,6 @@ var Search = Composer.Collection.extend({
 			body: json.text,
 			tags: tags
 		});
-		this.add(note);
 	},
 
 	/**
@@ -291,9 +290,6 @@ var Search = Composer.Collection.extend({
 			tags: tags
 		});
 		delete this.index_json.notes[id];
-		var note_model = this.find_by_id(id);
-		this.remove(note_model, {silent: true});
-		this.trigger('remove', note_model);
 	},
 
 	reindex_note: function(note)

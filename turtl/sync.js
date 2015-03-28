@@ -79,7 +79,7 @@ Composer.sync = function(method, model, options)
 				turtl.db[table].get(model.id()).then(success).catch(error);
 				break;
 			case 'create':
-				model.set({id: model.cid()});
+				model.set({id: model.cid()}, {silent: true});
 				modeldata.id = model.id();
 
 				turtl.db[table].add(modeldata).then(success).catch(error);
