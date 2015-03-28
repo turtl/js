@@ -8,7 +8,7 @@ var TurtlModal = Composer.Controller.extend({
 	},
 
 	events: {
-		'click .turtl-modal > header h1 a[rel=back]': 'close'
+		'click .turtl-modal > header h1 a[rel=back]': 'close_back'
 	},
 
 	is_open: false,
@@ -74,6 +74,12 @@ var TurtlModal = Composer.Controller.extend({
 		(function() {
 			this.gutter.set('html', '').removeClass('closing');
 		}).delay(500, this);
+	},
+
+	close_back: function(e)
+	{
+		if(e) e.stop();
+		this.close();
 	}
 });
 
