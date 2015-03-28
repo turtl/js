@@ -3,6 +3,8 @@ var NotesViewController = Composer.Controller.extend({
 
 	modal: null,
 
+	model: null,
+
 	init: function()
 	{
 		if(!this.model)
@@ -10,23 +12,23 @@ var NotesViewController = Composer.Controller.extend({
 			this.release();
 			throw new Error('notes: view: no model passed');
 		}
+		this.modal = new TurtlModal({
+			show_header: true,
+			actions: [
+				{name: 'menu', actions: [{name: 'Edit'}, {name: 'Delete'}]}
+			]
+		});
 		this.render();
 
 		var url = '/notes/view/'+this.model.id();
-		var close = turtl.push_modal_url(url);
-		modal.open(this.el);
-		this.with_bind(modal, 'close', this.release.bind(this));
+
+		var close = this.modal.close.bind(this.modal);
+		this.modal.open(this.el);
+		this.with_bind(this.modal, 'close', this.release.bind(this));
 		this.bind(['cancel', 'close'], close);
 
-		turtl.push_title('', turtl.last_clean_url);
-		this.bind('release', turtl.pop_title.bind(null, false));
-
 		this.with_bind(this.model, 'change', this.render.bind(this));
-
-		turtl.events.trigger('header:set-actions', [
-			{name: 'menu', actions: [{name: 'Edit'}, {name: 'Delete'}]}
-		]);
-		this.with_bind(turtl.events, 'header:menu:fire-action', function(action) {
+		this.with_bind(this.modal, 'header:menu:fire-action', function(action) {
 			switch(action)
 			{
 				case 'edit': this.open_edit(); break;
@@ -34,9 +36,6 @@ var NotesViewController = Composer.Controller.extend({
 			}
 		});
 		this.with_bind(this.model, 'destroy', close);
-		this.bind('release', function() {
-			turtl.events.trigger('header:set-actions', false);
-		}.bind(this));
 	},
 
 	render: function()
@@ -52,6 +51,15 @@ var NotesViewController = Composer.Controller.extend({
 		this.el.className = 'note view';
 		this.el.addClass(this.model.get('type'));
 		this.el.set('rel', this.model.id());
+
+		// let the app know that we're displaying a note of this type
+		var remove_class = function()
+		{
+			this.modal.container.className = this.modal.container.className.replace(/note-[a-z0-9]+/, '');
+		}.bind(this);
+		var body_class = 'note-'+this.model.get('type');
+		remove_class();
+		this.modal.container.addClass(body_class);
 	},
 
 	open_edit: function(e)

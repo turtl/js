@@ -6,6 +6,8 @@ var BoardsEditController = FormController.extend({
 	events: {
 	},
 
+	modal: null,
+
 	model: null,
 	formclass: 'boards-edit',
 
@@ -14,18 +16,21 @@ var BoardsEditController = FormController.extend({
 		if(!this.model) this.model = new Board();
 		this.action = this.model.is_new() ? 'Create': 'Edit';
 		this.parent();
-		this.render();
-
-		var url = '/boards/' + this.action.toLowerCase() + '/' + (this.model.is_new() ? '' : this.model.id());
-		var close = turtl.push_modal_url(url);
-		modal.open(this.el);
-		this.with_bind(modal, 'close', this.release.bind(this));
 
 		var child = '';
 		if(this.model.get('parent_id')) child = ' child';
 
-		turtl.push_title(this.action + child + ' board', turtl.last_clean_url);
-		this.bind('release', turtl.pop_title.bind(null, false));
+		this.modal = new TurtlModal({
+			show_header: true,
+			title: this.action + child + ' board'
+		});
+
+		this.render();
+
+		var close = this.modal.close.bind(this.modal);
+		this.modal.open(this.el);
+		this.with_bind(this.modal, 'close', this.release.bind(this));
+
 		this.bind(['cancel', 'close'], close);
 	},
 

@@ -11,6 +11,8 @@ var NotesEditController = FormController.extend({
 		'click ul.colors li': 'switch_color'
 	},
 
+	modal: null,
+
 	model: null,
 	clone: null,
 	formclass: 'notes-edit',
@@ -31,22 +33,22 @@ var NotesEditController = FormController.extend({
 
 		this.action = this.model.is_new() ? 'Add' : 'Edit';
 		this.parent();
+
+		this.modal = new TurtlModal({
+			show_header: true,
+			title: this.action + ' ' + this.type + ' note'
+		});
+
 		this.render();
 
-		var url = '/notes/' + this.action.toLowerCase() + (this.model.is_new() ? '' : '/' + this.model.id());
-		var close = turtl.push_modal_url(url, {prefix: 'modal2', add_url: true});
-		modal2.open(this.el);
-		this.with_bind(modal2, 'close', this.release.bind(this));
+		var close = this.modal.close.bind(this.modal);
+		this.modal.open(this.el);
+		this.with_bind(this.modal, 'close', this.release.bind(this));
 		this.bind(['cancel', 'close'], close);
 
-		var last = this.model.is_new() ? turtl.last_clean_url : turtl.last_url;
-		turtl.push_title(this.action + ' ' + this.type + ' note', last);
-		this.bind('release', turtl.pop_title.bind(null, false));
 		this.bind('release', function() {
 			Autosize.destroy(this.inp_text);
 		}.bind(this));
-
-		turtl.events.trigger('header:push-actions', false, modal2);
 	},
 
 	render: function()

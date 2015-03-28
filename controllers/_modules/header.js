@@ -14,12 +14,15 @@ var HeaderController = Composer.Controller.extend({
 
 	actions: [],
 
+	bind_to: null,
+
 	init: function()
 	{
+		if(!this.bind_to) this.bind_to = turtl.events;
 		this.render();
 		this.with_bind(turtl.user, ['login', 'logout'], this.render.bind(this));
-		this.with_bind(turtl.events, 'header:set-actions', this.set_actions.bind(this));
-		this.with_bind(turtl.events, 'header:push-actions', function(actions, binder) {
+		this.with_bind(this.bind_to, 'header:set-actions', this.set_actions.bind(this));
+		this.with_bind(this.bind_to, 'header:push-actions', function(actions, binder) {
 			var old_actions = this.actions;
 			this.set_actions(actions);
 			binder.bind('close', this.set_actions.bind(this, old_actions));
@@ -33,6 +36,23 @@ var HeaderController = Composer.Controller.extend({
 			actions: this.actions
 		}));
 		this.render_actions();
+	},
+
+	render_title: function(title, backurl)
+	{
+		var html = title;
+		if(backurl)
+		{
+			html = '<a href="'+ backurl +'" rel="back"><icon>&#xe835;</icon><span>&nbsp;&nbsp;'+ html +'</span></a>';
+			this.el.addClass('has-back');
+		}
+		else
+		{
+			this.el.removeClass('has-back');
+		}
+		var html = '<em>'+html+'</em>';
+
+		this.el_header.set('html', html);
 	},
 
 	render_actions: function()
@@ -72,7 +92,7 @@ var HeaderController = Composer.Controller.extend({
 	toggle_sidebar: function(e)
 	{
 		if(e) e.stop();
-		turtl.events.trigger('sidebar:toggle');
+		this.bind_to.trigger('sidebar:toggle');
 	},
 
 	fire_action: function(e)
@@ -84,8 +104,8 @@ var HeaderController = Composer.Controller.extend({
 		e.stop();
 		if(!rel) return;
 		setTimeout(function() {
-			turtl.events.trigger('header:fire-action', rel);
-		});
+			this.bind_to.trigger('header:fire-action', rel);
+		}.bind(this));
 	},
 
 	fire_menu_action: function(e)
@@ -95,8 +115,8 @@ var HeaderController = Composer.Controller.extend({
 		var rel = a && a.get('rel');
 		if(!rel) return;
 		setTimeout(function() {
-			turtl.events.trigger('header:menu:fire-action', rel);
-		});
+			this.bind_to.trigger('header:menu:fire-action', rel);
+		}.bind(this));
 	}
 });
 

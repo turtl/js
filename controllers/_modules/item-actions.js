@@ -72,19 +72,8 @@ var ItemActionsController = Composer.Controller.extend({
 		var height = this.menu.getCoordinates().height;
 		this.menu.setStyles({height: ''});
 		setTimeout(this.menu.setStyles.bind(this.menu, {height: height}));
-		var close = turtl.push_modal_url('/menu', {
-			// use a custom prefix
-			prefix: 'actions',
-			// if we were just in another actions menu, replace the url
-			replace: came_from_actions,
-			// if enable, tack on our url to the current one (instead of
-			// replacing it)
-			add_url: this.add_url
-		});
 		this.bind_once('close', function(options) {
 			options || (options = {});
-			if(options.noroute) return;
-			close();
 		});
 	},
 

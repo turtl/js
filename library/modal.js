@@ -3,10 +3,19 @@ var TurtlModal = Composer.Controller.extend({
 
 	elements: {
 		'.turtl-modal': 'container',
+		'header': 'header',
 		'.modal-gutter': 'gutter'
 	},
 
+	events: {
+		'click .turtl-modal > header h1 a[rel=back]': 'close'
+	},
+
 	is_open: false,
+
+	show_header: false,
+	title: '',
+	actions: [],
 
 	init: function()
 	{
@@ -18,7 +27,29 @@ var TurtlModal = Composer.Controller.extend({
 
 	render: function()
 	{
-		this.html('<div class="turtl-modal"><div class="modal-gutter"></div></div>');
+		this.html(view.render('modules/modal', {
+			show_header: this.show_header
+		}));
+
+		if(this.show_header)
+		{
+			this.track_subcontroller('header', function() {
+				var con = new HeaderController({
+					inject: this.header,
+					bind_to: this,
+					logo: false,
+					actions: this.actions
+				});
+				con.render_title(this.title, turtl.last_url);
+				con.set_actions(this.actions);
+				return con;
+			}.bind(this));
+		}
+		else
+		{
+			var con = this.get_subcontroller('header');
+			if(con) con.release();
+		}
 	},
 
 	open: function(element)
@@ -26,8 +57,10 @@ var TurtlModal = Composer.Controller.extend({
 		this.gutter.set('html', '');
 		this.gutter.appendChild(element);
 
-		this.container.addClass('active');
-		this.trigger('open');
+		setTimeout(function() {
+			this.container.addClass('active');
+			this.trigger('open');
+		}.bind(this));
 	},
 
 	close: function()

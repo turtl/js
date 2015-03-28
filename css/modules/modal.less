@@ -1,8 +1,26 @@
 @import 'variables';
 
-.turtl-modal {position: fixed; top: 0; left: 100%; z-index: 10; width: 100%; height: 100%; overflow-x: hidden; background: @theme_gutter; .transition(left .3s cubic-bezier(0.28,0.72,0.58,0.98)); background: #fff; .layer-hover();}
+.turtl-modal {position: fixed; top: 0; left: 100%; z-index: 20; width: 100%; height: 100%; overflow-x: hidden; background: @theme_gutter; .transition(left .3s cubic-bezier(0.28,0.72,0.58,0.98)); background: #fff; .layer-hover();}
 .turtl-modal.active {left: 0%;}
 .turtl-modal {
+	header {background: rgba(red(@theme_black), green(@theme_black), blue(@theme_black), .8);}
+	header {
+		a.logo {display: none;}
+		h1 {margin-left: 10rem;}
+		h1 {
+			em {
+				a {color: #fff;}
+				icon {color: #fff;}
+			}
+		}
+		ul.actions {
+			> li {
+				.item-actions {
+					> a icon {color: #fff;}
+				}
+			}
+		}
+	}
 	.modal-gutter {padding: @header_height 0 0 0;}
 	form.standard-form {.uncard();}
 }

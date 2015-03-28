@@ -65,8 +65,6 @@ var turtl = {
 
 	// holds the last successfully routed url
 	last_url: null,
-	// holds the last routed url, sans modal junk
-	last_clean_url: null,
 
 	// -------------------------------------------------------------------------
 	// Data section
@@ -113,10 +111,6 @@ var turtl = {
 
 			// always clear out the available actions on each page load
 			turtl.events.trigger('actions:update', false);
-		});
-		turtl.controllers.pages.bind('start', function() {
-			if(!turtl.router.cur_path().match('modal:')) modal.close();
-			if(!turtl.router.cur_path().match('modal2:')) modal2.close();
 		});
 
 		turtl.events.bind('ui-error', function(msg, err) {
@@ -231,8 +225,6 @@ var turtl = {
 			turtl.show_loading_screen(false);
 			turtl.user.unbind('change', 'user:write_changes_to_cookie');
 			turtl.api.clear_auth();
-			modal.close();
-			modal2.close();
 
 			localStorage.invites = '{}';	// wipe local storage
 
@@ -466,16 +458,7 @@ var turtl = {
 			back = turtl.titles[0].back;
 		}
 
-		var html = title;
-		if(back)
-		{
-			html = '<a href="'+ back +'" rel="back"><icon>&#xe835;</icon>&nbsp;&nbsp;'+ html +'</a>';
-		}
-		var html = '<em>'+html+'</em>';
-
-		document.title = title;
-		var header = document.getElement('header h1');
-		header.set('html', html);
+		turtl.controllers.header.render_title(title, back);
 	},
 
 	push_title: function(title, backurl)
@@ -525,8 +508,6 @@ var turtl = {
 	}
 };
 
-var modal = null;
-var modal2 = null;		// if drew ever sees this, he'll cry with happiness
 var barfr = null;
 var markdown = null;
 
@@ -551,10 +532,6 @@ window.addEvent('domready', function() {
 			};
 		}
 	);
-
-	// create the modal objects
-	modal = new TurtlModal({ inject: '#wrap' });
-	modal2 = new TurtlModal({ inject: '#wrap' });
 
 	// create the barfr
 	barfr = new Barfr('barfr', {});
