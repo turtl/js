@@ -18,7 +18,7 @@ var NotesViewController = Composer.Controller.extend({
 		this.with_bind(modal, 'close', this.release.bind(this));
 		this.bind(['cancel', 'close'], close);
 
-		turtl.push_title('View note', turtl.last_clean_url);
+		turtl.push_title('', turtl.last_clean_url);
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		this.with_bind(this.model, 'change', this.render.bind(this));
