@@ -1,0 +1,29 @@
+@import '../variables';
+
+form.standard-form {padding: 16rem 4% 16rem 4%; .card();}
+form.standard-form {
+	input[type=text],
+	input[type=password],
+	input[type=email],
+	textarea {width: 92%; margin: 0 0 12rem 0; padding: 9rem 4%; font-size: 1.6em; background: none; border: 0; border-bottom: 1rem solid #bbb; border-radius: 0; .transition(border);}
+	input[type=text]:focus,
+	input[type=password]:focus,
+	input[type=email]:focus,
+	textarea:focus {border-bottom: 1rem solid @theme_accent;}
+	.button-row {position: fixed; bottom: 0; left: 0; width: 100%; text-align: right; background: #fff; border-top: 1rem solid @theme_border;}
+	.button-row {
+		ul {float: left; list-style: none;}
+		ul {
+			li {
+				a {display: inline-block; padding: 7rem 6rem;}
+				icon {line-height: 1em; font-size: 28rem; color: @theme_black;}
+			}
+		}
+		.button {text-align: center; line-height: 1em; background: none; border-radius: 0; border: 0; box-shadow: none;}
+		.button {
+			span,
+			input {display: inline; padding-top: 18rem; padding-bottom: 16rem;}
+		}
+	}
+}
+

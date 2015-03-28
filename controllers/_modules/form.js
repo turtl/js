@@ -9,6 +9,7 @@ var FormController = Composer.Controller.extend({
 	button_tabindex: null,
 	formclass: 'standard-form',
 	action: 'Create',
+	footer_actions: [],
 
 	init: function()
 	{
@@ -23,7 +24,8 @@ var FormController = Composer.Controller.extend({
 			formclass: this.formclass,
 			buttons: this.buttons,
 			tabindex: this.button_tabindex,
-			content: content
+			content: content,
+			footer_actions: this.footer_actions
 		}));
 	},
 

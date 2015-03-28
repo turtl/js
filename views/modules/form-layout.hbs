@@ -3,6 +3,17 @@
 		{{{content}}}
 		{{#if buttons}}
 			<div class="button-row clear">
+				{{#if footer_actions.length}}
+					<ul>
+						{{#each footer_actions}}
+							<li>
+								<a href="#{{name}}" rel="{{name}}">
+									<icon>{{{icon}}}</icon>
+								</a>
+							</li>
+						{{/each}}
+					</ul>
+				{{/if}}
 				<div class="button flat cancel">
 					<span>Cancel</span>
 				</div>
