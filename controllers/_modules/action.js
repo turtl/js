@@ -62,16 +62,54 @@ var ActionController = Composer.Controller.extend({
 		this.el.removeClass('open');
 	},
 
+	animate: function(method)
+	{
+		var duration = 300;
+		//var ease = [500, 24];
+		var ease = [2, 1];
+		var bottom = parseInt(this.el.getElement('a.abutton').getParent().getStyle('bottom'));
+		var botfn = function(i)
+		{
+			return method == 'open' ? ((i + 1) * 56) : 0;
+		};
+		var rotate = method == 'open' ? '135deg' : '';
+
+		this.el.getElements('ul li').each(function(el, i) {
+			Velocity(el, {
+				bottom: (bottom + botfn(i)) + 'rem'
+			}, {
+				duration: duration,
+				easing: ease
+			});
+			if(method == 'open')
+			{
+				el.setStyles({opacity: 1});
+			}
+			if(method == 'close')
+			{
+				Velocity(el, {opacity: [0, 1]}, {
+					duration: duration
+				});
+			}
+		});
+		return Velocity(this.el.getElement('.abutton icon'), {rotateZ: rotate}, {
+			duration: duration,
+			easing: [1, 1]
+		});
+	},
+
 	open: function()
 	{
-		this.el.addClass('show-menu');
+		this.animate('open')
+			.then(function() {
+			});
 		setTimeout(function() { this.el.addClass('open'); }.bind(this));
 	},
 
 	close: function()
 	{
+		this.animate('close').bind(this);
 		this.el.removeClass('open');
-		setTimeout(function() { this.el.removeClass('show-menu'); }.bind(this), 300);
 	},
 
 	toggle_open: function(e)

@@ -9,21 +9,20 @@
 		.abutton {
 			icon {line-height: 1.9em; color: #fff; font-size: 22rem;}
 		}
-		> .abutton icon {font-size: 28rem; line-height: 1.5em; .transition(transform .3s);}
+		> .abutton icon {font-size: 28rem; line-height: 1.5em;}
 		> a {z-index: 21;}
 		ul {display: none; margin: 0; padding: 0; list-style: none;}
 		ul {
-			li {position: fixed; z-index: 20; bottom: @action_offset; right: @action_offset; opacity: 0; text-align: right; white-space: nowrap; .transition(bottom .15s, opacity .15s;);}
+			li {position: fixed; z-index: 20; bottom: @action_offset; right: @action_offset; opacity: 0; text-align: right; white-space: nowrap;}
 			li {
 				h4 {display: none; margin: 0 8rem 0 0; padding: 5rem; font-size: 14rem; color: #fff; background: rgba(0, 0, 0, .75); border-radius: 2rem;}
 			}
 		}
 	}
-	> .action.show-menu ul {display: block;}
 	> .action.open {
 		> a {.layer-flat();}
-		> .abutton icon {.transform(rotate(135deg));}
-		ul {}
+		//> .abutton icon {.transform(rotate(135deg));}
+		ul {display: block;}
 		ul {
 			li {opacity: 1;}
 			li {
@@ -33,7 +32,7 @@
 				.generate_action_lis((@counter - 1));
 				li.item-@{counter} {bottom: (@action_offset + ((@counter + 1) * 56rem));}
 			}
-			.generate_action_lis(10);
+			//.generate_action_lis(10);
 		}
 	}
 	> .action.hide {display: none;}
