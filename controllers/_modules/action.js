@@ -64,8 +64,8 @@ var ActionController = Composer.Controller.extend({
 
 	animate: function(method)
 	{
-		var duration = method == 'open' ? 300 : 50;
-		var ease = method == 'open' ? [2, 1] : null;
+		var duration = method == 'open' ? 350 : 50;
+		var ease = method == 'open' ? [10, 3] : null;
 		var bottom = parseInt(this.el.getElement('a.abutton').getParent().getStyle('bottom'));
 		var botfn = function(i)
 		{
