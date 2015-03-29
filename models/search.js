@@ -11,7 +11,8 @@ var Search = Composer.Collection.extend({
 	index: {
 		tags: {},
 		boards: {},
-		all_notes: {}
+		all_notes: {},
+		note_tags: {}
 	},
 
 	// sort fields (tag_id -> sort val index)
@@ -59,7 +60,6 @@ var Search = Composer.Collection.extend({
 	{
 		search || (search = {});
 		options || (options = {});
-		console.log('search: ', search);
 
 		clone(search);
 		if(search.sort && (search.sort[0] == 'id' || this.sort[search.sort[0]]))
@@ -120,12 +120,26 @@ var Search = Composer.Collection.extend({
 
 			if(this.sortfn) res.sort(sortfn);
 
+			// calculate our tags
+			var tags = {};
+			res.forEach(function(note_id) {
+				var note_tags = JSON.parse(this.index.note_tags[note_id]);
+				note_tags.forEach(function(tag) {
+					if(!tags[tag]) tags[tag] = 0;
+					tags[tag]++;
+				});
+			}.bind(this));
+			tags = Object.keys(tags).map(function(tag) {
+				return {name: tag, count: tags[tag]};
+			});
+
 			// do our offsetting/limiting
 			var per_page = search.per_page || 100;
 			var offset = ((search.page || 1) - 1) * per_page;
 			var res = res.slice(offset, offset + per_page);
 			this.reset(res.map(function(id) { return {id: id}; }), options);
-			resolve(res);
+
+			resolve([res, tags]);
 		}.bind(this));
 	},
 
@@ -239,6 +253,8 @@ var Search = Composer.Collection.extend({
 		note.get('boards').forEach(function(board_id) {
 			this.index_type('boards', board_id, note.id());
 		}.bind(this));
+		var tags = JSON.stringify(note.get('tags').map(function(t) { return t.get('name', '').toLowerCase(); }));
+		this.index_type('note_tags', note.id(), tags);
 
 		this.index.all_notes[note.id()] = true;
 
@@ -272,6 +288,8 @@ var Search = Composer.Collection.extend({
 		json.boards.each(function(board_id) {
 			this.unindex_type('boards', board_id, id);
 		}.bind(this));
+		var tags = JSON.stringify(json.tags.map(function(t) { return t.name.toLowerCase(); }));
+		this.unindex_type('note_tags', note.id(), tags);
 
 		delete this.index.all_notes[note.id()];
 
