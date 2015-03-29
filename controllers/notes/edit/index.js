@@ -8,7 +8,8 @@ var NotesEditController = FormController.extend({
 	},
 
 	events: {
-		'click ul.colors li': 'switch_color'
+		'click ul.colors li': 'switch_color',
+		'click .button-row ul a[rel=tag]': 'open_tags'
 	},
 
 	modal: null,
@@ -65,12 +66,6 @@ var NotesEditController = FormController.extend({
 			type: this.model.get('type') || this.type,
 			colors: colors
 		}));
-
-		this.track_subcontroller('tags', function() {
-			return new NotesEditTagsController({
-				inject: this.el_tags
-			});
-		}.bind(this));
 
 		if(this.model.is_new())
 		{
@@ -141,6 +136,14 @@ var NotesEditController = FormController.extend({
 			li.addClass('sel');
 		}
 		this.clone.set({color: color});
+	},
+
+	open_tags: function(e)
+	{
+		if(e) e.stop();
+		new NotesEditTagsController({
+			model: this.clone
+		});
 	}
 });
 
