@@ -494,8 +494,9 @@ window.addEvent('domready', function() {
 	$(document.body).addEvent('keydown', function(e) {
 		if(e.key != 'backspace') return;
 		var is_input = ['input', 'textarea'].contains(e.target.get('tag'));
+		var is_editable = Composer.find_parent('div.editable', e.target);
 		var is_button = is_input && ['button', 'submit'].contains(e.target.get('type'));
-		if(is_input && !is_button) return;
+		if((is_input || is_editable) && !is_button) return;
 
 		// prevent backspace from triggering if we're not in a form element
 		e.stop();

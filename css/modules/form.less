@@ -5,11 +5,16 @@ form.standard-form {
 	input[type=text],
 	input[type=password],
 	input[type=email],
+	div.editable,
 	textarea {width: 92%; margin: 0 0 12rem 0; padding: 9rem 4%; font-size: 1.6em; background: none; border: 0; border-bottom: 1rem solid #bbb; border-radius: 0; .transition(border);}
 	input[type=text]:focus,
 	input[type=password]:focus,
 	input[type=email]:focus,
+	div.editable:focus,
 	textarea:focus {border-bottom: 1rem solid @theme_accent;}
+	div.editable {
+		.placeholder {color: @theme_gray;}
+	}
 	.button-row {position: fixed; bottom: 0; left: 0; width: 100%; text-align: right; background: #fff; border-top: 1rem solid @theme_border;}
 	.button-row {
 		ul {float: left; list-style: none;}
