@@ -44,7 +44,8 @@
 		img {display: block; margin: 0 auto; max-width: 100%;}
 		@header_height: 30rem;
 		@header_top_pad: 4rem;
-		.content h1 {position: relative; display: block; height: @header_height; margin: -(@header_height + @header_top_pad) 0 0 0; padding: @header_top_pad 0 0 6%; line-height: @header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim();}
+		@header_margin_bottom: 3rem;	// aligns the text as if header weren't there
+		.content h1 {position: relative; display: block; height: @header_height; margin: -(@header_height + @header_top_pad) 0 @header_margin_bottom 0; padding: @header_top_pad 0 0 6%; line-height: @header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim();}
 		.note-gutter .content .body {padding: @content_pad;}
 		.note-gutter.color {
 			h1 {margin-top: -(@header_height + @header_top_pad + @color_size);}
