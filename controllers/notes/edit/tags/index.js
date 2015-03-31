@@ -1,0 +1,105 @@
+var NotesEditTagsController = FormController.extend({
+	elements: {
+		'.tags-container': 'tags_container',
+		'div.editable': 'inp_tags',
+		'span.placeholder': 'placeholder'
+	},
+
+	events: {
+		'keydown div.editable': 'update_tags'
+	},
+
+	modal: null,
+
+	model: null,
+	clone: null,
+	formclass: 'notes-edit-tags',
+	button_tabindex: 3,
+	action: 'Tag',
+
+	collection: null,
+
+	init: function()
+	{
+		this.clone = this.model.clone();
+		this.collection = new Tags();
+
+		this.modal = new TurtlModal({
+			show_header:true,
+			title: 'Tag note'
+		});
+
+		this.parent();
+		this.render();
+
+		var close = this.modal.close.bind(this.modal);
+		this.modal.open(this.el);
+		this.with_bind(this.modal, 'close', this.release.bind(this));
+		this.bind(['cancel', 'close'], close);
+
+		this.load_suggested_tags();
+	},
+
+	render: function()
+	{
+		this.html(view.render('notes/edit/tags/index', {}));
+
+		this.track_subcontroller('tags-list', function() {
+			return new NotesEditTagsListController({
+				inject: this.tags_container,
+				model: this.model,
+				collection: this.collection
+			});
+		}.bind(this));
+
+		// same as .focus() LOL
+		this.select.bind(this, 0, 0).delay(100);
+	},
+
+	load_suggested_tags: function()
+	{
+		var boards = this.model.get('boards') || [];
+		return turtl.search.search({boards: boards}).bind(this)
+			.spread(function(_, suggested_tags) {
+				suggested_tags = suggested_tags
+					.sort(function(a, b) {
+						var sort = b.count - a.count;
+						if(sort == 0)
+						{
+							sort = a.name.localeCompare(b.name);
+						}
+						return sort;
+					})
+					.slice(0, 24);
+				this.collection.reset(suggested_tags);
+			});
+	},
+
+	submit: function(e)
+	{
+		if(e) e.stop();
+	},
+
+	update_tags: function(e)
+	{
+		if(this.placeholder) this.placeholder.remove();
+		if(e.key != ',') return;
+
+		e.stop();
+		var inner = this.inp_tags.get('html');
+		var tags = inner.split(',').map(function(t) { return t.clean(); });
+		this.inp_tags.set('html', '');
+		this.select(0, 0);
+	},
+
+	select: function(from, to)
+	{
+		var s = window.getSelection();
+		var r = document.createRange();
+		r.setStart(this.inp_tags, from);
+		r.setEnd(this.inp_tags, to);
+		s.removeAllRanges();
+		s.addRange(r);
+	}
+});
+
