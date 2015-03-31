@@ -80,6 +80,13 @@ var TurtlModal = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		this.close();
+	},
+
+	set_title: function(title, backurl)
+	{
+		var headercon = this.get_subcontroller('header');
+		if(!headercon) return;
+		headercon.render_title(title, backurl);
 	}
 });
 

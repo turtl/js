@@ -24,10 +24,11 @@ form.standard-form {
 				icon {line-height: 1em; font-size: 28rem; color: @theme_black;}
 			}
 		}
-		.button {text-align: center; line-height: 1em; background: none; border-radius: 0; border: 0; box-shadow: none;}
+		.button {position: relative; text-align: center; line-height: 1em; background: none; border-radius: 0; border: 0; box-shadow: none;}
 		.button {
 			span,
 			input {display: inline; padding-top: 18rem; padding-bottom: 16rem;}
+			.highlight {position: absolute; top: 6rem; right: 4rem; width: 12rem; height: 12rem; background: @theme_warn; .border-radius(6rem); .layer-rest();}
 		}
 	}
 }

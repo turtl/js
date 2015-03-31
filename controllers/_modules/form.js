@@ -1,4 +1,8 @@
 var FormController = Composer.Controller.extend({
+	elements: {
+		'.button.submit': 'btn_submit'
+	},
+
 	events: {
 		'submit form': 'submit',
 		'click .button.submit': 'submit',
@@ -37,6 +41,15 @@ var FormController = Composer.Controller.extend({
 	cancel: function(e)
 	{
 		this.trigger('cancel');
+	},
+
+	highlight_button: function()
+	{
+		if(this.el.getElement('div.highlight')) return;
+		var dot = new Element('div').addClass('highlight').set('html', '&nbsp;');
+		dot.inject(this.btn_submit);
+		Velocity(dot, {opacity: [1, 0]}, {duration: 400});
+		Velocity(dot, 'callout.pulse', {duration: 800});
 	}
 });
 

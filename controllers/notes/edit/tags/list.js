@@ -19,11 +19,9 @@ var NotesEditTagsListController = Composer.Controller.extend({
 	render: function()
 	{
 		var mtags = this.model.get('tags');
-		console.log('render: size: ', mtags.size());
 		var tags = this.collection.toJSON()
 			.map(function(tag) {
 				tag = {name: tag};
-				console.log('sel: ', tag.name, mtags.find_by_id(tag.name));
 				tag.selected = !!mtags.find_by_id(tag.name); 
 				return tag;
 			});

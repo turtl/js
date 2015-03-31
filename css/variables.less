@@ -11,7 +11,8 @@
 
 @theme_primary: #83b362;
 @theme_accent: #65a5ee;
-@theme_warn: #f46c3b;
+//@theme_warn: #eb242e;
+@theme_warn: #e85c5c;
 @theme_border: #eee;
 
 // -----------------------------------------------------------------------------
@@ -30,8 +31,6 @@
 .layer-rest-bottom () {box-shadow: 0 -1rem 2rem rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
 .layer-hover () {box-shadow: 0 2rem 4rem rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
 
-.border-radius (@radius: 2rem) { border-radius: @radius; }
-
 // -----------------------------------------------------------------------------
 // material
 // -----------------------------------------------------------------------------
@@ -42,6 +41,8 @@
 // -----------------------------------------------------------------------------
 // utils
 // -----------------------------------------------------------------------------
+.border-radius (@radius: 2rem) { border-radius: @radius; }
+
 .title-scrim (@to: bottom, @opacity: .35, @cover: 70%) {
 	background: linear-gradient(to @to, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, @opacity) @cover);
 }

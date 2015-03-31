@@ -288,7 +288,7 @@ var Search = Composer.Collection.extend({
 		json.boards.each(function(board_id) {
 			this.unindex_type('boards', board_id, id);
 		}.bind(this));
-		var tags = JSON.stringify(json.tags.map(function(t) { return t.name.toLowerCase(); }));
+		var tags = JSON.stringify(json.tags.map(function(t) { return t.toLowerCase(); }));
 		this.unindex_type('note_tags', note.id(), tags);
 
 		delete this.index.all_notes[note.id()];

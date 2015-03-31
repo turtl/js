@@ -36,9 +36,10 @@ var NotesEditController = FormController.extend({
 		this.action = this.model.is_new() ? 'Add' : 'Edit';
 		this.parent();
 
+		var title = this.action + ' ' + this.type + ' note';
 		this.modal = new TurtlModal({
 			show_header: true,
-			title: this.action + ' ' + this.type + ' note'
+			title: title
 		});
 
 		this.render();
@@ -51,6 +52,15 @@ var NotesEditController = FormController.extend({
 		this.bind('release', function() {
 			Autosize.destroy(this.inp_text);
 		}.bind(this));
+
+		var unsaved = function()
+		{
+			//this.modal.set_title(title + ' <strong>(unsaved)</strong>', turtl.last_url);
+			this.highlight_button();
+		}.bind(this);
+
+		this.with_bind(this.clone, 'change', unsaved);
+		this.with_bind(this.clone.get('tags'), ['add', 'remove'], unsaved);
 	},
 
 	render: function()
