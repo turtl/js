@@ -1,5 +1,6 @@
 var NotesEditController = FormController.extend({
 	elements: {
+		'form': 'el_form',
 		'.boards-container': 'el_boards',
 		'.notes-container': 'el_notes',
 		'input[name=title]': 'inp_title',
@@ -9,7 +10,9 @@ var NotesEditController = FormController.extend({
 
 	events: {
 		'click ul.colors li': 'switch_color',
-		'click .button-row ul a[rel=tag]': 'open_tags'
+		'click .button-row ul a[rel=tag]': 'open_tags',
+		'change form': 'detect_change',
+		'input form': 'detect_change'
 	},
 
 	modal: null,
@@ -22,6 +25,10 @@ var NotesEditController = FormController.extend({
 
 	type: 'text',
 	board_id: null,
+
+	confirm_unsaved: false,
+	have_unsaved: false,
+	form_data: null,
 
 	init: function()
 	{
@@ -44,7 +51,13 @@ var NotesEditController = FormController.extend({
 
 		this.render();
 
-		var close = this.modal.close.bind(this.modal);
+		this.form_data = this.el_form.toQueryString();
+		var close = function()
+		{
+			if(this.confirm_unsaved && this.have_unsaved && !confirm('This note has unsaved changes. Really leave?')) return;
+			this.modal.close();
+		}.bind(this);
+
 		this.modal.open(this.el);
 		this.with_bind(this.modal, 'close', this.release.bind(this));
 		this.bind(['cancel', 'close'], close);
@@ -56,9 +69,11 @@ var NotesEditController = FormController.extend({
 		var unsaved = function()
 		{
 			//this.modal.set_title(title + ' <strong>(unsaved)</strong>', turtl.last_url);
+			this.have_unsaved = true;
 			this.highlight_button();
 		}.bind(this);
 
+		this.bind('unsaved', unsaved);
 		this.with_bind(this.clone, 'change', unsaved);
 		this.with_bind(this.clone.get('tags'), ['add', 'remove'], unsaved);
 	},
@@ -122,6 +137,7 @@ var NotesEditController = FormController.extend({
 			})
 			.then(function() {
 				this.model.set(clone.toJSON());
+				this.have_unsaved = false;
 
 				// add the note to our main note list
 				turtl.profile.get('notes').upsert(this.model);
@@ -154,6 +170,13 @@ var NotesEditController = FormController.extend({
 		new NotesEditTagsController({
 			model: this.clone
 		});
+	},
+
+	detect_change: function(e)
+	{
+		var ser = this.el_form.toQueryString();
+		if(ser == this.form_data) return;
+		this.trigger('unsaved');
 	}
 });
 
