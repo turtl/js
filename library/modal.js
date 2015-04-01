@@ -1,14 +1,15 @@
 var TurtlModal = Composer.Controller.extend({
 	inject: 'body',
 
+	class_name: 'turtl-modal',
+
 	elements: {
-		'.turtl-modal': 'container',
 		'header': 'header',
 		'.modal-gutter': 'gutter'
 	},
 
 	events: {
-		'click .turtl-modal > header h1 a[rel=back]': 'close_back'
+		'click header h1 a[rel=back]': 'close_back'
 	},
 
 	is_open: false,
@@ -60,7 +61,7 @@ var TurtlModal = Composer.Controller.extend({
 		this.gutter.appendChild(element);
 
 		setTimeout(function() {
-			this.container.addClass('active');
+			this.el.addClass('active');
 			this.trigger('open');
 		}.bind(this));
 	},
@@ -70,7 +71,7 @@ var TurtlModal = Composer.Controller.extend({
 		if(!this.is_open) return;
 		// slide out
 		var html_copy = this.gutter.get('html');
-		this.container.removeClass('active');
+		this.el.removeClass('active');
 		this.trigger('close');
 		this.gutter.set('html', html_copy).addClass('closing');
 		(function() {
