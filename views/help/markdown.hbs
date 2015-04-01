@@ -1,0 +1,87 @@
+<div class="markdown-tutorial note-view content">
+	<p>
+		Turtl notes use Markdown, a format that's easy to read and write
+		and doesn't require a clunky editor.
+	</p>
+	<table>
+		<tr>
+			<td># One hash makes a large title</td>
+			<td><h1>One hash makes a large title</h1></td>
+		</tr>
+		<tr>
+			<td>## Two hashes for a smaller header</td>
+			<td><h2>Two hashes for a smaller header</h2></td>
+		</tr>
+		<tr>
+			<td>- dashes<br>- make<br>- bullets</td>
+			<td><ul><li>dashes</li><li>make</li><li>bullets</li></ul></td>
+		</tr>
+		<tr>
+			<td>1. you can make<br>1. numbered bullets<br>1. as well</td>
+			<td><ol><li>you can make</li><li>numbered bullets</li><li>as well</li></ol></td>
+		</tr>
+		<tr>
+			<td>[Making links](https://turtl.it/) is easy!</td>
+			<td><a target="_blank" href="https://turtl.it/">Making links</a> is easy!</td>
+		</tr>
+		<tr>
+			<td>You can also make text __bold__ or *italic*.</td>
+			<td>You can also make text <strong>bold</strong> or <em>italic</em>.</td>
+		</tr>
+		<tr>
+			<td>Here's an image: ![Turtl logo](https://turtl.it/images/favicon.png)</td>
+			<td>Here's an image: <img src="https://turtl.it/images/favicon.png" alt="Turtl logo"></td>
+		</tr>
+		<tr>
+			<td>&gt; Quote text with a caret</td>
+			<td><blockquote>Quote text with a caret</blockquote></td>
+		</tr>
+		<tr>
+			<td>
+				&nbsp;&nbsp;&nbsp;&nbsp;indent_code_4_spaces() {}<br><br>
+				```<br>
+				or_surround(code.by('three backticks'));<br>
+				```<br><br>
+				You can use backticks for `inline_code()`<br><br>
+			</td>
+			<td>
+				<pre><code>indent_code_4_spaces() {}</code></pre>
+				<pre><code>or_surround(code.by('three backticks'));</code></pre>
+				You can use backticks for <code>inline_code()</code>
+			</td>
+		</tr>
+	</table>
+
+	<span class="markdown-link form-note">Read more about <a href="http://support.mashery.com/docs/customizing_your_portal/Markdown_Cheat_Sheet" target="_blank">markdown</a>.</span>
+	<br><br>
+
+	{{!--
+	<p>
+		Turtl now also supports TeX math. Begin and end your equation(s)
+		with <code>$$</code>:
+	</p>
+	<table>
+		<tr>
+			<td>$$ P(E)   = {n \\choose k} p^k (1-p)^{ n-k} $$</td>
+			<td><pre class="math">P(E)   = {n \\choose k} p^k (1-p)^{ n-k}</pre></td>
+		</tr>
+		<tr>
+			<td>
+				$$<br>
+				\\begin{aligned}<br>
+				\\dot{x} &amp; = \\sigma(y-x) \\\\<br>
+				\\dot{y} &amp; = \\rho x - y - xz \\\\<br>
+				\\dot{z} &amp; = -\\beta z + xy<br>
+				\\end{aligned}<br>
+				$$
+			</td>
+			<td><pre class="math">\\begin{aligned}
+\\dot{x} & = \\sigma(y-x) \\\\
+\\dot{y} & = \\rho x - y - xz \\\\
+\\dot{z} & = -\\beta z + xy
+\\end{aligned}</pre></td>
+		</tr>
+	</table>
+	--}}
+</div>
+

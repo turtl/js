@@ -16,6 +16,9 @@
 	ul.note-list {position: relative; width: 100%; margin: 0; padding: 0; list-style: none;}
 	ul.note-list {
 		li {margin: 0 @note_list_margin (@note_list_margin * 2) @note_list_margin; .card();}
+		li {
+			.body {max-height: 400rem; overflow: hidden;}
+		}
 	}
 
 	ul.note-list.masonry {
@@ -76,6 +79,10 @@
 .notes-edit {
 	form {
 		textarea {height: 24rem; max-height: 240rem;}
+		.formatting {margin: -9rem 0 9rem 0;}
+		.formatting {
+			a[rel=formatting] {float: right; display: block; font-size: 15rem;}
+		}
 	}
 	ul.colors {margin: 0; padding: 8rem 0 0 0; list-style: none; text-align: center;}
 	ul.colors {

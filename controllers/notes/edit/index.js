@@ -13,7 +13,8 @@ var NotesEditController = FormController.extend({
 		'click .button-row ul a[rel=tag]': 'open_tags',
 		'click .button-row .desc': 'open_tags',
 		'change form': 'detect_change',
-		'input form': 'detect_change'
+		'input form': 'detect_change',
+		'click .formatting a[rel=formatting]': 'show_formatting_help'
 	},
 
 	modal: null,
@@ -193,6 +194,12 @@ var NotesEditController = FormController.extend({
 		var ser = this.el_form.toQueryString();
 		if(ser == this.form_data) return;
 		this.trigger('unsaved');
+	},
+
+	show_formatting_help: function(e)
+	{
+		if(e) e.stop();
+		new MarkdownFormattingHelpController();
 	}
 });
 
