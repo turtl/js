@@ -118,7 +118,12 @@ var NotesEditController = FormController.extend({
 				case 'link': focus_el = this.inp_url; break;
 				case 'image': focus_el = this.inp_url; break;
 			}
-			if(focus_el) setTimeout(focus_el.focus.bind(focus_el), 10);
+			// NOTE: the delay here is same as CSS transition
+			//
+			// without this, the modal will jump forward to the textarea whlie
+			// sliding in, making the transition look really ugly and stupid.
+			// beware!
+			if(focus_el) setTimeout(focus_el.focus.bind(focus_el), 300);
 		}
 
 		if(this.inp_text) setTimeout(function() { autosize(this.inp_text); }.bind(this), 10);
