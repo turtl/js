@@ -17,6 +17,8 @@ var TurtlModal = Composer.Controller.extend({
 	title: '',
 	actions: [],
 
+	release_on_close: true,
+
 	init: function()
 	{
 		this.render();
@@ -73,6 +75,7 @@ var TurtlModal = Composer.Controller.extend({
 		this.gutter.set('html', html_copy).addClass('closing');
 		(function() {
 			this.gutter.set('html', '').removeClass('closing');
+			if(this.release_on_close) this.release();
 		}).delay(500, this);
 	},
 
