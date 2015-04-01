@@ -1,56 +1,63 @@
-<div class="markdown-tutorial note-view content">
+<div class="markdown-tutorial content">
 	<p>
 		Turtl notes use Markdown, a format that's easy to read and write
 		and doesn't require a clunky editor.
 	</p>
-	<table>
-		<tr>
-			<td># One hash makes a large title</td>
-			<td><h1>One hash makes a large title</h1></td>
-		</tr>
-		<tr>
-			<td>## Two hashes for a smaller header</td>
-			<td><h2>Two hashes for a smaller header</h2></td>
-		</tr>
-		<tr>
-			<td>- dashes<br>- make<br>- bullets</td>
-			<td><ul><li>dashes</li><li>make</li><li>bullets</li></ul></td>
-		</tr>
-		<tr>
-			<td>1. you can make<br>1. numbered bullets<br>1. as well</td>
-			<td><ol><li>you can make</li><li>numbered bullets</li><li>as well</li></ol></td>
-		</tr>
-		<tr>
-			<td>[Making links](https://turtl.it/) is easy!</td>
-			<td><a target="_blank" href="https://turtl.it/">Making links</a> is easy!</td>
-		</tr>
-		<tr>
-			<td>You can also make text __bold__ or *italic*.</td>
-			<td>You can also make text <strong>bold</strong> or <em>italic</em>.</td>
-		</tr>
-		<tr>
-			<td>Here's an image: ![Turtl logo](https://turtl.it/images/favicon.png)</td>
-			<td>Here's an image: <img src="https://turtl.it/images/favicon.png" alt="Turtl logo"></td>
-		</tr>
-		<tr>
-			<td>&gt; Quote text with a caret</td>
-			<td><blockquote>Quote text with a caret</blockquote></td>
-		</tr>
-		<tr>
-			<td>
-				&nbsp;&nbsp;&nbsp;&nbsp;indent_code_4_spaces() {}<br><br>
+
+	<ul>
+		<li>
+			<div># One hash makes a large title</div>
+			<div><h1>One hash makes a large title</h1></div>
+		</li>
+		<li>
+			<div>## Two hashes for a smaller header</div>
+			<div><h2>Two hashes for a smaller header</h2></div>
+		</li>
+		<li>
+			<div>- dashes<br>- make<br>- bullets</div>
+			<div><ul><li>dashes</li><li>make</li><li>bullets</li></ul></div>
+		</li>
+		<li>
+			<div>1. you can make<br>1. numbered bullets<br>1. as well</div>
+			<div><ol><li>you can make</li><li>numbered bullets</li><li>as well</li></ol></div>
+		</li>
+		<li>
+			<div>[Making links](https://turtl.it) is easy!</div>
+			<div><a target="_blank" href="https://turtl.it/">Making links</a> is easy!</div>
+		</li>
+		<li>
+			<div>You can also make text __bold__ or *italic*.</div>
+			<div>You can also make text <strong>bold</strong> or <em>italic</em>.</div>
+		</li>
+		<li>
+			<div>Here's an image:<br>![](https://turtl.it/images<space> </space>/favicon.png)</div>
+			<div>Here's an image: <img src="https://turtl.it/images/favicon.png" alt=""></div>
+		</li>
+		<li>
+			<div>&gt; Quote text with a caret</div>
+			<div><blockquote>Quote text with a caret</blockquote></div>
+		</li>
+		<li>
+			<div>
+				{{! &nbsp;&nbsp;&nbsp;&nbsp;indent_code_4_spaces() {}<br><br> }}
 				```<br>
-				or_surround(code.by('three backticks'));<br>
-				```<br><br>
-				You can use backticks for `inline_code()`<br><br>
-			</td>
-			<td>
-				<pre><code>indent_code_4_spaces() {}</code></pre>
-				<pre><code>or_surround(code.by('three backticks'));</code></pre>
-				You can use backticks for <code>inline_code()</code>
-			</td>
-		</tr>
-	</table>
+				surround(<space> </space>code.by(<space> </space>'three backticks'<space> </space>));<br>
+				```
+			</div>
+			<div>
+				{{! <pre><code>indent_code_4_spaces() {}</code></pre> }}
+				<pre><code>surround(code.by('three backticks'));</code></pre>
+			</div>
+		</li>
+		<li>
+			<div>
+				Use backticks for `inline_code()`
+			</div>
+			<div>
+				Use backticks for <code>inline_code()</code>
+			</div>
+		</li>
+	</ul>
 
 	<span class="markdown-link form-note">Read more about <a href="http://support.mashery.com/docs/customizing_your_portal/Markdown_Cheat_Sheet" target="_blank">markdown</a>.</span>
 	<br><br>
