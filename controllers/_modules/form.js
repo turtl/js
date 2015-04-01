@@ -1,6 +1,7 @@
 var FormController = Composer.Controller.extend({
 	elements: {
-		'.button.submit': 'btn_submit'
+		'.button.submit': 'btn_submit',
+		'.button-row .desc': 'el_desc'
 	},
 
 	events: {
@@ -41,6 +42,12 @@ var FormController = Composer.Controller.extend({
 	cancel: function(e)
 	{
 		this.trigger('cancel');
+	},
+
+	set_desc: function(text)
+	{
+		if(!this.el_desc) return;
+		this.el_desc.set('html', text);
 	},
 
 	highlight_button: function()

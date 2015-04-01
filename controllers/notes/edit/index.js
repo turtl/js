@@ -11,6 +11,7 @@ var NotesEditController = FormController.extend({
 	events: {
 		'click ul.colors li': 'switch_color',
 		'click .button-row ul a[rel=tag]': 'open_tags',
+		'click .button-row .desc': 'open_tags',
 		'change form': 'detect_change',
 		'input form': 'detect_change'
 	},
@@ -76,6 +77,21 @@ var NotesEditController = FormController.extend({
 		this.bind('unsaved', unsaved);
 		this.with_bind(this.clone, 'change', unsaved);
 		this.with_bind(this.clone.get('tags'), ['add', 'remove'], unsaved);
+
+		var footer_desc = function()
+		{
+			var tags = this.clone.get('tags').toJSON();
+			if(tags.length)
+			{
+				this.set_desc(tags.join(', '));
+			}
+			else
+			{
+				this.set_desc('');
+			}
+		}.bind(this);
+		this.with_bind(this.clone.get('tags'), ['add', 'remove'], footer_desc);
+		footer_desc();
 	},
 
 	render: function()
