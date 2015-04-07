@@ -100,7 +100,7 @@ var NotesListController = Composer.ListController.extend({
 
 	do_search: function()
 	{
-		return turtl.search.search(this.search, {silent: true})
+		return turtl.search.search(this.search, {do_reset: true, silent: true})
 			.tap(function(res) {
 				return turtl.profile.get('notes').load_and_deserialize(res[0], {silent: true});
 			});
