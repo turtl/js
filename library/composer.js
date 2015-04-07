@@ -2821,12 +2821,15 @@
 				selector = 'a:not([class~="'+options.exclude_class+'"])';
 			}
 
+			var bind_element = options.bind_element || document.body;
+
 			// bind our heroic pushState to the <a> tags we specified. this
 			// hopefully be that LAST event called for any <a> tag because it's
 			// so high up the DOM chain. this means if a composer event wants to
 			// override this action, it can just call event.stop().
 			var route_link = function(e)
 			{
+				if(e.defaultPrevented) return;
 				if(e.ctrlKey || e.shiftKey || e.altKey) return;
 
 				var a = Composer.find_parent(selector, e.target);
@@ -2864,7 +2867,7 @@
 				return;
 			}.bind(this);
 
-			Composer.add_event(document.body, 'click', route_link, selector);
+			Composer.add_event(bind_element, 'click', route_link, selector);
 		}
 	});
 
