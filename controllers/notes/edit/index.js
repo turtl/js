@@ -2,7 +2,6 @@ var NotesEditController = FormController.extend({
 	elements: {
 		'form': 'el_form',
 		'.boards-container': 'el_boards',
-		'.notes-container': 'el_notes',
 		'input[name=title]': 'inp_title',
 		'input[name=url]': 'inp_url',
 		'textarea[name=text]': 'inp_text'
@@ -53,6 +52,7 @@ var NotesEditController = FormController.extend({
 
 		this.render();
 
+		// track unsaved changes to the model
 		this.form_data = this.el_form.toQueryString();
 		var close = function()
 		{
@@ -68,17 +68,18 @@ var NotesEditController = FormController.extend({
 			Autosize.destroy(this.inp_text);
 		}.bind(this));
 
+		// handle our "you have unsaved changes" state stuff
 		var unsaved = function()
 		{
 			//this.modal.set_title(title + ' <strong>(unsaved)</strong>', turtl.last_url);
 			this.have_unsaved = true;
 			this.highlight_button();
 		}.bind(this);
-
 		this.bind('unsaved', unsaved);
 		this.with_bind(this.clone, 'change', unsaved);
 		this.with_bind(this.clone.get('tags'), ['add', 'remove'], unsaved);
 
+		// basically copy tumblr's fixed footer tagging interface
 		var footer_desc = function()
 		{
 			var tags = this.clone.get('tags').toJSON();
@@ -127,6 +128,13 @@ var NotesEditController = FormController.extend({
 		}
 
 		if(this.inp_text) setTimeout(function() { autosize(this.inp_text); }.bind(this), 10);
+
+		this.track_subcontroller('boards', function() {
+			return new NotesEditBoardsController({
+				inject: this.el_boards,
+				model: this.clone
+			});
+		}.bind(this));
 	},
 
 	submit: function(e)
