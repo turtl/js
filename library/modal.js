@@ -68,7 +68,7 @@ var TurtlModal = Composer.Controller.extend({
 			this.trigger('open');
 		}.bind(this);
 		if(options.immediate) do_open();
-		else requestAnimationFrame(do_open);
+		else setTimeout(do_open);
 	},
 
 	close: function()
