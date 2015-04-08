@@ -49,6 +49,7 @@ var Search = Composer.Collection.extend({
 				var next = function()
 				{
 					var slice = notes.splice(0, batch);
+					if(slice.length == 0) return;
 					slice.forEach(this.index_note.bind(this));
 					setTimeout(next);
 				}.bind(this);
