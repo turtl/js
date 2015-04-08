@@ -55,15 +55,20 @@ var TurtlModal = Composer.Controller.extend({
 		}
 	},
 
-	open: function(element)
+	open: function(element, options)
 	{
+		options || (options = {});
+
 		this.gutter.set('html', '');
 		this.gutter.appendChild(element);
 
-		setTimeout(function() {
+		var do_open = function()
+		{
 			this.el.addClass('active');
 			this.trigger('open');
-		}.bind(this));
+		}.bind(this);
+		if(options.immediate) do_open();
+		else requestAnimationFrame(do_open);
 	},
 
 	close: function()
