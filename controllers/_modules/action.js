@@ -14,6 +14,8 @@ var ActionController = Composer.Controller.extend({
 
 	actions: [],
 
+	is_open: false,
+
 	init: function()
 	{
 		this.with_bind(turtl.events, 'actions:update', function(actions) {
@@ -24,7 +26,7 @@ var ActionController = Composer.Controller.extend({
 		var click_outside = function(e)
 		{
 			var inside = Composer.find_parent('#main > .action', e.target);
-			if(inside) return;
+			if(!this.is_open || inside || this.actions.length == 0) return;
 			this.close();
 		}.bind(this);
 		document.body.addEvent('click', click_outside);
@@ -64,7 +66,7 @@ var ActionController = Composer.Controller.extend({
 
 	animate: function(method)
 	{
-		var duration = method == 'open' ? 350 : 150;
+		var duration = 350;
 		var ease = [10, 3];
 		var bottom = parseInt(this.el.getElement('a.abutton').getParent().getStyle('bottom'));
 		var botfn = function(i)
@@ -74,22 +76,16 @@ var ActionController = Composer.Controller.extend({
 		var rotate = method == 'open' ? '135deg' : '';
 
 		this.el.getElements('ul li').each(function(el, i) {
-			Velocity(el, {
-				bottom: (bottom + botfn(i)) + 'rem'
-			}, {
+			if(method == 'close')
+			{
+				el.setStyles({opacity: 0});
+				return;
+			}
+			Velocity(el, {bottom: (bottom + botfn(i)) + 'rem'}, {
 				duration: duration,
 				easing: ease
 			});
-			if(method == 'open')
-			{
-				el.setStyles({opacity: 1});
-			}
-			if(method == 'close')
-			{
-				Velocity(el, {opacity: [0, 1]}, {
-					duration: duration
-				});
-			}
+			if(method == 'open') el.setStyles({opacity: 1});
 		});
 		return Velocity(this.el.getElement('.abutton icon'), {rotateZ: rotate}, {
 			duration: duration,
@@ -101,12 +97,14 @@ var ActionController = Composer.Controller.extend({
 	{
 		this.animate('open');
 		this.el.addClass('open');
+		this.is_open = true;
 	},
 
 	close: function()
 	{
 		this.animate('close');
 		this.el.removeClass('open');
+		this.is_open = false;
 	},
 
 	toggle_open: function(e)
