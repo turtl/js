@@ -9,8 +9,8 @@ var NotesEditBoardsListController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var have_boards = pboards.size() > 0;
 		var pboards = turtl.profile.get('boards');
+		var have_boards = pboards.size() > 0;
 		var boards = ((have_boards && this.model.get('boards')) || []).map(function(bid) {
 			var board = pboards.find_by_id(bid);
 			if(!board) return false;
@@ -32,3 +32,4 @@ var NotesEditBoardsListController = Composer.Controller.extend({
 		}));
 	}
 });
+
