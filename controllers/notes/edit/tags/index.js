@@ -26,7 +26,7 @@ var NotesEditTagsController = FormController.extend({
 		this.collection = new Tags();
 
 		this.modal = new TurtlModal({
-			show_header:true,
+			show_header: true,
 			title: 'Tag note'
 		});
 

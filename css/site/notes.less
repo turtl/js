@@ -48,7 +48,7 @@
 		@header_height: 30rem;
 		@header_top_pad: 4rem;
 		@header_margin_bottom: 3rem;	// aligns the text as if header weren't there
-		.content h1 {position: relative; display: block; height: @header_height; margin: -(@header_height + @header_top_pad) 0 @header_margin_bottom 0; padding: @header_top_pad 0 0 6%; line-height: @header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim();}
+		.content h1 {position: relative; display: block; height: @header_height; margin: -(@header_height + @header_top_pad) 0 @header_margin_bottom 0; padding: @header_top_pad 0 0 6%; line-height: @header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim(bottom, .45);}
 		.note-gutter .content .body {padding: @content_pad;}
 		.note-gutter.color {
 			h1 {margin-top: -(@header_height + @header_top_pad + @color_size);}
@@ -72,7 +72,7 @@
 	p.empty {padding: 10rem 0; font-size: 13rem; color: @theme_gray; text-align: center;}
 }
 .turtl-modal.note-image {
-	header {.title-scrim(top, .35, 100%); box-shadow: none;}
+	header {.title-scrim(top, .60, 110%); box-shadow: none;}
 	.modal-gutter {padding-top: 0;}
 }
 
@@ -84,6 +84,17 @@
 			a[rel=formatting] {display: block; padding: 5rem 0; font-size: 15rem;}
 		}
 	}
+
+	.note-boards {margin: 0 0 16rem 0; padding: 9rem 4%; font-size: 14rem; background: none; border: 0; border-bottom: 1rem solid #bbb; border-radius: 0; .transition(border);}
+	.note-boards {
+		icon {float: left; margin: 4rem 8rem 0 0; font-size: 20rem; color: @theme_black;}
+		span {display: inline-block; padding: 3rem; color: @theme_primary;}
+		ul {list-style: none;}
+		ul {
+			li {display: inline-block; margin: 0 6rem 0 0; padding: 3rem 5rem; background: @theme_border; border: 1px solid @theme_gray_midlight; border-radius: 2rem;}
+		}
+	}
+
 	ul.colors {margin: 0; padding: 8rem 0 0 0; list-style: none; text-align: center;}
 	ul.colors {
 		// 'none','blue','red','green','purple','pink','brown','black'

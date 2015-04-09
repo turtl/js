@@ -23,29 +23,33 @@ var BoardsItemController = Composer.Controller.extend({
 
 	render: function()
 	{
-		this.html(view.render('boards/item', {
-			board: this.model.toJSON()
-		}));
-		var actions = [
-			[{name: 'Edit'}, {name: 'Delete'}],
-		];
-		if(!this.model.get('parent_id'))
-		{
-			actions.push([{name: 'Create child board'}]);
-		}
-		this.track_subcontroller('actions', function() {
-			return new ItemActionsController({
-				inject: this.actions,
-				actions: actions
+		var num_notes = turtl.search.search({boards: [this.model.id()]}).bind(this)
+			.spread(function(notes) {
+				this.html(view.render('boards/item', {
+					board: this.model.toJSON(),
+					num_notes: notes.length
+				}));
+				var actions = [
+					[{name: 'Edit'}, {name: 'Delete'}],
+				];
+				if(!this.model.get('parent_id'))
+				{
+					actions.push([{name: 'Create child board'}]);
+				}
+				this.track_subcontroller('actions', function() {
+					return new ItemActionsController({
+						inject: this.actions,
+						actions: actions
+					});
+				}.bind(this));
+				this.track_subcontroller('children', function() {
+					return new BoardsListController({
+						inject: this.children,
+						collection: this.model.get('boards'),
+						child: true
+					});
+				}.bind(this))
 			});
-		}.bind(this));
-		this.track_subcontroller('children', function() {
-			return new BoardsListController({
-				inject: this.children,
-				collection: this.model.get('boards'),
-				child: true
-			});
-		}.bind(this))
 	},
 
 	open_board: function(e)

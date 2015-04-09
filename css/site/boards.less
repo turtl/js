@@ -25,6 +25,21 @@
 	}
 }
 
+// this is a modal div, btw
+.note-edit-boards {background: @theme_gutter;}
+// note board selector styles
+.boards.select {
+	ul.item-list {
+		> li {
+			a.check {float: right; margin: 12rem 0 0 0;}
+			a.check {
+				icon {color: @theme_gray_light; .transition(color .3s);}
+				&.selected icon {color: @theme_accent;}
+			}
+		}
+	}
+}
+
 .boards-edit {
 	p.child {padding-top: 20rem; color: @theme_gray;}
 }

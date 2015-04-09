@@ -1,13 +1,14 @@
 var NotesEditController = FormController.extend({
 	elements: {
 		'form': 'el_form',
-		'.boards-container': 'el_boards',
 		'input[name=title]': 'inp_title',
 		'input[name=url]': 'inp_url',
-		'textarea[name=text]': 'inp_text'
+		'textarea[name=text]': 'inp_text',
+		'.boards-container': 'el_boards'
 	},
 
 	events: {
+		'click .note-boards': 'open_boards',
 		'click ul.colors li': 'switch_color',
 		'click .button-row ul a[rel=tag]': 'open_tags',
 		'click .button-row .desc': 'open_tags',
@@ -103,6 +104,7 @@ var NotesEditController = FormController.extend({
 		var data = this.model.toJSON();
 		if(!data.color) delete data.color;
 		Autosize.destroy(this.inp_text);
+
 		this.html(view.render('notes/edit/index', {
 			note: data,
 			show_url: ['image', 'link'].contains(type),
@@ -130,7 +132,7 @@ var NotesEditController = FormController.extend({
 		if(this.inp_text) setTimeout(function() { autosize(this.inp_text); }.bind(this), 10);
 
 		this.track_subcontroller('boards', function() {
-			return new NotesEditBoardsController({
+			return new NotesEditBoardsListController({
 				inject: this.el_boards,
 				model: this.clone
 			});
@@ -192,6 +194,14 @@ var NotesEditController = FormController.extend({
 			li.addClass('sel');
 		}
 		this.clone.set({color: color});
+	},
+
+	open_boards: function(e)
+	{
+		if(e) e.stop();
+		new NotesEditBoardsController({
+			model: this.clone
+		});
 	},
 
 	open_tags: function(e)

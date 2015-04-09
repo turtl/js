@@ -1,0 +1,22 @@
+<div class="boards select">
+	<ul class="item-list">
+		{{#each boards}}
+			<li rel="{{id}}">
+				<a class="check {{#if selected}}selected{{/if}}" href="#"><icon>&#xe81e;</icon></a>
+				<h2>{{title}}</h2>
+				{{#if children}}
+					<div class="children">
+						<ul class="item-list">
+							{{#each children}}
+								<li rel="{{id}}">
+									<a class="check {{#if selected}}selected{{/if}}" href="#"><icon>&#xe81e;</icon></a>
+									<h2>{{title}}</h2>
+								</li>
+							{{/each}}
+						</ul>
+					</div>
+				{{/if}}
+			</li>
+		{{/each}}
+	</ul>
+</div>
