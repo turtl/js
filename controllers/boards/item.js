@@ -23,11 +23,11 @@ var BoardsItemController = Composer.Controller.extend({
 
 	render: function()
 	{
-		var num_notes = turtl.search.search({boards: [this.model.id()]}).bind(this)
-			.spread(function(notes) {
+		this.model.note_count().bind(this)
+			.then(function(num_notes) {
 				this.html(view.render('boards/item', {
 					board: this.model.toJSON(),
-					num_notes: notes.length
+					num_notes: num_notes
 				}));
 				var actions = [
 					[{name: 'Edit'}, {name: 'Delete'}],

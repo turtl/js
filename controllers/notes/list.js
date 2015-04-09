@@ -21,7 +21,12 @@ var NotesListController = Composer.ListController.extend({
 
 	init: function()
 	{
-		if(this.board_id) this.search.boards.push(this.board_id);
+		if(this.board_id)
+		{
+			var board = turtl.profile.get('boards').find_by_id(this.board_id);
+			this.search.boards.push(this.board_id);
+			if(board) this.search.boards = this.search.boards.concat(board.get_child_board_ids());
+		}
 
 		this.masonry_timer = new Timer(10);
 		this.with_bind(this.masonry_timer, 'fired', this.update_masonry.bind(this));

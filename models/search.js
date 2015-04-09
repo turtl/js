@@ -62,7 +62,7 @@ var Search = Composer.Collection.extend({
 		search || (search = {});
 		options || (options = {});
 
-		clone(search);
+		search = clone(search);
 		if(search.sort && (search.sort[0] == 'id' || this.sort[search.sort[0]]))
 		{
 			var field = search.sort[0];
@@ -102,14 +102,16 @@ var Search = Composer.Collection.extend({
 				var val = search[index];
 				if(!val) continue;
 				if(res && res.length == 0) break;
+				var lookup_options = {};
 				switch(index)
 				{
 					case 'text':
 						res_intersect(this.ft.search(val).map(function(r) { return r.ref; }));
 						break;
-					case 'tags':
 					case 'boards':
-						res_intersect(this.index_lookup(res, index, val));
+						lookup_options.or = true;
+					case 'tags':
+						res_intersect(this.index_lookup(res, index, val, lookup_options));
 						break;
 				}
 			}
@@ -147,7 +149,7 @@ var Search = Composer.Collection.extend({
 		}.bind(this));
 	},
 
-	index_lookup: function(res, index, vals)
+	index_lookup_and: function(res, index, vals)
 	{
 		// loop over all values passed for this index type and interset the
 		// corresponding values.
@@ -191,6 +193,37 @@ var Search = Composer.Collection.extend({
 		return res;
 	},
 
+	index_lookup_or: function(res, index, vals)
+	{
+		var or_res = [];
+		for(var ii = 0, nn = vals.length; ii < nn; ii++)
+		{
+			var val = vals[ii];
+			if(!val) continue;
+
+			or_res = this.union(or_res, this.index[index][val]);
+		}
+		var ret = [];
+		if(res) ret = this.intersect(res || [], or_res); 
+		else ret = or_res;
+		return ret;
+	},
+
+	index_lookup: function(res, index, vals, options)
+	{
+		options || (options = {});
+		if(res.length == 0) return res;
+
+		if(options.or)
+		{
+			return this.index_lookup_or(res, index, vals);
+		}
+		else
+		{
+			return this.index_lookup_and(res, index, vals);
+		}
+	},
+
 	/**
 	 * Find the intersection between two sorted sets of string values.
 	 */
@@ -223,6 +256,14 @@ var Search = Composer.Collection.extend({
 			}
 		}
 		return result.reverse();
+	},
+
+	/**
+	 * union two arrays
+	 */
+	union: function(array1, array2)
+	{
+		return array1.concat(array2);
 	},
 
 	/**

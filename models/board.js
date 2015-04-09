@@ -117,6 +117,28 @@ var Board = Protected.extend({
 					callback(cnote, {existing: existing});
 				});
 			});
+	},
+
+	note_count: function()
+	{
+		var child_board_ids = this.get_child_board_ids();
+		var boards = [this.id()].concat(child_board_ids);
+		return turtl.search.search({boards: boards}).bind(this)
+			.spread(function(notes) {
+				return notes.length;
+			});
+	},
+
+	get_child_board_ids: function()
+	{
+		var children = [];
+		turtl.profile.get('boards').each(function(board) {
+			if(board.get('parent_id') == this.id())
+			{
+				children.push(board.id());
+			}
+		}.bind(this));
+		return children;
 	}
 });
 
