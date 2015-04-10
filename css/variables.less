@@ -55,7 +55,9 @@
 	-webkit-transition: ~`"@{value}".replace(/transform/g, '-webkit-transform')`;
 	transition: @value;
 }
-
+.touch-scroll () {
+	-webkit-overflow-scrolling: touch;
+}
 @landscape: ~"only screen and (min-device-width: 500px)";
 @desktop: ~"only screen and (min-device-width: 800px)";
 
