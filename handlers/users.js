@@ -2,7 +2,7 @@ var users = {
 	login: function()
 	{
 		var slide = false;
-		if(turtl.controllers.pages.is(UserJoinController) || turtl.controllers.pages.is(UserWelcomeController))
+		if(turtl.controllers.pages.is([UserJoinController, UserWelcomeController]))
 		{
 			slide = 'right';
 		}
