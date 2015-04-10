@@ -27,8 +27,9 @@ var PagesController = Composer.Controller.extend({
 		if(options.slide)
 		{
 			var sub = this.get_subcontroller('sub');
-			content = sub.el;
-			sub.el = new Element('div');
+			var sub_parent = sub.el.getParent();
+			content = new Element('div').adopt(sub.el).get('html');
+			sub_parent.adopt(sub.el);
 		}
 
 		var scroll = $('wrap').scrollTop;
@@ -53,8 +54,8 @@ var PagesController = Composer.Controller.extend({
 		var maintop = parseInt(main.getStyle('top'));
 		var newtop = maintop - scroll;
 		var tmp = new Element('div#tmp-slide')
-			.setStyles({top: newtop});
-		content.inject(tmp);
+			.setStyles({top: newtop})
+			.set('html', content);
 		tmp.inject(main, 'before');
 
 		tmp.setStyles({transition: 'none',}).setStyles({left: '0%'});
