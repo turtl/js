@@ -195,6 +195,8 @@ var Search = Composer.Collection.extend({
 
 	index_lookup_or: function(res, index, vals)
 	{
+		if(vals.length == 0) return res;
+
 		var or_res = [];
 		for(var ii = 0, nn = vals.length; ii < nn; ii++)
 		{
@@ -225,37 +227,32 @@ var Search = Composer.Collection.extend({
 	},
 
 	/**
-	 * Find the intersection between two sorted sets of string values.
+	 * Find the intersection between two sets of string values.
 	 */
 	intersect: function(array1, array2)
 	{
 		var result = [];
-		// Don't destroy the original arrays
-		var a = array1.slice(0);
-		var b = array2.slice(0);
-		var aLast = a.length - 1;
-		var bLast = b.length - 1;
-		while(aLast >= 0 && bLast >= 0)
+		if(array1.length == 0 || array2.length == 0) return [];
+
+		var hash = {};
+		for(var i = 0; i < array1.length; i++)
 		{
-			if(a[aLast].localeCompare(b[bLast]) > 0)
+			hash[array1[i]] = 1;
+		}
+
+		for(var i = 0; i < array2.length; i++)
+		{
+			var val = array2[i];
+			var exists = hash[val];
+			if(exists && exists == 1)
 			{
-				a.pop();
-				aLast--;
-			}
-			else if(a[aLast].localeCompare(b[bLast]) < 0)
-			{
-				b.pop();
-				bLast--;
-			}
-			else
-			{
-				result.push(a.pop());
-				b.pop();
-				aLast--;
-				bLast--;
+				result.push(val);
+				// remove dupes
+				hash[val]++;
 			}
 		}
-		return result.reverse();
+
+		return result;
 	},
 
 	/**
@@ -263,7 +260,8 @@ var Search = Composer.Collection.extend({
 	 */
 	union: function(array1, array2)
 	{
-		return array1.concat(array2);
+		var filterfn = function(item) { return !!item; };
+		return (array1 || []).filter(filterfn).concat((array2 || []).filter(filterfn));
 	},
 
 	/**
@@ -389,7 +387,6 @@ var Search = Composer.Collection.extend({
 
 		// save/sort the index
 		this.index[type][index_id].push(item_id);
-		this.index[type][index_id].sort(function(a, b) { return a.localeCompare(b); });
 	},
 
 	unindex_type: function(type, index_id, item_id)
