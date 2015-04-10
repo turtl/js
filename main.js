@@ -486,7 +486,7 @@ window.addEvent('domready', function() {
 	);
 
 	// create the barfr
-	barfr = new Barfr('barfr', {});
+	barfr = new Barfr('barfr', {timeout: 8000});
 
 	// prevent backspace from navigating back
 	$(document.body).addEvent('keydown', function(e) {
