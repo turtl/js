@@ -21,13 +21,25 @@ var extend_error = function(extend, errname)
 	return err;
 }
 
+var string_repeat = function(string, num)
+{
+	return new Array(parseInt(num) + 1).join(string);
+};
+
 /**
  * Given an error object, return the best piece of it for rendering to console
  * (usually this is error_object.stack).
  */
 function derr(error_object)
 {
-	return error_object.stack;
+	if(error_object.stack)
+	{
+		return error_object.stack;
+	}
+	else
+	{
+		return error_object;
+	}
 }
 
 function get_parent(obj)
