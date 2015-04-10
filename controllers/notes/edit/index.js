@@ -72,7 +72,7 @@ var NotesEditController = FormController.extend({
 		// handle our "you have unsaved changes" state stuff
 		var unsaved = function()
 		{
-			//this.modal.set_title(title + ' <strong>(unsaved)</strong>', turtl.last_url);
+			this.modal.set_title(title + ' <strong>*</strong>', turtl.last_url);
 			this.have_unsaved = true;
 			this.highlight_button();
 		}.bind(this);
