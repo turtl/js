@@ -83,6 +83,14 @@ var Api = new Class({
 
 		var url = api_url + '/' + resource.replace(/^\//, '');
 
+		var headers = params.headers || {};
+
+		if(typeof(data) == 'object' && typeof(headers['content-type']) == 'undefined')
+		{
+			headers['Content-Type'] = 'application/json';
+			data = JSON.stringify(data);
+		}
+
 		var request = {
 			url: url,
 			method: method,
