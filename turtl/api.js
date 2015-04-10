@@ -116,10 +116,12 @@ var Api = new Class({
 		request.headers['X-Turtl-Client'] = config.client + '-' + config.version;
 
 		// if we're sending auth AND we're logged in, authenticate
-		if(this.user && send_auth)
+		var auth_key = this.user.auth_key;
+		if(params.auth) auth_key = params.auth;
+		if(auth_key && send_auth)
 		{
 			request.headers['X-Auth-Api-Key'] = this.api_key;
-			request.headers['Authorization'] = 'Basic ' + btoa('user:' + this.user.auth_key);
+			request.headers['Authorization'] = 'Basic ' + btoa('user:' + auth_key);
 		}
 		return Sexhr(request)
 			.then(function(res) {

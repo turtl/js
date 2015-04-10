@@ -4,6 +4,7 @@ var UserJoinController = FormController.extend({
 		'input[name=password]': 'inp_password',
 		'input[name=confirm]': 'inp_confirm',
 		'input[name=promo]': 'inp_promo',
+		'input[type=submit': 'inp_submit',
 		'div.promo': 'promo_section'
 	},
 
@@ -69,14 +70,17 @@ var UserJoinController = FormController.extend({
 			errors.push([inp_username, 'Please enter a username 3 characters or longer.']);
 		}
 
-		if(password != pconfirm)
+		if(password.length == 0)
 		{
-			errors.push([inp_password, 'Your password does not match the confirmation.']);
+			errors.push([inp_password, 'Please enter a passphrase. Hint: Sentences are much better than single words.']);
 		}
-
-		if(password.length < 4)
+		else if(password.length < 4)
 		{
 			errors.push([inp_password, 'We don\'t mean to tell you your business, but a password less than four characters won\'t cut it. Try again.']);
+		}
+		else if(password != pconfirm)
+		{
+			errors.push([inp_pconfirm, 'Your password does not match the confirmation.']);
 		}
 
 		if(password.toLowerCase() == 'password')
@@ -97,7 +101,7 @@ var UserJoinController = FormController.extend({
 		var errors = this.check_login(this.inp_username, this.inp_password, this.inp_confirm);
 		if(!this.check_errors(errors)) return;
 
-		this.submit.disabled = true;
+		this.inp_submit.disabled = true;
 
 		if(password.length < 10)
 		{
@@ -117,9 +121,10 @@ var UserJoinController = FormController.extend({
 				turtl.user.login(data);
 				turtl.route('/');
 			})
-			.catch(function(e) {
-				this.submit.disabled = false;
-				barfr.barf('Error adding user: '+ e);
+			.catch(function(err) {
+				turtl.events.trigger('ui-error', 'There was a problem saving that account', err);
+				log.error('users: join: ', this.model.id(), derr(err));
+				this.inp_submit.disabled = false;
 			})
 			.finally(function() {
 				turtl.loading(false);

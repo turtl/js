@@ -161,6 +161,76 @@ var User = Protected.extend({
 			});
 	},
 
+	/**
+	 * change the username/password.
+	 *
+	 * this assumes the current account has been verified, and does no checking
+	 * itself.
+	 *
+	 * here's how this works:
+	 *
+	 *   1. generate a new master key using the new u/p
+	 *   2. generate a new auth token using the new key
+	 *   3. save the auth token to the API
+	 *   4. use the new key to re-encrypt and save *every* keychain entry
+	 *
+	 * done! because all non-keychain objects are self-describing, we only need
+	 * to encrypt keychain entries and we're good to go.
+	 */
+	change_password: function(username, password)
+	{
+		var old_auth = this.get_auth();
+
+		var user = new User({username: username, password: password});
+		var key = user.get_key({skip_cache: true});
+		var auth = user.get_auth({skip_cache: true});
+
+		var data = {data: {a: auth}};
+		return turtl.api.put('/users/'+this.id(), data, {auth: old_auth}).bind(this)
+			.then(function(userdata) {
+				var actions = [];
+				turtl.profile.get('keychain').each(function(kentry) {
+					kentry.key = key;
+					actions.push(kentry.save());
+				});
+				return Promise.all(actions);
+			})
+			.then(function() {
+				user.clear();
+				this.key = key;
+				this.auth = auth;
+				this.trigger('change');
+			})
+			.catch(function(err) {
+				this.rollback_change_password()
+					.catch(function(err) {
+						turtl.events.trigger('ui-error', 'Sorry, we couldn\'t undo the password change operation. You really should try changing your password again, or your profile may be stuck in limbo.', err);
+						log.error('user: pw rollback: ', err);
+					});
+				throw err;
+			});
+	},
+
+	/**
+	 * we're here because something went wrong while changing the password. we
+	 * could be in some kind of key/auth/keychain limbo, so do our best to set
+	 * it all right here (set auth back to original in API, re-save keychain
+	 * entries with original key).
+	 */
+	rollback_change_password: function()
+	{
+		var data = {data: {a: this.get_auth()}};
+		return turtl.api.put('/users/'+this.id(), data, {auth: this.get_auth()}).bind(this)
+			.then(function(userdata) {
+				var actions = [];
+				turtl.profile.get('keychain').each(function(kentry) {
+					kentry.key = this.get_key();
+					actions.push(kentry.save());
+				});
+				return Promise.all(actions);
+			});
+	},
+
 	write_cookie: function(options)
 	{
 		options || (options = {});
@@ -297,8 +367,8 @@ var User = Protected.extend({
 
 	test_auth: function()
 	{
-		turtl.api.set_auth(this.get_auth({skip_cache: true}));
-		var promise = turtl.api.post('/auth', {}).bind(this)
+		var auth = this.get_auth({skip_cache: true});
+		return turtl.api.post('/auth', {}, {auth: auth}).bind(this)
 			.then(function(id) {
 				return [id, {old: false}];
 			})
@@ -317,8 +387,6 @@ var User = Protected.extend({
 				}
 				throw err;
 			});
-		turtl.api.clear_auth();
-		return promise;
 	}
 });
 

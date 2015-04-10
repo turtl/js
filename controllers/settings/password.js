@@ -4,11 +4,13 @@ var ChangePasswordController = FormController.extend({
 		'input[name=cur_password]': 'inp_cur_password',
 		'input[name=new_username]': 'inp_new_username',
 		'input[name=new_password]': 'inp_new_password',
-		'input[name=new_confirm]': 'inp_new_confirm'
+		'input[name=new_confirm]': 'inp_new_confirm',
+		'input[type=submit]': 'inp_submit'
 	},
 
 	events: {
-		'submit form': 'save'
+		'submit form': 'save',
+		'input input[name=cur_username]': 'match_username'
 	},
 
 	formclass: 'settings-password',
@@ -49,6 +51,23 @@ var ChangePasswordController = FormController.extend({
 		var errors = UserJoinController.prototype.check_login(this.inp_new_username, this.inp_new_password, this.inp_new_confirm);
 		if(!this.check_errors(errors)) return;
 
+		this.inp_submit.disabled = true;
+		turtl.user.change_password(new_username, new_password).bind(this)
+			.then(function() {
+				barfr.barf('Your login was changed successfully!');
+				turtl.route('/settings');
+			})
+			.catch(function(err) {
+				turtl.events.trigger('ui-error', 'There was a problem changing your login. We are undoing the changes. Please try again.', err);
+				log.error('settings: change password: ', derr(err));
+				this.inp_submit.disabled = false;
+			});
+	},
+
+	match_username: function(e)
+	{
+		var username = this.inp_cur_username.get('value');
+		this.inp_new_username.set('value', username);
 	}
 });
 
