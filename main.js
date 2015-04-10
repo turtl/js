@@ -217,6 +217,9 @@ var turtl = {
 			}, 'dashboard:shortcut:logout');
 		}.bind(turtl));
 		turtl.user.bind('logout', function() {
+			turtl.user.key = null;
+			turtl.user.auth = null;
+
 			// stop syncing
 			turtl.sync.stop();
 

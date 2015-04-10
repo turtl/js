@@ -57,6 +57,22 @@ var Search = Composer.Collection.extend({
 			});
 	},
 
+	clear: function()
+	{
+		[
+			this.index_json,
+			this.index,
+			this.sort
+		].forEach(function(obj) {
+			Object.keys(obj).forEach(function(k) {
+				obj[k] = {};
+			}.bind(this));
+		});
+
+		this.ft = null;
+		return this.parent.apply(this, arguments);
+	},
+
 	search: function(search, options)
 	{
 		search || (search = {});
