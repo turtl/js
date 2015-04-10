@@ -204,6 +204,7 @@ var turtl = {
 					if(initial_route.match(/index.html/)) initial_route = default_route;
 					if(initial_route.match(/background.html/)) initial_route = default_route;
 					turtl.route(initial_route);
+					options.initial_route = '/';
 					if(window.port) window.port.send('profile-load-complete');
 				})
 				.catch(function(err) {
