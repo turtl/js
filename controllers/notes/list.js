@@ -21,7 +21,7 @@ var NotesListController = Composer.ListController.extend({
 
 	init: function()
 	{
-		if(this.board_id)
+		if(this.board_id && this.board_id != 'all')
 		{
 			var board = turtl.profile.get('boards').find_by_id(this.board_id);
 			this.search.boards.push(this.board_id);
@@ -60,7 +60,7 @@ var NotesListController = Composer.ListController.extend({
 				});
 
 				var notes = turtl.profile.get('notes');
-				this.with_bind(notes, ['add', 'remove', 'reset', 'destroy'], function() {
+				this.with_bind(notes, ['add', 'change', 'remove', 'reset', 'destroy'], function() {
 					this.trigger('search');
 				}.bind(this))
 				this.track(turtl.search, function(model, options) {
