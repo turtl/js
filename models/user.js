@@ -43,6 +43,8 @@ var User = Protected.extend({
 
 	login: function(data, options)
 	{
+		options || (options = {});
+
 		this.set(data, {ignore_body: this.key ? false : true});
 		this.get_auth(options);
 		this.unset('username');
@@ -107,7 +109,7 @@ var User = Protected.extend({
 	join: function(options)
 	{
 		options || (options = {});
-		var data = {data: {a: this.get_auth()}};
+		var data = {data: {a: this.get_auth({skip_cache: true})}};
 		if(localStorage.invited_by)
 		{
 			data.invited_by = localStorage.invited_by;
@@ -218,7 +220,7 @@ var User = Protected.extend({
 		var old = options.old;
 
 		var key = this.key;
-		if(key) return key;
+		if(key && !options.skip_cache) return key;
 
 		var username = this.get('username');
 		var password = this.get('password');
@@ -252,7 +254,7 @@ var User = Protected.extend({
 		options || (options = {});
 		var old = options.old;
 
-		if(this.auth) return this.auth;
+		if(this.auth && !options.skip_cache) return this.auth;
 
 		var username = this.get('username');
 		var password = this.get('password');
@@ -281,7 +283,11 @@ var User = Protected.extend({
 			var iter = options.iter || 16000;
 			var iv = tcrypt.iv(tcrypt.hash(password + iter + username));
 			var user_record = tcrypt.hash(password) +':'+ tcrypt.hash(username);
-			var auth = tcrypt.to_base64(tcrypt.encrypt(key, user_record, {iv: iv}));
+			// supply a deterministic UTF8 "random" byte for the auth string
+			// encryption so we get the same result every time (otherwise
+			// tcrypt.encrypt will pick a random value for us).
+			var utf8_random = parseInt(user_record.substr(18, 2), 16) / 256;
+			var auth = tcrypt.to_base64(tcrypt.encrypt(key, user_record, {iv: iv, utf8_random: utf8_random}));
 		}
 
 		if(!options.skip_cache) this.auth = auth;
