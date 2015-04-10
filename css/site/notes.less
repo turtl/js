@@ -73,6 +73,21 @@
 }
 .turtl-modal.note-image {
 	header {.title-scrim(top, .60, 110%); box-shadow: none;}
+	/*
+	header {background: none; box-shadow: none;}
+	header {
+		h1 {
+			em:before {position: absolute; z-index: -1; display: block; top: 10rem; left: 2rem; width: 0; height: 0; box-shadow: 0 0 48px 24px rgba(0, 0, 0, .85); content: '';}
+		}
+		ul.actions {
+			> li {
+				.item-actions {
+					> a:before {position: absolute; z-index: -1; display: block; top: 10rem; left: 2rem; width: 0; height: 0; box-shadow: 0 0 48px 24px rgba(0, 0, 0, .85); content: '';}
+				}
+			}
+		}
+	}
+	*/
 	.modal-gutter {padding-top: 0;}
 }
 
@@ -85,7 +100,7 @@
 		}
 	}
 
-	.note-boards {margin: 0 0 16rem 0; padding: 9rem 4%; font-size: 14rem; background: none; border: 0; border-bottom: 1rem solid #bbb; border-radius: 0; .transition(border);}
+	.note-boards {margin: 0 0 16rem 0; padding: 9rem 4%; font-size: 14rem; background: none; border: 0; border-bottom: 1rem solid #bbb; border-radius: 0; .transition(border .3s);}
 	.note-boards {
 		icon {float: left; margin: 4rem 8rem 0 0; font-size: 20rem; color: @theme_black;}
 		span {display: inline-block; padding: 3rem; color: @theme_primary;}
