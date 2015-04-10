@@ -1,4 +1,6 @@
 var SettingsController = Composer.Controller.extend({
+	class_name: 'settings',
+
 	init: function()
 	{
 		turtl.push_title('Your account');

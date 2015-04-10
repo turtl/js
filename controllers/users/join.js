@@ -57,6 +57,35 @@ var UserJoinController = FormController.extend({
 		(function() { this.inp_username.focus(); }).delay(100, this);
 	},
 
+	check_login: function(inp_username, inp_password, inp_pconfirm)
+	{
+		var username = inp_username.get('value');
+		var password = inp_password.get('value');
+		var pconfirm = inp_pconfirm.get('value');
+
+		var errors = [];
+		if(username.length < 3)
+		{
+			errors.push([inp_username, 'Please enter a username 3 characters or longer.']);
+		}
+
+		if(password != pconfirm)
+		{
+			errors.push([inp_password, 'Your password does not match the confirmation.']);
+		}
+
+		if(password.length < 4)
+		{
+			errors.push([inp_password, 'We don\'t mean to tell you your business, but a password less than four characters won\'t cut it. Try again.']);
+		}
+
+		if(password.toLowerCase() == 'password')
+		{
+			errors.push([inp_password, 'You want to secure all of your data using <em>that</em> password? Be our guest...']);
+		}
+		return errors;
+	},
+
 	submit: function(e)
 	{
 		if(e) e.stop();
@@ -65,26 +94,15 @@ var UserJoinController = FormController.extend({
 		var pconfirm = this.inp_confirm.get('value');
 		var promo = this.inp_promo ? this.inp_promo.get('value') : null;
 
-		if(password != pconfirm)
-		{
-			barfr.barf('Your password does not match the confirmation.');
-			this.inp_password.focus();
-			return false;
-		}
-
-		if(password.length < 4)
-		{
-			barfr.barf('We don\'t mean to tell you your business, but a password less than four characters won\'t cut it. Try again.');
-			this.inp_password.focus();
-			return false;
-		}
-
-		if(password.toLowerCase() == 'password')
-		{
-			barfr.barf('You want to secure all of your data using <em>that</em> password? Be our guest...');
-		}
+		var errors = this.check_login(this.inp_username, this.inp_password, this.inp_confirm);
+		if(!this.check_errors(errors)) return;
 
 		this.submit.disabled = true;
+
+		if(password.length < 10)
+		{
+			barfr.barf('Your password is less than 10 characters. This is allowed, but we advise you to change to a passphrase of at least a few words.');
+		}
 
 		var user = new User({
 			username: username,
@@ -96,10 +114,6 @@ var UserJoinController = FormController.extend({
 			.then(function(userdata) {
 				var data = user.toJSON();
 				data.id = userdata.id;
-				turtl.user.set({
-					username: user.get('username'),
-					password: user.get('password')
-				});
 				turtl.user.login(data);
 				turtl.route('/');
 			})

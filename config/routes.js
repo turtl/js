@@ -8,6 +8,7 @@ config.routes = {
 	'/boards/([0-9a-f]+)/notes': ['boards', 'notes'],
 
 	'/settings': ['settings', 'index'],
+	'/settings/password': ['settings', 'password'],
 
 	'/': ['notes', 'index']
 };

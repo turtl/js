@@ -57,6 +57,19 @@ var FormController = Composer.Controller.extend({
 		dot.inject(this.btn_submit);
 		Velocity(dot, {opacity: [1, 0]}, {duration: 400});
 		Velocity(dot, 'callout.pulse', {duration: 800});
+	},
+
+	check_errors: function(errors)
+	{
+		if(errors.length == 0) return true;
+
+		errors.slice(0).reverse().forEach(function(err) {
+			barfr.barf(err[1]);
+			var inp = err[0];
+			inp.addClass('error');
+			setTimeout(function() { inp.removeClass('error'); }, 8000);
+		});
+		errors[0][0].focus();
 	}
 });
 
