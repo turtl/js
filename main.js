@@ -222,8 +222,6 @@ var turtl = {
 
 			turtl.controllers.pages.release_sub();
 			turtl.keyboard.removeEvents('shift+l');
-			turtl.messages.unbind(['add', 'remove', 'reset', 'change'], 'turtl:messages:counter');
-			turtl.user.unbind_relational('personas', ['add', 'remove', 'reset'], 'turtl:personas:counter');
 			turtl.show_loading_screen(false);
 			turtl.user.unbind('change', 'user:write_changes_to_cookie');
 			turtl.api.clear_auth();
@@ -242,14 +240,11 @@ var turtl = {
 			turtl.invites.unbind();
 
 			// this should give us a clean slate
-			turtl.user.unbind();
-			turtl.user = new User();
-			turtl.setup_user();
 			turtl.profile.destroy();
 			turtl.profile = null;
 			turtl.search.clear();
-			turtl.search = false;
-			turtl.files = false;
+			turtl.search = null;
+			turtl.files = null;
 
 			turtl.route('/');
 
