@@ -25,6 +25,7 @@ var BoardsEditController = FormController.extend({
 			title: this.action + child + ' board'
 		});
 
+		this.parent();
 		this.render();
 
 		var close = this.modal.close.bind(this.modal);
