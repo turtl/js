@@ -57,7 +57,7 @@ var Search = Composer.Collection.extend({
 			});
 	},
 
-	clear: function()
+	wipe: function()
 	{
 		[
 			this.index_json,
@@ -70,7 +70,7 @@ var Search = Composer.Collection.extend({
 		});
 
 		this.ft = null;
-		return this.parent.apply(this, arguments);
+		return this.clear();
 	},
 
 	search: function(search, options)

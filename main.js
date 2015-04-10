@@ -245,7 +245,7 @@ var turtl = {
 			// this should give us a clean slate
 			turtl.profile.destroy();
 			turtl.profile = null;
-			turtl.search.clear();
+			turtl.search.wipe();
 			turtl.search = null;
 			turtl.files = null;
 
