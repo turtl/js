@@ -73,9 +73,16 @@ var PagesController = Composer.Controller.extend({
 		}).delay(0, this);
 	},
 
-	is: function(type)
+	is: function(types)
 	{
-		return this.get_subcontroller('sub') instanceof type;
+		var sub = this.get_subcontroller('sub');
+		if(!Array.isArray(types)) types = [types];
+		for(var i = 0; i < types.length; i++)
+		{
+			var type = types[i];
+			if(sub instanceof type) return true;
+		}
+		return false;
 	},
 
 	release_sub: function()
@@ -84,3 +91,4 @@ var PagesController = Composer.Controller.extend({
 		if(sub) sub.release();
 	}
 });
+
