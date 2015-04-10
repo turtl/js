@@ -34,14 +34,18 @@ var UserLoginController = FormController.extend({
 
 		turtl.loading(true);
 		user.test_auth().bind(this)
-			.then(function(id) {
+			.spread(function(id, meta) {
 				var data = user.toJSON();
 				data.id = id;
 				turtl.user.set({
 					username: user.get('username'),
 					password: user.get('password')
 				});
-				turtl.user.login(data);
+				turtl.user.login(data, {old: meta.old});
+				if(meta.old)
+				{
+					barfr.barf('Your master key was generated using an older method. In order to improve your security, please generate a new key by going to the "Change password" section of your account settings. You can use the same username/password as before, but your key will be upgraded.', {persist: true});
+				}
 			})
 			.catch(function(err) {
 				barfr.barf('Login failed.');

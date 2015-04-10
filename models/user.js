@@ -41,29 +41,22 @@ var User = Protected.extend({
 		this.bind_relational('settings', ['change'], this.save_settings.bind(this), 'user:save_settings');
 	},
 
-	login: function(data, remember, silent)
+	login: function(data, options)
 	{
-		(remember === true) || (remember = false);
-		(silent === true) || (silent = false);
 		this.set(data, {ignore_body: this.key ? false : true});
-		this.get_auth();
+		this.get_auth(options);
 		this.unset('username');
 		this.unset('password');
 		this.logged_in = true;
-		var duration = 1;
-		if(remember)
-		{
-			duration = 30;
-		}
 
 		// now grab the user record by ID from the API.
 		// TODO: OFFLINE: persist to local storage for offline mode.
-		turtl.api.set_auth(this.get_auth());
+		turtl.api.set_auth(this.get_auth(options));
 		turtl.api.get('/users/'+this.id(), {}).bind(this)
 			.then(function(user) {
 				this.set(user);
-				this.write_cookie({duration: duration});
-				if (!silent) this.trigger('login', this);
+				this.write_cookie();
+				if(!options.silent) this.trigger('login', this);
 			})
 			.catch(function(err) {
 				log.error('user: problem grabbing user record: ', derr(err));
@@ -169,7 +162,7 @@ var User = Protected.extend({
 	write_cookie: function(options)
 	{
 		options || (options = {});
-		var duration = options.duration ? options.duration : 30;
+
 		var key = this.get_key();
 		var auth = this.get_auth();
 		if(!key || !auth) return false;
@@ -219,8 +212,11 @@ var User = Protected.extend({
 			});
 	},
 
-	get_key: function()
+	get_key: function(options)
 	{
+		options || (options = {});
+		var old = options.old;
+
 		var key = this.key;
 		if(key) return key;
 
@@ -229,17 +225,33 @@ var User = Protected.extend({
 
 		if(!username || !password) return false;
 
-		// TODO: abstract key generation a bit better (iterations/keysize mainly)
-		var key = tcrypt.key(password, username + ':a_pinch_of_salt', {key_size: 32, iterations: 400});
+		// allows custom iterations
+		var iter = options.iterations || 16000;
 
-		// cache it
-		this.key = key;
+		if(old)
+		{
+			// oh, how far i've come that this now makes me cringe. 400
+			// iterations and an entropy-reducing hardcoded salt string.
+			// luckily this was the first bit of crypto code i'd ever written
+			var key = tcrypt.key(password, username + ':a_pinch_of_salt', {key_size: 32, iterations: 400});
+		}
+		else
+		{
+			// create a salt based off repeated username
+			var salt = tcrypt.hash(string_repeat(username, 32));
+			var key = tcrypt.key(password, salt, {key_size: 32, iterations: iter, hasher: tcrypt.get_hasher('SHA256')});
+		}
+
+		if(!options.skip_cache) this.key = key;
 
 		return key;
 	},
 
-	get_auth: function()
+	get_auth: function(options)
 	{
+		options || (options = {});
+		var old = options.old;
+
 		if(this.auth) return this.auth;
 
 		var username = this.get('username');
@@ -247,25 +259,58 @@ var User = Protected.extend({
 
 		if(!username || !password) return false;
 
-		var user_record = tcrypt.hash(password) +':'+ username;
-		// use username as salt/initial vector
-		var key = this.get_key();
-		var iv = tcrypt.iv(username+'4c281987249be78a');	// make sure IV always has 16 bytes
+		// generate (or grab existing) the user's key based on username/password
+		var key = this.get_key(options);
 
-		// note we serialize with version 0 (the original Turtl serialization
-		// format) for backwards compat
-		var auth = tcrypt.encrypt(key, user_record, {iv: iv, version: 0});
+		// create a static IV (based on username) and a user record string
+		// (based on hashed username/password). this record string will then be
+		// encrypted with the user's key and sent as the auth token to the API.
+		if(old)
+		{
+			// let's reduce entropy by using a hardcoded string. then if we XOR
+			// the data via another string and base64 the payload, we've pretty
+			// much got AES (but better, IMO).
+			var iv = tcrypt.iv(username+'4c281987249be78a');
+			var user_record = tcrypt.hash(password) +':'+ username;
+			// note we serialize with version 0 (the original Turtl serialization
+			// format) for backwards compat
+			var auth = tcrypt.encrypt(key, user_record, {iv: iv, version: 0});
+		}
+		else
+		{
+			var iter = options.iter || 16000;
+			var iv = tcrypt.iv(tcrypt.hash(password + iter + username));
+			var user_record = tcrypt.hash(password) +':'+ tcrypt.hash(username);
+			var auth = tcrypt.to_base64(tcrypt.encrypt(key, user_record, {iv: iv}));
+		}
 
-		// save auth
-		this.auth = auth;
+		if(!options.skip_cache) this.auth = auth;
 
 		return auth;
 	},
 
 	test_auth: function()
 	{
-		turtl.api.set_auth(this.get_auth());
-		var promise = turtl.api.post('/auth', {});
+		turtl.api.set_auth(this.get_auth({skip_cache: true}));
+		var promise = turtl.api.post('/auth', {}).bind(this)
+			.then(function(id) {
+				return [id, {old: false}];
+			})
+			.catch(function(err) {
+				if(err && err.xhr && err.xhr.status == 401)
+				{
+					// ok, login failed using the CORRECT keygen method, try the
+					// old shitty version
+					turtl.api.set_auth(this.get_auth({old: true, skip_cache: true}));
+					return turtl.api.post('/auth', {}).bind(this)
+						.then(function(id) {
+							// mark is as old so the user model knows to use it
+							// from now on
+							return [id, {old: true}];
+						});
+				}
+				throw err;
+			});
 		turtl.api.clear_auth();
 		return promise;
 	}
