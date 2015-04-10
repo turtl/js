@@ -42,6 +42,7 @@ var LoadingController = Composer.Controller.extend({
 	{
 		this.enabled = false;
 		this.el.removeClass('show');
+		this.do_log(false);
 	},
 
 	do_log: function(msg)
