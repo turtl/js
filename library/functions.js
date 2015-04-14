@@ -130,7 +130,7 @@ function get_data_from_querystring(url)
 	var data = {};
 	url.split('&').each(function(d) {
 		var pieces = d.split('=');
-		data[pieces[0]] = unescape(pieces[1]);
+		data[pieces[0]] = decodeURIComponent(pieces[1]);
 	});
 	return data;
 }
@@ -244,7 +244,7 @@ var parse_querystring = function(qs)
 		kv = kv.split('=');
 		var key = kv[0];
 		var val = kv[1];
-		val = unescape(val);
+		val = decodeURIComponent(val);
 		data[key] = val;
 	});
 	return data;

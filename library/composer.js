@@ -2629,7 +2629,7 @@
 			{
 				var path = global.location.pathname+global.location.search;
 			}
-			return this.debasify(unescape(path));
+			return this.debasify(decodeURIComponent(path));
 		},
 
 		/**
@@ -2658,7 +2658,9 @@
 			options.state || (options.state = {});
 
 			var base = (this.options.base || '');
-			var href = base + '/' + url.trim().replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
+			var newpath = url.trim().replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
+			if(!options.raw) newpath = decodeURIComponent(newpath);
+			var href = base + '/' + newpath;
 			var old = base + this.cur_path();
 			if(old == href)
 			{
