@@ -202,7 +202,7 @@ var User = Protected.extend({
 				this.trigger('change');
 			})
 			.catch(function(err) {
-				this.rollback_change_password()
+				this.rollback_change_password(auth)
 					.catch(function(err) {
 						turtl.events.trigger('ui-error', 'Sorry, we couldn\'t undo the password change operation. You really should try changing your password again, or your profile may be stuck in limbo.', err);
 						log.error('user: pw rollback: ', err);
@@ -217,16 +217,21 @@ var User = Protected.extend({
 	 * it all right here (set auth back to original in API, re-save keychain
 	 * entries with original key).
 	 */
-	rollback_change_password: function()
+	rollback_change_password: function(new_auth)
 	{
-		var data = {data: {a: this.get_auth()}};
-		return turtl.api.put('/users/'+this.id(), data, {auth: this.get_auth()}).bind(this)
+		var key = this.get_key();
+		var auth = this.get_auth();
+		var data = {data: {a: auth}};
+		return turtl.api.put('/users/'+this.id(), data, {auth: auth}).bind(this)
+			.catch(function(err) {
+				return turtl.api.put('/users/'+this.id(), data, {auth: new_auth})
+			})
 			.then(function(userdata) {
 				var actions = [];
 				turtl.profile.get('keychain').each(function(kentry) {
-					kentry.key = this.get_key();
+					kentry.key = key;
 					actions.push(kentry.save());
-				});
+				}.bind(this));
 				return Promise.all(actions);
 			});
 	},
