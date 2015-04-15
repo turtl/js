@@ -4,7 +4,8 @@ var NotesEditController = FormController.extend({
 		'input[name=title]': 'inp_title',
 		'input[name=url]': 'inp_url',
 		'textarea[name=text]': 'inp_text',
-		'.boards-container': 'el_boards'
+		'.boards-container': 'el_boards',
+		'.existing': 'el_existing'
 	},
 
 	events: {
@@ -14,6 +15,7 @@ var NotesEditController = FormController.extend({
 		'click .button-row .desc': 'open_tags',
 		'change form': 'detect_change',
 		'input form': 'detect_change',
+		'input input[name=url]': 'check_url',
 		'click .formatting a[rel=formatting]': 'show_formatting_help'
 	},
 
@@ -31,6 +33,8 @@ var NotesEditController = FormController.extend({
 	confirm_unsaved: false,
 	have_unsaved: false,
 	form_data: null,
+
+	url_timer: null,
 
 	init: function()
 	{
@@ -102,6 +106,36 @@ var NotesEditController = FormController.extend({
 		}.bind(this);
 		this.with_bind(this.clone.get('tags'), ['add', 'remove'], footer_desc);
 		footer_desc();
+
+		if(this.model.is_new())
+		{
+			this.url_timer = new Timer(500);
+			this.url_timer.bind('fired', function() {
+				turtl.search.search({url: this.inp_url.get('value')}).bind(this)
+					.spread(function(ids) {
+						ids = ids.erase(this.model.id());
+						if(!ids || !ids.length)
+						{
+							this.el_existing.slide('out');
+							return;
+						}
+
+						var msg = '<em>!</em>';
+						if(ids.length == 1)
+						{
+							msg += 'This URL is already bookmarked in a note';
+						}
+						else
+						{
+							msg += 'This URL is already bookmarked in '+ ids.length +' notes';
+						}
+						this.el_existing.set('html', msg);
+						this.el_existing.slide('in');
+					});
+			}.bind(this));
+			this.bind('check-url', this.url_timer.reset.bind(this.url_timer));
+			this.bind('release', this.url_timer.unbind.bind(this.url_timer));
+		}
 	},
 
 	render: function()
@@ -145,6 +179,10 @@ var NotesEditController = FormController.extend({
 				model: this.clone
 			});
 		}.bind(this));
+
+		this.check_url();
+		this.el_existing.set('slide', {duration: 300});
+		this.el_existing.get('slide').hide();
 	},
 
 	submit: function(e)
@@ -188,6 +226,11 @@ var NotesEditController = FormController.extend({
 				turtl.events.trigger('ui-error', 'There was a problem updating that note', err);
 				log.error('note: edit: ', this.model.id(), derr(err));
 			});
+	},
+
+	check_url: function(e)
+	{
+		this.trigger('check-url');
 	},
 
 	switch_color: function(e)
