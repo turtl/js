@@ -12,7 +12,8 @@ var Search = Composer.Collection.extend({
 		tags: {},
 		boards: {},
 		all_notes: {},
-		note_tags: {}
+		note_tags: {},
+		urls: {}
 	},
 
 	// sort fields (tag_id -> sort val index)
@@ -129,6 +130,9 @@ var Search = Composer.Collection.extend({
 					case 'tags':
 						res_intersect(this.index_lookup(res, index, val, lookup_options));
 						break;
+					case 'url':
+						res_intersect(this.index_lookup(res, 'urls', [val]));
+						break;
 				}
 			}
 
@@ -188,7 +192,7 @@ var Search = Composer.Collection.extend({
 			// the first set of index data.
 			if(!res)
 			{
-				res = this.index[index][val];
+				res = this.index[index][val] || [];
 				break;
 			}
 
@@ -315,6 +319,9 @@ var Search = Composer.Collection.extend({
 		var tags = JSON.stringify(note.get('tags').map(function(t) { return t.get('name', '').toLowerCase(); }));
 		this.index_type('note_tags', note.id(), tags);
 
+		var url = note.get('url');
+		if(url) this.index_type('urls', url, note.id());
+
 		this.index.all_notes[note.id()] = true;
 
 		// index the sorting fields
@@ -349,6 +356,9 @@ var Search = Composer.Collection.extend({
 		}.bind(this));
 		var tags = JSON.stringify(json.tags.map(function(t) { return t.toLowerCase(); }));
 		this.unindex_type('note_tags', note.id(), tags);
+
+		var url = json.url;
+		if(url) this.unindex_type('urls', url, id);
 
 		delete this.index.all_notes[note.id()];
 
