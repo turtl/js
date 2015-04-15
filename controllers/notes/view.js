@@ -15,7 +15,7 @@ var NotesViewController = Composer.Controller.extend({
 		this.modal = new TurtlModal({
 			show_header: true,
 			actions: [
-				{name: 'menu', actions: [{name: 'Delete'}]}
+				{name: 'menu', actions: [/*{name: 'Edit'},*/ {name: 'Delete'}]}
 			]
 		});
 		this.render();
