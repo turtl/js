@@ -26,7 +26,6 @@ a { text-decoration: none; }
 
 //#wrap {position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: scroll;}
 #wrap {}
-#sidebar {position: fixed; z-index: 13; left: -100%; width: 100%; height: 100%; .transition(left .3s);}
 #app {.transition(left .3s);}
 #main {position: relative; left: 0; z-index: 5; padding: @header_height 0 64rem 0; .transition(left .3s);}
 
@@ -70,10 +69,6 @@ footer {display: block; margin: 32rem 0 0 0; padding: 16rem; font-size: 10rem; c
 
 /* settings menu slide in */
 body.settings {
-	#sidebar {left: 0%;}
-	#sidebar {
-		> .overlay {position: fixed; left: 0;}
-	}
 	header a.logo icon {margin-left: -20rem;}
 }
 
