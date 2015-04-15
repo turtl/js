@@ -1,16 +1,16 @@
 {{#equal actions.length 1}}
 	<a href="#action" class="abutton" title="{{actions.0.title}}" rel="main">
-		<icon>&#xE82E;</icon>
+		<icon class="{{actions.0.name}}">{{{actions.0.icon}}}</icon>
 	</a>
 {{else}}
 	<a href="#action" class="abutton" rel="open">
-		<icon>&#xE82E;</icon>
+		<icon class="add">&#xe82e;</icon>
 	</a>
 	<ul>
 		{{#each actions}}
 			<li rel="{{name}}" title="{{title}}" class="item-{{@index}}">
 				<h4>{{title}}</h4>
-				<a href="#{{name}}" class="abutton"><icon>{{{icon}}}</icon></a>
+				<a href="#{{name}}" class="abutton"><icon class="{{name}}">{{{icon}}}</icon></a>
 			</li>
 		{{/each}}
 	</ul>

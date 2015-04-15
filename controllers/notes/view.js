@@ -15,7 +15,7 @@ var NotesViewController = Composer.Controller.extend({
 		this.modal = new TurtlModal({
 			show_header: true,
 			actions: [
-				{name: 'menu', actions: [{name: 'Edit'}, {name: 'Delete'}]}
+				{name: 'menu', actions: [{name: 'Delete'}]}
 			]
 		});
 		this.render();
@@ -36,6 +36,14 @@ var NotesViewController = Composer.Controller.extend({
 			}
 		});
 		this.with_bind(this.model, 'destroy', close);
+
+		// set up the action button
+		this.track_subcontroller('actions', function() {
+			var actions = new ActionController({inject: this.modal.el});
+			actions.set_actions([{title: 'Edit note', name: 'edit', icon: '&#xe815;'}]);
+			this.with_bind(actions, 'actions:fire', this.open_edit.bind(this, null));
+			return actions;
+		}.bind(this));
 	},
 
 	render: function()

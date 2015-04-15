@@ -56,7 +56,6 @@ var turtl = {
 		pages: null,
 		header: null,
 		sidebar: null,
-		action: null,
 		sync: null,
 		loading: null
 	},
@@ -105,14 +104,10 @@ var turtl = {
 		turtl.controllers.pages = new PagesController();
 		turtl.controllers.header = new HeaderController();
 		turtl.controllers.sidebar = new SidebarController();
-		turtl.controllers.action = new ActionController();
 		turtl.controllers.loading = new LoadingController();
 		turtl.controllers.pages.bind('prerelease', function() {
 			// always scroll to the top of the window on page load
 			$(window).scrollTop = 0;
-
-			// always clear out the available actions on each page load
-			turtl.events.trigger('actions:update', false);
 		});
 
 		turtl.events.bind('ui-error', function(msg, err) {

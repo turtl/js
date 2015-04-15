@@ -39,13 +39,16 @@ var NotesIndexController = Composer.Controller.extend({
 
 		this.render();
 
-		turtl.events.trigger('actions:update', [
-			{title: 'Text note', name: 'text', icon: '&#xe804;'},
-			{title: 'Bookmark', name: 'link', icon: '&#xe814;'},
-			{title: 'Image', name: 'image', icon: '&#xe80e;'}
-		]);
-		this.with_bind(turtl.events, 'actions:fire', function(action) {
-			this.open_add(action);
+		// set up the action button
+		this.track_subcontroller('actions', function() {
+			var actions = new ActionController();
+			actions.set_actions([
+				{title: 'Text note', name: 'text', icon: '&#xe804;'},
+				{title: 'Bookmark', name: 'link', icon: '&#xe814;'},
+				{title: 'Image', name: 'image', icon: '&#xe80e;'}
+			]);
+			this.with_bind(actions, 'actions:fire', this.open_add.bind(this));
+			return actions;
 		}.bind(this));
 	},
 

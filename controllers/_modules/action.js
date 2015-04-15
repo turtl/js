@@ -18,11 +18,6 @@ var ActionController = Composer.Controller.extend({
 
 	init: function()
 	{
-		this.with_bind(turtl.events, 'actions:update', function(actions) {
-			this.actions = actions;
-			this.render();
-		}.bind(this));
-
 		var click_outside = function(e)
 		{
 			var inside = Composer.find_parent('#main > .action', e.target);
@@ -37,6 +32,10 @@ var ActionController = Composer.Controller.extend({
 	{
 		if(this.actions)
 		{
+			if(this.actions.length == 1 && !this.actions[0].icon)
+			{
+				this.actions[0].icon = '&#xe82e';
+			}
 			this.html(view.render('modules/actions', {
 				actions: this.actions
 			}));
@@ -49,10 +48,16 @@ var ActionController = Composer.Controller.extend({
 		}
 	},
 
+	set_actions: function(actions)
+	{
+		this.actions = actions;
+		this.render();
+	},
+
 	fire_main: function(e)
 	{
 		if(e) e.stop();
-		turtl.events.trigger('actions:fire', this.actions[0].name);
+		this.trigger('actions:fire', this.actions[0].name);
 	},
 
 	fire_action: function(e)
@@ -60,7 +65,7 @@ var ActionController = Composer.Controller.extend({
 		if(e) e.stop();
 		var li = Composer.find_parent('.action > ul > li', e.target);
 		if(!li) return false;
-		turtl.events.trigger('actions:fire', li.get('rel'));
+		this.trigger('actions:fire', li.get('rel'));
 		this.close();
 	},
 

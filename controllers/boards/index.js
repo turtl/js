@@ -18,14 +18,17 @@ var BoardsController = Composer.Controller.extend({
 
 		this.render();
 
-		turtl.events.trigger('actions:update', [
-			{title: 'Create a board', name: 'add'}
-		]);
-		this.with_bind(turtl.events, 'actions:fire', function(action) {
-			switch(action)
-			{
-				case 'add': this.open_add(); break;
-			}
+		// set up the action button
+		this.track_subcontroller('actions', function() {
+			var actions = new ActionController();
+			actions.set_actions([{title: 'Create a board', name: 'add'}]);
+			this.with_bind(actions, 'actions:fire', function(action) {
+				switch(action)
+				{
+					case 'add': this.open_add(); break;
+				}
+			}.bind(this));
+			return actions;
 		}.bind(this));
 	},
 

@@ -2,14 +2,15 @@
 
 @action_size: 42rem;
 @action_offset: 13rem;
-#main {
+#main,
+.turtl-modal {
 	> .action {position: fixed; z-index: 12; bottom: @action_offset; right: @action_offset;}
 	> .action {
 		.abutton {position: relative; display: inline-block; width: @action_size; height: @action_size; text-align: center; border: 2rem solid #fff; border-radius: (@action_size / 1.9cm); background: @theme_primary; .layer-hover(); .transition(box-shadow .3s);}
 		.abutton {
 			icon {line-height: 1.95em; color: #fff; font-size: 22rem;}
+			icon.add {font-size: 28rem; line-height: 1.5em;}
 		}
-		> .abutton icon {font-size: 28rem; line-height: 1.5em;}
 		> a {z-index: 21;}
 		ul {display: none; margin: 0; padding: 0; list-style: none;}
 		ul {

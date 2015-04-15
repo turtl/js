@@ -45,7 +45,14 @@ var NotesEditController = FormController.extend({
 		this.action = this.model.is_new() ? 'Add' : 'Edit';
 		this.parent();
 
-		var title = this.action + ' ' + this.type + ' note';
+		var title = '';
+		switch(this.type)
+		{
+			case 'text': title = 'text note'; break;
+			case 'link': title = 'bookmark'; break;
+			default: title = this.type;
+		}
+		title = this.action + ' ' + title;
 		this.modal = new TurtlModal({
 			show_header: true,
 			title: title
