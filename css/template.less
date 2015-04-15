@@ -30,7 +30,9 @@ a { text-decoration: none; }
 #main {position: relative; left: 0; z-index: 5; padding: @header_height 0 64rem 0; .transition(left .3s);}
 
 @header_pad_top: 4rem;
-header {position: fixed; z-index: 14; width: 100%; height: (@header_height - @header_pad_top); margin: 0 0 0 0; padding: @header_pad_top 0 0 0; background: #222; .layer-rest();}
+@header_adjusted: (@header_height - @header_pad_top);
+
+header {position: fixed; z-index: 14; width: 100%; height: @header_adjusted; margin: 0 0 0 0; padding: @header_pad_top 0 0 0; background: #222; .layer-rest();}
 header.under {z-index: 10;}
 header {
 	a.logo {position: absolute; display: block; width: 60rem; height: 28rem; margin: 3rem 0 0 0;}
@@ -54,8 +56,12 @@ header {
 	}
 	ul.actions {position: absolute; top: 0; right: 0; height: @header_height; list-style: none;}
 	ul.actions {
-		> li {width: 44rem; height: @header_height;}
+		> li {display: inline-block; width: 44rem; height: @header_height;}
 		> li {
+			> a {display: inline-block; width: @header_adjusted; height: @header_adjusted; line-height: 42rem; text-align: center;}
+			> a {
+				icon {font-size: 24rem; color: #eee; vertical-align: middle;}
+			}
 			.item-actions {
 				> a {width: 28rem; height: @header_height; margin: 2rem 0 0 0; padding-left: 16rem; line-height: @header_height; text-align: center;}
 				> a icon {color: @theme_primary;}
