@@ -33,8 +33,8 @@
 		> li {
 			a.check {float: right; margin: 12rem 0 0 0;}
 			a.check {
-				icon {color: @theme_gray_light; .transition(color .3s);}
-				&.selected icon {color: @theme_accent;}
+				icon {color: @theme_gray_light; .transition(color .3s, transform .3s;);}
+				&.selected icon {transform: scale(1.1, 1.1); color: @theme_accent;}
 			}
 		}
 	}

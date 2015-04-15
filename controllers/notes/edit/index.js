@@ -100,6 +100,7 @@ var NotesEditController = FormController.extend({
 	render: function()
 	{
 		var type = this.model.get('type') || this.type;
+		// "none" is vestigial, leave it in
 		var colors = ['none','blue','red','green','purple','pink','brown','black'];
 		var data = this.model.toJSON();
 		if(!data.color) delete data.color;
@@ -187,11 +188,19 @@ var NotesEditController = FormController.extend({
 		if(e) e.stop();
 		var li = Composer.find_parent('ul.colors li', e.target);
 		if(!li) return;
+		var selected = li.hasClass('sel');
 		this.el.getElements('ul.colors li').each(function(el) { el.removeClass('sel'); });
 		var color = parseInt(li.get('rel'));
-		if(color > 0)
+		if(selected)
 		{
-			li.addClass('sel');
+			color = 0;
+		}
+		else
+		{
+			if(color > 0)
+			{
+				li.addClass('sel');
+			}
 		}
 		this.clone.set({color: color});
 	},

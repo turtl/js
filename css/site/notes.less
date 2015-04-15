@@ -100,23 +100,23 @@
 		}
 	}
 
-	.note-boards {margin: 0 0 16rem 0; padding: 9rem 4%; font-size: 14rem; background: none; border: 0; border-bottom: 1rem solid #bbb; border-radius: 0; .transition(border .3s);}
+	.note-boards {margin: 0 0 16rem 0; padding: 0 4%; font-size: 14rem; border-radius: 0; .transition(border .3s);}
 	.note-boards {
-		icon {float: left; margin: 4rem 8rem 0 0; font-size: 20rem; color: @theme_black;}
+		icon {float: left; margin: 4rem 8rem 0 0; font-size: 20rem; color: @theme_black; .transition(color .3s);}
 		span {display: inline-block; padding: 3rem; color: @theme_primary;}
 		ul {list-style: none;}
 		ul {
-			li {display: inline-block; margin: 0 6rem 0 0; padding: 3rem 5rem; background: @theme_border; border: 1px solid @theme_gray_midlight; border-radius: 2rem;}
+			li {display: block; float: left; margin: 0 6rem 6rem 0; padding: 3rem 5rem; background: @theme_border; border: 1px solid @theme_gray_midlight; border-radius: 2rem;}
 		}
 	}
 
 	ul.colors {margin: 0; padding: 8rem 0 0 0; list-style: none; text-align: center;}
 	ul.colors {
 		// 'none','blue','red','green','purple','pink','brown','black'
-		li {display: inline-block; margin: 0 5rem 0 5rem; padding: 0 0 6rem 0; .transition(border .3s, padding-bottom .3s;);}
-		li.sel {padding-bottom: 4rem; border-bottom: 2rem solid #111;}
+		li {display: inline-block; margin: 0 6rem 6rem 6rem; padding: 0 0 0 0; .transition(transform .3s);}
+		li.sel {transform: scale(1.35, 1.35);}
 		li {
-			span {display: block; width: 22rem; height: 22rem; border: 1rem solid #ccc; border-radius: 4rem;}
+			span {display: block; width: 24rem; height: 24rem; border: 1rem solid #ccc; border-radius: 4rem;}
 		}
 		.edit-color(@color) {background: @color; border-color: @color;}
 		.none span {}

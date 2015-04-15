@@ -74,12 +74,14 @@ var NotesEditBoardsController = FormController.extend({
 		if(is_selected)
 		{
 			boards.erase(board_id);
+			li.getElement('a.check').removeClass('selected');
 		}
 		else
 		{
 			boards.push(board_id);
+			li.getElement('a.check').addClass('selected');
 		}
-		this.clone.set({boards: boards});
+		this.clone.set({boards: boards}, {silent: true});
 	}
 });
 
