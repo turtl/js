@@ -4,7 +4,16 @@ var NotesIndexController = Composer.Controller.extend({
 	},
 
 	board: null,
+	search: {
+		text: '',
+		boards: [],
+		tags: [],
+		sort: ['id', 'desc'],
+		page: 1,
+		per_page: 100
+	},
 	board_id: null,
+
 
 	init: function()
 	{
@@ -15,16 +24,19 @@ var NotesIndexController = Composer.Controller.extend({
 		}
 		else
 		{
-			this.board = turtl.profile.get('boards').find_by_id(this.board_id);
-			if(!this.board)
+			var board = turtl.profile.get('boards').find_by_id(this.board_id);
+			if(!board)
 			{
-				barfr.barf('Hmm, that board doesn\'t seem to exist');
+				barfr.barf('That board doesn\'t seem to exist');
 				log.error('notes: index: bad board id: ', this.board_id);
 				window.history.go(-1);
 			}
-			var parent_id = this.board.get('parent_id');
+			this.search.boards.push(this.board_id);
+			this.search.boards = this.search.boards.concat(board.get_child_board_ids());
+
+			var parent_id = board.get('parent_id');
 			var parent = turtl.profile.get('boards').find_by_id(parent_id);
-			var title = this.board.get('title');
+			var title = board.get('title');
 			if(parent)
 			{
 				title = parent.get('title') + '/' + title;
@@ -68,7 +80,7 @@ var NotesIndexController = Composer.Controller.extend({
 		this.track_subcontroller('list', function() {
 			return new NotesListController({
 				inject: this.note_list,
-				board_id: this.board_id
+				search: this.search
 			});
 		}.bind(this));
 	},

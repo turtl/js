@@ -180,9 +180,12 @@ var NotesEditController = FormController.extend({
 			});
 		}.bind(this));
 
-		this.check_url();
-		this.el_existing.set('slide', {duration: 300});
-		this.el_existing.get('slide').hide();
+		if(this.el_existing)
+		{
+			this.check_url();
+			this.el_existing.set('slide', {duration: 300});
+			this.el_existing.get('slide').hide();
+		}
 	},
 
 	submit: function(e)

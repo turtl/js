@@ -1,5 +1,10 @@
 {{{content}}}
-<div class="note-gutter {{#if note.color_name}}color {{note.color_name}}{{/if}}">
+
+{{#if note.color_name}}
+	<div class="color {{note.color_name}}">&nbsp;</div>
+{{/if}}
+
+<div class="note-gutter">
 	{{#if empty}}
 		<p class="empty">(empty note)</p>
 	{{else}}

@@ -5,29 +5,12 @@ var NotesListController = Composer.ListController.extend({
 		'ul': 'note_list'
 	},
 
-	search: {
-		text: '',
-		boards: [],
-		tags: [],
-		sort: ['id', 'desc'],
-		page: 1,
-		per_page: 100
-	},
-	board_id: null,
-
 	view_mode: 'masonry',
 	masonry: null,
 	masonry_timer: null,
 
 	init: function()
 	{
-		if(this.board_id && this.board_id != 'all')
-		{
-			var board = turtl.profile.get('boards').find_by_id(this.board_id);
-			this.search.boards.push(this.board_id);
-			if(board) this.search.boards = this.search.boards.concat(board.get_child_board_ids());
-		}
-
 		this.masonry_timer = new Timer(10);
 		this.with_bind(this.masonry_timer, 'fired', this.update_masonry.bind(this));
 
