@@ -49,17 +49,26 @@ module.exports = function(grunt) {
 			index: {
 				files: [
 					'scripts/gen-index',
-					'views/layouts/default.html',
+					'views/layouts/default.html'
+				],
+				tasks: ['exec:index'],
+				options: {
+					nospawn: true
+				}
+			},
+			index_addrem: {
+				files: [
 					'handlers/**/*.js',
 					'controllers/**/*.js',
 					'models/**/*.js',
 					'library/**/*.js',
 					'config/**/*.js',
-					'css/**/*.less'
+					'css/**/*.css'
 				],
 				tasks: ['exec:index'],
 				options: {
-					nospawn: true
+					nospawn: true,
+					event: ['added', 'deleted']
 				}
 			},
 			templates: {
