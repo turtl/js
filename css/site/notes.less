@@ -49,9 +49,6 @@
 		@header_margin_bottom: 3rem;	// aligns the text as if header weren't there
 		.content h1 {position: relative; display: block; height: @header_height; margin: -(@header_height + @header_top_pad) 0 @header_margin_bottom 0; padding: @header_top_pad 0 0 6%; line-height: @header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim(bottom, .45);}
 		.note-gutter .content .body {padding: @content_pad;}
-		.note-gutter.color {
-			h1 {margin-top: -(@header_height + @header_top_pad);}
-		}
 	}
 	.content {
 		h1:first-child {word-wrap: break-word;}
@@ -60,7 +57,7 @@
 			*:last-child {margin-bottom: 0; padding-bottom: 0;}
 		}
 	}
-	> .color {position: absolute; display: block; top: 4rem; right: 4rem; width: 12rem; height: 12rem; background: @theme_primary; border-radius: 6rem; .layer-rest();}
+	> .color {position: absolute; display: block; top: 3rem; right: 3rem; width: 12rem; height: 12rem; background: @theme_primary; border: 1px solid rgba(0, 0, 0, .2); border-radius: 7rem; .layer-hover();}
 	> .color {
 		&.blue {background-color: #73b8d1;}
 		&.red {background-color: #e85c5c;}
@@ -77,34 +74,32 @@
 .turtl-modal {
 	.note {
 		.note-gutter {padding-bottom: 64rem;}
+		> .color {width: 16rem; height: 16rem; border-radius: 9rem;}
 	}
 }
 
 .turtl-modal:not(.note-image) {
 	.note {
-		> .color {position: static; float: right; margin: 4rem 4rem 0 0;}
+		> .color {position: static; float: right; margin: 4rem 4rem 0 4rem;}
 	}
 }
 .turtl-modal.note-image {
-	header {.title-scrim(top, .60, 110%); box-shadow: none;}
-	.note {
-		> .color {top: auto; right: 16rem; width: 16rem; height: 16rem; margin: -10rem; border-radius: 8rem;}
-	}
-	/*
-	header {background: none; box-shadow: none;}
+	header {.title-scrim(top, .50, 110%); box-shadow: none;}
 	header {
 		h1 {
-			em:before {position: absolute; z-index: -1; display: block; top: 10rem; left: 2rem; width: 0; height: 0; box-shadow: 0 0 48px 24px rgba(0, 0, 0, .85); content: '';}
+			em:before {top: 13rem; left: 3rem; .item-scrim(.3);}
 		}
 		ul.actions {
 			> li {
 				.item-actions {
-					> a:before {position: absolute; z-index: -1; display: block; top: 10rem; left: 2rem; width: 0; height: 0; box-shadow: 0 0 48px 24px rgba(0, 0, 0, .85); content: '';}
+					> a:before {top: 15rem; left: 31rem; .item-scrim(.3);}
 				}
 			}
 		}
 	}
-	*/
+	.note {
+		> .color {z-index: 6; top: auto; right: 16rem; margin: -10rem -10rem 0 0;}
+	}
 	.modal-gutter {padding-top: 0;}
 }
 

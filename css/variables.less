@@ -46,6 +46,15 @@
 .title-scrim (@to: bottom, @opacity: .35, @cover: 70%) {
 	background: linear-gradient(to @to, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, @opacity) @cover);
 }
+.item-scrim (@opacity: .85, @size: 48rem, @spread: 24rem) {
+	position: absolute;
+	z-index: -1;
+	display: block;
+	width: 0;
+	height: 0;
+	box-shadow: 0 0 @size @spread rgba(0, 0, 0, @opacity);
+	content: '';
+}
 .transform (@props) {
 	-webkit-transform: @props;
 	transform: @props;
