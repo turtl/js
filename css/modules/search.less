@@ -1,12 +1,27 @@
 @import '../variables';
 
-.turtl-modal.search {width: 90%; background: rgba(255, 255, 255, .9);}
+.turtl-modal.search {background: rgba(255, 255, 255, .9);}
 .turtl-modal.search {
-	header {background: none;}
+	header {background: #fff;}
 	header {
 		h1 em a {color: @theme_black;}
 		h1 em a icon {color: @theme_black;}
+		.actions {
+			icon {color: @theme_black;}
+			icon.reset {transform: scale(-1, 1);}
+		}
 	}
 }
-.turtl-modal.search.active {left: 10%;}
+
+.search-filters {padding: 16rem 6rem 0 6rem;}
+.search-filters {
+	.filter-text {}
+	.filter-text {
+		form {padding: 0;}
+	}
+	.filter-tags {border-bottom: 1px solid @form_border;}
+	.filter-tags {
+		a[rel=all] {display: block; padding: 0 0 16rem 0; text-align: center; font-size: 16rem;}
+	}
+}
 

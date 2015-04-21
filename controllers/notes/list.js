@@ -9,6 +9,9 @@ var NotesListController = Composer.ListController.extend({
 	masonry: null,
 	masonry_timer: null,
 
+	// ALL tags that appear in thie board
+	tags: null,
+
 	init: function()
 	{
 		this.masonry_timer = new Timer(10);
@@ -37,7 +40,8 @@ var NotesListController = Composer.ListController.extend({
 
 		// run an initial search
 		this.do_search().bind(this)
-			.then(function() {
+			.spread(function(_, tags) {
+				this.tags = tags;
 				this.bind('search', function() {
 					this.do_search().then(this.trigger.bind(this, 'search-done'));
 				});

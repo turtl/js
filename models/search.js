@@ -11,6 +11,7 @@ var Search = Composer.Collection.extend({
 	index: {
 		tags: {},
 		boards: {},
+		colors: {},
 		all_notes: {},
 		note_tags: {},
 		urls: {}
@@ -130,6 +131,9 @@ var Search = Composer.Collection.extend({
 					case 'tags':
 						res_intersect(this.index_lookup(res, index, val, lookup_options));
 						break;
+					case 'colors':
+						res_intersect(this.index_lookup(res, 'colors', val, {or: true}));
+						break;
 					case 'url':
 						res_intersect(this.index_lookup(res, 'urls', [val]));
 						break;
@@ -163,6 +167,7 @@ var Search = Composer.Collection.extend({
 			if(options.do_reset)
 			{
 				this.reset(res.map(function(id) { return {id: id}; }), options);
+				this.trigger('search-tags', tags);
 			}
 
 			resolve([res, tags]);
@@ -316,6 +321,10 @@ var Search = Composer.Collection.extend({
 		note.get('boards').forEach(function(board_id) {
 			this.index_type('boards', board_id, note.id());
 		}.bind(this));
+
+		var color = note.get('color');
+		this.index_type('colors', color, note.id());
+
 		var tags = JSON.stringify(note.get('tags').map(function(t) { return t.get('name', '').toLowerCase(); }));
 		this.index_type('note_tags', note.id(), tags);
 
@@ -330,7 +339,7 @@ var Search = Composer.Collection.extend({
 		}.bind(this));
 
 		// run full-text indexer
-		var tags = json.tags.map(function(t) { return t.name; }).join(' ');
+		var tags = json.tags.join(' ');
 		this.ft.add({
 			id: json.id,
 			url: json.url,
@@ -354,6 +363,10 @@ var Search = Composer.Collection.extend({
 		json.boards.each(function(board_id) {
 			this.unindex_type('boards', board_id, id);
 		}.bind(this));
+
+		var color = json.color;
+		this.unindex_type('colors', color, id);
+
 		var tags = JSON.stringify(json.tags.map(function(t) { return t.toLowerCase(); }));
 		this.unindex_type('note_tags', note.id(), tags);
 
@@ -368,7 +381,7 @@ var Search = Composer.Collection.extend({
 		}.bind(this));
 
 		// undo full-text indexing
-		var tags = json.tags.map(function(t) { return t.name; }).join(' ');
+		var tags = json.tags.join(' ');
 		this.ft.remove({
 			id: json.id,
 			url: json.url,

@@ -1,0 +1,18 @@
+<div class="filter-text">
+	<form class="standard-form">
+		<input type="text" name="text" value="{{text}}" placeholder="Text search">
+	</form>
+</div>
+
+<div class="tag-container"></div>
+
+<div class="notes-edit filter-colors">	{{! bit of a hack to avoid some CSS duplication }}
+	<ul class="colors">
+		{{#each colors}}
+			{{#if id}}
+				<li rel="{{id}}" class="{{name}} {{#if selected}}sel{{/if}}"><span>&nbsp;</span></li>
+			{{/if}}
+		{{/each}}
+	</ul>
+</div>
+

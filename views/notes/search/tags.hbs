@@ -1,0 +1,15 @@
+{{#if tags.length}}
+	<div class="filter-tags">
+		<ul class="tags clear">
+			{{#each tags}}
+				<li class="{{#if selected}}sel{{/if}} {{#unless available}}empty{{/unless}}">
+					<span>{{name}}</span>
+				</li>
+			{{/each}}
+		</ul>
+		{{#if show_show_all}}
+			<a href="#show" rel="all">Show all tags &raquo;</a>
+		{{/if}}
+	</div>
+{{/if}}
+

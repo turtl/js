@@ -95,8 +95,14 @@ var NotesIndexController = Composer.Controller.extend({
 
 	open_search: function()
 	{
-		new NotesSearchController({
+		var tags = this.get_subcontroller('list').tags;
+		var search = new NotesSearchController({
+			tags: tags,
+			search: this.search
 		});
+		search.bind('do-search', function() {
+			this.get_subcontroller('list').trigger('search');
+		}.bind(this))
 	}
 });
 

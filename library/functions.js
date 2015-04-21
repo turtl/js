@@ -26,6 +26,22 @@ var string_repeat = function(string, num)
 	return new Array(parseInt(num) + 1).join(string);
 };
 
+var make_index = function(collection, idx_field)
+{
+	var idx = {};
+	collection.forEach(function(item) {
+		if(idx_field)
+		{
+			idx[item[idx_field]] = item;
+		}
+		else
+		{
+			idx[item] = true;
+		}
+	});
+	return idx;
+};
+
 /**
  * Given an error object, return the best piece of it for rendering to console
  * (usually this is error_object.stack).
