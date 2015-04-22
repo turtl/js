@@ -42,7 +42,7 @@
 		.note-gutter {padding: @content_pad;}
 	}
 	&.image {
-		.backing {width: 100%; background: #000;}
+		.backing {width: 100%; min-height: 32rem; background: #000;}
 		img {display: block; margin: 0 auto; max-width: 100%;}
 		@header_height: 30rem;
 		@header_top_pad: 4rem;
@@ -98,6 +98,7 @@
 		}
 	}
 	.note {
+		.backing {min-height: @header_height;}
 		> .color {z-index: 6; top: auto; right: 16rem; margin: -10rem -10rem 0 0;}
 	}
 	.modal-gutter {padding-top: 0;}

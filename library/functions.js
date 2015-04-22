@@ -43,6 +43,20 @@ var make_index = function(collection, idx_field)
 };
 
 /**
+ * given a turtl front-end generated ID, return the timestamp it encapsulates
+ */
+var id_timestamp = function(id, options)
+{
+	options || (options = {});
+	var timestamp = parseInt(id.substr(0, 11), 16);
+	if(options.unix)
+	{
+		timestamp = Math.round(timestamp / 1000);
+	}
+	return timestamp;
+};
+
+/**
  * Given an error object, return the best piece of it for rendering to console
  * (usually this is error_object.stack).
  */

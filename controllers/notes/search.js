@@ -9,6 +9,7 @@ var NotesSearchController = Composer.Controller.extend({
 	},
 
 	events: {
+		'click .filter-sort a': 'sort',
 		'click a[rel=all]': 'show_all_tags',
 		'keyup input[name=text]': 'text_search',
 		'click ul.tags li': 'toggle_tag',
@@ -35,7 +36,7 @@ var NotesSearchController = Composer.Controller.extend({
 			show_header: true,
 			title: titlefn(turtl.search.size()),
 			actions: [
-				{name: 'reset', icon: '&#xe81d;'}
+				{name: 'reset', icon: '&#xe81a;'}
 			]
 		});
 		this.render();
@@ -58,16 +59,19 @@ var NotesSearchController = Composer.Controller.extend({
 		}.bind(this));
 
 		var last_tags = null;
-		this.with_bind(turtl.search, 'search-tags', function(tags) {
+		this.bind('update-available-tags', function(tags) {
 			if(JSON.stringify(tags) == last_tags) return;
 			last_tags = JSON.stringify(tags);
 			this.render_tags({available_tags: tags});
-		}.bind(this));
+		});
+		this.with_bind(turtl.search, 'search-tags', this.trigger.bind(this, 'update-available-tags'));
 	},
 
 	render: function(options)
 	{
 		options || (options = {});
+
+		var sort = this.search.sort || ['id', 'desc'];
 
 		// !!!! NOTE: duped in con/note/edit/idx.js !!!!
 		var colors = ['none','blue','red','green','purple','pink','brown','black'];
@@ -77,6 +81,8 @@ var NotesSearchController = Composer.Controller.extend({
 		}.bind(this));
 
 		this.html(view.render('notes/search/index', {
+			sort: sort[0],
+			dir: sort[1],
 			text: this.search.text,
 			colors: colors
 		}));
@@ -129,11 +135,33 @@ var NotesSearchController = Composer.Controller.extend({
 	reset_search: function(e)
 	{
 		if(e) e.stop();
+		this.search.sort = ['id', 'desc'];
 		this.search.text = '';
 		this.search.tags = [];
 		this.search.colors = [];
 		this.trigger('do-search');
 		this.render();
+	},
+
+	sort: function(e)
+	{
+		if(e) e.stop();
+		var sort = this.search.sort || ['id', 'desc'];
+		var field = sort[0];
+		var dir = sort[1];
+		var a = Composer.find_parent('a', e.target);
+		var clickfield = a.get('rel');
+		if(clickfield == field)
+		{
+			sort[1] = dir == 'desc' ? 'asc' : 'desc';
+		}
+		else
+		{
+			sort = [clickfield, 'desc'];
+		}
+		this.search.sort = sort;
+		this.render();
+		this.trigger('do-search');
 	},
 
 	show_all_tags: function(e)

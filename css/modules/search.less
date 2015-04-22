@@ -8,14 +8,28 @@
 		h1 em a icon {color: @theme_black;}
 		.actions {
 			icon {color: @theme_black;}
-			icon.reset {transform: scale(-1, 1);}
 		}
 	}
 }
 
 .search-filters {padding: 16rem 6rem 0 6rem;}
 .search-filters {
-	.filter-text {}
+	.filter-sort {padding: 0 0 16rem 0;}
+	.filter-sort {
+		ul {list-style: none; text-align: center;}
+		ul {
+			li {display: inline-block; margin: 0 0; border-left: 1px solid @form_border;}
+			li:first-child {border-left: 0;}
+			li {
+				a {display: inline-block; padding: 0 6rem; font-size: 17rem;}
+				a {
+					icon {display: none; margin: 0 3rem 0 0; transform: rotate(90deg);}
+				}
+			}
+			li.sel a icon {display: inline-block;}
+			li.desc a icon {transform: rotate(-90deg);}
+		}
+	}
 	.filter-text {
 		form {padding: 0;}
 	}

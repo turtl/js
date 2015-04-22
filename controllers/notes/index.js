@@ -14,6 +14,11 @@ var NotesIndexController = Composer.Controller.extend({
 	},
 	board_id: null,
 
+	// holds the available tags from the last search, and is passed into the
+	// search controller. basically, this holds state so the search controller
+	// doesn't have to run the same search twice to get data that we already
+	// have access to here
+	saved_tags: null,
 
 	init: function()
 	{
@@ -48,7 +53,7 @@ var NotesIndexController = Composer.Controller.extend({
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		turtl.events.trigger('header:set-actions', [
-			{name: 'search', icon: '&#xe83a;'},
+			{name: 'search', icon: '&#xe83a;'}
 		]);
 		this.with_bind(turtl.events, 'header:fire-action', function(name) {
 			switch(name)
@@ -71,6 +76,10 @@ var NotesIndexController = Composer.Controller.extend({
 			]);
 			this.with_bind(actions, 'actions:fire', this.open_add.bind(this));
 			return actions;
+		}.bind(this));
+
+		this.with_bind(turtl.search, 'search-tags', function(tags) {
+			this.saved_tags = tags;
 		}.bind(this));
 	},
 
@@ -100,9 +109,16 @@ var NotesIndexController = Composer.Controller.extend({
 			tags: tags,
 			search: this.search
 		});
+
 		search.bind('do-search', function() {
 			this.get_subcontroller('list').trigger('search');
 		}.bind(this))
+
+		// if we have save tags, hand them to the search controller
+		if(this.saved_tags)
+		{
+			search.trigger('update-available-tags', this.saved_tags);
+		}
 	}
 });
 

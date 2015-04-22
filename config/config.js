@@ -1,6 +1,5 @@
 if(window.Composer) window.Composer.promisify({warn: true});
 
-
 var config = {
 	// filled in by extension/app from its manifest
 	version: '0.4',

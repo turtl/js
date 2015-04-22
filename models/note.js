@@ -50,6 +50,14 @@ var Note = Protected.extend({
 			if(!this.id(true)) return;
 			turtl.search.reindex_note(this);
 		}.bind(this));
+		var set_mod = function()
+		{
+			if(this.get('mod')) return;
+			var mod = id_timestamp(this.id(), {unix: true});
+			this.set({mod: mod}, {silent: true});
+		}.bind(this);
+		this.bind('change:id', set_mod);
+		set_mod();
 
 		this.bind_relational('file', ['change:hash'], function() {
 			if(this.is_new() || this.disable_file_monitoring) return false;

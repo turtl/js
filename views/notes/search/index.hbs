@@ -1,3 +1,14 @@
+<div class="filter-sort">
+	<ul>
+		<li class="{{#equal sort 'id'}}sel{{/equal}} {{#equal dir 'desc'}}desc{{/equal}}">
+			<a href="#created" rel="id"><icon>&#xe80b;</icon>Created</a>
+		</li>
+		<li class="{{#equal sort 'mod'}}sel{{/equal}} {{#equal dir 'desc'}}desc{{/equal}}">
+			<a href="#modified" rel="mod"><icon>&#xe80b;</icon>Modified</a>
+		</li>
+	</ul>
+</div>
+
 <div class="filter-text">
 	<form class="standard-form">
 		<input type="text" name="text" value="{{text}}" placeholder="Text search">

@@ -96,7 +96,11 @@ var Search = Composer.Collection.extend({
 
 				var va = lookup[a1];
 				var vb = lookup[b1];
-				return va.localeCompare(vb);
+				if(typeof(va) == 'number' && typeof(vb) == 'number')
+				{
+					return va - vb;
+				}
+				return va.toString().localeCompare(vb.toString());
 			}.bind(this)
 			this.sortfn = sortfn;
 		}
