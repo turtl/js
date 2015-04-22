@@ -142,7 +142,7 @@ var NotesEditController = FormController.extend({
 	{
 		var type = this.model.get('type') || this.type;
 		// "none" is vestigial, leave it in
-		var colors = ['none','blue','red','green','purple','pink','brown','black'];
+		var colors = NOTE_COLORS;
 		var data = this.model.toJSON();
 		if(!data.color) delete data.color;
 		Autosize.destroy(this.inp_text);

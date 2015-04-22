@@ -37,7 +37,7 @@ Handlebars.registerHelper('note', function(note, options) {
 			empty = !note.title && !note.text && !note.url;
 			break;
 	}
-	var colors = ['none','blue','red','green','purple','pink','brown','black'];
+	var colors = NOTE_COLORS;
 
 	if(note.type == 'link')
 	{

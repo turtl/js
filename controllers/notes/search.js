@@ -71,10 +71,10 @@ var NotesSearchController = Composer.Controller.extend({
 	{
 		options || (options = {});
 
-		var sort = this.search.sort || ['id', 'desc'];
+		var sort = this.search.sort || NOTE_DEFAULT_SORT;
 
 		// !!!! NOTE: duped in con/note/edit/idx.js !!!!
-		var colors = ['none','blue','red','green','purple','pink','brown','black'];
+		var colors = NOTE_COLORS;
 		colors = colors.map(function(color, i) {
 			var selected = (this.search.colors || []).contains(i.toString());
 			return {name: color, selected: selected, id: i};
@@ -135,7 +135,7 @@ var NotesSearchController = Composer.Controller.extend({
 	reset_search: function(e)
 	{
 		if(e) e.stop();
-		this.search.sort = ['id', 'desc'];
+		this.search.sort = NOTE_DEFAULT_SORT;
 		this.search.text = '';
 		this.search.tags = [];
 		this.search.colors = [];
@@ -146,7 +146,7 @@ var NotesSearchController = Composer.Controller.extend({
 	sort: function(e)
 	{
 		if(e) e.stop();
-		var sort = this.search.sort || ['id', 'desc'];
+		var sort = this.search.sort || NOTE_DEFAULT_SORT;
 		var field = sort[0];
 		var dir = sort[1];
 		var a = Composer.find_parent('a', e.target);
