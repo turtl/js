@@ -128,6 +128,7 @@ var Search = Composer.Collection.extend({
 						break;
 					case 'boards':
 						lookup_options.or = true;
+						// NO BREAK
 					case 'tags':
 						res_intersect(this.index_lookup(res, index, val, lookup_options));
 						break;
@@ -198,7 +199,7 @@ var Search = Composer.Collection.extend({
 			if(!res)
 			{
 				res = this.index[index][val] || [];
-				break;
+				continue;
 			}
 
 			// if the result set is empty, just return
