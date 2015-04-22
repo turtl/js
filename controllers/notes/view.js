@@ -2,6 +2,7 @@ var NotesViewController = Composer.Controller.extend({
 	class_name: 'note',
 
 	events: {
+		'click .note-gutter .content > h1': 'open_image'
 	},
 
 	modal: null,
