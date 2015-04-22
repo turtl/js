@@ -1,6 +1,9 @@
 var NotesViewController = Composer.Controller.extend({
 	class_name: 'note',
 
+	events: {
+	},
+
 	modal: null,
 
 	model: null,
@@ -26,6 +29,7 @@ var NotesViewController = Composer.Controller.extend({
 		this.bind(['cancel', 'close'], close);
 
 		this.with_bind(this.model, 'change', this.render.bind(this));
+		this.with_bind(this.model, 'destroy', close);
 		this.with_bind(this.modal, 'header:menu:fire-action', function(action) {
 			switch(action)
 			{
@@ -33,7 +37,7 @@ var NotesViewController = Composer.Controller.extend({
 				case 'delete': this.open_delete(); break;
 			}
 		});
-		this.with_bind(this.model, 'destroy', close);
+		this.with_bind(this.modal, 'click-header', this.open_image.bind(this));
 
 		// set up the action button
 		this.track_subcontroller('actions', function() {
@@ -85,6 +89,19 @@ var NotesViewController = Composer.Controller.extend({
 				log.error('note: delete: ', derr(err));
 				barfr.barf('There was a problem deleting your note: '+ err.message);
 			});
+	},
+
+	open_image: function(e)
+	{
+		if(e) e.stop();
+		var url = this.model.get('url');
+		var type = this.model.get('type');
+		if(type != 'image' || !url) return;
+
+		var img = this.el.getElement('.backing a img');
+		if(!img) return;
+
+		img.click();
 	}
 });
 

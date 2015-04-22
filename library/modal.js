@@ -9,7 +9,8 @@ var TurtlModal = Composer.Controller.extend({
 	},
 
 	events: {
-		'click header h1 a[rel=back]': 'close_back'
+		'click header h1 a[rel=back]': 'close_back',
+		'click header': 'click_header'
 	},
 
 	is_open: false,
@@ -98,6 +99,11 @@ var TurtlModal = Composer.Controller.extend({
 		var headercon = this.get_subcontroller('header');
 		if(!headercon) return;
 		headercon.render_title(title, backurl);
+	},
+
+	click_header: function(e)
+	{
+		this.trigger('click-header', e);
 	}
 });
 
