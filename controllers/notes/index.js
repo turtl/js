@@ -8,7 +8,7 @@ var NotesIndexController = Composer.Controller.extend({
 		text: '',
 		boards: [],
 		tags: [],
-		sort: ['id', 'desc'],
+		sort: NOTE_DEFAULT_SORT,
 		page: 1,
 		per_page: 100
 	},

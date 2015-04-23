@@ -163,6 +163,26 @@ var Boards = SyncCollection.extend({
 		});
 
 		return parents;
+	},
+
+	toJSON_named: function(board_ids)
+	{
+		return board_ids
+			.map(function(bid) {
+				var board = this.find_by_id(bid);
+				if(!board) return false;
+				var name = board.get('title');
+				var parent_id = board.get('parent_id');
+				if(parent_id)
+				{
+					var parent = this.find_by_id(parent_id);
+					if(parent) name = parent.get('title') + '/' + name;
+				}
+				var json = board.toJSON();
+				json.name = name;
+				return json;
+			}.bind(this))
+			.filter(function(board) { return !!board; });
 	}
 });
 

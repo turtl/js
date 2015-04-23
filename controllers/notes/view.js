@@ -1,6 +1,10 @@
 var NotesViewController = Composer.Controller.extend({
 	class_name: 'note',
 
+	elements: {
+		'.info-container': 'el_info'
+	},
+
 	events: {
 		'click .note-gutter .content > h1': 'open_image'
 	},
@@ -19,6 +23,7 @@ var NotesViewController = Composer.Controller.extend({
 		this.modal = new TurtlModal({
 			show_header: true,
 			actions: [
+				{name: 'info', icon: '&#xe83c'},
 				{name: 'menu', actions: [/*{name: 'Edit'},*/ {name: 'Delete'}]}
 			]
 		});
@@ -31,13 +36,19 @@ var NotesViewController = Composer.Controller.extend({
 
 		this.with_bind(this.model, 'change', this.render.bind(this));
 		this.with_bind(this.model, 'destroy', close);
+		this.with_bind(this.modal, 'header:fire-action', function(action) {
+			switch(action)
+			{
+				case 'info': this.toggle_info(); break;
+			}
+		}.bind(this));
 		this.with_bind(this.modal, 'header:menu:fire-action', function(action) {
 			switch(action)
 			{
 				case 'edit': this.open_edit(); break;
 				case 'delete': this.open_delete(); break;
 			}
-		});
+		}.bind(this));
 		this.with_bind(this.modal, 'click-header', this.open_image.bind(this));
 
 		// set up the action button
@@ -53,7 +64,7 @@ var NotesViewController = Composer.Controller.extend({
 	{
 		var type_content = view.render('notes/types/'+this.model.get('type'), {
 			note: this.model.toJSON(),
-			empty: empty
+			show_info: true
 		});
 		this.html(view.render('notes/view', {
 			note: this.model.toJSON(),
@@ -103,6 +114,27 @@ var NotesViewController = Composer.Controller.extend({
 		if(!img) return;
 
 		img.click();
+	},
+
+	toggle_info: function(e)
+	{
+		if(e) e.stop();
+		if(this.el_info.hasClass('open'))
+		{
+			Velocity(this.el_info, {height: 0}, {duration: 300}).bind(this)
+				.then(function() {
+					this.el_info.removeClass('open');
+					this.el_info.setStyles({height: ''});
+				})
+		}
+		else
+		{
+			this.el_info.addClass('open');
+			var height = this.el_info.getSize().y;
+			Velocity(this.el_info, {height: [height, 0]}, {
+				duration: 300
+			});
+		}
 	}
 });
 

@@ -56,14 +56,15 @@ header {
 	}
 	ul.actions {position: absolute; top: 0; right: 0; height: @header_height; list-style: none;}
 	ul.actions {
-		> li {display: inline-block; width: 44rem; height: @header_height;}
+		> li {display: inline-block; width: 44rem; height: @header_height; vertical-align: top;}
 		> li {
 			> a {display: inline-block; width: @header_adjusted; height: @header_adjusted; line-height: 42rem; text-align: center;}
 			> a {
 				icon {font-size: 22rem; color: #eee; vertical-align: middle;}
+				icon.info {font-size: 20rem;}
 			}
 			.item-actions {
-				> a {width: 28rem; height: @header_height; margin: 2rem 0 0 0; padding-left: 16rem; line-height: @header_height; text-align: center;}
+				> a {width: @header_height; height: @header_height; margin: 2rem 0 0 0; line-height: @header_height; text-align: center;}
 				> a icon {color: @theme_primary;}
 				> .menu {top: 8rem; right: 8rem;}
 			}

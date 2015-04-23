@@ -12,6 +12,46 @@
 			{{#if note.title}}
 				<h1>{{{note.title}}}</h1>
 			{{/if}}
+{{#if show_info}}
+	<div class="info-container">
+		<div class="info clear">
+			<p>
+				<a href="/notes/{{note.id}}">Note link</a> (allows linking between notes)
+			</p>
+
+			{{#if have_boards}}
+				<div class="note-boards clear">
+					<icon>&#xe803;</icon>
+					{{#if boards.length}}
+						<ul>
+							{{#each boards}}
+								<li>
+									{{name}}
+								</li>
+							{{/each}}
+						</ul>
+					{{else}}
+						<span>This note is not in any boards</span>
+					{{/if}}
+				</div>
+			{{/if}}
+
+			{{! note that we don't use ul.tags here because it's really ugly next to
+				the note-boards container and we also don't need it to be tappable }}
+			{{#if note.tags.length}}
+				<div class="note-boards clear">
+					<icon>&#xe80f;</icon>
+					<ul>
+						{{#each note.tags}}
+							<li>{{this}}</li>
+						{{/each}}
+					</ul>
+				</div>
+			{{/if}}
+		</div>
+	</div>
+{{/if}}
+
 			{{#if note.text}}
 				<div class="body">{{{markdown note.text}}}</div>
 			{{/if}}
