@@ -42,7 +42,8 @@
 		.note-gutter {padding: @content_pad;}
 	}
 	&.image {
-		.backing {width: 100%; min-height: 32rem; background: #000;}
+		.backing {position: relative; z-index: 10; width: 100%; min-height: 32rem; background: #000;}
+		.header-backing {display: none;}
 		img {display: block; margin: 0 auto; max-width: 100%;}
 		@header_height: 30rem;
 		@header_top_pad: 4rem;
@@ -50,17 +51,36 @@
 		.content h1 {position: relative; display: block; height: @header_height; margin: -(@header_height + @header_top_pad) 0 @header_margin_bottom 0; padding: @header_top_pad 0 0 6%; line-height: @header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim(bottom, .45);}
 		.note-gutter .content .body {padding: @content_pad;}
 	}
-	.info-container {height: 0; overflow: hidden;}
-	.info-container.open {height: auto;}
+	@info_width: 240rem;
+	@info_height: 100rem;
+	.info-container {display: none; position: fixed; bottom: 20rem; right: 80rem; .transition(opacity .3s, right .3s;);}
+	.info-container.scrolled {opacity: 0;}
+	.info-container.open {right: 60rem;}
 	.info-container {
-		.info {display: block; margin: @content_pad @content_pad 0 @content_pad; padding: @content_pad; .card(); background: @theme_gray_white;}
+		@preview_height: 20rem;
+		@info_margin_top: 6rem;
+		.preview {width: 77rem; height: @preview_height; padding: 6rem 3rem 1rem 3rem; overflow: hidden; line-height: 18rem; background: @theme_black; border: 2rem solid #fff; .transition(width .3s, height .3s;); .layer-hover();}
+		&.open .preview {width: @info_width; height: (@info_height + @info_margin_top + @preview_height);}
+		.preview {
+			ul {margin: 0; padding: 0; list-style: none;}
+			ul {
+				li {display: inline-block; margin: 0 4rem; font-size: 15rem; color: #fff;;}
+				li {
+					icon {margin: 0 3rem 0 0;}
+				}
+			}
+		}
+		.info {width: (@info_width - (3rem * 2)); height: 100rem; margin: @info_margin_top 0 0 0; padding: 3rem; overflow: auto; color: #fff;}
 		.info {
 			p {font-size: 15rem; padding: 0 0 (@content_pad * 2) 0;}
 			p {
+				input {width: 96%; padding: 3rem 4rem; color: @theme_black; background: #fff; border: 1rem solid #000;}
 			}
 			.note-boards {padding: 0; margin: 0 0 @content_pad 0;}
 			.note-boards {
-				span {color: @theme_black;}
+				li {background: #222;}
+				span {color: #fff;}
+				icon {color: #fff;}
 			}
 		}
 	}
@@ -71,7 +91,7 @@
 			*:last-child {margin-bottom: 0; padding-bottom: 0;}
 		}
 	}
-	> .color {position: absolute; display: block; top: 3rem; right: 3rem; width: 12rem; height: 12rem; background: @theme_primary; border: 1px solid rgba(0, 0, 0, .2); border-radius: 7rem; .layer-hover();}
+	> .color {position: absolute; z-index: 11; display: block; top: 3rem; right: 3rem; width: 12rem; height: 12rem; background: @theme_primary; border: 1px solid rgba(0, 0, 0, .2); border-radius: 7rem; .layer-hover();}
 	> .color {
 		&.blue {background-color: #73b8d1;}
 		&.red {background-color: #e85c5c;}
@@ -111,9 +131,15 @@
 			}
 		}
 	}
+	header.scrolled {background: none;}
+	header.scrolled {
+		h1 em:before {box-shadow: none;}
+		ul.actions > li .item-actions > a:before {box-shadow: none;}
+	}
 	.note {
 		.backing {min-height: @header_height;}
-		> .color {z-index: 6; top: auto; right: 16rem; margin: -10rem -3rem 0 0;}
+		.header-backing {display: block; position: fixed; z-index: 9; top: 0; left: 0; width: 100%; height: @header_height; background: @theme_black_bg;}
+		> .color {top: auto; right: 16rem; margin: -10rem -3rem 0 0;}
 		.note-gutter .content .body {padding-top: (@content_pad * 2);}
 	}
 	.modal-gutter {padding-top: 0;}

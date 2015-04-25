@@ -50,11 +50,11 @@ var NotesEditController = FormController.extend({
 		this.parent();
 
 		var title = '';
-		switch(this.type)
+		switch(this.clone.get('type'))
 		{
 			case 'text': title = 'text note'; break;
 			case 'link': title = 'bookmark'; break;
-			default: title = this.type;
+			default: title = this.clone.get('type');
 		}
 		title = this.action + ' ' + title;
 		this.modal = new TurtlModal({

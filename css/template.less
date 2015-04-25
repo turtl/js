@@ -32,7 +32,7 @@ a { text-decoration: none; }
 @header_pad_top: 4rem;
 @header_adjusted: (@header_height - @header_pad_top);
 
-header {position: fixed; z-index: 14; width: 100%; height: @header_adjusted; margin: 0 0 0 0; padding: @header_pad_top 0 0 0; background: #222; .layer-rest();}
+header {position: fixed; z-index: 14; width: 100%; height: @header_adjusted; margin: 0 0 0 0; padding: @header_pad_top 0 0 0; background: @theme_black_bg; .layer-rest();}
 header.under {z-index: 10;}
 header {
 	a.logo {position: absolute; display: block; width: 60rem; height: 28rem; margin: 3rem 0 0 0;}

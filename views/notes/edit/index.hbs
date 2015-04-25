@@ -1,8 +1,8 @@
-<input type="text" name="title" value="{{note.title}}" tabindex="1" placeholder="Title">
 {{#if show_url}}
-	<input type="text" name="url" value="{{note.url}}" tabindex="2" placeholder="{{#equal note.type "image"}}Image {{/equal}}URL">
+	<input type="text" name="url" value="{{note.url}}" tabindex="1" placeholder="{{#equal note.type "image"}}Image {{/equal}}URL">
 	<div class="existing"></div>
 {{/if}}
+<input type="text" name="title" value="{{note.title}}" tabindex="2" placeholder="Title">
 <textarea name="text" rows="1" cols="80" tabindex="3" placeholder="Note text">{{note.text}}</textarea>
 <div class="formatting clear">
 	<a href="#formatting" rel="formatting">Formatting help</a>

@@ -27,6 +27,15 @@ var TurtlModal = Composer.Controller.extend({
 
 		this.bind('open', function() { this.is_open = true; }.bind(this));
 		this.bind('close', function() { this.is_open = false; }.bind(this));
+
+		var scroller = function()
+		{
+			this.trigger('scroll', this.el.scrollTop);
+		}.bind(this);
+		this.el.addEvent('scroll', scroller);
+		this.bind('release', function() {
+			if(this.el) this.el.removeEvent('scroll', scroller);
+		}.bind(this));
 	},
 
 	render: function()

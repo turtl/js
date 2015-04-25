@@ -2,11 +2,13 @@ var NotesViewController = Composer.Controller.extend({
 	class_name: 'note',
 
 	elements: {
-		'.info-container': 'el_info'
+		'.info-container': 'el_info',
+		'.info-container .info': 'el_info_sub'
 	},
 
 	events: {
-		'click .note-gutter .content > h1': 'open_image'
+		'click .note-gutter .content > h1': 'open_image',
+		'click .info-container .preview': 'toggle_info'
 	},
 
 	modal: null,
@@ -23,7 +25,6 @@ var NotesViewController = Composer.Controller.extend({
 		this.modal = new TurtlModal({
 			show_header: true,
 			actions: [
-				{name: 'info', icon: '&#xe83c'},
 				{name: 'menu', actions: [/*{name: 'Edit'},*/ {name: 'Delete'}]}
 			]
 		});
@@ -36,12 +37,6 @@ var NotesViewController = Composer.Controller.extend({
 
 		this.with_bind(this.model, 'change', this.render.bind(this));
 		this.with_bind(this.model, 'destroy', close);
-		this.with_bind(this.modal, 'header:fire-action', function(action) {
-			switch(action)
-			{
-				case 'info': this.toggle_info(); break;
-			}
-		}.bind(this));
 		this.with_bind(this.modal, 'header:menu:fire-action', function(action) {
 			switch(action)
 			{
@@ -49,7 +44,23 @@ var NotesViewController = Composer.Controller.extend({
 				case 'delete': this.open_delete(); break;
 			}
 		}.bind(this));
-		this.with_bind(this.modal, 'click-header', this.open_image.bind(this));
+		this.with_bind(this.modal, 'scroll', function(scroll) {
+			this.adjust_image_header(scroll);
+			this.hide_info(scroll);
+		}.bind(this));
+		var interval = setInterval(function() {
+			this.modal.trigger('scroll', this.modal.el.scrollTop);
+		}.bind(this), 100);
+		this.bind('release', clearInterval.bind(window, interval));
+
+		var click_outside = function(e)
+		{
+			var inside = Composer.find_parent('#main > .action', e.target);
+			if(!this.is_open || inside || this.actions.length == 0) return;
+			this.close();
+		}.bind(this);
+		document.body.addEvent('click', click_outside);
+		this.bind('release', function() { document.body.removeEvent('click', click_outside); });
 
 		// set up the action button
 		this.track_subcontroller('actions', function() {
@@ -121,19 +132,40 @@ var NotesViewController = Composer.Controller.extend({
 		if(e) e.stop();
 		if(this.el_info.hasClass('open'))
 		{
-			Velocity(this.el_info, {height: 0}, {duration: 300}).bind(this)
-				.then(function() {
-					this.el_info.removeClass('open');
-					this.el_info.setStyles({height: ''});
-				})
+			this.el_info.removeClass('open');
 		}
 		else
 		{
 			this.el_info.addClass('open');
-			var height = this.el_info.getSize().y;
-			Velocity(this.el_info, {height: [height, 0]}, {
-				duration: 300
-			});
+		}
+	},
+
+	adjust_image_header: function()
+	{
+		if(this.model.get('type') != 'image') return;
+		var header = Composer.find_parent('.turtl-modal', this.el).getElement('header');
+		var scroll = this.modal.el.scrollTop;
+		var img_bot = this.el.getElement('.backing').getCoordinates().height;
+		if(scroll > img_bot)
+		{
+			header.addClass('scrolled');
+		}
+		else
+		{
+			header.removeClass('scrolled');
+		}
+	},
+
+	hide_info: function(scroll)
+	{
+		if(scroll > 50)
+		{
+			this.el_info.addClass('scrolled');
+			this.el_info.removeClass('open');
+		}
+		else
+		{
+			this.el_info.removeClass('scrolled');
 		}
 	}
 });
