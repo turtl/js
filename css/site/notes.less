@@ -52,7 +52,7 @@
 		.note-gutter .content .body {padding: @content_pad;}
 	}
 	@info_width: 240rem;
-	@info_height: 100rem;
+	@info_height: 60rem;
 	.info-container {display: block; position: fixed; bottom: 20rem; right: 80rem; .transition(opacity .3s, right .3s;);}
 	.info-container.scrolled {opacity: 0;}
 	.info-container.open {right: 60rem;}
@@ -71,13 +71,13 @@
 				}
 			}
 		}
-		.info {width: (@info_width - (3rem * 2)); height: 100rem; margin: @info_margin_top 0 0 0; padding: 3rem; overflow: auto; color: #fff;}
+		.info {width: (@info_width - (3rem * 2)); height: 100rem; margin: @info_margin_top 0 0 0; padding: 3rem; overflow: auto; color: #fff; text-align: left;}
 		.info {
 			form.standard-form {padding: 0 0 6px 0;}
 			form.standard-form {
 				input {color: #fff; background: none; border-bottom-color: #fff;}
 			}
-			.info-list {margin: 0 0 (2 * @content_pad) 0; text-align: left;}
+			.info-list {margin: 0 0 (2 * @content_pad) 0;}
 			.info-list {
 				li {}
 				li:after {content: ', ';}
