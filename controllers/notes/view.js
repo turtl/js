@@ -120,10 +120,11 @@ var NotesViewController = Composer.Controller.extend({
 
 	open_image: function(e)
 	{
-		if(e) e.stop();
 		var url = this.model.get('url');
 		var type = this.model.get('type');
 		if(type != 'image' || !url) return;
+
+		if(e) e.stop();
 
 		var img = this.el.getElement('.backing a img');
 		if(!img) return;
