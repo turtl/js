@@ -51,6 +51,7 @@ Handlebars.registerHelper('note', function(note, options) {
 	{
 		var pboards = turtl.profile.get('boards');
 		have_boards = pboards.size() > 0;
+		have_boards = have_boards && note.boards.length > 0;
 		boards = pboards.toJSON_named((have_boards && note.boards) || []);
 	}
 

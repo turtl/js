@@ -28,23 +28,19 @@
 			</ul>
 
 			<div class="info">
-				<p>
-					<input type="text" disabled value="note::{{note.id}}">
-				</p>
+				<form class="standard-form">
+					<input type="text" readonly value="note::{{note.id}}">
+				</form>
 
 				{{#if have_boards}}
-					<div class="note-boards clear">
-						<icon>&#xe803;</icon>
+					<div class="info-list clear">
 						{{#if boards.length}}
 							<ul>
+								<li><icon>&#xe803;</icon></li>
 								{{#each boards}}
-									<li>
-										{{name}}
-									</li>
+									<li>{{name}}</li>
 								{{/each}}
 							</ul>
-						{{else}}
-							<span>This note is not in any boards</span>
 						{{/if}}
 					</div>
 				{{/if}}
@@ -52,9 +48,9 @@
 				{{! note that we don't use ul.tags here because it's really ugly next to
 					the note-boards container and we also don't need it to be tappable }}
 				{{#if note.tags.length}}
-					<div class="note-boards clear">
-						<icon>&#xe80f;</icon>
+					<div class="info-list clear">
 						<ul>
+							<li><icon>&#xe80f;</icon></li>
 							{{#each note.tags}}
 								<li>{{this}}</li>
 							{{/each}}

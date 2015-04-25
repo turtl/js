@@ -3,17 +3,21 @@ var NotesViewController = Composer.Controller.extend({
 
 	elements: {
 		'.info-container': 'el_info',
-		'.info-container .info': 'el_info_sub'
+		'.info-container .info': 'el_info_sub',
+		'.info-container .info form input': 'inp_link'
 	},
 
 	events: {
 		'click .note-gutter .content > h1': 'open_image',
-		'click .info-container .preview': 'toggle_info'
+		'click .info-container .preview form input': 'copy',
+		'click .info-container .preview > ul': 'toggle_info'
 	},
 
 	modal: null,
 
 	model: null,
+
+	_last_scroll: null,
 
 	init: function()
 	{
@@ -55,9 +59,9 @@ var NotesViewController = Composer.Controller.extend({
 
 		var click_outside = function(e)
 		{
-			var inside = Composer.find_parent('#main > .action', e.target);
-			if(!this.is_open || inside || this.actions.length == 0) return;
-			this.close();
+			var inside = Composer.find_parent('.preview', e.target);
+			if(inside || !this.el_info.hasClass('open')) return;
+			this.toggle_info();
 		}.bind(this);
 		document.body.addEvent('click', click_outside);
 		this.bind('release', function() { document.body.removeEvent('click', click_outside); });
@@ -127,9 +131,16 @@ var NotesViewController = Composer.Controller.extend({
 		img.click();
 	},
 
+	copy: function(e)
+	{
+		if(e) e.stop();
+		this.inp_link.select();
+	},
+
 	toggle_info: function(e)
 	{
 		if(e) e.stop();
+
 		if(this.el_info.hasClass('open'))
 		{
 			this.el_info.removeClass('open');
@@ -137,6 +148,7 @@ var NotesViewController = Composer.Controller.extend({
 		else
 		{
 			this.el_info.addClass('open');
+			this.inp_link.select();
 		}
 	},
 
@@ -158,14 +170,26 @@ var NotesViewController = Composer.Controller.extend({
 
 	hide_info: function(scroll)
 	{
-		if(scroll > 50)
+		if(this._last_scroll == scroll) return;
+		this._last_scroll = scroll;
+
+		if(this.el_info.hasClass('open')) return;
+
+		if(scroll > 50 && !this.el_info.hasClass('scrolled'))
 		{
 			this.el_info.addClass('scrolled');
 			this.el_info.removeClass('open');
+			setTimeout(function() {
+				if(scroll <= 50) return;
+				this.el_info.addClass('hidden');
+			}.bind(this), 300);
 		}
-		else
+		else if(scroll <= 50 && this.el_info.hasClass('scrolled'))
 		{
-			this.el_info.removeClass('scrolled');
+			this.el_info.removeClass('hidden');
+			setTimeout(function() {
+				this.el_info.removeClass('scrolled');
+			}.bind(this));
 		}
 	}
 });

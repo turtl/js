@@ -113,12 +113,7 @@ var NotesEditTagsController = FormController.extend({
 
 	select: function(from, to)
 	{
-		var s = window.getSelection();
-		var r = document.createRange();
-		r.setStart(this.inp_tags, from);
-		r.setEnd(this.inp_tags, to);
-		s.removeAllRanges();
-		s.addRange(r);
+		select_text(this.inp_tags, from, to);
 	}
 });
 

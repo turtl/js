@@ -53,13 +53,14 @@
 	}
 	@info_width: 240rem;
 	@info_height: 100rem;
-	.info-container {display: none; position: fixed; bottom: 20rem; right: 80rem; .transition(opacity .3s, right .3s;);}
+	.info-container {display: block; position: fixed; bottom: 20rem; right: 80rem; .transition(opacity .3s, right .3s;);}
 	.info-container.scrolled {opacity: 0;}
 	.info-container.open {right: 60rem;}
+	.info-container.hidden {display: none;}
 	.info-container {
 		@preview_height: 20rem;
 		@info_margin_top: 6rem;
-		.preview {width: 77rem; height: @preview_height; padding: 6rem 3rem 1rem 3rem; overflow: hidden; line-height: 18rem; background: @theme_black; border: 2rem solid #fff; .transition(width .3s, height .3s;); .layer-hover();}
+		.preview {width: 88rem; height: @preview_height; padding: 6rem 3rem 1rem 3rem; overflow: hidden; text-align: center; line-height: 18rem; background: @theme_primary; border: 2rem solid #fff; .transition(width .3s, height .3s;); .layer-hover();}
 		&.open .preview {width: @info_width; height: (@info_height + @info_margin_top + @preview_height);}
 		.preview {
 			ul {margin: 0; padding: 0; list-style: none;}
@@ -72,14 +73,16 @@
 		}
 		.info {width: (@info_width - (3rem * 2)); height: 100rem; margin: @info_margin_top 0 0 0; padding: 3rem; overflow: auto; color: #fff;}
 		.info {
-			p {font-size: 15rem; padding: 0 0 (@content_pad * 2) 0;}
-			p {
-				input {width: 96%; padding: 3rem 4rem; color: @theme_black; background: #fff; border: 1rem solid #000;}
+			form.standard-form {padding: 0 0 6px 0;}
+			form.standard-form {
+				input {color: #fff; background: none; border-bottom-color: #fff;}
 			}
-			.note-boards {padding: 0; margin: 0 0 @content_pad 0;}
-			.note-boards {
-				li {background: #222;}
-				span {color: #fff;}
+			.info-list {margin: 0 0 (2 * @content_pad) 0; text-align: left;}
+			.info-list {
+				li {}
+				li:after {content: ', ';}
+				li:first-child:after,
+				li:last-child:after {content: '';}
 				icon {color: #fff;}
 			}
 		}

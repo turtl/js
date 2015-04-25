@@ -42,6 +42,17 @@ var make_index = function(collection, idx_field)
 	return idx;
 };
 
+var select_text = function(inp, from, to)
+{
+	var s = window.getSelection();
+	var r = document.createRange();
+	r.setStart(inp, from);
+	r.setEnd(inp, to);
+	s.removeAllRanges();
+	s.addRange(r);
+	return s;
+};
+
 /**
  * given a turtl front-end generated ID, return the timestamp it encapsulates
  */
