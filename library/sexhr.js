@@ -68,6 +68,9 @@
 				var fn = options[k];
 				xhr.upload[k] = function(e) { fn(e, xhr); };
 			});
+
+			if(options.override) options.override(xhr);
+
 			xhr.send(options.data);
 		});
 	};
