@@ -20,6 +20,7 @@ var ActionController = Composer.Controller.extend({
 	{
 		var click_outside = function(e)
 		{
+			// TODO: allow click_outside for non-#main actions!
 			var inside = Composer.find_parent('#main > .action', e.target);
 			if(!this.is_open || inside || this.actions.length == 0) return;
 			this.close();
