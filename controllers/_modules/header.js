@@ -43,7 +43,7 @@ var HeaderController = Composer.Controller.extend({
 		var html = title || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 		if(backurl)
 		{
-			html = '<a href="'+ backurl +'" rel="back"><icon>&#xe835;</icon><span>&nbsp;&nbsp;'+ html +'</span></a>';
+			html = '<a href="'+ backurl +'" rel="back"><icon>'+icon('back')+'</icon><span>&nbsp;&nbsp;'+ html +'</span></a>';
 			this.el.addClass('has-back');
 		}
 		else

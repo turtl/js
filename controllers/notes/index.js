@@ -53,7 +53,7 @@ var NotesIndexController = Composer.Controller.extend({
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		turtl.events.trigger('header:set-actions', [
-			{name: 'search', icon: '&#xe83a;'}
+			{name: 'search', icon: 'search'}
 		]);
 		this.with_bind(turtl.events, 'header:fire-action', function(name) {
 			switch(name)
@@ -70,9 +70,9 @@ var NotesIndexController = Composer.Controller.extend({
 		this.track_subcontroller('actions', function() {
 			var actions = new ActionController();
 			actions.set_actions([
-				{title: 'Text note', name: 'text', icon: '&#xe804;'},
-				{title: 'Bookmark', name: 'link', icon: '&#xe814;'},
-				{title: 'Image', name: 'image', icon: '&#xe80e;'}
+				{title: 'Text note', name: 'text', icon: 'note'},
+				{title: 'Bookmark', name: 'link', icon: 'bookmark'},
+				{title: 'Image', name: 'image', icon: 'image'}
 			]);
 			this.with_bind(actions, 'actions:fire', this.open_add.bind(this));
 			return actions;

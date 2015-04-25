@@ -68,3 +68,17 @@ Handlebars.registerHelper('note', function(note, options) {
 	return new Handlebars.SafeString(rendered);
 });
 
+Handlebars.registerHelper('icon', function(name, options) {
+	options || (options = {});
+	var data = options.hash || {};
+
+	var hex = '';
+	// see library/functions.js
+	var hex = icon(name);
+	if(!hex) return '(invalid icon '+name+')';
+	var html = '<icon';
+	if(data.class) html += ' class="'+ data.class +'"';
+	html += '>'+ hex +'</icon>';
+	return new Handlebars.SafeString(html);
+});
+

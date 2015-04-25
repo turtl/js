@@ -69,7 +69,7 @@ var NotesViewController = Composer.Controller.extend({
 		// set up the action button
 		this.track_subcontroller('actions', function() {
 			var actions = new ActionController({inject: this.modal.el});
-			actions.set_actions([{title: 'Edit note', name: 'edit', icon: '&#xe815;'}]);
+			actions.set_actions([{title: 'Edit note', name: 'edit', icon: 'edit'}]);
 			this.with_bind(actions, 'actions:fire', this.open_edit.bind(this, null));
 			return actions;
 		}.bind(this));

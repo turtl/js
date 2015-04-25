@@ -165,6 +165,38 @@ function get_url()
 	return url;
 }
 
+function icon(name)
+{
+	// it's *absolutely* ok to have different names point to the same icons.
+	// icons should be named by their context, not by the actual icon that
+	// represents them. then later on if we want to split icons out, we can do
+	// so using their *meaning* instead of the representation of their meaning
+	var icons = {
+		board: 'e803',
+		boards: 'e803',
+		tag: 'e80f',
+		note: 'e804',
+		notes: 'e809',
+		search: 'e83a',
+		bookmark: 'e814',
+		image: 'e80e',
+		add: 'e82e',
+		edit: 'e815',
+		menu: 'e808',
+		settings: 'e807',
+		back: 'e835',
+		account: 'e800',
+		logout: 'e838',
+		selected: 'e81e',
+		sort: 'e80b',
+		next: 'e80b',
+		clear: 'e81a'
+	};
+	var hex = icons[name];
+	if(!hex) return false;
+	return '&#x'+hex+';';
+}
+
 function get_data_from_querystring(url)
 {
 	url || (url = new String(window.location.hash).replace(/.*?&/, ''));

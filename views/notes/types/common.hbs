@@ -23,8 +23,8 @@
 	<div class="info-container">
 		<div class="preview">
 			<ul>
-				<li><icon>&#xe803;</icon>{{note.boards.length}}</li>
-				<li><icon>&#xe80f;</icon>{{note.tags.length}}</li>
+				<li>{{icon 'board'}}{{note.boards.length}}</li>
+				<li>{{icon 'tag'}}{{note.tags.length}}</li>
 			</ul>
 
 			<div class="info">
@@ -36,7 +36,7 @@
 					<div class="info-list clear">
 						{{#if boards.length}}
 							<ul>
-								<li><icon>&#xe803;</icon></li>
+								<li>{{icon 'board'}}</li>
 								{{#each boards}}
 									<li>{{name}}</li>
 								{{/each}}
@@ -50,7 +50,7 @@
 				{{#if note.tags.length}}
 					<div class="info-list clear">
 						<ul>
-							<li><icon>&#xe80f;</icon></li>
+							<li>{{icon 'tag'}}</li>
 							{{#each note.tags}}
 								<li>{{this}}</li>
 							{{/each}}

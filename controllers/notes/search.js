@@ -36,7 +36,7 @@ var NotesSearchController = Composer.Controller.extend({
 			show_header: true,
 			title: titlefn(turtl.search.size()),
 			actions: [
-				{name: 'reset', icon: '&#xe81a;'}
+				{name: 'reset', icon: 'clear'}
 			]
 		});
 		this.render();

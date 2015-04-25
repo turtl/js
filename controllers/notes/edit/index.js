@@ -25,7 +25,7 @@ var NotesEditController = FormController.extend({
 	clone: null,
 	formclass: 'notes-edit',
 	button_tabindex: 9,
-	footer_actions: [ {name: 'tag', icon: '&#xe80f;'} ],
+	footer_actions: [ {name: 'tag', icon: 'tag'} ],
 
 	type: 'text',
 	board_id: null,
