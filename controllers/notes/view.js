@@ -92,9 +92,9 @@ var NotesViewController = Composer.Controller.extend({
 		// let the app know that we're displaying a note of this type
 		var remove_class = function()
 		{
-			this.modal.el.className = this.modal.el.className.replace(/note-[a-z0-9]+/, '');
+			this.modal.el.className = this.modal.el.className.replace(/note-view note-[a-z0-9]+/, '');
 		}.bind(this);
-		var body_class = 'note-'+this.model.get('type');
+		var body_class = 'note-view note-'+this.model.get('type');
 		remove_class();
 		this.modal.el.addClass(body_class);
 	},

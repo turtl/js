@@ -108,46 +108,53 @@
 	p.empty {padding: 10rem 0; font-size: 13rem; color: @theme_gray; text-align: center;}
 }
 
-.turtl-modal {
+// note open view
+.note-view {
 	.note {
 		.note-gutter {padding-bottom: 64rem;}
 		> .color {width: 16rem; height: 16rem; border-radius: 9rem;}
 	}
-}
-
-.turtl-modal:not(.note-image) {
-	.note {
-		> .color {position: static; float: right; margin: 4rem 4rem 0 4rem;}
+	.note:not(.image) {
+		.note-gutter {padding-top: 12rem;}
 	}
-}
-.turtl-modal.note-image {
-	header {.title-scrim(top, .50, 110%); box-shadow: none;}
-	header {
-		h1 {
-			em:before {top: 13rem; left: 3rem; .item-scrim(.3);}
+	&:not(.note-image) {
+		.note {
+			> .color {position: static; float: right; margin: 4rem 4rem 0 4rem;}
 		}
-		ul.actions {
-			> li {
-				.item-actions {
-					> a:before {top: 15rem; left: 31rem; .item-scrim(.3);}
+	}
+	&.note-image {
+		header {.title-scrim(top, .50, 110%); box-shadow: none;}
+		header {
+			h1 {
+				em:before {top: 13rem; left: 3rem; .item-scrim(.3);}
+			}
+			ul.actions {
+				> li {
+					.item-actions {
+						> a:before {top: 15rem; left: 31rem; .item-scrim(.3);}
+					}
 				}
 			}
 		}
+		header.scrolled {background: none;}
+		header.scrolled {
+			h1 em:before {box-shadow: none;}
+			ul.actions > li .item-actions > a:before {box-shadow: none;}
+		}
+		.note {
+			.backing {min-height: @header_height;}
+			.header-backing {display: block; position: fixed; z-index: 9; top: 0; left: 0; width: 100%; height: @header_height; background: @theme_black_bg;}
+			> .color {top: auto; right: 16rem; margin: -10rem -3rem 0 0;}
+			.note-gutter .content .body {padding-top: (@content_pad * 2);}
+		}
+		.modal-gutter {padding-top: 0;}
 	}
-	header.scrolled {background: none;}
-	header.scrolled {
-		h1 em:before {box-shadow: none;}
-		ul.actions > li .item-actions > a:before {box-shadow: none;}
+	.modal-gutter.closing {
+		.info-container {display: none;}
 	}
-	.note {
-		.backing {min-height: @header_height;}
-		.header-backing {display: block; position: fixed; z-index: 9; top: 0; left: 0; width: 100%; height: @header_height; background: @theme_black_bg;}
-		> .color {top: auto; right: 16rem; margin: -10rem -3rem 0 0;}
-		.note-gutter .content .body {padding-top: (@content_pad * 2);}
-	}
-	.modal-gutter {padding-top: 0;}
 }
 
+// note board listing (mainly shown in note board editor)
 .note-boards {margin: 0 0 16rem 0; padding: 0 4%; font-size: 14rem; border-radius: 0; .transition(border .3s);}
 .note-boards {
 	icon {float: left; margin: 4rem 8rem 0 0; font-size: 20rem; color: @theme_black; .transition(color .3s);}
