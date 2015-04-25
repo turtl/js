@@ -134,7 +134,7 @@ var NotesViewController = Composer.Controller.extend({
 	copy: function(e)
 	{
 		if(e) e.stop();
-		this.inp_link.select();
+		//this.inp_link.select();
 	},
 
 	toggle_info: function(e)
@@ -148,7 +148,7 @@ var NotesViewController = Composer.Controller.extend({
 		else
 		{
 			this.el_info.addClass('open');
-			this.inp_link.select();
+			//this.inp_link.select();
 		}
 	},
 
