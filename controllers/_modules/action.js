@@ -35,7 +35,7 @@ var ActionController = Composer.Controller.extend({
 		{
 			if(this.actions.length == 1 && !this.actions[0].icon)
 			{
-				this.actions[0].icon = icon('add');
+				this.actions[0].icon = 'add';
 			}
 			this.html(view.render('modules/actions', {
 				actions: this.actions
