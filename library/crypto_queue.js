@@ -105,7 +105,7 @@
 				break;
 			}
 
-			if(data.length < 1024 * 128)
+			if(data.length < (1024 * 128))
 			{
 				var cmd = wmsg.cmd;
 				var args = wmsg.args;
