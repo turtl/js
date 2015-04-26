@@ -104,7 +104,9 @@ var NotesEditTagsController = FormController.extend({
 
 		e.stop();
 		var inner = this.inp_tags.get('html');
-		var tags = inner.split(',').map(function(t) { return t.clean(); });
+		var tags = inner.split(',')
+			.map(function(t) { return t.clean().replace(/&nbsp;/g, ''); })
+			.filter(function(t) { return !!t; });
 		this.inp_tags.set('html', '');
 		this.clone.get('tags').upsert(tags);
 		this.collection.upsert(tags);
