@@ -36,6 +36,7 @@ var TurtlModal = Composer.Controller.extend({
 		this.bind('release', function() {
 			if(this.el) this.el.removeEvent('scroll', scroller);
 		}.bind(this));
+		this.with_bind(turtl.user, 'logout', this.close.bind(this));
 	},
 
 	render: function()
