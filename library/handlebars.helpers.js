@@ -82,6 +82,12 @@ Handlebars.registerHelper('icon', function(name, options) {
 	return new Handlebars.SafeString(html);
 });
 
+Handlebars.registerHelper('svg', function(name) {
+	var xml = svg(name);
+	if(!xml) return '';
+	return new Handlebars.SafeString(xml);
+});
+
 Handlebars.registerHelper('bytes', function(bytes, options) {
 	if(bytes < 1024) return bytes + '';
 	if(bytes < (1024 * 1024))

@@ -200,6 +200,15 @@ function icon(name)
 	return '&#x'+hex+';';
 }
 
+function svg(name)
+{
+	var map = {
+		loading: 'load'
+	};
+	if(map[name]) name = map[name];
+	return svg_icons[name];
+}
+
 function get_data_from_querystring(url)
 {
 	url || (url = new String(window.location.hash).replace(/.*?&/, ''));

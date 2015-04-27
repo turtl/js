@@ -29,9 +29,8 @@ module.exports = function(grunt) {
 			}
 		},
 		exec: {
-			index: {
-				command: 'bash ./scripts/gen-index'
-			}
+			index: { command: 'bash ./scripts/gen-index' },
+			index_svg: { command: 'bash ./scripts/index-icons' }
 		},
 		watch: {
 			options: {
@@ -79,6 +78,15 @@ module.exports = function(grunt) {
 				options: {
 					nospawn: true
 				}
+			},
+			svg: {
+				files: [
+					'images/site/icons/*.svg'
+				],
+				tasks: ['exec:index_svg'],
+				options: {
+					nospawn: true
+				}
 			}
 		}
 	});
@@ -88,6 +96,6 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-handlebars');
 	grunt.loadNpmTasks('grunt-exec');
 
-	grunt.registerTask('generate', ['less', 'handlebars', 'exec:index']);
+	grunt.registerTask('generate', ['less', 'handlebars', 'exec:index_svg', 'exec:index']);
 	grunt.registerTask('default', ['generate', 'watch']);
 };
