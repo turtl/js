@@ -56,7 +56,13 @@ Composer.sync = function(method, model, options)
 	};
 
 	var promise = Promise.resolve();
-	if(!['read', 'delete'].contains(method))
+
+	if(options.skip_serialize)
+	{
+		// model was pre-serialized
+		promise = Promise.resolve([model.toJSON()]);
+	}
+	else if(!['read', 'delete'].contains(method))
 	{
 		// serialize our model, and add in any extra data needed
 		promise = model.serialize();

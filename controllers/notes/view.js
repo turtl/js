@@ -8,6 +8,7 @@ var NotesViewController = Composer.Controller.extend({
 	},
 
 	events: {
+		'click .file a': 'open_file',
 		'click .note-gutter .content > h1': 'open_image',
 		'click .info-container .preview form input': 'copy',
 		'click .info-container .preview > ul': 'toggle_info'
@@ -116,6 +117,17 @@ var NotesViewController = Composer.Controller.extend({
 				log.error('note: delete: ', derr(err));
 				barfr.barf('There was a problem deleting your note: '+ err.message);
 			});
+	},
+
+	open_file: function(e)
+	{
+		if(e) e.stop();
+		var atag = Composer.find_parent('a', e.target);
+		if(!atag) return false;
+		if(atag.hasClass('decrypting')) return false;
+
+		atag.addClass('decrypting');
+		atag.set('title', 'Decrypting, this can take a bit.'});
 	},
 
 	open_image: function(e)

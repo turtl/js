@@ -37,6 +37,8 @@
 
 @content_pad: 6rem;
 .note {
+	p.empty {padding: 10rem 0; font-size: 13rem; color: @theme_gray; text-align: center;}
+
 	&.text,
 	&.link {
 		.note-gutter {padding: @content_pad;}
@@ -51,6 +53,28 @@
 		.content h1 {position: relative; display: block; height: @header_height; margin: -(@header_height + @header_top_pad) 0 @header_margin_bottom 0; padding: @header_top_pad 0 0 6%; line-height: @header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim(bottom, .45);}
 		.note-gutter .content .body {padding: @content_pad;}
 	}
+	.file {padding: @content_pad; border-bottom: 1rem dashed @form_border;}
+	.file {
+		strong {font-size: 16rem; font-weight: normal; word-wrap: break-word;}
+	}
+	.content {
+		h1:first-child {word-wrap: break-word;}
+		h1:last-child {margin-bottom: 0; padding-bottom: 0;}
+		.body {
+			*:last-child {margin-bottom: 0; padding-bottom: 0;}
+		}
+	}
+	> .color {position: absolute; z-index: 11; display: block; top: 3rem; right: 3rem; width: 12rem; height: 12rem; background: @theme_primary; border: 1rem solid rgba(0, 0, 0, .2); border-radius: 7rem; .layer-hover();}
+	> .color {
+		&.blue {background-color: #73b8d1;}
+		&.red {background-color: #e85c5c;}
+		&.green {background-color: #7bde76;}
+		&.purple {background-color: #9476de;}
+		&.pink {background-color: #de76d3;}
+		&.brown {background-color: #7f4e4e;}
+		&.black {background-color: #111;}
+	}
+
 	@info_width: 240rem;
 	@info_height: 60rem;
 	.info-container {display: block; position: fixed; bottom: 20rem; right: 80rem; .transition(opacity .3s, right .3s;);}
@@ -73,7 +97,7 @@
 		}
 		.info {width: (@info_width - (3rem * 2)); height: 100rem; margin: @info_margin_top 0 0 0; padding: 3rem; overflow: auto; color: #fff; text-align: left;}
 		.info {
-			form.standard-form {padding: 0 0 6px 0;}
+			form.standard-form {padding: 0 0 6rem 0;}
 			form.standard-form {
 				input {color: #fff; background: none; border-bottom-color: #fff;}
 			}
@@ -87,25 +111,6 @@
 			}
 		}
 	}
-	.content {
-		h1:first-child {word-wrap: break-word;}
-		h1:last-child {margin-bottom: 0; padding-bottom: 0;}
-		.body {
-			*:last-child {margin-bottom: 0; padding-bottom: 0;}
-		}
-	}
-	> .color {position: absolute; z-index: 11; display: block; top: 3rem; right: 3rem; width: 12rem; height: 12rem; background: @theme_primary; border: 1px solid rgba(0, 0, 0, .2); border-radius: 7rem; .layer-hover();}
-	> .color {
-		&.blue {background-color: #73b8d1;}
-		&.red {background-color: #e85c5c;}
-		&.green {background-color: #7bde76;}
-		&.purple {background-color: #9476de;}
-		&.pink {background-color: #de76d3;}
-		&.brown {background-color: #7f4e4e;}
-		&.black {background-color: #111;}
-	}
-
-	p.empty {padding: 10rem 0; font-size: 13rem; color: @theme_gray; text-align: center;}
 }
 
 // note open view
@@ -155,13 +160,13 @@
 }
 
 // note board listing (mainly shown in note board editor)
-.note-boards {margin: 0 0 16rem 0; padding: 0 4%; font-size: 14rem; border-radius: 0; .transition(border .3s);}
+.note-boards {margin: 0 0 16rem 0; font-size: 14rem; border-radius: 0; .transition(border .3s);}
 .note-boards {
 	icon {float: left; margin: 4rem 8rem 0 0; font-size: 20rem; color: @theme_black; .transition(color .3s);}
 	span {display: inline-block; padding: 3rem; color: @theme_primary;}
 	ul {list-style: none;}
 	ul {
-		li {display: block; float: left; margin: 0 6rem 6rem 0; padding: 3rem 5rem; background: @theme_border; border: 1px solid @theme_gray_midlight; border-radius: 2rem;}
+		li {display: block; float: left; margin: 0 6rem 6rem 0; padding: 3rem 5rem; background: @theme_border; border: 1rem solid @theme_gray_midlight; border-radius: 2rem;}
 	}
 }
 
@@ -175,6 +180,18 @@
 		.formatting {margin: -14rem 0 16rem 0; text-align: right;}
 		.formatting {
 			a[rel=formatting] {display: block; padding: 5rem 0; font-size: 15rem;}
+		}
+
+		.file {margin: 0 0 16rem 0;}
+		.file {
+			icon {margin: 4rem 8rem 0 0;}
+			p {margin: 0; padding: 0; font-size: 14rem;}
+			p.info {width: 100%; margin: 0 0 6rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+			p.size {float: left; padding-left: 30rem;}
+			p.remove {float: right;}
+			p.remove {
+				a icon {margin-right: 0;}
+			}
 		}
 	}
 

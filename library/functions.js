@@ -190,7 +190,10 @@ function icon(name)
 		selected: 'e81e',
 		sort: 'e80b',
 		next: 'e80b',
-		clear: 'e81a'
+		clear: 'e81a',
+		attach: 'e837',
+		attachment: 'e837',
+		remove: 'e81d'
 	};
 	var hex = icons[name];
 	if(!hex) return false;

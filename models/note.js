@@ -2,14 +2,8 @@ var Note = Protected.extend({
 	base_url: '/notes',
 
 	relations: {
-		tags: {
-			type: Composer.HasMany,
-			collection: 'Tags'
-		},
-		file: {
-			type: Composer.HasOne,
-			model: 'NoteFile'
-		}
+		tags: { collection: 'Tags' },
+		file: { model: 'NoteFile' }
 	},
 
 	public_fields: [
@@ -32,12 +26,6 @@ var Note = Protected.extend({
 		'embed',
 		'color',
 	],
-
-	// bad hack to fix annoying problem: when note data is set, the NoteFile sub
-	// object doesn't have the note's key. by the time the key is set, the file
-	// data has already came and left, leaving a false body in its wake. this
-	// variable stores the file data until a key is available
-	_tmp_file_data: false,
 
 	// lets us disable monitoring of file events
 	disable_file_monitoring: false,
@@ -88,32 +76,6 @@ var Note = Protected.extend({
 			}
 		}.bind(this));
 
-		this.bind_relational('file', ['change:hash', 'change:has_data'], function() {
-			if(this.disable_file_monitoring) return false;
-
-			// generate a preview
-			if(this.get('file').get('has_data') > 0 && this.get('file').get('type', '').match(/^image/))
-			{
-				this.get('file').to_blob().bind(this)
-					.then(function(blob) {
-						var blob_url = URL.createObjectURL(blob)
-						if(Browser.chrome)
-						{
-							// only append the filename if we're in chrome, since
-							// chrome can gracefully handle the hash AND because
-							// the hash is required for the desktop app (for the
-							// image download context menu).
-							blob_url	+=	'#name='+this.get('file').get('name')
-						}
-						this.get('file').set({blob_url: blob_url});
-						this.trigger('change', this);
-					})
-					.catch(function(err) {
-						log.error('note: file: problem converting to blob: ', derr(err));
-					});
-			}
-		}.bind(this));
-
 		if(this.get('has_file', 0) > 0 && this.get('file').get('hash', false))
 		{
 			this.get('file').trigger('change:hash');
@@ -152,11 +114,6 @@ var Note = Protected.extend({
 		if(key)
 		{
 			this.get('file').key = key;
-			if(this._tmp_file_data)
-			{
-				this.set({file: this._tmp_file_data});
-				this._tmp_file_data = false;
-			}
 		}
 		return key;
 	},
@@ -170,10 +127,6 @@ var Note = Protected.extend({
 
 	set: function(data)
 	{
-		if(data.file && !this.key)
-		{
-			this._tmp_file_data = data.file;
-		}
 		return this.parent.apply(this, arguments);
 	},
 
@@ -209,10 +162,12 @@ var Note = Protected.extend({
 		return url;
 	},
 
-	toJSON: function()
+	toJSON: function(options)
 	{
+		options || (options = {});
+
 		var data = this.parent.apply(this, arguments);
-		if(!this.get('file') || (!this.get('file').get('hash') && !this.get('file').get('encrypting')))
+		if(!options.get_file && (!this.get('file') || (!this.get('file').get('hash') && !this.get('file').get('encrypting'))))
 		{
 			delete data.file;
 		}
@@ -275,16 +230,18 @@ var Note = Protected.extend({
 	{
 		options || (options = {});
 
-		turtl.db.files.query('note_id')
+		return turtl.db.files.query('note_id')
 			.only(this.id())
 			.execute()
 			.then(function(files) {
+				var actions = [];
 				files.each(function(filedata) {
 					if(options.exclude && options.exclude.contains(filedata.id)) return;
 					delete filedata.body;
 					var file = new FileData(filedata);
-					file.destroy(options);
+					actions.push(file.destroy(options));
 				});
+				return Promise.all(actions);
 			});
 	},
 

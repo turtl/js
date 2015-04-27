@@ -5,6 +5,7 @@ var NotesEditController = FormController.extend({
 		'input[name=url]': 'inp_url',
 		'textarea[name=text]': 'inp_text',
 		'.boards-container': 'el_boards',
+		'.file-container': 'el_file',
 		'.existing': 'el_existing'
 	},
 
@@ -90,6 +91,7 @@ var NotesEditController = FormController.extend({
 		this.bind('unsaved', unsaved);
 		this.with_bind(this.clone, 'change', unsaved);
 		this.with_bind(this.clone.get('tags'), ['add', 'remove'], unsaved);
+		this.with_bind(this.clone.get('file'), 'change', unsaved);
 
 		// basically copy tumblr's fixed footer tagging interface
 		var footer_desc = function()
@@ -180,6 +182,13 @@ var NotesEditController = FormController.extend({
 			});
 		}.bind(this));
 
+		this.track_subcontroller('file', function() {
+			return new NotesEditFileController({
+				inject: this.el_file,
+				model: this.clone
+			});
+		}.bind(this));
+
 		if(this.el_existing)
 		{
 			this.check_url();
@@ -208,22 +217,71 @@ var NotesEditController = FormController.extend({
 		if(this.model.is_new())
 		{
 			keypromise = this.model.init_new({board_id: this.board_id, silent: true});
+			this.clone.key = this.model.key;
+			this.clone.get('file').key = this.model.key;
 		}
 
 		var clone = this.clone;
 		clone.set(data);
+
+		// grab the file binary 
+		var filebin = clone.get('file').get('data');
+		clone.get('file').unset('data');
+
 		keypromise.bind(this)
 			.then(function() {
 				return clone.save();
 			})
 			.then(function() {
-				this.model.set(clone.toJSON());
+				this.model.set(clone.toJSON({get_file: true}));
 				this.have_unsaved = false;
 
 				// add the note to our main note list
 				turtl.profile.get('notes').upsert(this.model);
-
 				this.trigger('close');
+			})
+			.then(function() {
+				var file = this.model.get('file');
+				if(file.get('cleared'))
+				{
+					file.clear();
+					return this.model.clear_files()
+						.catch(function(err) {
+							turtl.events.trigger('ui-error', 'There was a problem removing the attachement', err);
+							log.error('note: edit: file: ', this.model.id(), derr(err));
+						});
+				}
+				if(!file.get('set')) return;
+
+				file.set({encrypting: true});
+				clone.clear_files();
+				var filedata = new FileData({data: filebin});
+				filedata.key = this.model.key;
+				var modeldata = {};
+				console.log('file: pre: ', filebin.length);
+				return filedata.serialize({hash: true}).bind(this)
+					.spread(function(res, hash) {
+						console.log('file: post: ', res.body.length);
+						res.note_id = this.model.id();
+						var encfile = new FileData(res);
+						encfile._cid = hash;
+						encfile.key = this.model.key;
+						modeldata = {hash: hash, has_data: 2, size: res.body.length};
+						return encfile.save({skip_serialize: true});
+					})
+					.then(function() {
+						this.model.get('file')
+							.unset('encrypting')
+							.set(modeldata);
+						return this.model.save()
+					})
+					.then(function() {
+						file.unset('set');
+					})
+					.catch(function(err) {
+						turtl.events.trigger('ui-error', 'There was a problem saving the attachment', err);
+						log.error('note: edit: file: ', this.model.id(), derr(err));
+					});
 			})
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', 'There was a problem updating that note', err);

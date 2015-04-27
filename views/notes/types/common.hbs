@@ -4,6 +4,23 @@
 	<div class="color {{note.color_name}}">&nbsp;</div>
 {{/if}}
 
+{{#if note.file}}
+	<div class="file">
+		<strong>
+			{{#if note.file.encrypting}}
+				{{icon 'attachment'}}
+				{{note.file.name}}
+				(encrypting))
+			{{else}}
+				<a href="#open" rel="download">
+					{{icon 'attachment'}}
+					{{note.file.name}}
+				</a>
+			{{/if}}
+		</strong>
+	</div>
+{{/if}}
+
 <div class="note-gutter">
 	{{#if empty}}
 		<p class="empty">(empty note)</p>

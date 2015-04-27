@@ -34,9 +34,12 @@ var NotesItemController = Composer.Controller.extend({
 
 	note_click: function(e)
 	{
+		/*
 		// do nothing
 		if(config.follow_links) return;
 		e.preventDefault();
+		*/
+		if(e) e.stop();
 		this.open_note();
 	},
 

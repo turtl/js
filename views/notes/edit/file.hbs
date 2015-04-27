@@ -1,0 +1,18 @@
+{{#if file.name}}
+	<p class="info">
+		{{icon 'attach'}}
+		{{file.name}}
+	</p>
+	<p class="size">
+		{{#if file.size}}
+			{{bytes file.size}}
+		{{/if}}
+	</p>
+	<p class="remove">
+		<a href="#remove" rel="remove">{{icon 'remove'}}Remove attachment</a>
+	</p>
+{{else}}
+	<label for="note_file_{{note_id}}">{{icon 'attach'}}</label>
+	<input id="note_file_{{note_id}}" type="file" name="file" placeholder="Attach a file">
+{{/if}}
+

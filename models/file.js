@@ -32,12 +32,13 @@ var NoteFile = Protected.extend({
 	{
 		options || (options = {});
 
-		if(!this.get('hash'))
+		var hash = this.get('hash');
+		if(!hash)
 		{
 			return Promise.reject(new Error('file: to_array: bad_hash'));
 		}
 
-		return turtl.db.files.get(this.get('hash')).bind(this)
+		return turtl.db.files.get(hash).bind(this)
 			.then(function(filedata) {
 				if(!filedata)
 				{
@@ -46,10 +47,11 @@ var NoteFile = Protected.extend({
 				}
 				var file = new FileData();
 				file.key = this.key;
-				return file.set(filedata);
+				file.set(filedata);
+				return file.deserialize();
 			})
-			.then(function() {
-				var data = file.get('data');
+			.then(function(res) {
+				var data = res.data;
 				var buffer = new ArrayBuffer(data.length);
 				var array = new Uint8Array(buffer);
 				for(var i = 0, n = data.length; i < n; i++)
@@ -77,13 +79,42 @@ var FileData = Protected.extend({
 	public_fields: [
 		'id',
 		'note_id',
-		'synced',
-		'has_data'
+
+		'synced',		// needed?
+		'has_data'		// needed?
 	],
 
 	private_fields: [
 		'data'
 	],
+
+	// -------------------------------------------------------------------------
+	// hook into some of the Protected model's crypto functions.
+	// -------------------------------------------------------------------------
+	// we never HAD files when the old format existed, so we can just assume we
+	// don't need this
+	detect_old_format: function(data)
+	{
+		return data;
+	},
+
+	// set some binary-friendly options
+	serialize: function(options)
+	{
+		options || (options = {});
+		options.rawdata = true;
+		options.skip_base64 = true;
+		return this.parent.call(this, options);
+	},
+
+	// set some binary-friendly options
+	deserialize: function(options)
+	{
+		options || (options = {});
+		options.rawdata = true;
+		return this.parent.call(this, options);
+	},
+	// -------------------------------------------------------------------------
 
 	save: function(options)
 	{

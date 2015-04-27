@@ -69,7 +69,7 @@ var Protected = Composer.RelationalModel.extend({
 	},
 
 	/**
-	 * Take the data in our models private_fields and encrypt them into the
+	 * Take the data in our model's private_fields and encrypt them into the
 	 * model.body_key field.
 	 */
 	serialize: function(options)
@@ -83,17 +83,22 @@ var Protected = Composer.RelationalModel.extend({
 			if(typeof json[k] == 'undefined') return;
 			data[k] = json[k];
 		});
+		var action = 'encrypt';
+		if(options.hash) action = 'encrypt+hash';
 		return new Promise(function(resolve, reject) {
 			var msg = {
-				action: 'encrypt',
+				action: action,
 				key: this.key,
 				data: data,
-				private_fields: this.private_fields
+				private_fields: this.private_fields,
+				rawdata: options.rawdata
 			};
 			cqueue.push(msg, function(res) {
 				if(res.error) return reject(res.error);
 				var obj = {};
-				obj[this.body_key] = btoa(res.success[0]);
+				var enc = res.success[0];
+				if(!options.skip_base64) enc = btoa(enc);
+				obj[this.body_key] = enc;
 				this.set(obj, options);
 				this.public_fields.forEach(function(pub) {
 					if(json[pub] === undefined) return;
@@ -119,7 +124,8 @@ var Protected = Composer.RelationalModel.extend({
 				action: 'decrypt',
 				key: this.key,
 				data: data,
-				private_fields: this.private_fields
+				private_fields: this.private_fields,
+				rawdata: options.rawdata
 			};
 			cqueue.push(msg, function(res) {
 				if(res.error) return reject(res.error);

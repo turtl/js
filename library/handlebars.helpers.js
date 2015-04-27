@@ -82,3 +82,15 @@ Handlebars.registerHelper('icon', function(name, options) {
 	return new Handlebars.SafeString(html);
 });
 
+Handlebars.registerHelper('bytes', function(bytes, options) {
+	if(bytes < 1024) return bytes + '';
+	if(bytes < (1024 * 1024))
+	{
+		return (Math.round(10 * (bytes / 1024)) / 10) + 'kb';
+	}
+	if(bytes < (1024 * 1024 * 1024))
+	{
+		return (Math.round(10 * (bytes / (1024 * 1024))) / 10) + 'mb';
+	}
+	return (Math.round(10 * (bytes / (1024 * 1024 * 1024))) / 10) + 'gb';
+});
