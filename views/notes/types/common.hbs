@@ -5,19 +5,22 @@
 {{/if}}
 
 {{#if note.file}}
-	<div class="file">
-		<strong>
-			{{#if note.file.encrypting}}
+<div class="file {{#if note.file.encrypting}}encrypting{{/if}}">
+		{{#if note.file.encrypting}}
+			<strong>
 				{{icon 'attachment'}}
 				{{note.file.name}}
-				(encrypting))
-			{{else}}
+			</strong>
+			<span>(encrypting) {{svg 'loading'}}</span>
+		{{else}}
+			<strong>
 				<a href="#open" rel="download">
 					{{icon 'attachment'}}
+					{{svg 'loading'}}
 					{{note.file.name}}
 				</a>
-			{{/if}}
-		</strong>
+			</strong>
+		{{/if}}
 	</div>
 {{/if}}
 

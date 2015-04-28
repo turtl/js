@@ -2,6 +2,7 @@ var NotesViewController = Composer.Controller.extend({
 	class_name: 'note',
 
 	elements: {
+		'.file': 'el_file',
 		'.info-container': 'el_info',
 		'.info-container .info': 'el_info_sub',
 		'.info-container .info form input': 'inp_link'
@@ -122,12 +123,46 @@ var NotesViewController = Composer.Controller.extend({
 	open_file: function(e)
 	{
 		if(e) e.stop();
+		if(this.el_file.hasClass('decrypting')) return false;
 		var atag = Composer.find_parent('a', e.target);
 		if(!atag) return false;
-		if(atag.hasClass('decrypting')) return false;
 
-		atag.addClass('decrypting');
-		atag.set('title', 'Decrypting, this can take a bit.'});
+		this.el_file.addClass('decrypting');
+		atag.set('title', 'Decrypting, this can take a bit.');
+		var promise;
+		var url;
+		return this.model.get('file').to_blob().bind(this)
+			.then(function(blob) {
+				url = URL.createObjectURL(blob);
+				return url;
+			})
+			.then(function(blob_url) {
+				var name = this.model.get('file').get('name');
+				var download = new Element('a')
+					.setStyles({visibility: 'hidden'})
+					.set('html', 'Download '+ name.safe())
+					.addClass('attachment')
+					.setProperties({
+						href: url,
+						download: name,
+						target: '_blank'
+					});
+
+				download.inject(document.body);
+				fire_click(download);
+				(function() {
+					download.destroy();
+				}).delay(5000, this);
+			})
+			.catch(function(err) {
+				turtl.events.trigger('ui-error', 'There was a problem opening that file', err);
+				log.error('note: file: open: ', this.model.id(), derr(err));
+			})
+			.finally(function() {
+				this.el_file.removeClass('decrypting');
+				atag.set('title', '');
+				if(url) URL.revokeObjectURL(url);
+			});
 	},
 
 	open_image: function(e)

@@ -53,9 +53,26 @@
 		.content h1 {position: relative; display: block; height: @header_height; margin: -(@header_height + @header_top_pad) 0 @header_margin_bottom 0; padding: @header_top_pad 0 0 6%; line-height: @header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim(bottom, .45);}
 		.note-gutter .content .body {padding: @content_pad;}
 	}
-	.file {padding: @content_pad; border-bottom: 1rem dashed @form_border;}
+	.file {padding: @content_pad; text-align: center; background: @theme_gray_white; .layer-rest();}
 	.file {
-		strong {font-size: 16rem; font-weight: normal; word-wrap: break-word;}
+		strong {display: inline-block; width: 100%; font-size: 16rem; line-height: 20rem; font-weight: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+		strong {
+			icon {width: 20rem;}
+			svg {display: none; width: 20rem; height: 20rem; vertical-align: bottom;}
+			svg {
+				path {fill: @theme_accent;}
+			}
+		}
+		&.encrypting {
+			span {font-size: 14rem;}
+			svg {width: 14rem; height: 14rem;}
+		}
+		&.decrypting {
+			strong {
+				icon {display: none;}
+				svg {display: inline-block;}
+			}
+		}
 	}
 	.content {
 		h1:first-child {word-wrap: break-word;}
@@ -154,8 +171,11 @@
 		}
 		.modal-gutter {padding-top: 0;}
 	}
-	.modal-gutter.closing {
+	.modal-gutter.closing, .modal-gutter.opening {
 		.info-container {display: none;}
+		.note {
+			.header-backing {display: none;}
+		}
 	}
 }
 

@@ -76,6 +76,10 @@ var TurtlModal = Composer.Controller.extend({
 		var do_open = function()
 		{
 			this.el.addClass('active');
+			this.gutter.addClass('opening');
+			(function() {
+				this.gutter.removeClass('opening');
+			}).delay(300, this);
 			this.trigger('open');
 			document.body.className += ' modal';
 		}.bind(this);
