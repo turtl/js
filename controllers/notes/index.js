@@ -72,7 +72,8 @@ var NotesIndexController = Composer.Controller.extend({
 			actions.set_actions([
 				{title: 'Text note', name: 'text', icon: 'note'},
 				{title: 'Bookmark', name: 'link', icon: 'bookmark'},
-				{title: 'Image', name: 'image', icon: 'image'}
+				{title: 'Image', name: 'image', icon: 'image'},
+				{title: 'File', name: 'file', icon: 'file'}
 			]);
 			this.with_bind(actions, 'actions:fire', this.open_add.bind(this));
 			return actions;

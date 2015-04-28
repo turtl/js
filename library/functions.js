@@ -193,6 +193,7 @@ function icon(name)
 		clear: 'e81a',
 		attach: 'e837',
 		attachment: 'e837',
+		file: 'e837',
 		remove: 'e81d'
 	};
 	var hex = icons[name];

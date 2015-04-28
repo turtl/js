@@ -77,7 +77,7 @@ var ActionController = Composer.Controller.extend({
 		var bottom = parseInt(this.el.getElement('a.abutton').getParent().getStyle('bottom'));
 		var botfn = function(i)
 		{
-			return method == 'open' ? ((i + 1) * 56) : 0;
+			return method == 'open' ? ((i + 1) * 54) : 0;
 		};
 		var rotate = method == 'open' ? '135deg' : '';
 

@@ -152,6 +152,7 @@ var NotesEditController = FormController.extend({
 		this.html(view.render('notes/edit/index', {
 			note: data,
 			show_url: ['image', 'link'].contains(type),
+			show_file: ['image', 'file'].contains(type),
 			type: this.model.get('type') || this.type,
 			colors: colors
 		}));
@@ -234,6 +235,14 @@ var NotesEditController = FormController.extend({
 			})
 			.then(function() {
 				this.model.set(clone.toJSON({get_file: true}));
+				if(clone.get('file').get('cleared'))
+				{
+					this.model.get('file').clear().trigger('change');
+				}
+				if(clone.get('file').get('set'))
+				{
+					this.model.get('file').trigger('change');
+				}
 				this.have_unsaved = false;
 
 				// add the note to our main note list

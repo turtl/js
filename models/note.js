@@ -76,10 +76,7 @@ var Note = Protected.extend({
 			}
 		}.bind(this));
 
-		if(this.get('has_file', 0) > 0 && this.get('file').get('hash', false))
-		{
-			this.get('file').trigger('change:hash');
-		}
+		this.get('file').bind('change', this.trigger.bind(this, 'change'));
 
 		this.bind('destroy', function() {
 			if(this.disable_file_monitoring) return false;
