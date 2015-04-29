@@ -52,6 +52,10 @@
 			span {
 				icon {font-size: 20rem; line-height: @header_height; color: @theme_gray;}
 			}
+			span.has-size {height: 0;}
+			span.has-size {
+				icon {position: absolute; top: 20%; left: 50%; margin-left: -10rem;}
+			}
 		}
 		.header-backing {display: none;}
 		img {display: block; margin: 0 auto; max-width: 100%;}
@@ -59,11 +63,11 @@
 		@img_header_top_pad: 4rem;
 		@img_header_margin_bottom: 3rem;	// aligns the text as if header weren't there
 		.content h1 {position: relative; z-index: 11; display: block; height: @img_header_height; margin: -(@img_header_height + @img_header_top_pad) 0 @img_header_margin_bottom 0; padding: @img_header_top_pad 0 0 6%; line-height: @img_header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim(bottom, .45);}
-		.file + .note-gutter .content h1 {top: -@file_height;}
+		&.view .file + .note-gutter .content h1 {top: -@file_height;}
+		&.preview:not(.view) {
+			.file {display: none;}
+		}
 		.note-gutter .content .body {padding: @content_pad;}
-	}
-	&.image.preview.no-text:not(.view) {
-		.file {box-shadow: none;}
 	}
 	.file {height: (@file_height - (@content_pad * 2)); padding: @content_pad; text-align: center; background: @theme_gray_white; .layer-rest();}
 	.file {
@@ -71,13 +75,10 @@
 		strong {
 			icon {width: 20rem;}
 			svg {display: none; width: 20rem; height: 20rem; vertical-align: bottom;}
+			&.encrypting svg {display: inline-block;}
 			svg {
 				path {fill: @theme_accent;}
 			}
-		}
-		&.encrypting {
-			span {font-size: 14rem;}
-			svg {width: 14rem; height: 14rem;}
 		}
 		&.decrypting {
 			strong {

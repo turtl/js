@@ -7,11 +7,10 @@
 {{#if note.file}}
 	<div class="file {{#if note.file.encrypting}}encrypting{{/if}}">
 		{{#if note.file.encrypting}}
-			<strong>
-				{{icon 'attachment'}}
+			<strong class="encrypting">
+				{{svg 'loading'}}
 				{{note.file.name}}
 			</strong>
-			<span>(encrypting) {{svg 'loading'}}</span>
 		{{else}}
 			<strong>
 				<a href="#open" rel="download">

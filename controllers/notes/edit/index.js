@@ -253,14 +253,17 @@ var NotesEditController = FormController.extend({
 				if(file.get('cleared'))
 				{
 					file.clear();
-					return this.model.clear_files()
+					return this.model.clear_files().bind(this)
+						.then(function() {
+							this.model.set({has_file: 0});
+						})
 						.catch(function(err) {
 							turtl.events.trigger('ui-error', 'There was a problem removing the attachement', err);
 							log.error('note: edit: file: ', this.model.id(), derr(err));
 						});
 				}
 				if(!file.get('set')) return;
-				file.unset('set');
+				file.unset('set').revoke();
 
 				file.set({encrypting: true});
 				clone.clear_files();
@@ -279,7 +282,8 @@ var NotesEditController = FormController.extend({
 						return encfile.save({skip_serialize: true});
 					})
 					.then(function() {
-						this.model.get('file')
+						this.model.set({has_file: 1})
+							.get('file')
 							.unset('encrypting')
 							.set(modeldata);
 						return this.model.save()

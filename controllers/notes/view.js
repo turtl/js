@@ -86,6 +86,10 @@ var NotesViewController = NoteBaseController.extend({
 	{
 		var type = this.model.get('type');
 		var note = this.model.toJSON();
+		if(type == 'image' && !note.url && !(note.file || {}).name)
+		{
+			type = 'text';
+		}
 		if(note.file) note.file.blob_url = this.model.get('file').get('blob_url');
 		var type_content = view.render('notes/types/'+type, {
 			note: note,
@@ -108,7 +112,7 @@ var NotesViewController = NoteBaseController.extend({
 		{
 			this.modal.el.className = this.modal.el.className.replace(/note-view note-[a-z0-9]+/, '');
 		}.bind(this);
-		var body_class = 'note-view note-'+this.model.get('type');
+		var body_class = 'note-view note-'+type;
 		remove_class();
 		this.modal.el.addClass(body_class);
 

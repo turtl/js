@@ -14,7 +14,8 @@ var NoteFile = Protected.extend({
 
 	private_fields: [
 		'name',
-		'type'
+		'type',
+		'meta'
 	],
 
 	creating_blob: false,
@@ -101,8 +102,10 @@ var NoteFile = Protected.extend({
 	revoke: function()
 	{
 		var blob_url = this.get('blob_url');
-		if(!blob_url) return;
+		if(!blob_url) return this;
 		URL.revokeObjectURL(blob_url);
+		this.unset('blob_url');
+		return this;
 	}
 });
 

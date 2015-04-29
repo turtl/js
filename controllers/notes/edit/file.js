@@ -51,6 +51,17 @@ var NotesEditFileController = Composer.Controller.extend({
 				size: binary.length,
 				data: binary
 			}).unset('cleared', {silent: true});
+
+			if(file.type.match(/^image\//))
+			{
+				var url = URL.createObjectURL(file);
+				var img = new Image();
+				img.onload = function() {
+					this.model.get('file').set({meta: {width: img.width, height: img.height}});
+					URL.revokeObjectURL(url);
+				}.bind(this);
+				img.src = url;
+			}
 		}.bind(this);
 		reader.readAsBinaryString(file);
 	},

@@ -47,37 +47,6 @@ var Note = Protected.extend({
 		this.bind('change:id', set_mod);
 		set_mod();
 
-		this.bind_relational('file', ['change:hash'], function() {
-			if(this.is_new() || this.disable_file_monitoring) return false;
-
-			if(this.get('file').get('blob_url'))
-			{
-				//URL.revokeObjectURL(this.get('file').get('blob_url'));
-			}
-
-			var has_file = this.get('file').get('hash') ? 1 : 0;
-			this.set({has_file: has_file});
-			if(!this.raw_data)
-			{
-				// make sure we update the note record to reflect our has_file
-				// value in the db
-				//
-				// NOTE: we do *NOT* do note.save() here because if another save
-				// is in progress, it will be interfered with, causing some
-				// very weird problems. just run the update manually...
-				turtl.db.notes
-					.query()
-					.only(this.id())
-					.modify({has_file: has_file})
-					.execute()
-					.catch(function(err) {
-						log.error('note: set has_file: error: ', derr(err))
-					});
-			}
-		}.bind(this));
-
-		this.get('file').bind('change', this.trigger.bind(this, 'change'));
-
 		this.bind('destroy', function() {
 			if(this.disable_file_monitoring) return false;
 			this.clear_files();

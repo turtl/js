@@ -18,9 +18,6 @@ var NotesItemController = NoteBaseController.extend({
 		}.bind(this);
 		this.with_bind(this.model, 'change', renchange);
 		this.with_bind(this.model.get('file'), 'change', renchange);
-		this.with_bind(this.model.get('file'), 'change', function() {
-			console.log('item: ', this.model.get('type'), this.model.get('file').get('blob_url'));
-		}.bind(this));
 
 		this.parent();
 	},
@@ -29,7 +26,14 @@ var NotesItemController = NoteBaseController.extend({
 	{
 		var type = this.model.get('type');
 		var note = this.model.toJSON();
-		if(note.file) note.file.blob_url = this.model.get('file').get('blob_url');
+		if(note.file)
+		{
+			note.file.blob_url = this.model.get('file').get('blob_url');
+			if(note.file.meta && note.file.meta.width && note.file.meta.height)
+			{
+				note.file.img_height = 100 * (note.file.meta.height / note.file.meta.width);
+			}
+		}
 		var type_content = view.render('notes/types/'+type, {
 			note: note
 		});

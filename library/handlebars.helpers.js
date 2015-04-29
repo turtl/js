@@ -46,7 +46,7 @@ Handlebars.registerHelper('note', function(note, options) {
 	switch(note.type)
 	{
 		case 'image':
-			empty = empty && !note.url && !note.file.name;
+			empty = empty && !note.url && !(note.file && note.file.name);
 			break;
 		case 'file':
 			empty = empty && !note.file.name;
@@ -74,6 +74,9 @@ Handlebars.registerHelper('note', function(note, options) {
 
 	note.color_name = note.color > 0 ? colors[note.color] : '';
 	var content = options.fn(note);
+	// NOTE: this will probably bite me sometime in the future
+	if(empty) content = '';
+
 	var rendered = view.render('notes/types/common', {
 		note: note,
 		show_info: show_info,

@@ -6,7 +6,11 @@
 					<img src="{{file.blob_url}}" alt="{{title}}">
 				</a>
 			{{else}}
-				<a href="#open" rel="download"><span>{{icon 'image'}}</span></a>
+				<a href="#open" rel="download">
+					<span {{#if file.img_height}}class="has-size" style="padding-top: {{file.img_height}}%;"{{/if}}>
+						{{icon 'image'}}
+					</span>
+				</a>
 			{{/if}}
 		{{else}}
 			<a href="{{url}}" target="_blank">
