@@ -9,6 +9,20 @@ Handlebars.registerHelper('equal', function(val1, val2, options) {
 	}
 });
 
+Handlebars.registerHelper('equal-or', function(_) {
+	var vals = Array.prototype.slice.call(arguments, 0);
+	var options = vals.pop();
+	var val = vals.shift();
+	if(vals.indexOf(val) >= 0)
+	{
+		return options.fn(this);
+	}
+	else
+	{
+		return options.inverse(this);
+	}
+});
+
 Handlebars.registerHelper('asset', function(url) {
 	return asset(url);
 });
@@ -27,15 +41,18 @@ Handlebars.registerHelper('note', function(note, options) {
 	var show_info = !!data.info;
 
 	// TODO: empty state: files
-	var empty =	false;
+	var empty =	true;
+	if(note.title || note.text) empty = false;
 	switch(note.type)
 	{
-		case 'text':
-			empty = !note.title && !note.text;
-			break;
 		case 'image':
+			empty = empty && !note.url && !note.file.name;
+			break;
+		case 'file':
+			empty = empty && !note.file.name;
+			break;
 		case 'link':
-			empty = !note.title && !note.text && !note.url;
+			empty = empty && !note.url;
 			break;
 	}
 	var colors = NOTE_COLORS;

@@ -17,6 +17,21 @@ var NoteFile = Protected.extend({
 		'type'
 	],
 
+	creating_blob: false,
+
+	clear: function()
+	{
+		this.revoke();
+		return this.parent.apply(this, arguments);
+	},
+
+	toJSON: function()
+	{
+		var data = this.parent.apply(this, arguments);
+		delete data.blob_url;
+		return data;
+	},
+
 	find_key: function()
 	{
 		var note = this && this.get_parent && this.get_parent();
@@ -66,10 +81,28 @@ var NoteFile = Protected.extend({
 	{
 		options || (options = {});
 
-		return this.to_array()
+		if(this.creating_blob && !options.force) return;
+
+		if(!options.force) this.creating_blob = true;
+		return this.to_array().bind(this)
 			.then(function(array) {
-				return new Blob([array.buffer], {type: this.get('type')});
+				var blob = new Blob([array.buffer], {type: this.get('type')});
+				if(!options.force)
+				{
+					this.set({blob_url: URL.createObjectURL(blob)});
+				}
+				return blob;
+			})
+			.finally(function() {
+				if(!options.force) this.creating_blob = false;
 			});
+	},
+
+	revoke: function()
+	{
+		var blob_url = this.get('blob_url');
+		if(!blob_url) return;
+		URL.revokeObjectURL(blob_url);
 	}
 });
 

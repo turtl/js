@@ -46,6 +46,7 @@ var NotesEditController = FormController.extend({
 			type: this.type || 'text'
 		});
 		this.clone = this.model.clone();
+		this.clone.get('file').unset('set');
 
 		this.action = this.model.is_new() ? 'Add' : 'Edit';
 		this.parent();
@@ -151,8 +152,6 @@ var NotesEditController = FormController.extend({
 
 		this.html(view.render('notes/edit/index', {
 			note: data,
-			show_url: ['image', 'link'].contains(type),
-			show_file: ['image', 'file'].contains(type),
 			type: this.model.get('type') || this.type,
 			colors: colors
 		}));
@@ -261,16 +260,17 @@ var NotesEditController = FormController.extend({
 						});
 				}
 				if(!file.get('set')) return;
+				file.unset('set');
 
 				file.set({encrypting: true});
 				clone.clear_files();
 				var filedata = new FileData({data: filebin});
 				filedata.key = this.model.key;
 				var modeldata = {};
-				console.log('file: pre: ', filebin.length);
+				log.debug('file: pre: ', filebin.length);
 				return filedata.serialize({hash: true}).bind(this)
 					.spread(function(res, hash) {
-						console.log('file: post: ', res.body.length);
+						log.debug('file: post: ', res.body.length);
 						res.note_id = this.model.id();
 						var encfile = new FileData(res);
 						encfile._cid = hash;

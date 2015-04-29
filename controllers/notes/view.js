@@ -1,7 +1,8 @@
-var NotesViewController = Composer.Controller.extend({
+var NotesViewController = NoteBaseController.extend({
 	class_name: 'note',
 
 	elements: {
+		'.header-backing': 'el_img_header',
 		'.file': 'el_file',
 		'.info-container': 'el_info',
 		'.info-container .info': 'el_info_sub',
@@ -10,6 +11,7 @@ var NotesViewController = Composer.Controller.extend({
 
 	events: {
 		'click .file a': 'open_file',
+		'click .backing a[rel=download]': 'open_image',
 		'click .note-gutter .content > h1': 'open_image',
 		'click .info-container .preview form input': 'copy',
 		'click .info-container .preview > ul': 'toggle_info'
@@ -42,6 +44,7 @@ var NotesViewController = Composer.Controller.extend({
 		this.bind(['cancel', 'close'], close);
 
 		this.with_bind(this.model, 'change', this.render.bind(this));
+		this.with_bind(this.model.get('file'), 'change', this.render.bind(this));
 		this.with_bind(this.model, 'destroy', close);
 		this.with_bind(this.modal, 'header:menu:fire-action', function(action) {
 			switch(action)
@@ -75,20 +78,29 @@ var NotesViewController = Composer.Controller.extend({
 			this.with_bind(actions, 'actions:fire', this.open_edit.bind(this, null));
 			return actions;
 		}.bind(this));
+
+		this.parent();
 	},
 
 	render: function()
 	{
-		var type_content = view.render('notes/types/'+this.model.get('type'), {
-			note: this.model.toJSON(),
+		var type = this.model.get('type');
+		var note = this.model.toJSON();
+		if(note.file) note.file.blob_url = this.model.get('file').get('blob_url');
+		var type_content = view.render('notes/types/'+type, {
+			note: note,
 			show_info: true
 		});
 		this.html(view.render('notes/view', {
-			note: this.model.toJSON(),
+			note: note,
 			content: type_content
 		}));
 		this.el.className = 'note view';
-		this.el.addClass(this.model.get('type'));
+		this.el.addClass(type);
+		if(type == 'image' && !this.model.get('url'))
+		{
+			this.el.addClass('preview');
+		}
 		this.el.set('rel', this.model.id());
 
 		// let the app know that we're displaying a note of this type
@@ -99,6 +111,11 @@ var NotesViewController = Composer.Controller.extend({
 		var body_class = 'note-view note-'+this.model.get('type');
 		remove_class();
 		this.modal.el.addClass(body_class);
+
+		(function() {
+			if(!this.el_img_header) return;
+			this.el_img_header.removeClass('hide');
+		}).delay(10, this);
 	},
 
 	open_edit: function(e)
@@ -131,7 +148,7 @@ var NotesViewController = Composer.Controller.extend({
 		atag.set('title', 'Decrypting, this can take a bit.');
 		var promise;
 		var url;
-		return this.model.get('file').to_blob().bind(this)
+		return this.model.get('file').to_blob({force: true}).bind(this)
 			.then(function(blob) {
 				url = URL.createObjectURL(blob);
 				return url;
@@ -167,14 +184,11 @@ var NotesViewController = Composer.Controller.extend({
 
 	open_image: function(e)
 	{
-		var url = this.model.get('url');
+		var img = this.el.getElement('.backing img');
 		var type = this.model.get('type');
-		if(type != 'image' || !url) return;
+		if(type != 'image' || !img) return;
 
 		if(e) e.stop();
-
-		var img = this.el.getElement('.backing a img');
-		if(!img) return;
 
 		img.click();
 	},
@@ -203,9 +217,11 @@ var NotesViewController = Composer.Controller.extend({
 	adjust_image_header: function()
 	{
 		if(this.model.get('type') != 'image') return;
+		var backing = this.el.getElement('.backing');
+		if(!backing) return;
 		var header = Composer.find_parent('.turtl-modal', this.el).getElement('header');
 		var scroll = this.modal.el.scrollTop;
-		var img_bot = this.el.getElement('.backing').getCoordinates().height;
+		var img_bot = backing.getCoordinates().height;
 		if(scroll > img_bot)
 		{
 			header.addClass('scrolled');

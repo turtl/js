@@ -1,9 +1,19 @@
 {{#note note info=show_info}}
 	<div class="backing">
-		<a href="{{url}}" target="_blank">
-			<img src="{{url}}" alt="{{title}}" />
-		</a>
+		{{#if file.name}}
+			{{#if file.blob_url}}
+				<a href="{{file.blob_url}}" target="_blank">
+					<img src="{{file.blob_url}}" alt="{{title}}">
+				</a>
+			{{else}}
+				<a href="#open" rel="download"><span>{{icon 'image'}}</span></a>
+			{{/if}}
+		{{else}}
+			<a href="{{url}}" target="_blank">
+				<img src="{{url}}" alt="{{title}}" />
+			</a>
+		{{/if}}
 	</div>
-	<div class="header-backing">&nbsp;</div>
+	<div class="header-backing hide">&nbsp;</div>
 {{/note}}
 

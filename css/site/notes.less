@@ -35,25 +35,38 @@
 	}
 }
 
+@file_height: 34rem;
 @content_pad: 6rem;
 .note {
 	p.empty {padding: 10rem 0; font-size: 13rem; color: @theme_gray; text-align: center;}
 
 	&.text,
+	&.file,
 	&.link {
 		.note-gutter {padding: @content_pad;}
 	}
 	&.image {
-		.backing {position: relative; z-index: 10; width: 100%; min-height: 32rem; background: #000;}
+		.backing {position: relative; z-index: 10; width: 100%; min-height: @header_height; background: @theme_black_bg;}
+		.backing {
+			span {display: block; font-size: 13rem; text-align: center;}
+			span {
+				icon {font-size: 20rem; line-height: @header_height; color: @theme_gray;}
+			}
+		}
 		.header-backing {display: none;}
 		img {display: block; margin: 0 auto; max-width: 100%;}
-		@header_height: 30rem;
-		@header_top_pad: 4rem;
-		@header_margin_bottom: 3rem;	// aligns the text as if header weren't there
-		.content h1 {position: relative; display: block; height: @header_height; margin: -(@header_height + @header_top_pad) 0 @header_margin_bottom 0; padding: @header_top_pad 0 0 6%; line-height: @header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim(bottom, .45);}
+		@img_header_height: 30rem;
+		@img_header_top_pad: 4rem;
+		@img_header_margin_bottom: 3rem;	// aligns the text as if header weren't there
+		.content h1 {position: relative; z-index: 11; display: block; height: @img_header_height; margin: -(@img_header_height + @img_header_top_pad) 0 @img_header_margin_bottom 0; padding: @img_header_top_pad 0 0 6%; line-height: @img_header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim(bottom, .45);}
+		.file + .note-gutter .content h1 {margin-top: -(@img_header_height + @img_header_top_pad + @file_height);}
 		.note-gutter .content .body {padding: @content_pad;}
 	}
-	.file {padding: @content_pad; text-align: center; background: @theme_gray_white; .layer-rest();}
+	&.image.preview {
+		.backing span {}
+		.file {box-shadow: none;}
+	}
+	.file {height: (@file_height - (@content_pad * 2)); padding: @content_pad; text-align: center; background: @theme_gray_white; .layer-rest();}
 	.file {
 		strong {display: inline-block; width: 100%; font-size: 16rem; line-height: 20rem; font-weight: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
 		strong {
@@ -81,7 +94,7 @@
 			*:last-child {margin-bottom: 0; padding-bottom: 0;}
 		}
 	}
-	> .color {position: absolute; z-index: 11; display: block; top: 3rem; right: 3rem; width: 12rem; height: 12rem; background: @theme_primary; border: 1rem solid rgba(0, 0, 0, .2); border-radius: 7rem; .layer-hover();}
+	> .color {position: absolute; z-index: 12; display: block; top: 3rem; right: 3rem; width: 12rem; height: 12rem; background: @theme_primary; border: 1rem solid rgba(0, 0, 0, .2); border-radius: 7rem; .layer-hover();}
 	> .color {
 		&.blue {background-color: #73b8d1;}
 		&.red {background-color: #e85c5c;}
@@ -166,13 +179,16 @@
 		.note {
 			.backing {min-height: @header_height;}
 			.header-backing {display: block; position: fixed; z-index: 9; top: 0; left: 0; width: 100%; height: @header_height; background: @theme_black_bg;}
+			.header-backing.hide {display: none;}
 			> .color {top: auto; right: 16rem; margin: -10rem -3rem 0 0;}
 			.note-gutter .content .body {padding-top: (@content_pad * 2);}
 		}
 		.modal-gutter {padding-top: 0;}
 	}
-	.modal-gutter.closing, .modal-gutter.opening {
+	.modal-gutter.closing {
 		.info-container {display: none;}
+	}
+	.modal-gutter.closing, .modal-gutter.opening {
 		.note {
 			.header-backing {display: none;}
 		}
@@ -196,6 +212,7 @@
 		.existing {
 			em {display: inline-block; width: 14rem; height: 14rem; margin: 0 6rem 0 0; font-weight: bold; color: #fff; text-align: center; background: @theme_accent; border-radius: 7rem;}
 		}
+		.url-or-file {display: block; padding: 8rem 0; font-size: 14rem; text-align: center;}
 		textarea {height: 24rem; max-height: 240rem;}
 		.formatting {margin: -14rem 0 16rem 0; text-align: right;}
 		.formatting {

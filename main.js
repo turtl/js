@@ -108,6 +108,7 @@ var turtl = {
 		turtl.controllers.pages.bind('prerelease', function() {
 			// always scroll to the top of the window on page load
 			$(window).scrollTop = 0;
+			turtl.events.trigger('header:set-actions', false);
 		});
 
 		turtl.events.bind('ui-error', function(msg, err) {

@@ -1,11 +1,13 @@
-{{#if show_url}}
+{{#equal-or type 'file' 'image'}}
+	<div class="file-container"></div>
+	{{#equal type 'image'}}
+		<span class="url-or-file">- OR -</span>
+	{{/equal}}
+{{/equal-or}}
+{{#equal-or type 'image' 'link'}}
 	<input type="text" name="url" value="{{note.url}}" tabindex="1" placeholder="{{#equal note.type "image"}}Image {{/equal}}URL">
 	<div class="existing"></div>
-{{/if}}
-
-{{#if show_file}}
-	<div class="file-container"></div>
-{{/if}}
+{{/equal-or}}
 
 <input type="text" name="title" value="{{note.title}}" tabindex="2" placeholder="Title">
 <textarea name="text" rows="1" cols="80" tabindex="3" placeholder="Note text">{{note.text}}</textarea>
