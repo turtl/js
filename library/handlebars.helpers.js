@@ -49,7 +49,7 @@ Handlebars.registerHelper('note', function(note, options) {
 			empty = empty && !note.url && !(note.file && note.file.name);
 			break;
 		case 'file':
-			empty = empty && !note.file.name;
+			empty = empty && !(note.file && note.file.name);
 			break;
 		case 'link':
 			empty = empty && !note.url;

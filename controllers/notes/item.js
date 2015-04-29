@@ -47,6 +47,10 @@ var NotesItemController = NoteBaseController.extend({
 		{
 			this.el.addClass('no-text');
 		}
+		if(!this.model.get('title'))
+		{
+			this.el.addClass('no-title');
+		}
 		if(type == 'image' && !this.model.get('url'))
 		{
 			this.el.addClass('preview');

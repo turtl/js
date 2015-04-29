@@ -101,6 +101,14 @@ var NotesViewController = NoteBaseController.extend({
 		}));
 		this.el.className = 'note view';
 		this.el.addClass(type);
+		if(!this.model.get('text'))
+		{
+			this.el.addClass('no-text');
+		}
+		if(!this.model.get('title'))
+		{
+			this.el.addClass('no-title');
+		}
 		if(type == 'image' && !this.model.get('url'))
 		{
 			this.el.addClass('preview');

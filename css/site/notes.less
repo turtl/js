@@ -69,6 +69,11 @@
 		}
 		.note-gutter .content .body {padding: @content_pad;}
 	}
+	&.item.file.no-text.no-title {
+		.note-gutter {padding: 0;}
+		.file {box-shadow: none;}
+	}
+
 	.file {height: (@file_height - (@content_pad * 2)); padding: @content_pad; text-align: center; background: @theme_gray_white; .layer-rest();}
 	.file {
 		strong {display: inline-block; width: 100%; font-size: 16rem; line-height: 20rem; font-weight: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
