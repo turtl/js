@@ -178,7 +178,8 @@ var Note = Protected.extend({
 		}
 		else
 		{
-			this.clear();
+			this.get('file').revoke()
+
 			if(this.get('file').get('hash'))
 			{
 				this.clear_files();
