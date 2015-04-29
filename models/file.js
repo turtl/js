@@ -90,7 +90,7 @@ var NoteFile = Protected.extend({
 				var blob = new Blob([array.buffer], {type: this.get('type')});
 				if(!options.force)
 				{
-					this.set({blob_url: URL.createObjectURL(blob)});
+					this.set({blob_url: URL.createObjectURL(blob)}, options);
 				}
 				return blob;
 			})
