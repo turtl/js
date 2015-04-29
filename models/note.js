@@ -178,11 +178,7 @@ var Note = Protected.extend({
 		}
 		else
 		{
-			if(this.get('file').get('blob_url'))
-			{
-				URL.revokeObjectURL(this.get('file').get('blob_url'));
-			}
-
+			this.clear();
 			if(this.get('file').get('hash'))
 			{
 				this.clear_files();
