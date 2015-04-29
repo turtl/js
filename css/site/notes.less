@@ -62,11 +62,8 @@
 		.file + .note-gutter .content h1 {top: -@file_height;}
 		.note-gutter .content .body {padding: @content_pad;}
 	}
-	&.image.preview {
-		.backing span {}
-		&:not(.view) {
-			.file {box-shadow: none;}
-		}
+	&.image.preview.no-text:not(.view) {
+		.file {box-shadow: none;}
 	}
 	.file {height: (@file_height - (@content_pad * 2)); padding: @content_pad; text-align: center; background: @theme_gray_white; .layer-rest();}
 	.file {
