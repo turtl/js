@@ -271,8 +271,11 @@ var NotesEditController = FormController.extend({
 				filedata.key = this.model.key;
 				var modeldata = {};
 				log.debug('file: pre: ', filebin.length);
-				return filedata.serialize({hash: true}).bind(this)
-					.spread(function(res, hash) {
+				return filedata.serialize().bind(this)
+					.spread(function(res) {
+						// NOTE: we no longer use "hash" for the file ID, we are
+						// now just using a regular Composer-generated ID.
+						var hash = Composer.cid();
 						log.debug('file: post: ', res.body.length);
 						res.note_id = this.model.id();
 						var encfile = new FileData(res);
