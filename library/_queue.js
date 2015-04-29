@@ -1,7 +1,7 @@
 "use strict";
 
 (function() {
-	this.Queue = function(worker, concurrency)
+	this.Queue = function(workerfn, concurrency)
 	{
 		var self = this;
 		var tasks = [];
@@ -10,7 +10,8 @@
 		var workers = [];
 		for(var i = 0; i < concurrency; i++)
 		{
-			workers.push(worker.bind({id: i + 1}));
+			// a "worker" is really just a context/state object
+			workers.push({id: i + 1});
 		}
 
 		var notify = function()
@@ -24,13 +25,16 @@
 			var task = tasks.shift();
 			if(!task) return;
 			var worker = workers.shift();
+			var was_completed = false;		// prevents double-finishing
 			var complete = function(res)
 			{
+				if(was_completed) return;
+				was_completed = true;
 				workers.push(worker);
 				if(task.complete) task.complete(res);
 				notify();
 			};
-			setTimeout(function() { worker(task.task, complete); });
+			setTimeout(function() { workerfn.call(worker, task.task, complete); });
 		};
 
 		this.push = function(task, complete)

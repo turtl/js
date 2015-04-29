@@ -7,7 +7,6 @@
 		var num_workers = options.workers || 4;
 		var datafn = options.data || false;
 
-		var wid = 1;
 		var queue = new Queue(function(task, done) {
 			if(!this.worker)
 			{
@@ -144,7 +143,6 @@
 						else res = {type: 'success', data: res};
 						res = {data: res};
 						res = completefn(res);
-						done(res);
 					}
 					catch(err)
 					{
