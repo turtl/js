@@ -98,9 +98,11 @@ var NotesViewController = NoteBaseController.extend({
 				note.file.img_height = 100 * (note.file.meta.height / note.file.meta.width);
 			}
 		}
+		var show_info = false;
+		if(note.boards.length || note.tags.length) show_info = true;
 		var type_content = view.render('notes/types/'+type, {
 			note: note,
-			show_info: true
+			show_info: show_info
 		});
 		this.html(view.render('notes/view', {
 			note: note,
@@ -253,6 +255,7 @@ var NotesViewController = NoteBaseController.extend({
 
 	hide_info: function(scroll)
 	{
+		if(!this.el_info) return;
 		if(this._last_scroll == scroll) return;
 		this._last_scroll = scroll;
 
