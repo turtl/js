@@ -112,7 +112,7 @@
 
 	@info_width: 240rem;
 	@info_height: 60rem;
-	.info-container {display: block; position: fixed; bottom: 20rem; right: 80rem; .transition(opacity .3s, right .3s;);}
+	.info-container {display: block; position: fixed; .fixed-fix(); z-index: 12; bottom: 20rem; right: 80rem; .transition(opacity .3s, right .3s;);}
 	.info-container.scrolled {opacity: 0;}
 	.info-container.open {right: 60rem;}
 	.info-container.hidden {display: none;}
@@ -183,7 +183,7 @@
 		}
 		.note {
 			.backing {min-height: @header_height;}
-			.header-backing {display: block; position: fixed; z-index: 9; top: 0; left: 0; width: 100%; height: @header_height; background: @theme_black_bg;}
+			.header-backing {display: block; position: fixed; .fixed-fix(); z-index: 9; top: 0; left: 0; width: 100%; height: @header_height; background: @theme_black_bg;}
 			.header-backing.hide {display: none;}
 			> .color {top: auto; right: 16rem; margin: -10rem -3rem 0 0;}
 			.note-gutter .content .body {padding-top: (@content_pad * 2);}
