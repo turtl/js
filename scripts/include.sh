@@ -52,6 +52,7 @@ function all_js() {
 		| grep -v 'handlebars\.runtime' \
 		| grep -v 'templates\.js' \
 		| grep -v '\.thread\.' \
+		| grep -v 'openpgp\.worker' \
 		| sed 's| |___|g'
 	for jsfile in $jsfiles; do print_js $jsfile; done
 
