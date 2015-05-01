@@ -64,6 +64,7 @@ var NotesViewController = NoteBaseController.extend({
 
 		var click_outside = function(e)
 		{
+			if(!this.el_info) return;
 			var inside = Composer.find_parent('.preview', e.target);
 			if(inside || !this.el_info.hasClass('open')) return;
 			this.toggle_info();
@@ -223,6 +224,7 @@ var NotesViewController = NoteBaseController.extend({
 	toggle_info: function(e)
 	{
 		if(e) e.stop();
+		if(!this.el_info) return;
 
 		if(this.el_info.hasClass('open'))
 		{
