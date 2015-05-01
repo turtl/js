@@ -82,7 +82,7 @@ var NoteFile = Protected.extend({
 	{
 		options || (options = {});
 
-		if(this.creating_blob && !options.force) return;
+		if(this.creating_blob && !options.force) return Promise.reject({in_progress: true});
 
 		if(!options.force) this.creating_blob = true;
 		return this.to_array().bind(this)

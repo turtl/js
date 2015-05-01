@@ -30,6 +30,10 @@ var NoteBaseController = Composer.Controller.extend({
 					this.model.get('file').trigger('change:blob_url').trigger('change');
 				}.bind(this);
 				img.src = this.model.get('file').get('blob_url');
+			})
+			.catch(function(err) {
+				if(err.in_progress) return;
+				throw err;
 			});
 	}
 });
