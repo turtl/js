@@ -75,6 +75,7 @@ var ItemActionsController = Composer.Controller.extend({
 		this.bind_once('close', function(options) {
 			options || (options = {});
 		});
+		turtl.back.push(this.close.bind(this), this.cid());
 	},
 
 	close_click: function(e)
@@ -96,6 +97,7 @@ var ItemActionsController = Composer.Controller.extend({
 		$E('header').removeClass('under');
 		setTimeout(function() {
 			this.trigger('close', options);
+			turtl.back.pop(this.cid());
 		}.bind(this));
 	}
 });

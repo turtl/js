@@ -104,6 +104,7 @@ var ActionController = Composer.Controller.extend({
 		this.animate('open');
 		this.el.addClass('open');
 		this.is_open = true;
+		turtl.back.push(this.close.bind(this), this.cid());
 	},
 
 	close: function()
@@ -111,6 +112,7 @@ var ActionController = Composer.Controller.extend({
 		this.animate('close');
 		this.el.removeClass('open');
 		this.is_open = false;
+		turtl.back.pop(this.cid());
 	},
 
 	toggle_open: function(e)

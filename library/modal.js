@@ -82,6 +82,7 @@ var TurtlModal = Composer.Controller.extend({
 			}).delay(300, this);
 			this.trigger('open');
 			document.body.className += ' modal';
+			turtl.back.push(this.close.bind(this), this.cid());
 		}.bind(this);
 		if(options.immediate) do_open();
 		else setTimeout(do_open);
@@ -95,6 +96,7 @@ var TurtlModal = Composer.Controller.extend({
 		this.el.removeClass('active');
 		this.trigger('close');
 		this.gutter.set('html', html_copy).addClass('closing');
+		turtl.back.pop(this.cid());
 		(function() {
 			this.gutter.set('html', '').removeClass('closing');
 			if(this.release_on_close) this.release();

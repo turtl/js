@@ -60,8 +60,10 @@ var turtl = {
 		loading: null
 	},
 
+	// some general libs we use
 	router: null,
 	api: null,
+	back: null,
 
 	// holds the last successfully routed url
 	last_url: null,
@@ -481,6 +483,8 @@ window.addEvent('domready', function() {
 			};
 		}
 	);
+
+	turtl.back = new Backstate();
 
 	// create the barfr
 	barfr = new Barfr('barfr', {timeout: 8000});

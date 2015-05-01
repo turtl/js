@@ -6,6 +6,7 @@ var settings = {
 		{
 			slide = 'right';
 		}
+		turtl.back.clear();
 		turtl.controllers.pages.load(SettingsController, {}, {
 			slide: slide
 		});
@@ -18,6 +19,7 @@ var settings = {
 		{
 			slide = 'left';
 		}
+		turtl.back.push(turtl.route.bind(turtl, '/settings'));
 		turtl.controllers.pages.load(ChangePasswordController, {}, {
 			slide: slide
 		});
