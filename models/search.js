@@ -37,6 +37,7 @@ var Search = Composer.Collection.extend({
 			this.field('url', {boost: 10});
 			this.field('body');
 			this.field('tags', {boost: 10});
+			this.field('file');
 		});
 
 		turtl.profile.get('boards').each(this.index_board.bind(this));
@@ -316,7 +317,7 @@ var Search = Composer.Collection.extend({
 	 */
 	index_note: function(note)
 	{
-		var json = note.toJSON();
+		var json = note.toJSON({get_file: true});
 		// replace "words" longer than 2048 chars
 		if(json.text) json.text = json.text.replace(/[^ ]{2048,}/, '');
 		if(json.url && json.url.match(/^data:/)) json.url = '';
@@ -352,7 +353,8 @@ var Search = Composer.Collection.extend({
 			url: json.url,
 			title: json.title,
 			body: json.text,
-			tags: tags
+			tags: tags,
+			file: (json.file || {}).name
 		});
 	},
 
@@ -394,7 +396,8 @@ var Search = Composer.Collection.extend({
 			url: json.url,
 			title: json.title,
 			body: json.text,
-			tags: tags
+			tags: tags,
+			file: (json.file || {}).name
 		});
 		delete this.index_json.notes[id];
 	},
