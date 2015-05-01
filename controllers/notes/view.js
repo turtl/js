@@ -90,7 +90,14 @@ var NotesViewController = NoteBaseController.extend({
 		{
 			type = 'text';
 		}
-		if(note.file) note.file.blob_url = this.model.get('file').get('blob_url');
+		if(note.file)
+		{
+			note.file.blob_url = this.model.get('file').get('blob_url');
+			if(note.file.meta && note.file.meta.width && note.file.meta.height)
+			{
+				note.file.img_height = 100 * (note.file.meta.height / note.file.meta.width);
+			}
+		}
 		var type_content = view.render('notes/types/'+type, {
 			note: note,
 			show_info: true
