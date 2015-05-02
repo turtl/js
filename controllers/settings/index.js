@@ -3,7 +3,7 @@ var SettingsController = Composer.Controller.extend({
 
 	init: function()
 	{
-		turtl.push_title('Your account');
+		turtl.push_title('Your settings');
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		this.render();

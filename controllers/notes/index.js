@@ -70,7 +70,7 @@ var NotesIndexController = Composer.Controller.extend({
 		this.track_subcontroller('actions', function() {
 			var actions = new ActionController();
 			actions.set_actions([
-				{title: 'Text note', name: 'text', icon: 'note'},
+				{title: 'Text note', name: 'text', icon: 'write'},
 				{title: 'Bookmark', name: 'link', icon: 'bookmark'},
 				{title: 'Image', name: 'image', icon: 'image'},
 				{title: 'File', name: 'file', icon: 'file'}
