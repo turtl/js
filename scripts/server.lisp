@@ -27,5 +27,6 @@
   (load-index res))
 
 (as:with-event-loop (:catch-app-errors t)
+  (vom:config :wookie :info)
   (start-server (make-instance 'listener :port 8185)))
 
