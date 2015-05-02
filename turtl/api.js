@@ -124,7 +124,7 @@ var Api = new Class({
 			request.headers['Authorization'] = 'Basic ' + btoa('user:' + auth_key);
 		}
 		return Sexhr(request)
-			.then(function(res) {
+			.spread(function(res) {
 				if(!params.response_type)
 				{
 					try

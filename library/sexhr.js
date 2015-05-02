@@ -39,7 +39,7 @@
 				if(xhr.status >= 200 && xhr.status < 300)
 				{
 					var value = xhr.response;
-					return resolve(value);
+					return resolve([value, xhr]);
 				}
 				else if(xhr.status >= 400)
 				{
