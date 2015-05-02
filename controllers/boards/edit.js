@@ -15,7 +15,6 @@ var BoardsEditController = FormController.extend({
 	{
 		if(!this.model) this.model = new Board();
 		this.action = this.model.is_new() ? 'Create': 'Edit';
-		this.parent();
 
 		var child = '';
 		if(this.model.get('parent_id')) child = ' child';
