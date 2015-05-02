@@ -10,6 +10,8 @@ config.routes = {
 	'/settings': ['settings', 'index'],
 	'/settings/password': ['settings', 'password'],
 
+	'/personas': ['personas', 'index'],
+
 	'/': ['notes', 'index']
 };
 
