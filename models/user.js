@@ -4,7 +4,7 @@ var User = Protected.extend({
 
 	relations: {
 		personas: {
-			filter_collection: 'Personas',
+			filter_collection: 'PersonasFilter',
 			master: function() { return turtl.profile.get('personas'); },
 			options: {
 				filter: function(p) {
@@ -15,7 +15,6 @@ var User = Protected.extend({
 		},
 
 		settings: {
-			type: Composer.HasMany,
 			collection: 'Settings'
 		}
 	},
