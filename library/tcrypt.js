@@ -881,6 +881,66 @@ tcrypt.asym = {
 	current_version: 1,
 
 	/**
+	 * PGP encrypt a message
+	 */
+	encrypt: function(pubkey, data, options)
+	{
+		options || (options = {});
+
+		return new Promise(function(resolve, reject) {
+			var rawkey = openpgp.key.readArmored(pubkey);
+
+			openpgp.encryptMessage(rawkey.keys, data)
+				.then(function(msg) {
+					resolve(msg);
+				})
+				.catch(reject);
+		});
+	},
+
+	decrypt: function(privkey, data, options)
+	{
+		options || (options = {});
+
+		return new Promise(function(resolve, reject) {
+			var rawkey = openpgp.key.readArmored(privkey).keys[0];
+			rawkey.decrypt();
+			var msg = openpgp.message.readArmored(data);
+
+			openpgp.decryptMessage(rawkey, msg)
+				.then(function(plain) {
+					resolve(plain);
+				})
+				.catch(reject);
+		});
+	},
+
+	keygen: function(options)
+	{
+		options || (options = {});
+		return new Promise(function(resolve, reject) {
+			var opts = {
+				numBits: (options.keysize || 4096),
+				userId: options.user_id,
+				passphrase: null
+			};
+
+			openpgp.generateKeyPair(opts)
+				.then(function(keypair){
+					resolve({
+						private: keypair.privateKeyArmored,
+						public: keypair.publicKeyArmored
+					});
+				})
+				.catch(reject);
+		});
+	}
+};
+
+tcrypt.asym_old = {
+	current_version: 1,
+
+	/**
 	 * Standard serialization for asymetric data
 	 *
 	 *   |-2 bytes-| |-96 bytes-| |-N bytes----|
