@@ -2,24 +2,17 @@ var PersonasController = Composer.Controller.extend({
 	class_name: 'personas',
 
 	elements: {
-		'.personas-container': 'el_personas'
+		'.persona-view': 'el_view'
 	},
 
 	filter: null,
 
 	init: function()
 	{
-		turtl.push_title('Personas');
+		turtl.push_title('Your persona');
 		this.bind('release', turtl.pop_title.bind(null, false));
 
-		/*
-		this.filter = new Composer.FilterCollection(turtl.profile.get('personas'), {
-			filter: function(p) { return p.get('user_id') == turtl.user.id(); }
-		});
-		this.bind('release', this.filter.detach.bind(this.filter));
-		*/
 		this.filter = turtl.user.get('personas');
-
 		this.with_bind(this.filter, ['add', 'remove', 'reset', 'change'], this.render.bind(this));
 		this.render();
 	},
@@ -29,16 +22,22 @@ var PersonasController = Composer.Controller.extend({
 		var persona = this.filter.first();
 		if(persona)
 		{
-			this.html(view.render('personas/view', {
+			this.html(view.render('personas/index', {
 				persona: persona.toJSON()
 			}));
 			var action = this.get_subcontroller('actions');
 			if(action) action.release();
+			this.track_subcontroller('view', function() {
+				return new PersonasViewController({
+					inject: this.el_view,
+					model: persona
+				});
+			}.bind(this));
 		}
 		else
 		{
 			this.html(view.render('personas/empty', {}));
-
+			turtl.events.trigger('header:set-actions', false);
 			// set up the action button
 			this.track_subcontroller('actions', function() {
 				var actions = new ActionController();
@@ -57,10 +56,6 @@ var PersonasController = Composer.Controller.extend({
 	open_add: function()
 	{
 		new PersonasEditController();
-	},
-
-	open_edit: function(e)
-	{
 	}
 });
 

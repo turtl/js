@@ -9,6 +9,21 @@ Handlebars.registerHelper('equal', function(val1, val2, options) {
 	}
 });
 
+Handlebars.registerHelper('contains', function(val1, val2, options) {
+	if(Array.isArray(val1) && val1.contains(val2))
+	{
+		return options.fn(this);
+	}
+	else if(typeof(val1) == 'object' && val1[val2])
+	{
+		return options.fn(this);
+	}
+	else
+	{
+		return options.inverse(this);
+	}
+});
+
 Handlebars.registerHelper('equal-or', function(_) {
 	var vals = Array.prototype.slice.call(arguments, 0);
 	var options = vals.pop();
@@ -120,3 +135,8 @@ Handlebars.registerHelper('bytes', function(bytes, options) {
 	}
 	return (Math.round(10 * (bytes / (1024 * 1024 * 1024))) / 10) + 'gb';
 });
+
+Handlebars.registerHelper('json', function(obj, options) {
+	return JSON.stringify(obj);
+});
+

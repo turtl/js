@@ -174,6 +174,7 @@ function icon(name)
 	var icons = {
 		account: 'e80a',
 		add: 'e82e',
+		arrow: 'e80b',
 		attach: 'e837',
 		attachment: 'e837',
 		back: 'e835',
@@ -184,6 +185,7 @@ function icon(name)
 		edit: 'e815',
 		file: 'e837',
 		image: 'e80e',
+		lock: 'e821',
 		logout: 'e838',
 		menu: 'e808',
 		next: 'e80b',

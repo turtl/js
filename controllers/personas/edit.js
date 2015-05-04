@@ -32,7 +32,7 @@ var PersonasEditController = FormController.extend({
 	render: function()
 	{
 		this.html(view.render('personas/edit', {
-			personas: this.model.toJSON()
+			persona: this.model.toJSON()
 		}));
 		if(this.action == 'Add')
 		{
@@ -59,7 +59,8 @@ var PersonasEditController = FormController.extend({
 		}
 
 		var keypromise = Promise.resolve();
-		if(this.model.is_new())
+		var is_new = this.model.is_new();
+		if(is_new)
 		{
 			keypromise = this.model.init_new({silent: true});
 		}
@@ -77,6 +78,17 @@ var PersonasEditController = FormController.extend({
 
 				// add the persona to our list
 				turtl.profile.get('personas').upsert(this.model);
+				if(is_new)
+				{
+					this.model.generate_key().bind(this)
+						.then(function() {
+							this.model.save();
+						})
+						.catch(function(err) {
+							turtl.events.trigger('ui-error', 'There was a problem generating a key for your persona', err);
+							log.error('persona: edit: keygen: ', this.model.id(), derr(err));
+						});
+				}
 
 				this.trigger('close');
 			})

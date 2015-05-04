@@ -14,6 +14,9 @@ var Persona = Protected.extend({
 		'privkey'
 	],
 
+	// if we're generating a key, returns true
+	generating: false,
+
 	initialize: function(data)
 	{
 		// steal user's key for this persona
@@ -44,11 +47,21 @@ var Persona = Protected.extend({
 			var persona = upersonas.find_by_id(this.id());
 			if(!persona || persona.has_keypair()) return false;
 
-			log.warn('persona: old (or missing) RSA key detected. nuking it.', this.id(), this.cid());
-			persona.unset('pubkey');
-			persona.unset('privkey');
-			persona.generate_ecc_key();
-			persona.save();
+			if(!this.generating)
+			{
+				log.warn('persona: old (or missing) RSA key detected. nuking it.', this.id(), this.cid());
+				persona.unset('pubkey');
+				persona.unset('privkey');
+				persona.generate_key().bind(this)
+					.then(function(prog) {
+						if(prog && prog.in_progress) return;
+						return persona.save();
+					})
+					.catch(function(err) {
+						turtl.events.trigger('ui-error', 'There was a problem upgrading your persona key. Please go to your persona settings and generate a key.', err);
+						log.error('persona: edit: ', this.id(), derr(err));
+					});
+			}
 		}.bind(this));
 		this.trigger('change:pubkey');
 	},
@@ -106,6 +119,30 @@ var Persona = Protected.extend({
 		turtl.api.get('/personas/email/'+email+'*', {}, options);
 	},
 
+	has_keypair: function()
+	{
+		var pubkey = this.get('pubkey');
+		var privkey = this.get('privkey');
+		var is_pgp = !!(pubkey && pubkey.match(/^-----BEGIN PGP/));
+		return is_pgp && pubkey && privkey && true;
+	},
+
+	generate_key: function()
+	{
+		if(this.generating) return Promise.resolve({in_progress: true});
+
+		this.set({generating: true});
+		this.generating = true;
+		return tcrypt.asym.keygen({user_id: this.get('email')}).bind(this)
+			.tap(function(keys) {
+				this.set({
+					pubkey: keys.public,
+					privkey: keys.private,
+					generating: false
+				});
+				this.generating = false;
+			});
+	}
 });
 
 var Personas = SyncCollection.extend({
