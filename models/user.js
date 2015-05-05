@@ -313,8 +313,8 @@ var User = Protected.extend({
 		}
 		else
 		{
-			// create a salt based off repeated username
-			var salt = tcrypt.hash(string_repeat(username, 32));
+			// create a salt based off hashed username
+			var salt = tcrypt.hash(username);
 			var key = tcrypt.key(password, salt, {key_size: 32, iterations: iter, hasher: tcrypt.get_hasher('SHA256')});
 		}
 
