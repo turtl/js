@@ -139,6 +139,15 @@ var turtl = {
 		this.loaded = true;
 		if(window.port) window.port.send('loaded');
 		this.route(initial_route);
+
+		turtl.events.bind('api:connect', function() {
+			log.info('API: connect');
+			barfr.barf('Reconnected to the Turtl service! Disengaging offline mode, and syncing your profile.', {persist: true});
+		});
+		turtl.events.bind('api:disconnect', function() {
+			log.info('API: disconnect');
+			barfr.barf('Can\'t connect to the Turtl service. Engaging offline mode. Your changes will be saved and synced once back online!', {persist: true});
+		});
 	},
 
 	setup_user: function(options)
@@ -519,6 +528,7 @@ window.addEvent('domready', function() {
 	var clid = localStorage.client_id;
 	if(!clid) clid = localStorage.client_id = tcrypt.random_hash();
 	turtl.client_id = clid;
+	turtl.api.monitor({immediate: true});
 	turtl.init();
 });
 
