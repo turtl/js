@@ -140,13 +140,16 @@ var turtl = {
 		if(window.port) window.port.send('loaded');
 		this.route(initial_route);
 
+		var connect_barf_id = null;
 		turtl.events.bind('api:connect', function() {
 			log.info('API: connect');
-			barfr.barf('Connected to the Turtl service! Disengaging offline mode. Syncing your profile.', {persist: true});
+			if(connect_barf_id) barfr.close_barf(connect_barf_id);
+			connect_barf_id = barfr.barf('Connected to the Turtl service! Disengaging offline mode. Syncing your profile.', {persist: true});
 		});
 		turtl.events.bind('api:disconnect', function() {
 			log.info('API: disconnect');
-			barfr.barf('Disconnected from the Turtl service. Engaging offline mode. Your changes will be saved and synced once back online!', {persist: true});
+			if(connect_barf_id) barfr.close_barf(connect_barf_id);
+			connect_barf_id = barfr.barf('Disconnected from the Turtl service. Engaging offline mode. Your changes will be saved and synced once back online!', {persist: true});
 		});
 	},
 
