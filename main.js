@@ -142,11 +142,11 @@ var turtl = {
 
 		turtl.events.bind('api:connect', function() {
 			log.info('API: connect');
-			barfr.barf('Reconnected to the Turtl service! Disengaging offline mode, and syncing your profile.', {persist: true});
+			barfr.barf('Connected to the Turtl service! Disengaging offline mode. Syncing your profile.', {persist: true});
 		});
 		turtl.events.bind('api:disconnect', function() {
 			log.info('API: disconnect');
-			barfr.barf('Can\'t connect to the Turtl service. Engaging offline mode. Your changes will be saved and synced once back online!', {persist: true});
+			barfr.barf('Disconnected from the Turtl service. Engaging offline mode. Your changes will be saved and synced once back online!', {persist: true});
 		});
 	},
 
