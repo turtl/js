@@ -32,10 +32,10 @@ var Barfr = new Class({
 		persist: false,
 
 		// the default timeout for messages
-		timeout:			5000,
+		timeout: 5000,
 		
 		// if true, will be verbose about errors (using alert boxes)
-		debug_mode:			true,
+		debug_mode: true,
 
 		// if true, we won't let the same message be added twice in a row
 		prevent_duplicates: true
@@ -49,8 +49,8 @@ var Barfr = new Class({
 	 * Central place for DOM objects created and used by the modal interface.
 	 */
 	objects: {
-		container:			false,
-		list:				false
+		container: false,
+		list: false
 	},
 
 	/**
