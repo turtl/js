@@ -6,7 +6,7 @@ var FormController = Composer.Controller.extend({
 
 	events: {
 		'submit form': 'submit',
-		'click .button.submit': 'submit',
+		'click .button.submit': 'do_submit',
 		'click .button.cancel': 'cancel'
 	},
 
@@ -15,6 +15,7 @@ var FormController = Composer.Controller.extend({
 	formclass: 'standard-form',
 	action: 'Create',
 	footer_actions: [],
+	disabled: false,
 
 	init: function()
 	{
@@ -70,6 +71,21 @@ var FormController = Composer.Controller.extend({
 			setTimeout(function() { inp.removeClass('error'); }, 8000);
 		});
 		errors[0][0].focus();
+	},
+
+	submit: function(e)
+	{
+		console.log('form: submit: overwrite me');
+	},
+
+	do_submit: function(e)
+	{
+		if(this.disabled)
+		{
+			if(e) e.stop();
+			return;
+		}
+		this.submit(e);
 	}
 });
 
