@@ -18,7 +18,6 @@ var NotesViewController = NoteBaseController.extend({
 	},
 
 	modal: null,
-
 	model: null,
 
 	_last_scroll: null,
