@@ -7,7 +7,6 @@ var BoardsEditController = FormController.extend({
 	},
 
 	modal: null,
-
 	model: null,
 	formclass: 'boards-edit',
 
@@ -30,7 +29,6 @@ var BoardsEditController = FormController.extend({
 		var close = this.modal.close.bind(this.modal);
 		this.modal.open(this.el);
 		this.with_bind(this.modal, 'close', this.release.bind(this));
-
 		this.bind(['cancel', 'close'], close);
 	},
 
