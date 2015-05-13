@@ -531,7 +531,7 @@ window.addEvent('domready', function() {
 	var clid = localStorage.client_id;
 	if(!clid) clid = localStorage.client_id = tcrypt.random_hash();
 	turtl.client_id = clid;
-	turtl.api.monitor({immediate: true});
+	turtl.api.monitor({immediate: true, skip_notify: true});
 	turtl.init();
 });
 

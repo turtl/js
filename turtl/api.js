@@ -47,12 +47,12 @@ var Api = new Class({
 		var failed = false;
 		return this.get('/ping?immediate='+(options.immediate ? 1 : 0), null, {timeout: 80000}).bind(this)
 			.then(function() {
-				if(!this.connected) turtl.events.trigger('api:connect');
+				if(!this.connected && !options.skip_notify) turtl.events.trigger('api:connect');
 				this.connected = true;
 			})
 			.catch(function() {
 				failed = true;
-				if(this.connected) turtl.events.trigger('api:disconnect');
+				if(this.connected && !options.skip_notify) turtl.events.trigger('api:disconnect');
 				this.connected = false;
 			})
 			.finally(function() {
