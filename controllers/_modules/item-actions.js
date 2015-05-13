@@ -13,7 +13,6 @@ var ItemActionsController = Composer.Controller.extend({
 	},
 
 	actions: [],
-	close_action: false,
 	add_url: false,
 
 	init: function()
@@ -53,7 +52,6 @@ var ItemActionsController = Composer.Controller.extend({
 	{
 		var actions = this.actions.slice(0);
 		if(!Array.isArray(actions[0])) actions = [actions];
-		if(this.close_action) actions.push([{name: 'Close', class: 'close'}]);
 
 		this.html(view.render('modules/item-actions', {
 			cid: this.cid(),
