@@ -29,10 +29,6 @@ var Profile = Composer.RelationalModel.extend({
 	// timer for persisting
 	persist_timer: null,
 
-	// if true, will NOT send "profile changed" event on profile...change.
-	// mainly used to prevent double-syncs
-	in_sync: false,
-
 	init: function()
 	{
 		this.bind_relational('boards', 'destroy', function(board) {
@@ -79,8 +75,18 @@ var Profile = Composer.RelationalModel.extend({
 			.then(function(res) {
 				// TODO: ok, we have (not) a sync id, do we grab profile from
 				// API, or do we sync it incrementally?
+				if(!res)
+				{
+					return this.load_profile_from_api();
+				}
+				return res;
+			})
+			.then(function(sync_id) {
+				turtl.sync.set({sync_id: sync_id});
+				return turtl.sync.save();
 			})
 			.then(function() {
+				turtl.update_loading_screen('Loading profile');
 				return ['keychain', 'personas', 'boards', 'notes'];
 			})
 			.map(function(itemname) {
@@ -97,6 +103,15 @@ var Profile = Composer.RelationalModel.extend({
 			.then(function() {
 				this.trigger('populated');
 			});
+	},
+
+	load_profile_from_api: function()
+	{
+		turtl.update_loading_screen('Grabbing profile from server');
+		return turtl.api.get('/v2/sync/full', null, {timeout: 600000})
+			.then(function(profile_sync) {
+				return turtl.sync.update_local_db_from_api_sync(profile_sync);
+			})
 	},
 
 	/**

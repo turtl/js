@@ -9,6 +9,10 @@ var Sync = Composer.Model.extend({
 	// if false, syncing functions will no longer run
 	enabled: false,
 
+	// some polling vars
+	connected: true,
+	_polling: false,
+
 	// holds collections that are responsible for handling incoming data syncs
 	// from the API
 	local_trackers: {},
@@ -167,10 +171,102 @@ return false;
 		clearInterval(this._remote_poll);
 	},
 
-	poll_api_for_changes: function()
+	poll_api_for_changes: function(options)
 	{
+		options || (options = {});
+
 		if(!turtl.user || !turtl.user.logged_in) return false;
 		if(!turtl.poll_api_for_changes) return false;
+
+		this._polling = true;
+		var failed = false;
+		return this.get('/api/v2/sync?immediate='+(options.immediate ? 1 : 0), null, {timeout: 80000}).bind(this)
+			.then(function(sync) {
+				if(!this.connected && !options.skip_notify) turtl.events.trigger('api:connect');
+				this.connected = true;
+				return this.update_local_db_from_api_sync(sync);
+			})
+			.catch(function() {
+				failed = true;
+				if(this.connected && !options.skip_notify) turtl.events.trigger('api:disconnect');
+				this.connected = false;
+			})
+			.finally(function() {
+				this._polling = false;
+				if(failed)
+				{
+					setTimeout(this.monitor.bind(this, {immediate: true}), 15000);
+				}
+				else
+				{
+					this.monitor();
+				}
+			});
+	},
+
+	transform: function(item)
+	{
+		var type = item._sync.type;
+
+		if(type == 'user')
+		{
+			item.key = 'user';
+		}
+
+		if(type == 'note')
+		{
+			if(item.board_id)
+			{
+				item.boards = [item.board_id];
+				delete item.board_id;
+			}
+		}
+
+		return item;
+	},
+
+	type_to_table: function(typename)
+	{
+		var names = {
+			user: 'user',
+			keychain: 'keychain',
+			persona: 'personas',
+			board: 'boards',
+			note: 'notes',
+			file: 'files'
+		};
+		return names[typename];
+	},
+
+	update_local_db_from_api_sync: function(sync_collection, options)
+	{
+		options || (options = {});
+
+		var sync_id = sync_collection.sync_id;
+		var records = sync_collection.records;
+		return new Promise(function(resolve, reject) {
+			var next = function()
+			{
+				var item = records.splice(0, 1)[0];
+				if(!item) return resolve(sync_id);
+				item = this.transform(item);
+				var sync = item._sync;
+				delete item._sync;
+				var table = this.type_to_table(sync.type);
+				if(!table)
+				{
+					return reject(new Error('sync: api->db: error processing sync item (bad _sync.type): ', sync));
+				}
+
+				return turtl.db[table].update(item)
+					.then(next)
+					.catch(function(err) {
+						log.error('sync: api->db: error saving to table: ', table, err);
+						throw err;
+					});
+			}.bind(this);
+			next();
+		}.bind(this));
 	}
 });
 

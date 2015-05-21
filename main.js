@@ -188,7 +188,7 @@ var turtl = {
 			turtl.controllers.sync = new SyncController;
 
 			turtl.show_loading_screen(true);
-			turtl.update_loading_screen('Initializing Turtl...');
+			turtl.update_loading_screen('Initializing Turtl');
 
 			// sets up local storage
 			turtl.setup_local_db().bind({})
@@ -197,7 +197,6 @@ var turtl = {
 					return turtl.user.save();
 				})
 				.then(function() {
-					turtl.update_loading_screen('Loading profile...');
 					this.start = new Date().getTime();
 					return turtl.profile.load();
 				})
@@ -206,7 +205,7 @@ var turtl = {
 					turtl.user.set({personas: []});
 
 					log.info('profile: loaded in: ', (new Date().getTime()) - this.start);
-					turtl.update_loading_screen('Indexing notes...');
+					turtl.update_loading_screen('Indexing notes');
 					return turtl.search.reindex();
 				})
 				.then(function() {
@@ -531,7 +530,6 @@ window.addEvent('domready', function() {
 	var clid = localStorage.client_id;
 	if(!clid) clid = localStorage.client_id = tcrypt.random_hash();
 	turtl.client_id = clid;
-	turtl.api.monitor({immediate: true, skip_notify: true});
 	turtl.init();
 });
 

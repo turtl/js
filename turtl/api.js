@@ -6,11 +6,6 @@ var Api = new Class({
 
 	user: false,
 
-	connected: true,
-	do_monitor: true,
-
-	_polling: false,
-
 	// a tracker that will track all API requests (ONLY IF in an addon)
 	tracker: null,
 
@@ -36,36 +31,6 @@ var Api = new Class({
 		{
 			alert('api.delete() is deprecated and broken in MANY browsers ("delete" is a reserved word in JS). Please use api._delete() instead.');
 		};
-	},
-
-	monitor: function(options)
-	{
-		options || (options = {});
-
-		if(!this.do_monitor) return false;
-		this._polling = true;
-		var failed = false;
-		return this.get('/ping?immediate='+(options.immediate ? 1 : 0), null, {timeout: 80000}).bind(this)
-			.then(function() {
-				if(!this.connected && !options.skip_notify) turtl.events.trigger('api:connect');
-				this.connected = true;
-			})
-			.catch(function() {
-				failed = true;
-				if(this.connected && !options.skip_notify) turtl.events.trigger('api:disconnect');
-				this.connected = false;
-			})
-			.finally(function() {
-				this._polling = false;
-				if(failed)
-				{
-					setTimeout(this.monitor.bind(this, {immediate: true}), 15000);
-				}
-				else
-				{
-					this.monitor();
-				}
-			});
 	},
 
 	set_api_key: function(key)
