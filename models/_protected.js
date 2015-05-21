@@ -116,7 +116,10 @@ var Protected = Composer.RelationalModel.extend({
 	deserialize: function(options)
 	{
 		options || (options = {});
-		if(!this.ensure_key_exists()) return Promise.reject(new Error('no key found for '+ this.id()));
+		if(!this.ensure_key_exists())
+		{
+			return Promise.reject(new Error('no key found for '+ this.base_url + ': ' + this.id()));
+		}
 
 		var data = this.detect_old_format(this.get(this.body_key));
 		return new Promise(function(resolve, reject) {
