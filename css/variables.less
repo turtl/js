@@ -72,8 +72,8 @@
 .touch-scroll () {
 	-webkit-overflow-scrolling: touch;
 }
-@landscape: ~"only screen and (min-device-width: 500px)";
-@desktop: ~"only screen and (min-device-width: 800px)";
+@landscape: ~"only screen and (min-width: 500px)";
+@desktop: ~"only screen and (min-width: 800px)";
 
 .hide-scroll() {
 	&::-webkit-scrollbar { width: 0 !important; height: 0 !important }
