@@ -1,4 +1,5 @@
 .DS_Store
+config/config.js
 node_modules
 index.html
 *.css
