@@ -25,6 +25,9 @@ var Search = Composer.Collection.extend({
 	// full-text search
 	ft: null,
 
+	// when we do a reset, mark the TOTAL results from that search
+	total: 0,
+
 	init: function()
 	{
 	},
@@ -169,14 +172,16 @@ var Search = Composer.Collection.extend({
 			// do our offsetting/limiting
 			var per_page = search.per_page || 100;
 			var offset = ((search.page || 1) - 1) * per_page;
+			var total = res.length;
 			var res = res.slice(offset, offset + per_page);
 			if(options.do_reset)
 			{
+				this.total = total;
 				this.reset(res.map(function(id) { return {id: id}; }), options);
 				this.trigger('search-tags', tags);
 			}
 
-			resolve([res, tags]);
+			resolve([res, tags, total]);
 		}.bind(this));
 	},
 

@@ -34,7 +34,7 @@ var NotesSearchController = Composer.Controller.extend({
 		this.modal = new TurtlModal({
 			class_name: 'turtl-modal search',
 			show_header: true,
-			title: titlefn(turtl.search.size()),
+			title: titlefn(turtl.search.total),
 			actions: [
 				{name: 'reset', icon: 'clear'}
 			]
@@ -55,7 +55,7 @@ var NotesSearchController = Composer.Controller.extend({
 			}
 		}.bind(this));
 		this.with_bind(turtl.search, 'reset', function() {
-			this.modal.set_title(titlefn(turtl.search.size()), turtl.last_url);
+			this.modal.set_title(titlefn(turtl.search.total), turtl.last_url);
 		}.bind(this));
 
 		var last_tags = null;
