@@ -174,6 +174,7 @@ function icon(name)
 	var icons = {
 		account: 'e80a',
 		add: 'e82e',
+		add_user: 'e829',
 		arrow: 'e80b',
 		attach: 'e837',
 		attachment: 'e837',
@@ -196,6 +197,7 @@ function icon(name)
 		search: 'e83a',
 		selected: 'e81e',
 		settings: 'e807',
+		share: 'e81c',
 		sort: 'e80b',
 		tag: 'e80f',
 		write: 'e804'

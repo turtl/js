@@ -6,6 +6,7 @@ config.routes = {
 
 	'/boards': ['boards', 'index'],
 	'/boards/([0-9a-f]+)/notes': ['boards', 'notes'],
+	'/boards/share/([0-9a-f]+)': ['boards', 'sharing'],
 
 	'/settings': ['settings', 'index'],
 	'/settings/password': ['settings', 'password'],

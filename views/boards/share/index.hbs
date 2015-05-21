@@ -1,0 +1,13 @@
+{{#if members.length}}
+	<ul class="item-list">
+		{{#each members}}
+		{{/each}}
+	</ul>
+{{else}}
+	<p class="page-empty">
+		{{icon 'share'}}
+		This board is not shared<br>
+		<small>Tap the share button to start</small>
+	</p>
+{{/if}}
+

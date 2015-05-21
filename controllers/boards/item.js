@@ -36,6 +36,7 @@ var BoardsItemController = Composer.Controller.extend({
 				{
 					actions.push([{name: 'Create child board'}]);
 				}
+				actions.push([{name: 'Share this board', href: '/boards/share/'+this.model.id()}]);
 				this.track_subcontroller('actions', function() {
 					return new ItemActionsController({
 						inject: this.actions,

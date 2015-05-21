@@ -7,7 +7,9 @@ var config = {
 	// what client we're using
 	client: 'core',
 
-	api_url: 'http://turtl.dev:8181/api',
+	//api_url: 'http://turtl.dev:8181/api',
+	api_url: 'http://192.168.1.106:8181/api',
+
 	site_url: 'https://turtl.it',
 	base_url: '',
 
