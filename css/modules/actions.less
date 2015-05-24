@@ -4,7 +4,7 @@
 @action_offset: 13rem;
 #main,
 .turtl-modal {
-	> .action {position: fixed; z-index: 12; bottom: @action_offset; right: @action_offset;}
+	> .action {position: fixed; .fixed-fix(); z-index: 12; bottom: @action_offset; right: @action_offset;}
 	> .action {
 		.abutton {position: relative; display: inline-block; width: @action_size; height: @action_size; text-align: center; border: 2rem solid #fff; border-radius: (@action_size / 1.9cm); background: @theme_primary; .layer-hover(); .transition(box-shadow .3s);}
 		.abutton {
