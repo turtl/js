@@ -201,9 +201,6 @@ var turtl = {
 					return turtl.profile.load();
 				})
 				.then(function() {
-					// forces the user model to load personas from the profile
-					turtl.user.set({personas: []});
-
 					log.info('profile: loaded in: ', (new Date().getTime()) - this.start);
 					turtl.update_loading_screen('Indexing notes');
 					return turtl.search.reindex();

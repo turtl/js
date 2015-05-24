@@ -3,17 +3,6 @@ var User = Protected.extend({
 	local_table: 'user',
 
 	relations: {
-		personas: {
-			filter_collection: 'PersonasFilter',
-			master: function() { return turtl.profile.get('personas'); },
-			options: {
-				filter: function(p) {
-					return p.get('user_id') == turtl.user.id();
-				}
-			},
-			delayed_init: true
-		},
-
 		settings: {
 			collection: 'Settings'
 		}

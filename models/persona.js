@@ -17,6 +17,9 @@ var Persona = Protected.extend({
 	// if we're generating a key, returns true
 	generating: false,
 
+	// automatically upgrade keys from ECC -> PGP
+	auto_upgrade_key: true,
+
 	initialize: function(data)
 	{
 		// steal user's key for this persona
@@ -40,30 +43,34 @@ var Persona = Protected.extend({
 			turtl.user.get('settings').get_by_key('personas').value(settings);
 		}.bind(this), 'persona:user:cleanup');
 
-		this.bind('change:pubkey', function() {
-			var upersonas = turtl.user.get('personas');
-			if(!upersonas) return false;
-			if(this.get('user_id') != turtl.user.id()) return false;
-			var persona = upersonas.find_by_id(this.id());
-			if(!persona || persona.has_keypair()) return false;
+		if(this.auto_upgrade_key)
+		{
+			this.bind('change:privkey', function() {
+				if(this.get('user_id') != turtl.user.id()) return false;
+				if(this.has_keypair()) return false;
+				var persona = this;
 
-			if(!this.generating)
-			{
-				log.warn('persona: old (or missing) RSA key detected. nuking it.', this.id(), this.cid());
-				persona.unset('pubkey');
-				persona.unset('privkey');
-				persona.generate_key().bind(this)
-					.then(function(prog) {
-						if(prog && prog.in_progress) return;
-						return persona.save();
-					})
-					.catch(function(err) {
-						turtl.events.trigger('ui-error', 'There was a problem upgrading your persona key. Please go to your persona settings and generate a key.', err);
-						log.error('persona: edit: ', this.id(), derr(err));
-					});
-			}
-		}.bind(this));
-		this.trigger('change:pubkey');
+				(function() {
+					if(!this.generating)
+					{
+						log.warn('persona: old (or missing) key detected. nuking it.', persona.id(), persona.cid());
+						persona.unset('pubkey');
+						persona.unset('privkey');
+						persona.generate_key().bind(this)
+							.then(function(prog) {
+								if(prog && prog.in_progress) return;
+								log.warn('persona: key upgraded');
+								return persona.save();
+							})
+							.catch(function(err) {
+								turtl.events.trigger('ui-error', 'There was a problem upgrading your persona key. Please go to your persona settings and generate a key.', err);
+								log.error('persona: edit: ', persona.id(), derr(err));
+							});
+					}
+				}).delay(0, this);
+			}.bind(this));
+			this.trigger('change:pubkey');
+		}
 	},
 
 	init_new: function(options)
@@ -145,9 +152,15 @@ var Persona = Protected.extend({
 	}
 });
 
+var BoardPersona = Persona.extend({
+	auto_upgrade_key: false
+});
+
 var Personas = SyncCollection.extend({
 	model: Persona
 });
 
-var PersonasFilter = Composer.FilterCollection.extend({});
+var BoardPersonas = SyncCollection.extend({
+	model: BoardPersona
+});
 

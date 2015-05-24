@@ -12,7 +12,7 @@ var Board = Protected.extend({
 			}
 		},
 		personas: {
-			collection: 'Personas'
+			collection: 'BoardPersonas'
 		}
 	},
 

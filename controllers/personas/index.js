@@ -12,7 +12,7 @@ var PersonasController = Composer.Controller.extend({
 		turtl.push_title('Your persona');
 		this.bind('release', turtl.pop_title.bind(null, false));
 
-		this.filter = turtl.user.get('personas');
+		this.filter = turtl.profile.get('personas');
 		this.with_bind(this.filter, ['add', 'remove', 'reset', 'change'], this.render.bind(this));
 		this.render();
 	},
