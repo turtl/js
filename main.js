@@ -17,13 +17,16 @@ Composer.cid = (function() {
 	var counter = 0;
 	return function() {
 		counter++;
-		return (new Date().getTime().toString(16)) +
+		return ('000000000000' + new Date().getTime().toString(16)).substr(-12) +
 			turtl.client_id +
 			counter.toString(16);
 	};
 })();
 
+// 014d837656f10c160d0f98670a355bdfc69985137ab2a434d8995bc28027139cdb54310e29622253
 var cid_match = /[0-9a-f]+/;
+// 55553b952b137507650026a3
+var old_id_match = /^[0-9a-f]{24}$/;
 
 var default_route = '/';
 

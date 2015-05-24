@@ -51,6 +51,20 @@ var Note = Protected.extend({
 			if(this.disable_file_monitoring) return false;
 			this.clear_files();
 		}.bind(this));
+
+		this.bind('change:id', function() {
+			var id = this.id();
+			if(id.match(old_id_match))
+			{
+				var ts = parseInt(id.substr(0, 8), 16)
+			}
+			else
+			{
+				var ts = parseInt(id.substr(0, 12), 16) / 1000;
+			}
+			this.set({created: ts});
+		}.bind(this));
+		this.trigger('change:id');
 	},
 
 	init_new: function(options)
