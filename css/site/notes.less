@@ -5,8 +5,9 @@
 	.list-container {padding: (@note_list_margin * 2) @note_list_margin;}
 	ul.note-list {position: relative; width: 100%; margin: 0; padding: 0; list-style: none;}
 	ul.note-list {
-		li {margin: 0 @note_list_margin (@note_list_margin * 2) @note_list_margin; .card();}
-		li {
+		li {margin: 0 @note_list_margin (@note_list_margin * 2) @note_list_margin;}
+		> li {.card();}
+		> li {
 			.body {max-height: 400rem; overflow: hidden;}
 		}
 	}
