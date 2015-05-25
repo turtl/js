@@ -1,0 +1,17 @@
+{{#if have_boards}}
+	<div class="note-boards clear">
+		{{icon 'board'}}
+		{{#if boards.length}}
+			<ul>
+				{{#each boards}}
+					<li>
+						{{name}}
+					</li>
+				{{/each}}
+			</ul>
+		{{else}}
+			<span>This note is not in any boards &raquo;</span>
+		{{/if}}
+	</div>
+{{/if}}
+

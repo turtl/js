@@ -1,0 +1,29 @@
+{{#equal-or type 'file' 'image'}}
+	<div class="file-container"></div>
+	{{#equal type 'image'}}
+		<span class="url-or-file">- OR -</span>
+	{{/equal}}
+{{/equal-or}}
+{{#equal-or type 'image' 'link'}}
+	<input type="text" name="url" value="{{note.url}}" tabindex="1" placeholder="{{#equal note.type "image"}}Image {{/equal}}URL">
+	<div class="existing"></div>
+{{/equal-or}}
+
+<input type="text" name="title" value="{{note.title}}" tabindex="2" placeholder="Title">
+<textarea name="text" rows="1" cols="80" tabindex="3" placeholder="Note text">{{note.text}}</textarea>
+<div class="formatting clear">
+	<a href="#formatting" rel="formatting">Formatting help</a>
+</div>
+
+<div class="boards-container"></div>
+
+{{!--	Disable colors for now ='[
+<ul class="colors">
+	{{#each colors}}
+		{{#if @index}}
+			<li rel="{{@index}}" class="{{this}} {{#equal @index ../../note.color}}sel{{/equal}}"><span>&nbsp;</span></li>
+		{{/if}}
+	{{/each}}
+</ul>
+--}}
+

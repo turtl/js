@@ -1,4 +1,4 @@
-var Search = Composer.Model.extend({
+var Search = Composer.Collection.extend({
 	// stores JSON objects for each indexed object. this allows us to unindex an
 	// object easily (for instance if we're re-indexing it, we need to unindex
 	// the old version and index the new version...the old version is stored
@@ -8,133 +8,297 @@ var Search = Composer.Model.extend({
 	},
 
 	// tag_id -> note_id index
-	index_tags: {},
+	index: {
+		tags: {},
+		boards: {},
+		colors: {},
+		all_notes: {},
+		note_tags: {},
+		urls: {}
+	},
 
-	// board_id -> note_id index
-	index_boards: {},
+	// sort fields (tag_id -> sort val index)
+	sort: {
+		created: {},
+		mod: {}
+	},
 
 	// full-text search
 	ft: null,
 
+	// when we do a reset, mark the TOTAL results from that search
+	total: 0,
+
 	init: function()
 	{
-		turtl.profile.bind_relational('boards', 'add', function(board) {
-			this.watch_board(board);
-		}.bind(this), 'search:board:add');
+	},
 
+	reindex: function()
+	{
 		this.ft = lunr(function() {
 			this.ref('id');
 			this.field('title', {boost: 5});
 			this.field('url', {boost: 10});
 			this.field('body');
 			this.field('tags', {boost: 10});
+			this.field('file');
 		});
+
+		turtl.profile.get('boards').each(this.index_board.bind(this));
+		return turtl.db.notes.query().all().execute().bind(this)
+			.map(function(note) {
+				var note = new Note(note);
+				return note.deserialize()
+					.then(function() { return note; })
+			})
+			.then(function(notes) {
+				var batch = 20;
+				var next = function()
+				{
+					var slice = notes.splice(0, batch);
+					if(slice.length == 0) return;
+					slice.forEach(this.reindex_note.bind(this));
+					setTimeout(next);
+				}.bind(this);
+				next();
+			});
 	},
 
-	search: function(search)
+	wipe: function()
 	{
-		// this will hold all search results, as an array of note IDs
-		var res = false;
+		[
+			this.index_json,
+			this.index,
+			this.sort
+		].forEach(function(obj) {
+			Object.keys(obj).forEach(function(k) {
+				obj[k] = {};
+			}.bind(this));
+		});
 
-		// process full-text search first
-		if(search.text && typeOf(search.text) == 'string' && search.text.length > 0 && this.ft)
+		this.ft = null;
+		return this.clear();
+	},
+
+	search: function(search, options)
+	{
+		search || (search = {});
+		options || (options = {});
+
+		search = clone(search);
+		if(search.sort && (search.sort[0] == 'id' || this.sort[search.sort[0]]))
 		{
-			// run the search and grab the IDs (throw out relevance for now)
-			var res = this.ft.search(search.text).map(function(r) { return r.ref; });
+			var field = search.sort[0];
+			var asc = !(search.sort[1] == 'desc');
+			var lookup = this.sort[field];
+			var sortfn = function(a, b)
+			{
+				a = a instanceof Composer.Model ? a.id() : a;
+				b = b instanceof Composer.Model ? b.id() : b;
+				var a1 = asc ? a : b;
+				var b1 = asc ? b : a;
+				if(field == 'id') return a1.localeCompare(b1);
 
-			// sort the resulting IDs so the intersection functions later on
-			// don't choke (they operate on sorted sets).
-			res.sort(function(a, b) { return a.localeCompare(b); });
+				var va = lookup[a1];
+				var vb = lookup[b1];
+				if(typeof(va) == 'number' && typeof(vb) == 'number')
+				{
+					return va - vb;
+				}
+				return va.toString().localeCompare(vb.toString());
+			}.bind(this)
+			this.sortfn = sortfn;
 		}
 
-		// don't want the index searches trying to use this.
-		delete search.text;
+		return new Promise(function(resolve, reject) {
+			// this will hold all search results, as an array of note IDs
+			var res = false;
 
-		// pull out the indexes we're searching and narrow down the resulting
-		// note id list as we go along. this continues until a) no notes are
-		// left (empty result set) or b) we get a list of notes that match all
-		// the search criteria.
-		var searches = Object.keys(search);
-		for(var i = 0, n = searches.length; i < n; i++)
-		{
-			var index = searches[i];
-			var vals = search[index];
-			if(typeOf(vals) != 'array') vals = [vals];
-
-			// loop over all values passed for this index type and interset the
-			// corresponding values.
-			//
-			// for now, there is ONLY an intersection (ie AND) search type, no
-			// union (OR). we do, however, allow exclusions by prefixing a value
-			// with "!"
-			for(var ii = 0, nn = vals.length; ii < nn; ii++)
+			var res_intersect = function(arr)
 			{
-				var val = vals[ii];
-				var exclude = false;
-				if(val.substr(0, 1) == '!')
-				{
-					val = val.substr(1);
-					exclude = true;
-				}
+				if(!res) res = arr;
+				else if(res.length === 0) res = [];
+				else res = this.intersect(res, arr);
+			}.bind(this);
 
-				// check if there is no result set yet. if not, create it using
-				// the first set of index data.
-				if(!res)
+			// loop over the search criteria and narrow down the results
+			var keys = Object.keys(search);
+			for(var i = 0; i < keys.length; i++)
+			{
+				var index = keys[i];
+				var val = search[index];
+				if(!val) continue;
+				if(res && res.length == 0) break;
+				var lookup_options = {};
+				switch(index)
 				{
-					res = this['index_'+index][val];
-					continue;
+					case 'text':
+						res_intersect(this.ft.search(val).map(function(r) { return r.ref; }));
+						break;
+					case 'boards':
+						lookup_options.or = true;
+						// NO BREAK
+					case 'tags':
+						res_intersect(this.index_lookup(res, index, val, lookup_options));
+						break;
+					case 'colors':
+						res_intersect(this.index_lookup(res, 'colors', val, {or: true}));
+						break;
+					case 'url':
+						res_intersect(this.index_lookup(res, 'urls', [val]));
+						break;
 				}
+			}
 
-				// if the result set is empty, just return
-				if(res.length == 0) return res;
+			if(!res)
+			{
+				res = Object.keys(this.index.all_notes);
+			}
 
-				// intersect/exclude based on what kind of value search we're
-				// doing.
-				if(exclude)
-				{
-					res = this.exclude(res, this['index_'+index][val]);
-				}
-				else
-				{
-					res = this.intersect(res, this['index_'+index][val]);
-				}
+			if(this.sortfn) res.sort(sortfn);
+
+			// calculate our tags
+			var tags = {};
+			res.forEach(function(note_id) {
+				var note_tags = JSON.parse(this.index.note_tags[note_id]);
+				note_tags.forEach(function(tag) {
+					if(!tags[tag]) tags[tag] = 0;
+					tags[tag]++;
+				});
+			}.bind(this));
+			tags = Object.keys(tags).map(function(tag) {
+				return {name: tag, count: tags[tag]};
+			});
+
+			// do our offsetting/limiting
+			var per_page = search.per_page || 100;
+			var offset = ((search.page || 1) - 1) * per_page;
+			var total = res.length;
+			var res = res.slice(offset, offset + per_page);
+			if(options.do_reset)
+			{
+				this.total = total;
+				this.reset(res.map(function(id) { return {id: id}; }), options);
+				this.trigger('search-tags', tags);
+			}
+
+			resolve([res, tags, total]);
+		}.bind(this));
+	},
+
+	index_lookup_and: function(res, index, vals)
+	{
+		// loop over all values passed for this index type and interset the
+		// corresponding values.
+		//
+		// for now, there is ONLY an intersection (ie AND) search type, no
+		// union (OR). we do, however, allow exclusions by prefixing a value
+		// with "!"
+		for(var ii = 0, nn = vals.length; ii < nn; ii++)
+		{
+			var val = vals[ii];
+			if(!val) continue;
+			var exclude = false;
+			if(val.substr(0, 1) == '!')
+			{
+				val = val.substr(1);
+				exclude = true;
+			}
+
+			// check if there is no result set yet. if not, create it using
+			// the first set of index data.
+			if(!res)
+			{
+				res = this.index[index][val] || [];
+				continue;
+			}
+
+			// if the result set is empty, just return
+			if(res.length == 0) return res;
+
+			// intersect/exclude based on what kind of value search we're
+			// doing.
+			if(exclude)
+			{
+				res = this.exclude(res, this.index[index][val]);
+			}
+			else
+			{
+				res = this.intersect(res, this.index[index][val]);
 			}
 		}
 		return res;
 	},
 
+	index_lookup_or: function(res, index, vals)
+	{
+		if(vals.length == 0) return res;
+
+		var or_res = [];
+		for(var ii = 0, nn = vals.length; ii < nn; ii++)
+		{
+			var val = vals[ii];
+			if(!val) continue;
+
+			or_res = this.union(or_res, this.index[index][val]);
+		}
+		var ret = [];
+		if(res) ret = this.intersect(res || [], or_res); 
+		else ret = or_res;
+		return ret;
+	},
+
+	index_lookup: function(res, index, vals, options)
+	{
+		options || (options = {});
+		if(res.length == 0) return res;
+
+		if(options.or)
+		{
+			return this.index_lookup_or(res, index, vals);
+		}
+		else
+		{
+			return this.index_lookup_and(res, index, vals);
+		}
+	},
+
 	/**
-	 * Find the intersection between two sorted sets of string values.
+	 * Find the intersection between two sets of string values.
 	 */
 	intersect: function(array1, array2)
 	{
 		var result = [];
-		// Don't destroy the original arrays
-		var a = array1.slice(0);
-		var b = array2.slice(0);
-		var aLast = a.length - 1;
-		var bLast = b.length - 1;
-		while(aLast >= 0 && bLast >= 0)
+		if(array1.length == 0 || array2.length == 0) return [];
+
+		var hash = {};
+		for(var i = 0; i < array1.length; i++)
 		{
-			if(a[aLast].localeCompare(b[bLast]) > 0)
+			hash[array1[i]] = 1;
+		}
+
+		for(var i = 0; i < array2.length; i++)
+		{
+			var val = array2[i];
+			var exists = hash[val];
+			if(exists && exists == 1)
 			{
-				a.pop();
-				aLast--;
-			}
-			else if(a[aLast].localeCompare(b[bLast]) < 0)
-			{
-				b.pop();
-				bLast--;
-			}
-			else
-			{
-				result.push(a.pop());
-				b.pop();
-				aLast--;
-				bLast--;
+				result.push(val);
+				// remove dupes
+				hash[val]++;
 			}
 		}
-		return result.reverse();
+
+		return result;
+	},
+
+	/**
+	 * union two arrays
+	 */
+	union: function(array1, array2)
+	{
+		var filterfn = function(item) { return !!item; };
+		return (array1 || []).filter(filterfn).concat((array2 || []).filter(filterfn));
 	},
 
 	/**
@@ -159,26 +323,44 @@ var Search = Composer.Model.extend({
 	 */
 	index_note: function(note)
 	{
-		var json = toJSON(note);
+		var json = note.toJSON({get_file: true});
 		// replace "words" longer than 2048 chars
 		if(json.text) json.text = json.text.replace(/[^ ]{2048,}/, '');
 		if(json.url && json.url.match(/^data:/)) json.url = '';
 		this.index_json.notes[note.id()] = json;
 
 		note.get('tags').each(function(tag) {
-			console.log('tag: ', tag, tag.get('name'));
 			this.index_type('tags', tag.get('name'), note.id());
 		}.bind(this));
-		this.index_type('boards', note.get('board_id'), note.id());
+		note.get('boards').forEach(function(board_id) {
+			this.index_type('boards', board_id, note.id());
+		}.bind(this));
+
+		var color = note.get('color');
+		this.index_type('colors', color, note.id());
+
+		var tags = JSON.stringify(note.get('tags').map(function(t) { return t.get('name', '').toLowerCase(); }));
+		this.index_type('note_tags', note.id(), tags);
+
+		var url = note.get('url');
+		if(url) this.index_type('urls', url, note.id());
+
+		this.index.all_notes[note.id()] = true;
+
+		// index the sorting fields
+		Object.keys(this.sort).forEach(function(field) {
+			this.sort[field][note.id()] = note.get(field);
+		}.bind(this));
 
 		// run full-text indexer
-		var tags = json.tags.map(function(t) { return t.name; }).join(' ');
+		var tags = json.tags.join(' ');
 		this.ft.add({
 			id: json.id,
 			url: json.url,
 			title: json.title,
 			body: json.text,
-			tags: tags
+			tags: tags,
+			file: (json.file || {}).name
 		});
 	},
 
@@ -193,16 +375,35 @@ var Search = Composer.Model.extend({
 		json.tags.each(function(tag) {
 			this.unindex_type('tags', tag, id);
 		}.bind(this));
-		this.unindex_type('boards', json.board_id, id);
+		json.boards.each(function(board_id) {
+			this.unindex_type('boards', board_id, id);
+		}.bind(this));
+
+		var color = json.color;
+		this.unindex_type('colors', color, id);
+
+		var tags = JSON.stringify(json.tags.map(function(t) { return t.toLowerCase(); }));
+		this.unindex_type('note_tags', note.id(), tags);
+
+		var url = json.url;
+		if(url) this.unindex_type('urls', url, id);
+
+		delete this.index.all_notes[note.id()];
+
+		// unindex the sorting fields
+		Object.keys(this.sort).forEach(function(field) {
+			delete this.sort[field][note.id()];
+		}.bind(this));
 
 		// undo full-text indexing
-		var tags = json.tags.map(function(t) { return t.name; }).join(' ');
+		var tags = json.tags.join(' ');
 		this.ft.remove({
 			id: json.id,
 			url: json.url,
 			title: json.title,
 			body: json.text,
-			tags: tags
+			tags: tags,
+			file: (json.file || {}).name
 		});
 		delete this.index_json.notes[id];
 	},
@@ -214,58 +415,38 @@ var Search = Composer.Model.extend({
 		this.index_note(note);
 	},
 
+	index_board: function(board)
+	{
+		this.index.boards[board.id()] = [];
+	},
+
+	unindex_board: function(board)
+	{
+		delete this.index.boards[board.id()];
+	},
+
+	reindex_board: function(board)
+	{
+		this.unindex_board(board);
+		this.index_board(board);
+	},
+
 	index_type: function(type, index_id, item_id)
 	{
-		if(typeOf(this['index_'+type][index_id]) != 'array')
+		if(typeOf(this.index[type][index_id]) != 'array')
 		{
-			this['index_'+type][index_id] = [];
+			this.index[type][index_id] = [];
 		}
 		// make sure this is a set
-		if(this['index_'+type][index_id].contains(item_id)) return;
+		if(this.index[type][index_id].contains(item_id)) return;
 
 		// save/sort the index
-		this['index_'+type][index_id].push(item_id);
-		this['index_'+type][index_id].sort(function(a, b) { return a.localeCompare(b); });
+		this.index[type][index_id].push(item_id);
 	},
 
 	unindex_type: function(type, index_id, item_id)
 	{
-		var idx = this['index_'+type][index_id];
+		var idx = this.index[type][index_id];
 		if(idx) idx.erase(item_id);
-	},
-
-	/**
-	 * Monitor a board for note changes.
-	 */
-	watch_board: function(board)
-	{
-		board.bind_relational('notes', 'add', function(note) {
-			this.index_note(note);
-		}.bind(this), 'search:notes:monitor:add');
-		board.bind_relational('notes', 'change', function(note) {
-			this.reindex_note(note);
-		}.bind(this), 'search:notes:monitor:change');
-		board.bind_relational('notes', 'remove', function(note) {
-			this.unindex_note(note);
-		}.bind(this), 'search:notes:monitor:remove');
-
-		board.bind('destroy', function() {
-			board.unbind_relational('notes', 'add', 'search:notes:monitor:add');
-			board.unbind_relational('notes', 'change', 'search:notes:monitor:change');
-			board.unbind_relational('notes', 'remove', 'search:notes:monitor:remove');
-			board.unbind('destroy', 'search:board:cleanup');
-		}.bind(this), 'search:board:cleanup');
-	},
-
-	/**
-	 * Reindex all notes in the system.
-	 */
-	reindex: function()
-	{
-		turtl.profile.get('boards').each(function(board) {
-			board.get('notes').each(function(note) {
-				this.reindex_note(note);
-			}.bind(this));
-		}.bind(this));
 	}
 });

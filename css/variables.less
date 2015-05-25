@@ -1,0 +1,82 @@
+// -----------------------------------------------------------------------------
+// theme!
+// -----------------------------------------------------------------------------
+@theme_gutter: #ededed;
+@theme_sheet: #fff;
+@theme_black: #444;
+@theme_black_bg: #222;
+
+@theme_gray: #888;
+@theme_gray_midlight: #bbb;
+@theme_gray_light: #ddd;
+@theme_gray_white: #f5f5f5;
+
+@theme_primary: #83b362;
+@theme_accent: #65a5ee;
+//@theme_warn: #eb242e;
+@theme_warn: #e85c5c;
+@theme_border: #eee;
+@form_border: #bbb;
+
+// -----------------------------------------------------------------------------
+// template
+// -----------------------------------------------------------------------------
+@header_height: 44rem;
+@sidebar_travel: 90%;
+
+// -----------------------------------------------------------------------------
+// layering stuff
+// -----------------------------------------------------------------------------
+@shadow_opacity: .2;
+@shadow_gray: 20;
+.layer-flat () {box-shadow: 0 1rem 2rem rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
+.layer-rest () {box-shadow: 0 1rem 3rem rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
+.layer-rest-bottom () {box-shadow: 0 -1rem 2rem rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
+.layer-hover () {box-shadow: 0 2rem 4rem rgba(@shadow_gray, @shadow_gray, @shadow_gray, @shadow_opacity);}
+
+// -----------------------------------------------------------------------------
+// material
+// -----------------------------------------------------------------------------
+.sheet () {background: @theme_sheet;}
+.card () {.sheet(); .border-radius(); .layer-rest();}
+.uncard () {background: none; border-radius: 0; box-shadow: none;}
+
+// -----------------------------------------------------------------------------
+// utils
+// -----------------------------------------------------------------------------
+.border-radius (@radius: 2rem) { border-radius: @radius; }
+
+.fixed-fix {-webkit-transform: translateZ(0);}
+
+.title-scrim (@to: bottom, @opacity: .35, @cover: 70%) {
+	background: linear-gradient(to @to, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, @opacity) @cover);
+}
+.item-scrim (@opacity: .85, @size: 48rem, @spread: 24rem) {
+	position: absolute;
+	z-index: -1;
+	display: block;
+	width: 0;
+	height: 0;
+	box-shadow: 0 0 @size @spread rgba(0, 0, 0, @opacity);
+	content: '';
+}
+.transform (@props) {
+	-webkit-transform: @props;
+	transform: @props;
+}
+.transition (@value1,@value2:X,...) {
+	@value: ~`"@{arguments}".replace(/[\[\]]|\,\sX/g, '')`;
+	-webkit-transition: ~`"@{value}".replace(/transform/g, '-webkit-transform')`;
+	transition: @value;
+}
+.touch-scroll () {
+	-webkit-overflow-scrolling: touch;
+}
+@landscape: ~"only screen and (min-width: 500px)";
+@desktop: ~"only screen and (min-width: 800px)";
+
+.hide-scroll() {
+	&::-webkit-scrollbar { width: 0 !important; height: 0 !important }
+	//overflow: -moz-scrollbars-none;
+}
+

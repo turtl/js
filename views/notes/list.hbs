@@ -1,0 +1,17 @@
+{{#if initial}}
+	<p class="page-empty">Decrypting notes...</p>
+{{/if}}
+{{#if no_results}}
+	<p class="page-empty">No notes found.</p>
+{{/if}}
+{{#if empty}}
+	<p class="page-empty">
+		{{icon 'notes'}}
+		No notes here!<br>
+		<small>Tap <em>+</em> to start</small>
+	</p>
+{{/if}}
+<ul class="note-list clear"></ul>
+
+<p class="paginate"></p>
+

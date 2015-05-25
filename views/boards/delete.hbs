@@ -1,0 +1,25 @@
+<p class="warn">
+	Are you sure you want to delete the board <em>{{parentname}}{{board.title}}</em>
+	{{#if children.length}}
+		as well as its children:
+		<ul>
+			{{#each children}}
+				<li>{{title}}</li>
+			{{/each}}
+		</ul>
+	{{else}}
+	?
+	{{/if}}
+</p>
+<div class="fr delete-notes">
+	<input id="delete_notes_{{board.id}}" type="checkbox" name="notes" value="1">
+	<label for="delete_notes_{{board.id}}">
+		Also delete notes in
+		{{#if children.length}}
+			the above <strong>{{count}}</strong> boards
+		{{else}}
+			<em>{{parentname}}{{../board.title}}</em>
+		{{/if}}
+	</label>
+</div>
+

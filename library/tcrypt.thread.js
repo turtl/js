@@ -36,14 +36,14 @@ self.addEventListener('message', function(e) {
 
 		switch(cmd)
 		{
-			case 'encrypt+hash':
-				var enc = run_cmd('encrypt');
-				var hash = tcrypt.hash(enc);
-				res = {c: enc, h: hash};
-				break;
-			default:
-				res = run_cmd(cmd);
-				break;
+		case 'encrypt+hash':
+			var enc = run_cmd('encrypt');
+			var hash = tcrypt.hash(enc);
+			res = {c: enc, h: hash};
+			break;
+		default:
+			res = run_cmd(cmd);
+			break;
 		}
 	}
 	catch(e)
@@ -59,6 +59,6 @@ self.addEventListener('message', function(e) {
 	else if(!res.type) res = {type: 'success', data: res};
 
 	self.postMessage(res);
-	self.close();
+	//self.close();
 });
 

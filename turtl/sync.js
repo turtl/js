@@ -1,9 +1,6 @@
 // extend_error is in functions.js
 var SyncError = extend_error(Error, 'SyncError');
 
-// helps us track local changes so we don't double-apply
-var local_sync_id = 0;
-
 /**
  * Default sync function, persists items to the local DB
  */
@@ -21,11 +18,8 @@ Composer.sync = function(method, model, options)
 	if(table == 'users') table = 'user';	// kind of a hack. oh well.
 
 	// some debugging, can make tracking down sync issues easier
-	if(_sync_debug_list.contains(table))
-	{
-		var action = method == 'delete' ? 'delete' : (method == 'create' ? 'add' : 'edit');
-		log.info('save: '+ table +': mem -> db ('+ action +')');
-	}
+	var action = method == 'delete' ? 'delete' : (method == 'create' ? 'add' : 'edit');
+	log.info('save: '+ table +': mem -> db ('+ action +')');
 
 	var error = options.error || function() {};
 	if(!turtl.db)
@@ -44,13 +38,13 @@ Composer.sync = function(method, model, options)
 	{
 		if(['create', 'update', 'delete'].contains(method))
 		{
-			if(!options.skip_local_sync)
+			if(options.skip_local_sync)
 			{
-				turtl.sync.notify_local_change(table, method, modeldata, {track: !options.skip_track});
+				log.warn('sync: using deprecated sync option: skip_local_sync');
 			}
 			if(!options.skip_remote_sync)
 			{
-				turtl.sync.queue_remote_change(table, method, modeldata);
+				turtl.sync.queue_outgoing_change(table, method, modeldata);
 			}
 		}
 
@@ -61,48 +55,53 @@ Composer.sync = function(method, model, options)
 		if(options.success) options.success(res);
 	};
 
-	if(method != 'read')
+	var promise = Promise.resolve();
+
+	if(options.skip_serialize)
+	{
+		// model was pre-serialized
+		promise = Promise.resolve([model.toJSON()]);
+	}
+	else if(!['read', 'delete'].contains(method))
 	{
 		// serialize our model, and add in any extra data needed
-		modeldata = model.toJSON();
-		if(options.args) modeldata.meta = options.args;
+		promise = model.serialize();
 	}
 
-	// any k/v data that doesn't go by the "id" field should have it's key field
-	// filled in here.
-	if(table == 'user')
-	{
-		modeldata.key = 'user';
-	}
+	promise
+		.spread(function(serialized) {
+			if(serialized) modeldata = serialized;
+			if(modeldata && options.args) modeldata.meta = options.args;
+			// any k/v data that doesn't go by the "id" field should have it's key field
+			// filled in here.
+			if(table == 'user')
+			{
+				modeldata.key = 'user';
+			}
 
-	log.debug('save: '+ table +': '+ method, modeldata);
-	switch(method)
-	{
-	case 'read':
-		turtl.db[table].get(model.id()).then(success, error);
-		break;
-	case 'create':
-		// set the CID into the ID field. the API will ignore this field, except
-		// to add it to the "sync" table, which will allow us to match the local
-		// record with the remote record in the rare case that the object is
-		// added to the API but the response (with the ID) doesn't update in the
-		// local db (becuase of the client being closed, for instance, or the
-		// server handling the request crashing after the record is added)
-		model._cid = model.cid();
-		modeldata.id = model.cid();
+			switch(method)
+			{
+			case 'read':
+				turtl.db[table].get(model.id()).then(success).catch(error);
+				break;
+			case 'create':
+				model.set({id: model.cid()}, {silent: true});
+				modeldata.id = model.id();
 
-		turtl.db[table].add(modeldata).then(success, error);
-		break;
-	case 'delete':
-		turtl.db[table].remove(model.id()).then(success, error);
-		break;
-	case 'update':
-		turtl.db[table].update(modeldata).then(success, error);
-		break;
-	default:
-		throw new SyncError('Bad method passed to Composer.sync: '+ method);
-		return false;
-	}
+				turtl.db[table].add(modeldata).then(success).catch(error);
+				break;
+			case 'delete':
+				turtl.db[table].remove(model.id()).then(success).catch(error);
+				break;
+			case 'update':
+				turtl.db[table].update(modeldata).then(success).catch(error);
+				break;
+			default:
+				throw new SyncError('Bad method passed to Composer.sync: '+ method);
+				return false;
+			}
+			log.debug('save: '+ table +': '+ method, modeldata);
+		});
 };
 
 /**
@@ -171,11 +170,13 @@ var api_sync = function(method, model, options)
 	}
 
 	// call the API!
-	turtl.api[method](url, args, {
-		rawUpload: options.rawUpload,
-		responseType: options.responseType,
+	return turtl.api[method](url, args, {
+		response_type: options.response_type,
 		headers: headers,
-		success: function(res) {
+		progress: options.progress,
+		uploadprogress: options.uploadprogress,
+	}).bind(this)
+		.tap(function(res) {
 			// if we got sync_ids back, set them into our remote sync's ignore.
 			// this ensures that although we'll get back the sync record(s) for
 			// the changes we just made, we can ignore them when they come in.
@@ -185,21 +186,16 @@ var api_sync = function(method, model, options)
 					turtl.sync.ignore_on_next_sync(sync_id, {type: 'remote'});
 				});
 			}
-			// carry on
-			if(options.success) options.success.apply(this, arguments);
-		},
-		progress: options.progress,
-		uploadprogress: options.uploadprogress,
-		error: function(err, xhr) {
+		})
+		.catch(function(err) {
+			var xhr = err.xhr || {};
 			if(method == '_delete' && xhr.status == 404)
 			{
 				// ok, we tried to delete it and it's not there. success? yes,
 				// great success.
-				if(options.success) options.success.apply(this, arguments);
 				return;
 			}
-			if(options.error) options.error.apply(this, arguments);
-		}
-	});
+			throw err;
+		});
 };
 

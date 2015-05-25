@@ -1,0 +1,19 @@
+<div rel="{{cid}}" class="item-actions">
+	<a href="#actions">{{icon 'menu'}}</a>
+	<div class="menu">
+		{{#each actions}}
+			<div class="row">
+				<ul>
+					{{#each this}}
+						<li {{#if class}}class="{{class}}"{{/if}}>
+							<a href="{{#if href}}{{href}}{{else}}#{{sluggify name}}{{/if}}" rel="{{sluggify name}}">
+								{{name}}
+							</a>
+						</li>
+					{{/each}}
+				</ul>
+			</div>
+		{{/each}}
+	</div>
+</div>
+

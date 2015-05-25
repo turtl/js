@@ -58,11 +58,11 @@ var Invite = Composer.Model.extend({
 		var item_key = tcrypt.key_to_bin(this.get('item_key'));
 		var item_id = this.get('item_id');
 
-		turtl.api.post('/invites/accepted/'+this.id(), {
+		return turtl.api.post('/invites/accepted/'+this.id(), {
 			code: this.get('code'),
 			persona: persona.id()
-		}, {
-			success: function(res) {
+		}).bind(this)
+			.then(function(res) {
 				// we have no more use for this invite
 				if(window.port) window.port.send('invite-remove', this.id());
 
@@ -73,34 +73,33 @@ var Invite = Composer.Model.extend({
 					turtl.profile.get('keychain').add_key(item_id, 'board', item_key);
 				}
 
+				var promise = null;
 				switch(this.get('type'))
 				{
 				case 'b':
 					var board = new Board({id: item_id});
 					board.key = item_key;
-					board.from_share(res);
+					promise = board.from_share(res);
+					break;
+				default:
+					promise = Promise.resolve();
 					break;
 				}
 
-				if(options.success) options.success();
-			}.bind(this),
-			error: options.error
-		});
+				return promise;
+			});
 	},
 
 	deny: function(persona, options)
 	{
-		turtl.api.post('/invites/denied/'+this.id(), {
+		return turtl.api.post('/invites/denied/'+this.id(), {
 			code: this.get('code'),
 			persona: persona.id()
-		}, {
-			success: function() {
+		}).bind(this)
+			.then(function() {
 				// we have no more use for this invite
 				if(window.port) window.port.send('invite-remove', this.id());
-				if(options.success) options.success();
-			}.bind(this),
-			error: options.error
-		});
+			});
 	}
 });
 
@@ -122,40 +121,34 @@ var BoardInvite = Invite.extend({
 		var encrypting_pass = encdata.encrypting_pass;
 		var used_secret = encdata.used_secret;
 
-		turtl.api.post('/invites/boards/'+board.id(), {
+		return turtl.api.post('/invites/boards/'+board.id(), {
 			persona: from_persona.id(),
 			to: this.get('email'),
 			key: encrypting_pass,
 			board_key: encrypted_key,
 			question: question,
 			used_secret: used_secret ? 1 : 0
-		}, {
-			success: function(invite) {
+		}).bind(this)
+			.then(function(invite) {
 				if(invite.priv)
 				{
 					var privs = Object.clone(board.get('privs', {}));
 					privs[invite.id] = invite.priv;
 					board.set({privs: privs});
 				}
-				if(options.success) options.success(invite);
-			}.bind(this),
-			error: options.error
-		});
+			});
 	},
 
 	cancel: function(board, options)
 	{
 		options || (options = {});
 
-		turtl.api._delete('/invites/'+this.id(), {}, {
-			success: function() {
+		return turtl.api._delete('/invites/'+this.id(), {}).bind(this)
+			.then(function() {
 				var privs = Object.clone(board.get('privs', {}));
 				delete privs[this.id()];
 				board.set({privs: privs});
-				if(options.success) options.success();
-			}.bind(this),
-			error: options.error
-		});
+			});
 	}
 });
 

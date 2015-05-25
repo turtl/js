@@ -46,19 +46,14 @@ var Keychain = SyncCollection.extend({
 				k: key
 			});
 		}
-		entry.save({
-			success: function(model) {
-				if(options.success) options.success(model);
-			}.bind(this),
-			error: function(model, err) {
+		this.add(entry);
+		return entry.save()
+			.catch(function(err) {
 				barfr.barf('Error saving key for item: '+ err);
 				log.error('keychain: error saving: ', arguments);
 				this.remove(entry);
-				if(options.error) options.error(err);
-			}.bind(this)
-		});
-		this.add(entry);
-		return entry;
+				throw err;
+			});
 	},
 
 	/**
@@ -79,9 +74,9 @@ var Keychain = SyncCollection.extend({
 			{
 				return tcrypt.key_to_bin(models[0].get('k'));
 			}
-			catch(e)
+			catch(err)
 			{
-				log.error('keychain: error deserializing key: ', models[0].id(), e);
+				log.error('keychain: error deserializing key: ', models[0].id(), derr(err));
 				return false;
 			}
 		}
@@ -107,13 +102,11 @@ var Keychain = SyncCollection.extend({
 
 		var model = this.find_key(item_id, {return_model: true});
 		if(!model) return false;
-		model.destroy({
-			success: options.success,
-			error: function(err) {
+		return model.destroy()
+			.catch(function(err) {
 				barfr.barf('Error removing key for item: '+ err);
-				if(options.error) options.error();
-			}
-		});
+				throw err;
+			});
 	}
 });
 

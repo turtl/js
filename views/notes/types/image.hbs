@@ -1,0 +1,23 @@
+{{#note note info=show_info}}
+	<div class="backing">
+		{{#if file.name}}
+			{{#if file.blob_url}}
+				<a href="{{file.blob_url}}" target="_blank">
+					<img width="{{file.meta.width}}" height="{{file.meta.height}}" src="{{file.blob_url}}" alt="{{title}}">
+				</a>
+			{{else}}
+				<a href="#open" rel="download">
+					<span {{#if file.img_height}}class="has-size" style="padding-top: {{file.img_height}}%;"{{/if}}>
+						{{icon 'image'}}
+					</span>
+				</a>
+			{{/if}}
+		{{else}}
+			<a href="{{url}}" target="_blank">
+				<img src="{{url}}" alt="{{title}}" />
+			</a>
+		{{/if}}
+	</div>
+	<div class="header-backing hide">&nbsp;</div>
+{{/note}}
+

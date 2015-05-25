@@ -28,14 +28,14 @@ var Barfr = new Class({
 	 * Configurable options - these are safe to tweak and change
 	 */
 	options: {
-		// "persist" | "timeout" :: whether to keep messages open by default
-		message_persist:	'timeout',
+		// if true, barfs don't timeout
+		persist: false,
 
 		// the default timeout for messages
-		timeout:			5000,
+		timeout: 5000,
 		
 		// if true, will be verbose about errors (using alert boxes)
-		debug_mode:			true,
+		debug_mode: true,
 
 		// if true, we won't let the same message be added twice in a row
 		prevent_duplicates: true
@@ -49,8 +49,8 @@ var Barfr = new Class({
 	 * Central place for DOM objects created and used by the modal interface.
 	 */
 	objects: {
-		container:			false,
-		list:				false
+		container: false,
+		list: false
 	},
 
 	/**
@@ -178,11 +178,10 @@ var Barfr = new Class({
 
 			init_timer: function()
 			{
-				if (this.options.message_persist == 'persist')
-					return false;
+				if(this.options.persist) return false;
 
 				this.timer = new Timer(this.options.timeout);
-				this.timer.end = this.timer_end.bind(this);
+				this.timer.bind('fired', this.timer_end.bind(this));
 				this.timer.start();
 			},
 			timer_end: function()
@@ -210,7 +209,8 @@ var Barfr = new Class({
 	{
 		this.barfs[id].li.removeEvents('click');
 		this.barfs[id].slider = null;
-		this.barfs[id].li.destroy();
+		// the li is wrapped in a div, courtesy of the slider
+		this.barfs[id].li.getParent().destroy();
 		this.barfs[id].li = null;
 		this.barfs[id].timer = null;
 		delete this.barfs[id];

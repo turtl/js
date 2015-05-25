@@ -1,0 +1,88 @@
+@import 'variables';
+
+html {font-size: 1px;}
+html, body {width: 100%; height: 100%;}
+html {
+	-ms-touch-action: manipulation;
+	touch-action: manipulation;
+}
+
+::selection {background: #bfe1de;}
+::-moz-selection {background: #bfe1de;}
+* {
+	-webkit-tap-highlight-color: rgba(255, 255, 255, 0); 
+	-webkit-tap-highlight-color: transparent;
+}
+*:focus {outline: 0;}
+
+body {font-size: 10rem; font-family: 'raleway', helvetica, arial, sans-serif; background: @theme_gutter;}
+
+a { text-decoration: none; }
+
+/* custom font(s) */
+@font-face {font-family: 'Entypo'; font-weight: 400; src: url(../images/font/turtl-icons.ttf);}
+@font-face {font-family: 'Raleway'; font-style: normal; font-weight: 400; src: local('Raleway'), url(../images/font/raleway.woff) format('woff');}
+@font-face {font-family: 'Raleway'; font-style: normal; font-weight: 600; src: local('Raleway SemiBold'), local('Raleway-SemiBold'), url(../images/font/raleway-semibold.woff) format('woff');}
+
+//#wrap {position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: scroll;}
+#wrap {}
+#app {.transition(left .3s);}
+#main {position: relative; left: 0; z-index: 5; padding: @header_height 0 64rem 0; .transition(left .3s);}
+
+@header_pad_top: 4rem;
+@header_adjusted: (@header_height - @header_pad_top);
+
+header {position: fixed; .fixed-fix(); z-index: 14; width: 100%; height: @header_adjusted; margin: 0 0 0 0; padding: @header_pad_top 0 0 0; background: @theme_black_bg; .layer-rest();}
+header.under {z-index: 10;}
+header {
+	a.logo {position: absolute; display: block; width: 60rem; height: 28rem; margin: 3rem 0 0 0;}
+	a.logo {
+		img {position: relative; z-index: 2; max-width: 100%; height: 100%; margin: 0 0 0 8rem;}
+		icon {position: absolute; z-index: 1; margin: 6rem 0 0 -14rem; font-size: 28.5rem; color: #8fc46a; .transition(margin-left .3s);}
+	}
+	.has-back {
+		h1 {margin-left: 10rem;}
+		a.logo {display: none;}
+	}
+
+	h1 {position: absolute; width: 70%; margin: 1rem 0 0 60rem; text-align: left; font-weight: normal; font-size: 1.6em; line-height: 1.2em;}
+	h1 {
+		em {color: #8fc46a;}
+		em {
+			> span,
+			a {display: inline-block; max-width: 100%; padding: 7rem 0 7rem 0; color: #8fc46a; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}
+			a icon {vertical-align: -12%; margin-right: 8rem; color: #8fc46a; font-size: 1.4em;}
+		}
+	}
+	ul.actions {position: absolute; top: 0; right: 0; height: @header_height; list-style: none;}
+	ul.actions {
+		> li {display: inline-block; width: 44rem; height: @header_height; vertical-align: top;}
+		> li {
+			> a {display: inline-block; width: @header_adjusted; height: @header_adjusted; line-height: 42rem; text-align: center;}
+			> a {
+				icon {font-size: 22rem; color: #eee; vertical-align: middle;}
+				icon.info {font-size: 20rem;}
+			}
+			.item-actions {
+				> a {width: @header_height; height: @header_height; margin: 2rem 0 0 0; line-height: @header_height; text-align: center;}
+				> a icon {color: #eee;}
+				> .menu {top: 8rem; right: 8rem;}
+			}
+		}
+	}
+}
+
+footer {display: block; margin: 32rem 0 0 0; padding: 16rem; font-size: 10rem; color: #777; text-align: right;}
+
+/* settings menu slide in */
+body.settings {
+	header a.logo icon {margin-left: -20rem;}
+}
+
+/* body page slide shite */
+#tmp-slide {position: absolute; top: @header_height; display: none; width: 100%; .transition(left .3s);}
+body.page-slide {overflow: hidden;}
+body.page-slide #tmp-slide {display: block;}
+
+body.settings,
+body.modal {overflow-y: hidden !important;}

@@ -1,23 +1,30 @@
-var UserJoinController = Composer.Controller.extend({
-	inject: turtl.main_container_selector,
-
+var UserJoinController = FormController.extend({
 	elements: {
 		'input[name=username]': 'inp_username',
 		'input[name=password]': 'inp_password',
 		'input[name=confirm]': 'inp_confirm',
 		'input[name=promo]': 'inp_promo',
-		'input[type=submit]': 'submit',
+		'input[type=submit': 'inp_submit',
 		'div.promo': 'promo_section'
 	},
 
 	events: {
-		'submit form': 'do_join',
-		'click a[href=#open-promo]': 'open_promo'
+		'click a[href=#open-promo]': 'open_promo',
+		'click .button.confirm': 'finalize'
 	},
+
+	model: false,
+	promo: null,
+
+	buttons: false,
+	formclass: 'user-join',
 
 	init: function()
 	{
-		this.render();
+		this.parent();
+
+		turtl.push_title('Join', '/users/login');
+		this.bind('release', turtl.pop_title.bind(null, false));
 
 		// check for promo codes
 		var check_promo = function()
@@ -32,11 +39,13 @@ var UserJoinController = Composer.Controller.extend({
 			check_promo.delay(500, this);
 		}.bind(this);
 		check_promo();
+
+		this.render();
 	},
 
 	render: function()
 	{
-		var content = Template.render('users/join', {
+		var content = view.render('users/join', {
 			enable_promo: config.enable_promo,
 			promo: localStorage.promo
 		});
@@ -46,61 +55,80 @@ var UserJoinController = Composer.Controller.extend({
 			this.promo_section.set('slide', {duration: 250, mode: 'horizontal'});
 			this.promo_section.get('slide').hide();
 		}
-		//this.inp_username.focus();
+		(function() { this.inp_username.focus(); }).delay(100, this);
 	},
 
-	do_join: function(e)
+	check_login: function(inp_username, inp_password, inp_pconfirm)
+	{
+		var username = inp_username.get('value');
+		var password = inp_password.get('value');
+		var pconfirm = inp_pconfirm.get('value');
+
+		var errors = [];
+		if(username.length < 3)
+		{
+			errors.push([inp_username, 'Please enter a username 3 characters or longer.']);
+		}
+
+		if(password.length == 0)
+		{
+			errors.push([inp_password, 'Please enter a passphrase. Hint: Sentences are much better than single words.']);
+		}
+		else if(password.length < 4)
+		{
+			errors.push([inp_password, 'We don\'t mean to tell you your business, but a password less than four characters won\'t cut it. Try again.']);
+		}
+		else if(password != pconfirm)
+		{
+			errors.push([inp_pconfirm, 'Your password does not match the confirmation.']);
+		}
+
+		if(password.toLowerCase() == 'password')
+		{
+			errors.push([inp_password, 'You want to secure all of your data using <em>that</em> password? Be our guest...']);
+		}
+		return errors;
+	},
+
+	submit: function(e)
 	{
 		if(e) e.stop();
 		var username = this.inp_username.get('value');
 		var password = this.inp_password.get('value');
 		var pconfirm = this.inp_confirm.get('value');
-		var promo = this.inp_promo.get('value');
+		var promo = this.inp_promo ? this.inp_promo.get('value') : null;
 
-		if(password != pconfirm)
+		var errors = this.check_login(this.inp_username, this.inp_password, this.inp_confirm);
+		if(!this.check_errors(errors)) return;
+
+		this.inp_submit.disabled = true;
+
+		if(password.length < 10)
 		{
-			barfr.barf('Your password does not match the confirmation.');
-			this.inp_password.focus();
-			return false;
+			barfr.barf('Your password is less than 10 characters. This is allowed, but we advise you to change to a passphrase of at least a few words.');
 		}
-
-		if(password.length < 4)
-		{
-			barfr.barf('We don\'t mean to tell you your business, but a password less than four characters won\'t cut it. Try again.');
-			this.inp_password.focus();
-			return false;
-		}
-
-		if(password.toLowerCase() == 'password')
-		{
-			barfr.barf('You want to secure all of your data using <em>that</em> password? Be our guest...');
-		}
-
-		this.submit.disabled = true;
 
 		var user = new User({
 			username: username,
 			password: password
 		});
+
 		turtl.loading(true);
-		user.join({
-			promo: promo,
-			success: function(userdata) {
+		user.join({ promo: promo }).bind(this)
+			.then(function(userdata) {
 				var data = user.toJSON();
 				data.id = userdata.id;
-				turtl.user.set({
-					username: user.get('username'),
-					password: user.get('password')
-				});
 				turtl.user.login(data);
-				turtl.loading(false);
 				turtl.route('/');
-			}.bind(this),
-			error: function() {
+			})
+			.catch(function(err) {
+				turtl.events.trigger('ui-error', 'There was a problem saving that account', err);
+				log.error('users: join: ', this.model.id(), derr(err));
+				this.inp_submit.disabled = false;
+			})
+			.finally(function() {
 				turtl.loading(false);
-				this.submit.disabled = false;
-			}.bind(this)
-		});
+			});
 	},
 
 	open_promo: function(e)

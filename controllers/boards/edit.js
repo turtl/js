@@ -1,133 +1,93 @@
-var BoardEditController = Composer.Controller.extend({
+var BoardsEditController = FormController.extend({
 	elements: {
-		'input[type="text"]': 'inp_title'
+		'input[name=title]': 'inp_title'
 	},
 
 	events: {
-		'submit form': 'edit_board',
-		'keyup input[type=text]': 'test_key',
-		'click a[href=#submit]': 'edit_board',
-		'click a[href=#cancel]': 'cancel',
-		'click .settings a[href=#delete]': 'delete_board'
 	},
 
-	board: null,
-	profile: null,
-
-	// if true, brings up an inline-editing interface
-	bare: false,
-	edit_in_modal: true,
-	show_settings: false,
-
-	title: false,
+	modal: null,
+	model: null,
+	formclass: 'boards-edit',
 
 	init: function()
 	{
-		if(!this.board) this.board = new Board();
-		this.render();
-		if(this.bare)
-		{
-			this.el.addClass('board-bare');
-		}
-		else if(this.edit_in_modal)
-		{
-			modal.open(this.el);
-			var close_fn = function() {
-				this.release();
-				modal.removeEvent('close', close_fn);
-			}.bind(this);
-			modal.addEvent('close', close_fn);
-		}
-		this.inp_title.focus();
-		turtl.keyboard.detach(); // disable keyboard shortcuts while editing
-	},
+		if(!this.model) this.model = new Board();
+		this.action = this.model.is_new() ? 'Create': 'Edit';
 
-	release: function()
-	{
-		if(modal.is_open && this.edit_in_modal) modal.close();
-		turtl.keyboard.attach(); // re-enable shortcuts
-		this.parent.apply(this, arguments);
+		var child = '';
+		if(this.model.get('parent_id')) child = ' child';
+
+		this.modal = new TurtlModal({
+			show_header: true,
+			title: this.action + child + ' board'
+		});
+
+		this.parent();
+		this.render();
+
+		var close = this.modal.close.bind(this.modal);
+		this.modal.open(this.el);
+		this.with_bind(this.modal, 'close', this.release.bind(this));
+		this.bind(['cancel', 'close'], close);
 	},
 
 	render: function()
 	{
-		var content = Template.render('boards/edit', {
-			board: toJSON(this.board),
-			bare: this.bare,
-			title: this.title,
-			show_settings: this.show_settings
-		});
-		this.html(content);
-		(function() { this.inp_title.focus(); }).delay(10, this);
+		var parent = null, parent_id = null;
+		if(parent_id = this.model.get('parent_id'))
+		{
+			parent = turtl.profile.get('boards').find_by_id(parent_id).toJSON();
+		}
+		this.html(view.render('boards/edit', {
+			action: this.action,
+			board: this.model.toJSON(),
+			parent: parent
+		}));
+		if(this.model.is_new())
+		{
+			this.inp_title.focus.delay(300, this.inp_title);
+		}
 	},
 
-	edit_board: function(e)
+	submit: function(e)
 	{
 		if(e) e.stop();
-		var title = this.inp_title.get('value');
-		if(title.clean() == '') return false;
+		var title = this.inp_title.get('value').toString().trim();
 
-		var success = null;
-		if(this.board.is_new())
+		var errors = [];
+		if(!title) errors.push('Please give your board a title');
+
+		if(errors.length)
 		{
-			this.board = new Board({title: title});
-			this.board.generate_key();
-			this.board.generate_subkeys();
-			// save the board key to the keychain *before* we save the board
-			turtl.profile.get('keychain').add_key(this.board.id(), 'board', this.board.key);
-
-			success = function() {
-				var boards = this.profile.get('boards');
-				if(boards) boards.add(this.board);
-				this.trigger('new-board', this.board);
-			}.bind(this);
+			barfr.barf(errors.join('<br>'));
+			return;
 		}
-		else
+
+		var keypromise = Promise.resolve();
+		if(this.model.is_new())
 		{
-			this.board.set({title: title});
+			keypromise = this.model.init_new({silent: true})
 		}
-		turtl.loading(true);
-		this.board.save({
-			success: function() {
-				turtl.loading(false);
-				if(success) success();
-				this.release();
-			}.bind(this),
-			error: function(err) {
-				turtl.loading(false);
-				barfr.barf('There was a problem saving your board: '+ err);
-			}
-		});
-	},
 
-	delete_board: function(e)
-	{
-		if(!e) return;
-		e.stop();
-		if(!this.board) return;
-		if(!confirm('Really delete this board, and all of its notes PERMANENTLY?? This cannot be undone!!')) return false;
+		var clone = this.model.clone();
+		clone.set({title: title});
+		keypromise.bind(this)
+			.then(function() {
+				return clone.save();
+			})
+			.then(function() {
+				this.model.set(clone.toJSON());
 
-		turtl.loading(true);
-		this.board.destroy({
-			success: function() {
-				turtl.loading(false);
-				this.release();
-			}.bind(this),
-			error: function() {
-				turtl.loading(false);
-			}
-		});
-	},
+				// add the board to our main board list
+				turtl.profile.get('boards').upsert(this.model);
 
-	cancel: function(e)
-	{
-		if(e) e.stop();
-		this.release();
-	},
-
-	test_key: function(e)
-	{
-		if(this.bare && e.key == 'esc') this.release();
+				this.trigger('close');
+			})
+			.catch(function(err) {
+				turtl.events.trigger('ui-error', 'There was a problem updating that board', err);
+				log.error('board: edit: ', this.model.id(), derr(err));
+			});
 	}
 });
 

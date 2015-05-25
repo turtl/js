@@ -1,0 +1,31 @@
+<div class="filter-sort">
+	<ul>
+		<li class="{{#equal sort 'id'}}sel{{/equal}} {{#equal dir 'desc'}}desc{{/equal}}">
+			<a href="#created" rel="id">{{icon 'sort'}}Created</a>
+		</li>
+		<li class="{{#equal sort 'mod'}}sel{{/equal}} {{#equal dir 'desc'}}desc{{/equal}}">
+			<a href="#modified" rel="mod">{{icon 'sort'}}Modified</a>
+		</li>
+	</ul>
+</div>
+
+<div class="filter-text">
+	<form class="standard-form">
+		<input type="text" name="text" value="{{text}}" placeholder="Text search">
+	</form>
+</div>
+
+<div class="tag-container"></div>
+
+{{!--	Disable colors for now ='[
+<div class="notes-edit filter-colors">	{{! bit of a hack to avoid some CSS duplication }}
+	<ul class="colors">
+		{{#each colors}}
+			{{#if id}}
+				<li rel="{{id}}" class="{{name}} {{#if selected}}sel{{/if}}"><span>&nbsp;</span></li>
+			{{/if}}
+		{{/each}}
+	</ul>
+</div>
+--}}
+

@@ -1,7 +1,0 @@
-@keyframes anim-rotate { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
-@-webkit-keyframes anim-rotate { 0% { -webkit-transform: rotate(0); } 100% { -webkit-transform: rotate(360deg); } }
-icon#sync-icon {position: fixed; display: block; right: 10px; bottom: 16px; cursor: pointer; font-size: 30px; color: #888;}
-icon#sync-icon {
-	animation: anim-rotate 2s infinite steps(48);
-	-webkit-animation: anim-rotate 2s infinite steps(48);
-}

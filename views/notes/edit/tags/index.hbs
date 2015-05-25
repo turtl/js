@@ -1,0 +1,12 @@
+<div class="editable" contenteditable="true" autocorrect="off" autocapitalize="none">
+	{{#if tags.length}}
+		{{#each tags}}
+			<span class="tags">{{name}}</span>
+		{{/each}}
+	{{else}}
+		<span class="placeholder">comma, separate, tags</span>
+	{{/if}}
+</div>
+
+<div class="tags-container"></div>
+

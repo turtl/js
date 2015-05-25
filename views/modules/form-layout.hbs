@@ -1,0 +1,29 @@
+<div class="{{formclass}} clear interface">
+	<form class="standard-form">
+		{{{content}}}
+		{{#if buttons}}
+			<div class="button-row clear">
+				{{#if footer_actions.length}}
+					<ul>
+						{{#each footer_actions}}
+							<li>
+								<a href="#{{name}}" rel="{{name}}">
+									{{icon icon}}
+								</a>
+							</li>
+						{{/each}}
+					</ul>
+				{{/if}}
+				<div class="desc"></div>
+
+				<div class="button flat cancel">
+					<span>Cancel</span>
+				</div>
+				<div class="button flat submit">
+					<input type="submit" {{#if tabindex}}tabindex="{{tabindex}}"{{/if}} value="{{action}}">
+				</div>
+			</div>
+		{{/if}}
+	</form>
+</div>
+

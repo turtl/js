@@ -1,36 +1,25 @@
-var Board = Composer.RelationalModel.extend({
+var Board = Protected.extend({
 	base_url: '/boards',
 
 	relations: {
-		tags: {
-			type: Composer.HasMany,
-			collection: 'Tags'
-		},
-		categories: {
-			type: Composer.HasMany,
-			collection: 'Categories'
-		},
-		notes: {
-			type: Composer.HasMany,
-			filter_collection: 'NotesFilter',
-			master: function() { return turtl.profile.get('notes'); },
+		boards: {
+			filter_collection: 'BoardsFilter',
+			master: function() { return turtl.profile.get('boards'); },
 			options: {
-				filter: function(model, notesfilter) {
-					return model.get('board_id') == notesfilter.get_parent().id();
-				},
-				forward_all_events: true,
-				refresh_on_change: false
+				filter: function(model, boardfilter) {
+					return model.get('parent_id') == boardfilter.get_parent().id();
+				}
 			}
 		},
 		personas: {
-			type: Composer.HasMany,
-			collection: 'Personas'
+			collection: 'BoardPersonas'
 		}
 	},
 
 	public_fields: [
 		'id',
 		'user_id',
+		'parent_id',
 		'keys',
 		'privs',
 		'personas',
@@ -42,456 +31,162 @@ var Board = Composer.RelationalModel.extend({
 		'title'
 	],
 
-	defaults: {
-	},
-
-	_track_tags: true,
-
 	init: function()
 	{
-		this.bind_relational('notes', 'add', function(note) {
-			if(!this._track_tags) return false;
-			this.get('tags').add_tags_from_note(note);
-			this.get('tags').trigger('update');
-			this.trigger('note_change');
-		}.bind(this), 'board:model:notes:add');
-		this.bind_relational('notes', 'remove', function(note) {
-			if(!this._track_tags) return false;
-			this.get('tags').remove_tags_from_note(note);
-			this.get('tags').trigger('update');
-			this.trigger('note_change');
-		}.bind(this), 'board:model:notes:remove');
-		this.bind_relational('notes', 'reset', function() {
-			if(!this._track_tags) return false;
-			this.get('tags').refresh_from_notes(this.get('notes'));
-			this.get('tags').trigger('update');
-			this.trigger('note_change');
-		}.bind(this), 'board:model:notes:reset');
-		this.bind_relational('notes', 'change:tags', function(note) {
-			if(!this._track_tags) return false;
-			this.get('tags').diff_tags_from_note(note);
-			this.get('tags').trigger('update');
-			this.trigger('note_change');
-		}.bind(this), 'board:model:notes:change:tags');
-		this.bind_relational('notes', 'change', function(note) {
-			this.trigger('note_change');
-		}.bind(this), 'board:model:notes:change');
+		this.bind('destroy', turtl.search.unindex_board.bind(turtl.search));
+		this.bind('change', function() {
+			if(!this.id(true)) return;
+			turtl.search.reindex_board(this);
+		}.bind(this));
 
-		// make category tags auto-update when tags do
-		this.bind_relational('tags', 'update', function() {
-			if(!this._track_tags) return false;
-			var cats = this.get('categories');
-			var tags = this.get('tags');
-			cats.each(function(c) {
-				if(c.update_tags(tags))
-				{
-					c.trigger('update');
-				}
+		this.bind('destroy', function(_1, _2, options) {
+			turtl.profile.get('keychain').remove_key(this.id());
+			this.get('boards').each(function(board) {
+				board.destroy(options);
 			});
-		}.bind(this));
 
-		this.bind('destroy', function() {
-			// remove the project's sort from the user data
-			var sort = Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
-			sort[this.id()] = 99999;
-			turtl.user.get('settings').get_by_key('board_sort').value(sort);
-		}.bind(this));
-
-		// if the privs change such that we are no longer a board member then
-		// DESTROY the VALUE OF THE board (by not filing de patent! it is *very
-		// important* that you file de patent and put de button on de website
-		// or de VC not put de money in de company!!!)
-		this.bind('change:privs', function() {
-			if(this.get('shared', false))
+			var boards = turtl.profile.get('boards');
+			if(options.delete_notes)
 			{
-				// board was UNshared from us
-				var persona = this.get_shared_persona({privs_only: true});
-				if(!persona)
-				{
-					barfr.barf('The board "'+ this.get('title') + '" is no longer shared with you.');
-					this.destroy({skip_remote_sync: true});
-				}
+				this.each_note(function(note) { note.destroy(); });
 			}
 			else
 			{
-				// this is our board, but let's make the personas match the privs
-				var privs = this.get('privs');
-				var personas = this.get('personas').filter(function(p) {
-					return privs[p.id()] && !privs[p.id()].deleted && privs[p.id()].perms > 0;
-				});
-				this.get('personas').reset(personas);
+				var board_id = this.id();
+				this.each_note(function(note) {
+					var boards = note.get('boards').slice(0);
+					boards = boards.erase(board_id);
+					note.set({boards: boards});
+					note.save();
+				}.bind(this));
 			}
 		}.bind(this));
+	},
 
-		// MIGRATE: move board user keys into user data. this code should exist
-		// as long as the database has ANY records with board.keys.u
-		if(!turtl.profile.get('keychain').find_key(this.id(true)) && !this.is_new() && this.key)
+	init_new: function(options)
+	{
+		options || (options = {});
+
+		var parent_id = this.get('parent_id');
+		var parent = turtl.profile.get('boards').find_by_id(parent_id);
+		this.set({user_id: turtl.user.id()}, options);
+		this.generate_key();
+		keypromise = turtl.profile.get('keychain').add_key(this.id(), 'board', this.key);
+		if(parent)
 		{
-			turtl.profile.get('keychain').add_key(this.id(true), 'board', this.key);
-			var keys = this.get('keys').toJSON();
-			keys = keys.filter(function(k) {
-				return k.u != turtl.user.id();
+			// if we have a parent board, make sure the child can decrypt
+			// its key via the parent's
+			this.generate_subkeys([{b: parent.id(), k: parent.key}]);
+		}
+		return keypromise;
+	},
+
+	find_key: function(keys, search, options)
+	{
+		options || (options = {});
+		search || (search = {});
+		search.b || (search.b = []);
+
+		var parent_id = this.get('parent_id');
+		var parent = turtl.profile.get('boards').find_by_id(parent_id);
+		if(parent)
+		{
+			search.b.push({id: parent.id(), k: parent.key});
+		}
+		return this.parent(keys, search, options);
+	},
+
+	each_note: function(callback)
+	{
+		var cnotes = turtl.profile.get('notes');
+		turtl.db.notes.query('boards').only(this.id()).execute()
+			.then(function(notes) {
+				(notes || []).forEach(function(note) {
+					var existing = true;
+					// if we have an existing note in-memory, use it.
+					// this will also apply our changes in any listening
+					// collections
+					var cnote = cnotes.find_by_id(note.id)
+					if(!cnote)
+					{
+						// if we don't have an existing in-mem model,
+						// create one and then apply our changes to it
+						cnote = new Note(note);
+						existing = false;
+					}
+					callback(cnote, {existing: existing});
+				});
 			});
-			this.set({keys: keys});
-			this.save();
-		}
 	},
 
-	track_tags: function(yesno)
+	note_count: function()
 	{
-		this._track_tags = yesno;
+		var child_board_ids = this.get_child_board_ids();
+		var boards = [this.id()].concat(child_board_ids);
+		return turtl.search.search({boards: boards}).bind(this)
+			.spread(function(notes) {
+				return notes.length;
+			});
 	},
 
-	/**
-	 * Given a set of note data, reset this board's notes, async, with said
-	 * data.
-	 */
-	update_notes: function(note_data, options)
+	get_child_board_ids: function()
 	{
-		options || (options = {});
-		this.get('notes').clear();
-		this.track_tags(false);
-		this.get('notes').reset_async(note_data, {
-			silent: true,
-			complete: function() {
-				this.get('notes').trigger('reset');
-				this.track_tags(true);
-				this.get('tags').refresh_from_notes(this.get('notes'), {silent: true});
-				this.get('tags').trigger('reset');
-				this.trigger('notes_updated');
-				if(options.complete) options.complete();
-			}.bind(this)
-		})
-	},
-
-	share_with: function(from_persona, to_persona, permissions, options)
-	{
-		options || (options = {});
-
-		// must be 0-2
-		permissions = parseInt(permissions);
-
-		turtl.api.put('/boards/'+this.id()+'/invites/persona/'+to_persona.id(), {
-			permissions: permissions,
-			from_persona: from_persona.id()
-		}, {
-			success: function(priv) {
-				var privs = Object.clone(this.get('privs', {}));
-				privs[to_persona.id()] = priv;
-				this.set({privs: privs});
-				this.get('personas').add(to_persona);
-				if(options.success) options.success.apply(this, arguments);
-			}.bind(this),
-			error: function(err) {
-				if(options.error) options.error(err);
-			}
-		});
-	},
-
-	from_share: function(board_data)
-	{
-		// add this project to the end of the user's list
-		var sort = Object.clone(turtl.user.get('settings').get_by_key('board_sort').value());
-		sort[this.id()] = 99999;
-		turtl.user.get('settings').get_by_key('board_sort').value(sort);
-		turtl.profile.get('keychain').add_key(this.id(), 'board', this.key);
-
-		var _notes = board_data.notes;
-		delete board_data.notes;
-		board_data.shared = true;
-		this.set(board_data);
-
-		turtl.profile.get('boards').add(this);
-		this.save({
-			skip_remote_sync: true,
-			success: function() {
-				// save the notes into the board (really, this just adds them to the
-				// global turtl.profile.notes collection). once done, we *make sure*
-				// the notes are persisted to the local db
-				_notes = turtl.sync.process_data({notes: _notes}).notes;
-				this.update_notes(_notes, {
-					complete: function() {
-						this.get('notes').each(function(note) {
-							note.save({ skip_remote_sync: true });
-						});
-						// force a refresh on the board in case it doesn't pick
-						// up the changed notes
-						(function() {
-							turtl.sync.notify_local_change('boards', 'refresh', {id: this.id()}, {track: true});
-						}).delay(200, this);
-					}.bind(this)
-				});
-			}.bind(this)
-		});
-	},
-
-	accept_share: function(persona, options)
-	{
-		options || (options = {});
-
-		turtl.api.put('/boards/'+this.id()+'/persona/'+persona.id(), {}, {
-			success: function(board) {
-				if(turtl.profile.get('boards').find_by_id(board.id))
-				{
-					// board's already shared with them, must be a double invite.
-					// ignore.
-					if(options.success) options.success();
-					return;
-				}
-
-				// save the board key into the user's data
-				turtl.profile.get('keychain').add_key(this.id(), 'board', this.key);
-
-				this.from_share(board);
-
-				if(options.success) options.success();
-			}.bind(this),
-			error: options.error
-		});
-	},
-
-	leave_board: function(persona, options)
-	{
-		options || (options = {});
-
-		turtl.api._delete('/boards/'+this.id()+'/persona/'+persona.id(), {}, {
-			success: function(sync_ids) {
-				// track the sync twice: once in a while wires will get crossed
-				// and a board we *just left* will come through in a sync that
-				// start just before leaving. this way, if we track the board
-				// pre and post sync, if a second sync comes through right after
-				// leaving with the board info AGAIN, it'll be ignored.
-				// destroy our local copy
-				this.destroy({skip_remote_sync: true});
-
-				// ignore syncs after this UNshare
-				if(sync_ids && sync_ids.sync_ids)
-				{
-					sync_ids.sync_ids.each(function(sync_id) {
-						turtl.sync.ignore_on_next_sync(sync_id, {type: 'remote'});
-					});
-				}
-
-				if(options.success) options.success();
-			}.bind(this),
-			error: function(err) {
-				if(options.error) options.error(err);
-			}
-		});
-	},
-
-	/**
-	 * Pull out the persona, belonging to the currently logged-in user, that has
-	 * the highest privileges on this board. If the only entries are ones with
-	 * p == 0 then we return false.
-	 */
-	get_shared_persona: function(options)
-	{
-		options || (options = {});
-
-		if(!options.privs_only)
-		{
-			var meta = this.get('meta');
-			if(meta && meta.persona)
+		var children = [];
+		turtl.profile.get('boards').each(function(board) {
+			if(board.get('parent_id') == this.id())
 			{
-				var persona = turtl.user.get('personas').find_by_id(meta.persona);
+				children.push(board.id());
 			}
-			if(persona) return persona;
-		}
-
-		persona = false;
-		var privs = this.get('privs');
-		var high_priv = 0;
-		if(!privs) return false;
-		turtl.user.get('personas').each(function(p) {
-			if(!privs[p.id()]) return;
-			var this_privs = privs[p.id()].perms;
-			if(this_privs > high_priv)
-			{
-				persona = p;
-				high_priv = this_privs;
-			}
-		});
-		return persona;
-	},
-
-	share_enabled: function()
-	{
-		var shared = false;
-		var privs = this.get('privs');
-		Object.each(privs, function(v, k) {
-			if(v && v.perms > 0 && !v.deleted) shared = true;
-		});
-		return shared;
-	},
-
-	destroy_submodels: function()
-	{
-		var notes = this.get('notes');
-		var tags = this.get('tags');
-		var cats = this.get('categories');
-
-		notes.each(function(n) { n.destroy({skip_remote_sync: true, force_save: true}); n.unbind(); });
-		tags.each(function(t) { t.destroy({skip_remote_sync: true}); t.unbind(); });
-		cats.each(function(c) { c.destroy({skip_remote_sync: true}); c.unbind(); });
-		notes.clear();
-		tags.clear();
-		cats.clear();
-	},
-
-	destroy: function(options)
-	{
-		options || (options = {});
-		var success = options.success;
-		options.success = function()
-		{
-			this.destroy_submodels();
-			if(success) success.apply(this, arguments);
-		}.bind(this);
-		return this.parent.apply(this, [options]);
-	},
-
-	get_selected_tags: function()
-	{
-		return this.get('tags').select(function(tag) {
-			return this.is_tag_selected(tag);
 		}.bind(this));
-	},
-
-	get_excluded_tags: function()
-	{
-		return this.get('tags').select(function(tag) {
-			return this.is_tag_excluded(tag);
-		}.bind(this));
-	},
-
-	get_tag_by_name: function(tagname)
-	{
-		return this.get('tags').find(function(tag) { return tag.get('name') == tagname; });
-	},
-
-	is_tag_selected: function(tag)
-	{
-		return tag ? tag.get('selected') : false;
-	},
-
-	is_tag_excluded: function(tag)
-	{
-		return tag ? tag.get('excluded') : false;
+		return children;
 	}
-}, Protected);
+});
 
 var Boards = SyncCollection.extend({
 	model: Board,
-	local_table: 'boards',
 
-	/*
-	sortfn: function(a, b)
+	toJSON_hierarchical: function()
 	{
-		var psort = turtl.user.get('settings').get_by_key('board_sort').value() || {};
-		var a_sort = psort[a.id()] || psort[a.id()] === 0 ? psort[a.id()] : 99999;
-		var b_sort = psort[b.id()] || psort[b.id()] === 0 ? psort[b.id()] : 99999;
-		var sort = a_sort - b_sort;
-		if(sort != 0)
-		{
-			return sort;
-		}
-		else
-		{
-			return a.id().localeCompare(b.id());
-		}
-	},
-	*/
+		var boards = this.toJSON().sort(function(a, b) { return a.title.localeCompare(b.title); });
+		var parents = boards.filter(function(b) { return !b.parent_id; });
+		var children = boards.filter(function(b) { return !!b.parent_id; });
 
-	init: function()
-	{
-		this.bind('change:title', function() { this.sort() }.bind(this), 'boards:change:resort');
-	},
+		// index the parents for easy lookup
+		var idx = {};
+		parents.forEach(function(b) { idx[b.id] = b; });
 
-	sortfn: function(a, b)
-	{
-		return a.get('title').toLowerCase().localeCompare(b.get('title').toLowerCase());
-	},
-
-	clear: function(options)
-	{
-		options || (options = {});
-		this.each(function(board) {
-			board.clear(options);
+		children.forEach(function(b) {
+			var parent = idx[b.parent_id];
+			if(!parent) return;
+			if(!parent.children) parent.children = [];
+			parent.children.push(b);
 		});
-		return this.parent.apply(this, arguments);
+
+		return parents;
 	},
 
-	process_local_sync: function(board_data, model, msg)
+	toJSON_named: function(board_ids)
 	{
-		var action = msg.action;
-		if(_sync_debug_list.contains(this.local_table))
-		{
-			//log.debug('sync: process_local_sync: '+ this.local_table +': '+ msg.id+ ' ' + action, board_data, model);
-			log.info('sync: process_local_sync: '+ this.local_table +': '+ msg.sync_id+ ' ' + action);
-		}
-
-		// process some user/board key stuff. when the user first adds a board,
-		// its key is saved in the user's data with the board's CID. it stays
-		// this way until the board is posted to the API and gets a real ID. we
-		// need to sniff out this situation and flip the cid to an id for the
-		// board key (if detected)
-		var keychain = turtl.profile.get('keychain');
-		var key = keychain.find_key(board_data.cid);
-		if(key && board_data.id && !board_data.deleted)
-		{
-			log.debug('board: got CID key, adding ID key (and removing CID key)');
-			keychain.add_key(board_data.id, 'board', key);
-			keychain.remove_key(board_data.cid);
-		}
-
-		if(action == 'delete')
-		{
-			if(model) model.destroy({skip_local_sync: true, skip_remote_sync: true});
-		}
-		else if(action == 'refresh')
-		{
-			var current = turtl.profile.get_current_board();
-			if(current && model.id() == current.id())
-			{
-				current.get('notes').refresh();
-			}
-		}
-		else if(action == 'update')
-		{
-			if(model)
-			{
-				if(board_data.user_id && board_data.user_id != turtl.user.id())
+		return board_ids
+			.map(function(bid) {
+				var board = this.find_by_id(bid);
+				if(!board) return false;
+				var name = board.get('title');
+				var parent_id = board.get('parent_id');
+				if(parent_id)
 				{
-					board_data.shared = true;
+					var parent = this.find_by_id(parent_id);
+					if(parent) name = parent.get('title') + '/' + name;
 				}
-				model.set(board_data);
-				model.trigger('change:privs');
-			}
-		}
-		else if(action == 'create')
-		{
-			// make sure this isn't a rogue/shared board sync. sometimes a
-			// shared board will sync AFTER it's deleted, bringing us here.
-			// luckily, we can detect it via board.shared == true, and
-			// board.privs.does_not_contain(any_of_my_personas).
-			if(board_data.shared)
-			{
-				var persona_ids = turtl.user.get('personas').map(function(p) { return p.id(); });
-				var has_my_persona = false;
-				Object.keys(board_data.privs).each(function(pid) {
-					if(persona_ids.contains(pid)) has_my_persona = true;
-				});
-
-				// board is shared, and I'm not on the guest list. not sure
-				// why I got an invite telling me to join a board I'm not
-				// actually invited to, but let's save ourselves the heart-
-				// break and skip out on this one
-				if(!has_my_persona) return false;
-			}
-			var model = new Board(board_data);
-			if(board_data.cid) model._cid = board_data.cid;
-			this.upsert(model);
-		}
+				var json = board.toJSON();
+				json.name = name;
+				return json;
+			}.bind(this))
+			.filter(function(board) { return !!board; });
 	}
 });
+
+var BoardsFilter = Composer.FilterCollection.extend({
+	sortfn: function(a, b) { return a.get('title', '').localeCompare(b.get('title', '')); }
+});
+

@@ -1,0 +1,36 @@
+<div class="content">
+	<div class="head">
+		<h1>{{persona.email}}</h1>
+		{{#if persona.name}}
+			<h3>({{persona.name}})</h3>
+		{{/if}}
+	</div>
+
+	<div class="key">
+		{{#if persona.generating}}
+			<p>{{svg 'load'}} Generating PGP key</p>
+		{{else}}
+			{{#if persona.pubkey}}
+				<code class="pkey">
+					{{icon 'lock' class='lock'}} {{keylen}} bit PGP key
+					{{!--{{icon 'arrow' class='more'}}--}}
+				</code>
+			{{else}}
+				<p>This persona doesn't have a key.</p>
+				<div class="button generate">
+					<input type="button" class="button" value="Generate key">
+				</div>
+			{{/if}}
+		{{/if}}
+	</div>
+
+	<div class="settings">
+		{{#each settings}}
+			<div class="fr">
+				<input type="checkbox" value="1" name="{{name}}" id="{{../persona.id}}_{{name}}" {{#contains ../persona.settings name}}checked{{/contains}}>
+				<label for="{{../persona.id}}_{{name}}">{{desc}}</label>
+			</div>
+		{{/each}}
+	</div>
+</div>
+

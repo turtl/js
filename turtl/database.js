@@ -3,19 +3,16 @@
  */
 var database = {
 	/**
-	 * Main database setup function: call this when you want to open the
-	 * database. Calls options.complete() on success (with the opened db as the
-	 * only arg).
+	 * main DB setup function, creates a per-user database (user must be logged
+	 * in for this to work)
 	 */
-	setup: function(options)
+	setup: function()
 	{
-		options || (options = {});
-
 		// initialize our backing local storage.
-		db.open({
+		return db.open({
 			// DB has user id in it...client might have multiple users
 			server: 'turtl.'+turtl.user.id(),
-			version: 7,
+			version: 10,
 			schema: function() { log.info('db.js: create schema'); return {
 				// -------------------------------------------------------------
 				// k/v tables - always has "key" field as primary key
@@ -55,7 +52,7 @@ var database = {
 					key: { keyPath: 'id', autoIncrement: false },
 					indexes: {
 						user_id: {},
-						board_id: {},
+						boards: {multiEntry: true},
 						has_file: {},
 					}
 				},
@@ -72,15 +69,41 @@ var database = {
 						synced: {},
 						has_data: {},
 					}
+				},
+
+				// these tables hold incoming/outgoing sync data
+				sync_incoming: {
+					key: { keyPath: 'id', autoIncrement: true },
+					indexes: { }
+				},
+				sync_outgoing: {
+					key: { keyPath: 'id', autoIncrement: true },
+					indexes: { }
 				}
 			}}
-		}).done(function(server) {
-			if(options.complete) options.complete(server);
-		}).fail(function(e) {
-			var idburl = 'https://turtl.it/docs/clients/core/indexeddb';
-			//barfr.barf('Error opening local database.<br><a href="'+idburl+'" target="_blank">Is IndexedDB enabled in your browser?</a> Note that due to a bug in Firefox 25.* (and under), IndexedDB does not work in Private Browsing mode.', {message_persist: 'persist'});
-			barfr.barf('Error opening local database.', {message_persist: 'persist'});
-			console.error('database.setup: ', e);
+		});
+	},
+
+	/**
+	 * setup the database that holds any of the different users of this client
+	 * (which could just be one). storing this locally allows us to do auth
+	 * against the local database.
+	 */
+	setup_user: function()
+	{
+		// initialize our backing local storage.
+		return db.open({
+			// DB has user id in it...client might have multiple users
+			server: 'turtl.users',
+			version: 1,
+			schema: function() { log.info('db.js: create schema'); return {
+				users: {
+					key: { keyPath: 'id', autoIncrement: false },
+					indexes: { 
+						a: {}
+					}
+				}
+			}}
 		});
 	}
 };

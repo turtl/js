@@ -1,0 +1,18 @@
+{{#equal actions.length 1}}
+	<a href="#action" class="abutton" title="{{actions.0.title}}" rel="main">
+		{{icon actions.0.icon class=actions.0.name}}
+	</a>
+{{else}}
+	<a href="#action" class="abutton" rel="open">
+		{{icon 'add' class='add'}}
+	</a>
+	<ul>
+		{{#each actions}}
+			<li rel="{{name}}" title="{{title}}" class="item-{{@index}}">
+				<h4>{{title}}</h4>
+				<a href="#{{name}}" class="abutton">{{icon icon class=name}}</a>
+			</li>
+		{{/each}}
+	</ul>
+{{/equal}}
+

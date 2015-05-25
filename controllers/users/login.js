@@ -1,33 +1,28 @@
-var UserLoginController = Composer.Controller.extend({
-	inject: turtl.main_container_selector,
-
+var UserLoginController = FormController.extend({
 	elements: {
 		'input[name=username]': 'inp_username',
 		'input[name=password]': 'inp_password'
 	},
 
-	events: {
-		'submit form': 'do_login'
-	},
-
-	redirect: '/',
+	buttons: false,
+	formclass: 'user-login',
 
 	init: function()
 	{
-		var qs = parse_querystring();
-		if(qs.redirect) this.redirect = Base64.decode(qs.redirect);
+		this.parent();
+		turtl.push_title('Login');
+		this.bind('release', turtl.pop_title.bind(null, false));
 		this.render();
 	},
 
 	render: function()
 	{
-		// TODO: save redirect in JOIN link
-		var content = Template.render('users/login');
+		var content = view.render('users/login');
 		this.html(content);
-		this.inp_username.focus.delay(100, this.inp_username);
+		(function() { this.inp_username.focus(); }).delay(10, this);
 	},
 
-	do_login: function(e)
+	submit: function(e)
 	{
 		if(e) e.stop();
 		var username = this.inp_username.get('value');
@@ -38,22 +33,28 @@ var UserLoginController = Composer.Controller.extend({
 		});
 
 		turtl.loading(true);
-		user.test_auth({
-			success: function(id) {
+		user.test_auth().bind(this)
+			.spread(function(id, meta) {
 				var data = user.toJSON();
 				data.id = id;
 				turtl.user.set({
 					username: user.get('username'),
 					password: user.get('password')
 				});
-				turtl.user.login(data);
-				turtl.loading(false);
-				turtl.route(this.redirect);
-			}.bind(this),
-			error: function(e) {
+				turtl.user.login(data, {old: meta.old});
+				if(meta.old)
+				{
+					barfr.barf('Your master key was generated using an older method. In order to improve your security, please generate a new key by going to the "Change password" section of your account settings. You can use the same username/password as before, but your key will be upgraded.', {persist: true});
+				}
+			})
+			.catch(function(err) {
 				barfr.barf('Login failed.');
+				log.error('login error: ', derr(err));
 				turtl.loading(false);
-			}.bind(this)
-		});
+			})
+			.finally(function() {
+				turtl.loading(false);
+			});
 	}
 });
+

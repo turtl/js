@@ -1,9 +1,6 @@
-function toJSON(object)
+function clone(obj)
 {
-	window._toJSON_disable_protect = true;
-	var ret = object.toJSON();
-	window._toJSON_disable_protect = false;
-	return ret;
+	return JSON.parse(JSON.stringify(obj));
 }
 
 /**
@@ -24,23 +21,71 @@ var extend_error = function(extend, errname)
 	return err;
 }
 
+var string_repeat = function(string, num)
+{
+	return new Array(parseInt(num) + 1).join(string);
+};
+
+var make_index = function(collection, idx_field)
+{
+	var idx = {};
+	collection.forEach(function(item) {
+		if(idx_field)
+		{
+			idx[item[idx_field]] = item;
+		}
+		else
+		{
+			idx[item] = true;
+		}
+	});
+	return idx;
+};
+
+var select_text = function(inp, from, to)
+{
+	var s = window.getSelection();
+	var r = document.createRange();
+	r.setStart(inp, from);
+	r.setEnd(inp, to);
+	s.removeAllRanges();
+	s.addRange(r);
+	return s;
+};
+
 /**
- * HACK: Mootools internals!
- * Allows using this.parent() async
- *
- * before:
- *   this.parent.apply(this, arguments);
- *
- * after:
- *   get_parent(this).apply(this, arguments);
+ * given a turtl front-end generated ID, return the timestamp it encapsulates
  */
+var id_timestamp = function(id, options)
+{
+	options || (options = {});
+	var timestamp = parseInt(id.substr(0, 11), 16);
+	if(options.unix)
+	{
+		timestamp = Math.round(timestamp / 1000);
+	}
+	return timestamp;
+};
+
+/**
+ * Given an error object, return the best piece of it for rendering to console
+ * (usually this is error_object.stack).
+ */
+function derr(error_object)
+{
+	if(error_object.stack)
+	{
+		return error_object.stack;
+	}
+	else
+	{
+		return error_object;
+	}
+}
+
 function get_parent(obj)
 {
-	var name = obj.$caller.$name,
-	parent = obj.$caller.$owner.parent,
-	previous = (parent) ? parent.prototype[name] : null;
-	if (!previous) throw new Error('The method "' + name + '" has no parent.');
-	return previous;
+	return obj.$get_parent();
 }
 
 /**
@@ -67,7 +112,7 @@ function uint8array_to_string(array)
  */
 function data_from_addon(data)
 {
-	return JSON.decode(JSON.encode(data));
+	return JSON.parse(JSON.stringify(data));
 }
 
 // get the next tag of type "type" in the chain up the dom
@@ -81,7 +126,7 @@ function arrdiff(arr1, arr2) { return arr1.filter(function(el) { return !arr2.co
 
 // used in templating. wraps around EVERY image url, and rewrites it to use whatever
 // storage facility we require (probably S3/cloudfront)
-function img(url)
+function asset(url)
 {
 	if(window._base_url)
 	{
@@ -120,13 +165,64 @@ function get_url()
 	return url;
 }
 
+function icon(name)
+{
+	// it's *absolutely* ok to have different names point to the same icons.
+	// icons should be named by their context, not by the actual icon that
+	// represents them. then later on if we want to split icons out, we can do
+	// so using their *meaning* instead of the representation of their meaning
+	var icons = {
+		account: 'e80a',
+		add: 'e82e',
+		add_user: 'e829',
+		arrow: 'e80b',
+		attach: 'e837',
+		attachment: 'e837',
+		back: 'e835',
+		board: 'e803',
+		boards: 'e803',
+		bookmark: 'e814',
+		clear: 'e81a',
+		edit: 'e815',
+		file: 'e837',
+		image: 'e80e',
+		lock: 'e821',
+		logout: 'e838',
+		menu: 'e808',
+		next: 'e80b',
+		note: 'e804',
+		notes: 'e809',
+		personas: 'e800',
+		remove: 'e81d',
+		search: 'e83a',
+		selected: 'e81e',
+		settings: 'e807',
+		share: 'e81c',
+		sort: 'e80b',
+		tag: 'e80f',
+		write: 'e804'
+	};
+	var hex = icons[name];
+	if(!hex) return false;
+	return '&#x'+hex+';';
+}
+
+function svg(name)
+{
+	var map = {
+		loading: 'load'
+	};
+	if(map[name]) name = map[name];
+	return svg_icons[name];
+}
+
 function get_data_from_querystring(url)
 {
 	url || (url = new String(window.location.hash).replace(/.*?&/, ''));
 	var data = {};
 	url.split('&').each(function(d) {
 		var pieces = d.split('=');
-		data[pieces[0]] = unescape(pieces[1]);
+		data[pieces[0]] = decodeURIComponent(pieces[1]);
 	});
 	return data;
 }
@@ -164,6 +260,15 @@ String.implement({
 		return this.replace(/<\/?script(.*?)>/ig, '');
 	}
 });
+
+function sluggify(string)
+{
+	return string.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9\-\_]/g, '-')
+		.replace(/-+/g, '-')
+		.replace(/(^-|-$)/, '');
+};
 
 function clicked_outside(e, obj)
 {
@@ -231,13 +336,22 @@ var parse_querystring = function(qs)
 		kv = kv.split('=');
 		var key = kv[0];
 		var val = kv[1];
-		val = unescape(val);
+		val = decodeURIComponent(val);
 		data[key] = val;
 	});
 	return data;
 };
 
 var view = {
+	render: function(tpl, data, options)
+	{
+		data || (data = {});
+		options || (options = {});
+
+		if(!TurtlTemplates[tpl]) throw new Error('missing template: '+ tpl);
+		return TurtlTemplates[tpl](data);
+	},
+
 	escape: function(str)
 	{
 		return str;
@@ -269,27 +383,9 @@ var view = {
 		return board_name;
 	},
 
-	// TODO: figure out why this sucks and breaks links.
-	// TODO: figure out if actually needed anyway?
-	make_links: function(text)
+	markdown: function(body)
 	{
-		return text;
-		text = text.replace(/"([\w]+):(\/\/([\.\-\w_\/:\?\+\&~#=%,\(\)]+))/gi, '"$1::$2"');
-		text = text.replace(/([\w]+:\/\/)([\.\-\w_\/:\?\+\&~#=%,\(\)]+)/gi, '<a target="_blank" href="$1$2">$2</a>');
-		text = text.replace(/"([\w]+)::(\/\/([\.\-\w_\/:\?\+\&~#=%,\(\)]+))/gi, '"$1:$2"');
-		return text;
-	},
-
-	tex_math: function(body)
-	{
-		body = body.replace(/\$\$([\s\S]+?)\$\$/g, '<pre class="math">$1</pre>');
-		return body;
-	},
-
-	note_body: function(body)
-	{
-		body = view.tex_math(body);
-		body = marked(body);
-		return body;
+		return marked(body);
 	}
 };
+

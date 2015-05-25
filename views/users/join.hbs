@@ -1,0 +1,22 @@
+<input type="text" name="username" placeholder="Username" tabindex="4" autocorrect="off" autocapitalize="none">
+<input type="password" name="password" placeholder="Passphrase" tabindex="5">
+<input type="password" name="confirm" placeholder="Confirm passphrase" tabindex="6">
+<!--
+{{#if enable_promo}}
+	{{#unless promo}}
+		<a class="open-promo" href="#open-promo">Have a promo code?</a>
+	{{/unless}}
+	<div class="promo {{#if promo}}open{{/if}}">
+		Promo code: <input type="text" name="promo" value="{{promo}}" placeholder="Promo code" tabindex="7">
+	</div>
+{{/if}}
+-->
+<div class="buttons">
+	<div class="button join">
+		<input type="submit" class="button" value="Join">
+	</div>
+	<p>
+		<a href="/users/login">Login to an existing account</a>
+	</p>
+</div>
+

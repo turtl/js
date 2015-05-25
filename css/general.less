@@ -1,0 +1,110 @@
+@import 'variables';
+
+.clearMe {display: block; height: 0; clear: both; font-size: 0;}
+.clear:after {content: "."; display: block; height: 0; clear: both; visibility: hidden;}
+.clear {display: inline-block;}
+/* hide IE mac \*/
+* html .clear {height: 1%;}
+.clear {display: block;}
+/* */
+
+.success {color: #5a3;}
+.error {color: #c22;}
+a {color: #73b8d1; color: #92b579; color: #789662; outline: none;}
+strong {font-weight: bold;}
+
+img.loading {visibility: hidden;}
+
+icon {display: inline-block; margin: 0 0 0 0; padding: 0; font-family: Entypo; font-weight: 300; font-size: 18rem; line-height: .6em; vertical-align: baseline;}
+a icon {color: #222;}
+
+.interface {line-height: 1.4em;}
+.interface h2 {font-size: 2.2em; margin: 0 0 16rem 0;}
+.interface p {margin: 0 0 16rem 0; font-size: 1.7em; line-height: 1.4em;}
+
+.content {font-size: 1.36em; line-height: 1.4em; text-align: left;}
+.content {
+	h1 {margin: 0 0 12rem 0; font-size: 1.32em;}
+	h2 {margin-bottom: 8rem; font-size: 1.25em;}
+	h3 {font-size: 1.15em;}
+	h4 {font-size: 1.1em;}
+	h5 {font-size: 1.0em; font-weight: bold;}
+	ul {list-style: disc;}
+	ul,
+	ol {margin: 0 0 16rem 32rem;}
+	p {padding: 0 0 16rem 0;}
+	em {font-style: italic;}
+	strong {font-weight: bold;}
+	img {max-width: 100%;}
+	blockquote {display: block; max-width: 100%; overflow: auto; margin: 0 0 16rem 0; padding: 6rem 6rem 6rem 10rem; background: #f5f5f5;}
+	blockquote p:last-child {padding-bottom: 0;}
+	hr {display: block; height: 0; margin-bottom: 16rem; background: 0; border: 0; border-bottom: 1rem solid #999;}
+	pre {max-width: 100%; overflow-x: auto; margin: 0 0 16rem 0; padding: 6rem; font-family: monospace; color: #611; background-color: #f5f5f5;}
+	code {display: inline-block; margin: 0 2rem; padding: 1rem 4rem; font-family: monospace; color: #611; background-color: #f5f5f5;}
+	kbd {padding: .1em .6em; font-size: .9em; background: #f7f7f7; border: 1rem solid #ccc; border-radius: 3rem; box-shadow: 0 1rem 0rem rgba(0, 0, 0, 0.2),0 0 0 2rem #ffffff inset;}
+	table {margin: 0 0 16rem 0; border-collapse: collapse;}
+	table th, td {padding: 6rem 4rem; border: 1rem solid #ddd;}
+	table th {background: #eee;}
+	.warn {color: #922;}
+}
+
+/* generic (non-header) buttons */
+div.buttons {text-align: center;}
+div.button {display: inline-block; margin: 0 3rem; cursor: pointer; line-height: 20rem; background: @theme_primary; .border-radius(); .layer-rest(); .transition(box-shadow .1s);}
+div.button {
+	&:active {.layer-flat();}
+	input[type="submit"],
+	input[type="button"],
+	span {display: inline-block; padding: 13rem 32rem 11rem 32rem; color: #fff; text-transform: none; line-height: 12rem; font-size: 18.4rem; font-weight: normal; background: none; border: 0; box-shadow: none;}
+	input[type="submit"],
+	input[type="button"] {margin: 0; font-family: 'raleway', helvetica, arial, sans-serif;}
+	icon {float: left; margin: 0 8rem 0 0; color: rgba(255, 255, 255, .6); font-size: 12rem; line-height: 10rem; vertical-align: baseline;}
+}
+div.button.flat {box-shadow: none;}
+div.button.flat {
+	input[type="submit"],
+	input[type="button"],
+	span {padding-left: 16rem; padding-right: 16rem; font-size: 17rem; color: @theme_primary;}
+}
+div.button.cancel {background: @theme_gutter;}
+div.button.flat.cancel,
+div.button.cancel {
+	span {color: @theme_gray;}
+}
+
+/* generic guttered item list (one per line) */
+ul.item-list {list-style: none; width: 94%; margin: 16rem auto 0 auto; .card();}
+ul.item-list {
+	> li {display: block; padding: 6rem 9rem; line-height: 14rem; border-bottom: 1rem solid @theme_border;}
+	> li {
+		h2 {margin: 0 0 2rem 0; padding: 3rem 0; font-size: 17rem; line-height: 18.2rem;}
+		p {font-size: 13rem; line-height: 14rem;}
+		ul.item-list {background: none; border-radius: 0; box-shadow: none;}
+	}
+	> li:last-child {border-bottom: 0;}
+}
+
+/* full-screen NOTHING HERE */
+p.page-empty {padding: 25.0vh 24rem 0 24rem; font-size: 21rem; line-height: 1.4em; color: @theme_gray; text-align: center;}
+p.page-empty {
+	small {display: block; font-size: 12.6rem;}
+	small {
+		em {display: inline-block; vertical-align: bottom; margin: 0 0 -1rem 0; font-size: 1.8em;}
+	}
+	icon {display: block; font-size: 2.6em; color: @theme_gray_midlight; line-height: 1.5em;}
+}
+
+/* LOADING overlay */
+#loading-overlay {display: none; z-index: 20; position: fixed; left: 0; top: 0; min-width: 100%; height: 100%; margin: 0 auto; padding: 0; text-align: center; background: rgba(255, 255, 255, 0.90);}
+#loading-overlay.show {display: block;}
+#loading-overlay {
+	> div {padding-top: 36vh;}
+	img {width: 64rem;}
+	ul {display: block; width: 175rem; height: 0; margin: 12rem auto 0 auto; text-align: left; font-weight: bold; overflow: visible; list-style: none;}
+	ul {
+		li {opacity: 0; margin: 3rem 0 3rem 0; padding: 4rem 0 7rem 0; font-size: 1.3em; text-align: center; .transition(opacity .6s);}
+		li:last-child {border-bottom: 0;}
+		li.show {opacity: 1;}
+	}
+}
+

@@ -1,50 +1,39 @@
-// timer class. you set timer.end to your callback function and then initialize it with
-// a millisecond value. once started, it will count down the ms until 0, then run timer.end().
-// it can be reset or stopped mid-countdown as well.
-var Timer = new Class({
-	// the callback function when a timer has successfully counted down
-	end: function() {},
-
-	initialize: function (ms, poll) {
-		poll || (poll = 50);
-		this.start_ms = 0;
-		this.ms = ms;
-		this.is_started = false;
-		this.poll = poll;
+var Timer = Composer.Event.extend({
+	options: {
+		countdown: 5000
 	},
 
-	start: function () {
-		d=new Date();
-		this.start_ms = d.getTime();
-		this.is_started = true;
-		this.run.delay(this.poll, this);
+	timeout: false,
+
+	initialize: function(countdown, options)
+	{
+		options || (options = {});
+
+		Object.keys(options).forEach(function(k) {
+			this.options[k] = options[k];
+		}.bind(this));
+		this.options.countdown = countdown;
 	},
 
-	run: function () {
-		if(!this.is_started) return;
-		d=new Date();
-		t=d.getTime();
-		
-		if((t - this.start_ms) >= this.ms) {
-			this.stop();
-			if(this.end) this.end();
-		} else {
-			this.run.delay(this.poll, this);
-		}
+	start: function()
+	{
+		if(this.timeout) return false;
+		this.timeout = setTimeout(this.trigger.bind(this, 'fired'), this.options.countdown);
+		return true;
 	},
 
-	reset: function () {
-		if(!this.is_started)
-		{
-			return this.start();
-		}
-		d=new Date();
-		this.start_ms = d.getTime();
+	stop: function()
+	{
+		if(!this.timeout) return false;
+		clearTimeout(this.timeout);
+		this.timeout = false;
+		return true;
 	},
-	
-	stop: function () {
-		this.initialize(this.ms, this.name);
+
+	reset: function()
+	{
+		this.stop();
+		this.start();
 	}
 });
-
 

@@ -1,0 +1,39 @@
+@import '../variables';
+
+form.standard-form {padding: 16rem 4% (45rem + 16rem) 4%; .card();}
+form.standard-form {
+	input[type=text],
+	input[type=password],
+	input[type=email],
+	div.editable,
+	textarea {
+		& {width: 92%; margin: 0 0 12rem 0; padding: 9rem 4%; font-size: 1.6em; background: none; border: 0; border-bottom: 1rem solid @form_border; border-radius: 0; .transition(border .3s);}
+		&:focus {border-bottom: 1rem solid @theme_accent;}
+		&.error {border-bottom-color: @theme_warn;}
+	}
+	input[type=button],
+	input[type=submit] {
+		&:disabled {background: @theme_gray;}
+	}
+	div.editable {
+		.placeholder {color: @theme_gray;}
+	}
+	.button-row {position: fixed; .fixed-fix(); bottom: 0; left: 0; width: 100%; text-align: right; background: #fff; border-top: 1rem solid @theme_border;}
+	.button-row {
+		ul {float: left; list-style: none;}
+		ul {
+			li {
+				a {display: inline-block; padding: 7rem 6rem;}
+				icon {line-height: 1em; font-size: 28rem; color: @theme_black;}
+			}
+		}
+		.desc {float: left; width: 35%; margin: 0 0 0 2rem; padding: 16rem 0 0 0; line-height: 1.1em; font-size: 14rem; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+		.button {position: relative; text-align: center; line-height: 1em; background: none; border-radius: 0; border: 0; box-shadow: none;}
+		.button {
+			span,
+			input {display: inline; padding-top: 18rem; padding-bottom: 16rem;}
+			.highlight {position: absolute; top: 6rem; right: 4rem; width: 12rem; height: 12rem; background: @theme_warn; .border-radius(6rem); .layer-rest();}
+		}
+	}
+}
+

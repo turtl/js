@@ -1,0 +1,21 @@
+@import '../variables';
+
+.settings {
+	> ul.item-list {
+		> li {padding: 0;}
+		> li {
+			a {display: block; padding: 16rem 9rem; font-size: 17rem; color: @theme_black;}
+			a {
+				icon {float: right; margin: 2rem 0 0 0; color: @theme_black; .transform(rotate(180deg));}
+			}
+		}
+	}
+}
+
+.settings-password {
+	form.standard-form {padding-top: 24rem; .uncard();}
+	.section {margin: 0 0 24rem 0;}
+	.section {
+		h3 {margin: 0 0 12rem 0; font-size: 16rem;}
+	}
+}

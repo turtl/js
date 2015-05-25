@@ -1,0 +1,8 @@
+<input type="text" name="title" value="{{board.title}}" placeholder="Board title">
+
+{{#if parent}}
+	<p class="child">
+		This board will be added as a child board of "{{parent.title}}"
+	</p>
+{{/if}}
+

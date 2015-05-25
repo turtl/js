@@ -1,9 +1,23 @@
 module.exports = function(grunt) {
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
+		less: {
+			development: {
+				options: {
+					paths: ['css']
+				},
+				files: [{
+					expand: true,
+					cwd: 'css/',
+					src: ['**/*.less'],
+					dest: 'css/',
+					ext: '.css'
+				}]
+			}
+		},
 		handlebars: {
 			options: {
-				namespace: 'Templates',
+				namespace: 'TurtlTemplates',
 				processName: function(path) {
 					return path.replace(/^views\//, '').replace(/\.hbs$/, '');
 				}
@@ -15,29 +29,45 @@ module.exports = function(grunt) {
 			}
 		},
 		exec: {
-			index: {
-				command: 'bash ./scripts/gen-index'
-			}
+			index: { command: 'bash ./scripts/gen-index' },
+			index_svg: { command: 'bash ./scripts/index-icons' }
 		},
 		watch: {
 			options: {
 				cwd: './'
 			},
+			css: {
+				files: [
+					'css/**/*.less'
+				],
+				tasks: ['less'],
+				options: {
+					nospawn: true
+				}
+			},
 			index: {
 				files: [
 					'scripts/gen-index',
-					'views/layouts/default.html',
+					'views/layouts/default.html'
+				],
+				tasks: ['exec:index'],
+				options: {
+					nospawn: true
+				}
+			},
+			index_addrem: {
+				files: [
 					'handlers/**/*.js',
 					'controllers/**/*.js',
 					'models/**/*.js',
 					'library/**/*.js',
 					'config/**/*.js',
-					'turtl/**/*.js',
-					'css/**/*.less'
+					'css/**/*.css'
 				],
 				tasks: ['exec:index'],
 				options: {
-					nospawn: true
+					nospawn: true,
+					event: ['added', 'deleted']
 				}
 			},
 			templates: {
@@ -45,6 +75,15 @@ module.exports = function(grunt) {
 					'views/**/*.hbs'
 				],
 				tasks: ['handlebars'],
+				options: {
+					nospawn: true
+				}
+			},
+			svg: {
+				files: [
+					'images/site/icons/*.svg'
+				],
+				tasks: ['exec:index_svg'],
 				options: {
 					nospawn: true
 				}
@@ -57,6 +96,6 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-handlebars');
 	grunt.loadNpmTasks('grunt-exec');
 
-	grunt.registerTask('generate', ['less', 'handlebars', 'exec:index']);
-	grunt.registerTask('default', ['watch']);
+	grunt.registerTask('generate', ['less', 'handlebars', 'exec:index_svg', 'exec:index']);
+	grunt.registerTask('default', ['generate', 'watch']);
 };

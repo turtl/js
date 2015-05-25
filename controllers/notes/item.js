@@ -1,55 +1,74 @@
-var NoteItemController = BaseNoteItem.extend({
+var NotesItemController = NoteBaseController.extend({
 	tag: 'li',
-	className: 'note',
-
-	elements: {
-	},
+	class_name: 'note',
 
 	events: {
-		'mouseenter': 'select_note',
-		'mouseleave': 'unselect_note',
-		'click .actions a.sort': 'cancel',
-		'click .actions a.open': 'view_note',
+		'click': 'note_click'
 	},
 
 	model: null,
-	board: null,
 
 	init: function()
 	{
-		if(!this.model) return;
-		this.parent.apply(this, arguments);
 		this.render();
-	},
+		var renchange = function()
+		{
+			this.render();
+			this.trigger('update');
+		}.bind(this);
+		this.with_bind(this.model, 'change', renchange);
+		this.with_bind(this.model.get('file'), 'change', renchange);
 
-	release: function()
-	{
-		this.parent.apply(this, arguments);
+		this.parent();
 	},
 
 	render: function()
 	{
-		return this.parent.call(this, 'list', 'note id_'+this.model.id());
+		var type = this.model.get('type');
+		var note = this.model.toJSON();
+		if(note.file)
+		{
+			note.file.blob_url = this.model.get('file').get('blob_url');
+			if(note.file.meta && note.file.meta.width && note.file.meta.height)
+			{
+				note.file.img_height = 100 * (note.file.meta.height / note.file.meta.width);
+			}
+		}
+		var type_content = view.render('notes/types/'+type, {
+			note: note
+		});
+		this.html(view.render('notes/item', {
+			content: type_content,
+			note: note
+		}));
+		this.el.className = 'note item';
+		this.el.addClass(type);
+		if(!this.model.get('text'))
+		{
+			this.el.addClass('no-text');
+		}
+		if(!this.model.get('title'))
+		{
+			this.el.addClass('no-title');
+		}
+		if(type == 'image' && !this.model.get('url'))
+		{
+			this.el.addClass('preview');
+		}
+		this.el.set('rel', this.model.id());
 	},
 
-	select_note: function(e)
-	{
-		this.model.set({selected: true}, {silent: true});
-	},
-
-	unselect_note: function(e)
-	{
-		this.model.unset('selected', {silent: true});
-	},
-
-	cancel: function(e) { if(e) e.stop(); },
-
-	view_note: function(e)
+	note_click: function(e)
 	{
 		if(e) e.stop();
-		new NoteViewController({
-			model: this.model,
-			board: this.board,
+		this.open_note();
+	},
+
+	open_note: function(e)
+	{
+		if(e) e.stop();
+		new NotesViewController({
+			model: this.model
 		});
 	}
 });
