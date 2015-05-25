@@ -34,6 +34,7 @@ var Sync = Composer.Model.extend({
 		this.bind('mem->db', this.run_outgoing_sync.bind(this), 'sync:model:mem->db');
 		this.bind('api->db', this.run_incoming_sync.bind(this), 'sync:model:api->db');
 		this.start_remote_poll();
+		this.sync_files();
 	},
 
 	/**
@@ -115,8 +116,6 @@ var Sync = Composer.Model.extend({
 	 */
 	queue_outgoing_change: function(table, action, data)
 	{
-// TODO: re-enable when we care about remote syncing
-return false;
 		var msg = {
 			type: table,
 			action: action,
@@ -145,6 +144,7 @@ return false;
 
 	run_outgoing_sync: function()
 	{
+		if(!turtl.sync_to_api) return false;
 	},
 
 	run_incoming_sync: function()
@@ -159,7 +159,7 @@ return false;
 			.bind(this)
 			.then(function(rec) {
 				this.set({sync_id: rec ? rec.value : null})
-				this._remote_poll = setInterval(this.poll_api_for_changes.bind(this), 10000);
+				this.poll_api_for_changes({immediate: true});
 			})
 			.catch(function(err) {
 				log.error('sync: problem grabbing sync_id: ', derr(err));
@@ -168,38 +168,44 @@ return false;
 
 	stop_remote_poll: function()
 	{
-		clearInterval(this._remote_poll);
 	},
 
 	poll_api_for_changes: function(options)
 	{
 		options || (options = {});
 
+		if(!this.enabled) return false;
 		if(!turtl.user || !turtl.user.logged_in) return false;
 		if(!turtl.poll_api_for_changes) return false;
 
 		this._polling = true;
 		var failed = false;
-		return this.get('/api/v2/sync?immediate='+(options.immediate ? 1 : 0), null, {timeout: 80000}).bind(this)
+		var sync_id = this.get('sync_id');
+		var sync_url = '/v2/sync?sync_id='+sync_id+'&immediate='+(options.immediate ? 1 : 0);
+		return turtl.api.get(sync_url, null, {timeout: 60000}).bind(this)
 			.then(function(sync) {
 				if(!this.connected && !options.skip_notify) turtl.events.trigger('api:connect');
 				this.connected = true;
-				return this.update_local_db_from_api_sync(sync);
+				if(sync)
+				{
+					return this.update_local_db_from_api_sync(sync);
+				}
 			})
-			.catch(function() {
+			.catch(function(err) {
 				failed = true;
 				if(this.connected && !options.skip_notify) turtl.events.trigger('api:disconnect');
 				this.connected = false;
+				if(err instanceof Error) throw err;
 			})
 			.finally(function() {
 				this._polling = false;
 				if(failed)
 				{
-					setTimeout(this.monitor.bind(this, {immediate: true}), 15000);
+					setTimeout(this.poll_api_for_changes.bind(this, {immediate: true}), 15000);
 				}
 				else
 				{
-					this.monitor();
+					this.poll_api_for_changes();
 				}
 			});
 	},
@@ -220,6 +226,14 @@ return false;
 				item.boards = [item.board_id];
 				delete item.board_id;
 			}
+		}
+
+		if(type == 'file')
+		{
+			item = item.file;
+			item.id = item.hash;
+			item.has_data = 0;
+			delete item.hash;
 		}
 
 		return item;
@@ -248,15 +262,25 @@ return false;
 			var next = function()
 			{
 				var item = records.splice(0, 1)[0];
+				// resolve if we've iterated over all the items
 				if(!item) return resolve(sync_id);
-				item = this.transform(item);
+
 				var sync = item._sync;
+				item = this.transform(item);
 				delete item._sync;
 				var table = this.type_to_table(sync.type);
 				if(!table)
 				{
 					return reject(new Error('sync: api->db: error processing sync item (bad _sync.type): ', sync));
 				}
+
+				/*
+				if(sync.type == 'file')
+				{
+					var file = new FileData(item);
+					turtl.files.download(file, file.download);
+				}
+				*/
 
 				return turtl.db[table].update(item)
 					.then(next)
@@ -266,7 +290,46 @@ return false;
 					});
 			}.bind(this);
 			next();
+		}.bind(this))
+		.tap(function() {
+			this.set({sync_id: sync_id});
+			return this.save();
 		}.bind(this));
+	},
+
+	// -------------------------------------------------------------------------
+	// file syncing section
+	// -------------------------------------------------------------------------
+
+	sync_files: function()
+	{
+		if(!this.enabled) return;
+		Promise.all([
+			this.upload_pending_files(),
+			this.create_dummy_file_records()
+				.then(this.download_pending_files.bind(this))
+		]).bind(this)
+			.catch(function(err) {
+				log.error('sync: files: ', err);
+			})
+			.finally(function() {
+				this.sync_files.delay(1000, this);
+			});
+	},
+
+	create_dummy_file_records: function()
+	{
+		return turtl.files.create_dummy_file_records();
+	},
+
+	upload_pending_files: function()
+	{
+		return Promise.resolve();
+	},
+
+	download_pending_files: function()
+	{
+		return turtl.files.queue_download_blank_files();
 	}
 });
 

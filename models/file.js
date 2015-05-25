@@ -368,8 +368,59 @@ var Files = SyncCollection.extend({
 	// used to track which files are currently uploading from this client.
 	uploads: {},
 
-	// holds the consumer that processes file queue jobs
-	queue_consumer: null,
+	/**
+	 * given notes that have files but don't have file data, create dummy file
+	 * records for those files that will be filled in by the syncing system
+	 *
+	 * possible values for note.has_file:
+	 *   0: has no file
+	 *   1: has a file but doesn't have file data (or does but we aren't sure)
+	 *   2: has a file and has data for that file
+	 */
+	create_dummy_file_records: function()
+	{
+		// this code creates empty file records in the files table from notes
+		// that we know have file data
+		//
+		// what we do here is search for notes with has_file = 1 (0 is does not
+		// have a file, 1 is has a file but not sure if the file record exists
+		// in the files table, and 2 is note has a file and file record is 
+		// definitely in the files table)
+		return turtl.db.notes
+			.query('has_file')
+			.only(1)		// only query notes that we're uncertain if it has matching file record
+			.execute()
+			.then(function(res) {
+				if(!res.length) return;
+				log.info('sync: create dummy files: ', res.length);
+				return Promise.all(res.map(function(notedata) {
+					if(!notedata || !notedata.file || !notedata.file.hash) return false;
+
+					var filedata = {
+						id: notedata.file.hash,
+						note_id: notedata.id,
+						has_data: 0
+					};
+					return turtl.db.files.get(filedata.id).then(function(file) {
+						// mark note as definitely having file record
+						turtl.db.notes
+							.query()
+							.only(notedata.id)
+							.modify({has_file: 2})
+							.execute()
+							.catch(function(err) {
+								log.error('sync: notes: set has_file = 2', derr(err));
+							});
+						// no need to mess with the file record if we've got one already
+						if(file) return false;
+						// file record doesn't exist! add it.
+						return turtl.db.files.update(filedata).catch(function(err) {
+							log.error('sync: files: insert file record: ', derr(err));
+						});
+					});
+				}));
+			});
+	},
 
 	start_consumer: function()
 	{
@@ -471,7 +522,7 @@ var Files = SyncCollection.extend({
 			.modify({has_data: -1})		// -1 means "in downloading limbo"
 			.execute()
 			.then(function(res) {
-				res.each(function(filedata) {
+				return Promise.all(res.each(function(filedata) {
 					if(!filedata.note_id) return false;
 					var failues = 0;
 					var do_add_queue_item = function()
@@ -492,10 +543,10 @@ var Files = SyncCollection.extend({
 						});
 					};
 					do_add_queue_item();
-				}.bind(this));
-			}.bind(this))
+				}));
+			})
 			.catch(function(e) {
-				console.error('sync: '+ this.local_table +': download: ', e);
+				console.error('sync: files: download: ', e);
 			});
 	},
 
@@ -553,7 +604,6 @@ var Files = SyncCollection.extend({
 				{
 					delete this[type][track_id];
 					log.error('files: '+type+': error', xhr || e);
-					if(error) error.apply(this, arguments);
 					this.trigger(type+'-error', track_id);
 				}
 				catch(e2)

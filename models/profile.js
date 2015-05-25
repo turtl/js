@@ -79,11 +79,11 @@ var Profile = Composer.RelationalModel.extend({
 				{
 					return this.load_profile_from_api();
 				}
+				else
+				{
+					turtl.sync.set({sync_id: res.value});
+				}
 				return res;
-			})
-			.then(function(sync_id) {
-				turtl.sync.set({sync_id: sync_id});
-				return turtl.sync.save();
 			})
 			.then(function() {
 				turtl.update_loading_screen('Loading profile');

@@ -267,6 +267,9 @@ var Notes = SyncCollection.extend({
 	 * given an array of note ids, either a) load them from local db,
 	 * deserialize them, and add them to this collection, or b) if they already
 	 * exist in this collection, do nothing =]
+	 *
+	 * this goes hand in hand with the search model, which only returns IDs, and
+	 * relies on another piece (this one) to load/decrypt the notes themselves.
 	 */
 	load_and_deserialize: function(note_ids, options)
 	{
@@ -283,59 +286,6 @@ var Notes = SyncCollection.extend({
 					this.add(note, options);
 				});
 		}.bind(this)));
-	},
-
-	start: function()
-	{
-		// poll for notes that have files (but no file record) and create dummy
-		// records
-		turtl.sync.register_poller(this.create_dummy_file_records.bind(this))
-	},
-
-	create_dummy_file_records: function()
-	{
-		// this code creates empty file records in the files table from notes
-		// that we know have file data
-		//
-		// what we do here is search for notes with has_file = 1 (0 is does not
-		// have a file, 1 is has a file but not sure if the file record exists
-		// in the files table, and 2 is note has a file and file record is 
-		// definitely in the files table)
-		turtl.db.notes
-			.query('has_file')
-			.only(1)		// only query notes that we're uncertain if it has matching file record
-			.execute()
-			.then(function(res) {
-				res.each(function(notedata) {
-					if(!notedata || !notedata.file || !notedata.file.hash) return false;
-
-					var filedata = {
-						id: notedata.file.hash,
-						note_id: notedata.id,
-						has_data: 0
-					};
-					turtl.db.files.get(filedata.id).then(function(file) {
-						// mark note as definitely having file record
-						turtl.db.notes
-							.query()
-							.only(notedata.id)
-							.modify({has_file: 2})
-							.execute()
-							.catch(function(err) {
-								log.error('sync: notes: set has_file = 2', derr(err));
-							}.bind(this));
-						// no need to mess with the file record if we've got one already
-						if(file) return false;
-						// file record doesn't exist! add it.
-						turtl.db.files.update(filedata).catch(function(err) {
-							log.error('sync: files: insert file record: ', derr(err));
-						}.bind(this));
-					}.bind(this));
-				}.bind(this));
-			}.bind(this))
-			.catch(function(err) {
-				log.error('sync: '+ this.local_table +': add file records: ', derr(err));
-			});
 	}
 });
 
