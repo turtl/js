@@ -84,6 +84,7 @@ var NotesSearchController = Composer.Controller.extend({
 			return {name: color, selected: selected, id: i};
 		}.bind(this));
 
+		console.log('sort: ', sort);
 		this.html(view.render('notes/search/index', {
 			sort: sort[0],
 			dir: sort[1],
@@ -157,7 +158,7 @@ var NotesSearchController = Composer.Controller.extend({
 		var clickfield = a.get('rel');
 		if(clickfield == field)
 		{
-			sort[1] = dir == 'desc' ? 'asc' : 'desc';
+			sort[1] = (dir == 'desc' ? 'asc' : 'desc');
 		}
 		else
 		{
