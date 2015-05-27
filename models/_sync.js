@@ -184,8 +184,9 @@ var Sync = Composer.Model.extend({
 		var sync_url = '/v2/sync?sync_id='+sync_id+'&immediate='+(options.immediate ? 1 : 0);
 		return turtl.api.get(sync_url, null, {timeout: 60000}).bind(this)
 			.then(function(sync) {
-				if(!this.connected && !options.skip_notify) turtl.events.trigger('api:connect');
+				var orig = this.connected;
 				this.connected = true;
+				if(!orig && !options.skip_notify) turtl.events.trigger('api:connect');
 				if(sync)
 				{
 					return this.update_local_db_from_api_sync(sync);
@@ -193,8 +194,9 @@ var Sync = Composer.Model.extend({
 			})
 			.catch(function(err) {
 				failed = true;
-				if(this.connected && !options.skip_notify) turtl.events.trigger('api:disconnect');
+				var orig = this.connected;
 				this.connected = false;
+				if(orig && !options.skip_notify) turtl.events.trigger('api:disconnect');
 				if(err instanceof Error) throw err;
 			})
 			.finally(function() {
