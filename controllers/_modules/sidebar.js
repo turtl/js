@@ -28,6 +28,7 @@ var SidebarController = Composer.Controller.extend({
 		document.body.addClass('settings');
 		turtl.push_title('Turtl places', false);
 		setTimeout(this.overlay.addClass.bind(this.overlay, 'show'), 10);
+		turtl.events.trigger('sidebar:open');
 	},
 
 	close: function()
@@ -39,6 +40,7 @@ var SidebarController = Composer.Controller.extend({
 		}.bind(this), 300);
 		document.body.removeClass('settings');
 		turtl.pop_title('hubba hubba');
+		turtl.events.trigger('sidebar:close');
 	},
 
 	toggle: function()
