@@ -26,6 +26,8 @@ var PersonasEditController = FormController.extend({
 		this.modal.open(this.el);
 		this.with_bind(this.modal, 'close', this.release.bind(this));
 
+		this.requires_connection({msg: 'Adding/editing personas requires a connection to the Turtl server.'});
+
 		this.bind(['cancel', 'close'], close);
 	},
 
