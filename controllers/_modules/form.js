@@ -86,6 +86,40 @@ var FormController = Composer.Controller.extend({
 			return;
 		}
 		this.submit(e);
+	},
+
+	requires_connection: function(options)
+	{
+		options || (options = {});
+
+		var check_disconnect = function()
+		{
+			if(turtl.sync.connected)
+			{
+				this.disable(false);
+			}
+			else
+			{
+				barfr.barf('You are in offline mode. Adding/editing personas requires a connection to the Turtl server.');
+				this.disable(true);
+			}
+		}.bind(this);
+		this.with_bind(turtl.events, ['api:connect', 'api:disconnect'], check_disconnect);
+		check_disconnect();
+	},
+
+	disable: function(yesno)
+	{
+		if(yesno)
+		{
+			this.disabled = true;
+			if(this.btn_submit) this.btn_submit.addClass('disabled');
+		}
+		else
+		{
+			this.disabled = false;
+			if(this.btn_submit) this.btn_submit.removeClass('disabled');
+		}
 	}
 });
 
