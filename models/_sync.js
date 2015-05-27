@@ -159,7 +159,7 @@ var Sync = Composer.Model.extend({
 			.bind(this)
 			.then(function(rec) {
 				this.set({sync_id: rec ? rec.value : null})
-				this.poll_api_for_changes({immediate: true});
+				this.poll_api_for_changes({immediate: true, skip_notify: true});
 			})
 			.catch(function(err) {
 				log.error('sync: problem grabbing sync_id: ', derr(err));
