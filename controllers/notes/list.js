@@ -63,7 +63,7 @@ var NotesListController = Composer.ListController.extend({
 					// since the search model only deals with IDs, here we pull
 					// out the actual note model from the profile (which was
 					// pre-loaded and decrypted)
-					var note = notes.find_by_id(model.id());
+					var note = notes.get(model.id());
 					var con = new NotesItemController({
 						inject: this.note_list,
 						model: note
