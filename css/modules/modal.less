@@ -1,7 +1,7 @@
 @import 'variables';
 
-.turtl-modal {position: fixed; top: 0; left: 100%; z-index: 20; width: 100%; height: 100%; overflow-x: hidden; background: @theme_gutter; .transition(left .3s); background: #fff; .layer-hover(); .touch-scroll();}
-.turtl-modal.active {left: 0%;}
+.turtl-modal {position: fixed; top: 0; right: -100%; z-index: 20; width: 100%; height: 100%; overflow-x: hidden; background: @theme_gutter; .transition(right .3s); background: #fff; .layer-hover(); .touch-scroll();}
+.turtl-modal.active {right: 0%;}
 .turtl-modal {
 	header {background: @theme_black_bg;}
 	header {
