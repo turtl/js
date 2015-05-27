@@ -282,19 +282,20 @@ var Sync = Composer.Model.extend({
 				}
 				*/
 
-				return turtl.db[table].update(item)
-					.then(next)
-					.catch(function(err) {
-						log.error('sync: api->db: error saving to table: ', table, err);
-						throw err;
-					});
+				// save to the DB then loop again, pulling the next item off the
+				// stack
+				return turtl.db[table].update(item).then(next)
 			}.bind(this);
 			next();
 		}.bind(this))
 		.tap(function() {
 			this.set({sync_id: sync_id});
 			return this.save();
-		}.bind(this));
+		}.bind(this))
+		.catch(function(err) {
+			log.error('sync: api->db: error saving to table: ', table, err);
+			throw err;
+		});
 	},
 
 	// -------------------------------------------------------------------------
