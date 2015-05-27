@@ -49,6 +49,16 @@ var NotesIndexController = Composer.Controller.extend({
 			var back = '/boards';
 		}
 
+		var tagsearch = clone(this.search);
+		this.with_bind(turtl.profile.get('notes'), ['add', 'remove', 'clear', 'reset'], function() {
+			var list = this.get_subcontroller('list');
+			if(!list) return;
+			turtl.search.search(tagsearch)
+				.spread(function(_, tags) {
+					list.tags = tags;
+				});
+		}.bind(this));
+
 		turtl.push_title(title, back);
 		this.bind('release', turtl.pop_title.bind(null, false));
 
