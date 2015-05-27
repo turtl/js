@@ -87,7 +87,7 @@ var ActionController = Composer.Controller.extend({
 				el.setStyles({opacity: 0});
 				return;
 			}
-			Velocity(el, {bottom: (bottom + botfn(i)) + 'rem'}, {
+			Velocity(el, {bottom: (botfn(i)) + 'rem'}, {
 				duration: duration,
 				easing: ease
 			});
