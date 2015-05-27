@@ -273,19 +273,18 @@ var Notes = SyncCollection.extend({
 	 */
 	load_and_deserialize: function(note_ids, options)
 	{
-		return Promise.all(note_ids.map(function(id) {
-			if(this.find_by_id(id)) return true;
-			var note;
+		var actions = note_ids.map(function(id) {
+			if(this.get(id)) return true;
 			return turtl.db.notes.get(id).bind(this)
-				.then(function(notedata) {
-					if(!notedata) return false;
-					note = new Note(notedata);
-					return note.deserialize(options);
-				})
-				.then(function() {
-					this.add(note, options);
-				});
-		}.bind(this)));
+		}.bind(this));
+		return Promise.all(actions).bind(this)
+			.map(function(notedata) {
+				if(notedata === true) return true;
+				var note = new Note(notedata);
+				return note.deserialize().then(function() { return note; });
+			}).map(function(note) {
+				this.upsert(note, options);
+			});
 	}
 });
 
