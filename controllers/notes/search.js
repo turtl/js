@@ -11,7 +11,7 @@ var NotesSearchController = Composer.Controller.extend({
 	events: {
 		'click .filter-sort a': 'sort',
 		'click a[rel=all]': 'show_all_tags',
-		'keyup input[name=text]': 'text_search',
+		'input input[name=text]': 'text_search',
 		'click ul.tags li': 'toggle_tag',
 		'click ul.colors li': 'toggle_color'
 	},
@@ -58,6 +58,10 @@ var NotesSearchController = Composer.Controller.extend({
 			this.modal.set_title(titlefn(turtl.search.total), turtl.last_url);
 		}.bind(this));
 
+		var timer = new Timer(500);
+		this.with_bind(timer, 'fired', this.trigger.bind(this, 'do-search'));
+		this.bind('search-text', timer.reset.bind(timer));
+
 		var last_tags = null;
 		this.bind('update-available-tags', function(tags) {
 			if(JSON.stringify(tags) == last_tags) return;
@@ -97,10 +101,10 @@ var NotesSearchController = Composer.Controller.extend({
 		options || (options = {});
 
 		var available_tags = options.available_tags;
+		var avail_idx = available_tags && make_index(available_tags, 'name');
 		var tags = this.tags;
 		var selected = this.search.tags;
 		var sel_idx = make_index(selected, null);
-		var avail_idx = available_tags && make_index(available_tags, 'name');
 
 		var show_all = this.show_all;
 		var max_show = 30;
@@ -176,7 +180,7 @@ var NotesSearchController = Composer.Controller.extend({
 		if(e) e.stop();
 		var text = this.inp_text.get('value');
 		this.search.text = text;
-		this.trigger('do-search');
+		this.trigger('search-text');
 	},
 
 	toggle_tag: function(e)
