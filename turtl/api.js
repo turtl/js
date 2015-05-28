@@ -85,6 +85,13 @@ var Api = new Class({
 
 		var headers = params.headers || {};
 
+		var querydata = null;
+		if(data && method.toLowerCase() == 'get')
+		{
+			querydata = data;
+			data = null;
+		}
+
 		if(typeof(data) == 'object' && typeof(headers['content-type']) == 'undefined')
 		{
 			headers['Content-Type'] = 'application/json';
@@ -100,6 +107,7 @@ var Api = new Class({
 			timeout: params.timeout || undefined,
 			headers: params.headers || {},
 			data: data,
+			querydata: querydata,
 			response_type: params.response_type,
 			onprogress: function(event, xhr)
 			{
