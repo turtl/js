@@ -4,6 +4,10 @@ var PersonasEditController = FormController.extend({
 		'input[name=name]': 'inp_name'
 	},
 
+	events: {
+		'input input[name=email]': 'email_search'
+	},
+
 	modal: null,
 
 	model: null,
@@ -29,6 +33,17 @@ var PersonasEditController = FormController.extend({
 		this.requires_connection({msg: 'Adding/editing personas requires a connection to the Turtl server.'});
 
 		this.bind(['cancel', 'close'], close);
+
+		var email = null;
+		var email_timer = new Timer(500);
+		this.with_bind(email_timer, 'fired', function() {
+			this.do_email_search(email);
+		}.bind(this));
+		this.bind('email-search', function(the_email) {
+			email = the_email;
+			email_timer.reset();
+		});
+
 	},
 
 	render: function()
@@ -97,6 +112,44 @@ var PersonasEditController = FormController.extend({
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', 'There was a problem updating that persona', err);
 				log.error('persona: edit: ', this.model.id(), derr(err));
+			});
+	},
+
+	email_search: function(e)
+	{
+		var email = this.inp_email.get('value').clean();
+		if(!email) return this.do_email_search(false);
+		this.trigger('email-search', email);
+	},
+
+	do_email_search: function(email)
+	{
+		var promise;
+		if(email)
+		{
+			promise = this.model.get_by_email(email, {ignore_this_persona: true});
+		}
+		else
+		{
+			promise = Promise.resolve(null);
+		}
+		promise.bind(this)
+			.then(function(persona) {
+				this._email_barf = barfr.barf('That email is already registered to another persona', {persist: true});
+				this.inp_email.addClass('error');
+				this.disable(true);
+			})
+			.catch(function(err) {
+				if(err.xhr.status == 404)
+				{
+					this.disable(false);
+					this.inp_email.removeClass('error');
+					if(this._email_barf) barfr.close_barf(this._email_barf);
+				}
+				else
+				{
+					throw new Error(JSON.stringify(err));
+				}
 			});
 	}
 });

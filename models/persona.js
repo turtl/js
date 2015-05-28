@@ -116,14 +116,7 @@ var Persona = Protected.extend({
 		{
 			args.require_key = 1;
 		}
-		turtl.api.get('/personas/email/'+email, args, options);
-	},
-
-	search_by_email: function(email, options)
-	{
-		options || (options = {});
-
-		turtl.api.get('/personas/email/'+email+'*', {}, options);
+		return turtl.api.get('/personas/email/'+email, args, options);
 	},
 
 	has_keypair: function()
