@@ -18,6 +18,7 @@ var database = {
 				// k/v tables - always has "key" field as primary key
 				// -------------------------------------------------------------
 				// holds metadata about the sync process ("sync_time", etc)
+				// TODO: use local storage for sync??
 				sync: {
 					key: { keyPath: 'key', autoIncrement: false },
 					indexes: { }
@@ -72,10 +73,6 @@ var database = {
 				},
 
 				// these tables hold incoming/outgoing sync data
-				sync_incoming: {
-					key: { keyPath: 'id', autoIncrement: true },
-					indexes: { }
-				},
 				sync_outgoing: {
 					key: { keyPath: 'id', autoIncrement: true },
 					indexes: { }
