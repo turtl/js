@@ -196,10 +196,6 @@ var turtl = {
 			// sets up local storage
 			turtl.setup_local_db().bind({})
 				.then(function() {
-					// save user to the local DB
-					return turtl.user.save();
-				})
-				.then(function() {
 					this.start = new Date().getTime();
 					return turtl.profile.load();
 				})
@@ -324,6 +320,7 @@ var turtl = {
 		turtl.sync.register_local_tracker('personas', turtl.profile.get('personas'));
 		turtl.sync.register_local_tracker('boards', turtl.profile.get('boards'));
 		turtl.sync.register_local_tracker('notes', turtl.profile.get('notes'));
+		turtl.sync.register_local_tracker('files', turtl.files);
 	},
 
 	stop_spinner: false,
