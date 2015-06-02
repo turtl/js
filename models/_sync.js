@@ -17,8 +17,30 @@ var Sync = Composer.Model.extend({
 	// from the API
 	local_trackers: {},
 
+	outgoing_timer: null,
+
 	// used to track local syncs
 	local_sync_id: 0,
+
+	type_table_map: {
+		user: 'user',
+		keychain: 'keychain',
+		persona: 'personas',
+		board: 'boards',
+		note: 'notes',
+		file: 'files'
+	},
+
+	// generated from the above
+	table_type_map: {},
+
+	initialize: function()
+	{
+		Object.keys(this.type_table_map).forEach(function(key) {
+			this.table_type_map[this.type_table_map[key]] = key;
+		}.bind(this));
+		return this.parent();
+	},
 
 	init: function()
 	{
@@ -30,11 +52,20 @@ var Sync = Composer.Model.extend({
 	start: function()
 	{
 		this.enabled = true;
-		this.bind('db->mem', this.sync_db_to_mem.bind(this), 'sync:model:db->mem');
-		this.bind('mem->db', this.run_outgoing_sync.bind(this), 'sync:model:mem->db');
-		this.bind('api->db', this.run_incoming_sync.bind(this), 'sync:model:api->db');
 		this.start_remote_poll();
 		this.sync_files();
+
+		this.outgoing_timer = new Timer(2000);
+		this.outgoing_timer.bind('fired', this.run_outgoing_sync.bind(this));
+		this.outgoing_timer.bind('fired', function() {
+			if(!this.connected) return;
+			this.run_outgoing_sync();
+		}.bind(this));
+		this.bind('mem->db', this.outgoing_timer.reset.bind(this.outgoing_timer), 'sync:model:mem->db');
+		turtl.events.bind('api:connect', this.outgoing_timer.reset.bind(this.outgoing_timer), 'sync:connect:run-outgoing');
+
+		// runs our initial outgoing sync
+		this.outgoing_timer.reset();
 	},
 
 	/**
@@ -43,10 +74,11 @@ var Sync = Composer.Model.extend({
 	stop: function()
 	{
 		this.enabled = false;
-		this.unbind('db->mem', 'sync:model:db->mem');
+
+		this.outgoing_timer.unbind();
+		this.outgoing_timer = null;
 		this.unbind('mem->db', 'sync:model:mem->db');
-		this.unbind('api->db', 'sync:model:api->db');
-		this.stop_remote_poll();
+		turtl.events.unbind('api:connect', 'sync:connect:run-outgoing');
 	},
 
 	/**
@@ -116,17 +148,24 @@ var Sync = Composer.Model.extend({
 	 */
 	queue_outgoing_change: function(table, action, data)
 	{
-		var msg = {
-			type: table,
-			action: action,
-			data: data
+		var sync_action;
+		switch(action)
+		{
+			case 'create': sync_action = 'add'; break;
+			case 'update': sync_action = 'edit'; break;
+			case 'delete': sync_action = 'delete'; break;
+			default: throw new Error('sync: queue outgoing change: bad action given: '+ action); break;
+		}
+		data._sync = {
+			type: this.table_to_type(table),
+			action: sync_action
 		};
 		var fail_count = 0;
 		var enqueue = function()
 		{
-			turtl.db.sync_outgoing.add(msg).bind(this)
+			turtl.db.sync_outgoing.add(data).bind(this)
 				.then(function() {
-					log.debug('sync: queue remote: send: ', msg);
+					log.debug('sync: queue remote: send: ', data);
 					this.trigger('mem->db');
 				})
 				.catch(function(err) {
@@ -138,17 +177,19 @@ var Sync = Composer.Model.extend({
 		enqueue();
 	},
 
-	sync_db_to_mem: function()
-	{
-	},
-
 	run_outgoing_sync: function()
 	{
 		if(!turtl.sync_to_api) return false;
-	},
-
-	run_incoming_sync: function()
-	{
+		return turtl.db.sync_outgoing.query().all().execute()
+			.then(function(items) {
+				if(!items || !items.length) return;
+				return turtl.api.post('/v2/sync', items)
+					.then(function(synced) {
+						// remove
+					});
+			})
+			.catch(function(err) {
+			});
 	},
 
 	start_remote_poll: function()
@@ -164,10 +205,6 @@ var Sync = Composer.Model.extend({
 			.catch(function(err) {
 				log.error('sync: problem grabbing sync_id: ', derr(err));
 			});
-	},
-
-	stop_remote_poll: function()
-	{
 	},
 
 	poll_api_for_changes: function(options)
@@ -212,9 +249,9 @@ var Sync = Composer.Model.extend({
 			});
 	},
 
-	transform: function(item)
+	transform: function(sync, item)
 	{
-		var type = item._sync.type;
+		var type = sync.type;
 
 		if(type == 'user')
 		{
@@ -243,15 +280,12 @@ var Sync = Composer.Model.extend({
 
 	type_to_table: function(typename)
 	{
-		var names = {
-			user: 'user',
-			keychain: 'keychain',
-			persona: 'personas',
-			board: 'boards',
-			note: 'notes',
-			file: 'files'
-		};
-		return names[typename];
+		return this.type_table_map[typename];
+	},
+
+	table_to_type: function(table)
+	{
+		return this.table_type_map[table];
 	},
 
 	update_local_db_from_api_sync: function(sync_collection, options)
@@ -263,13 +297,13 @@ var Sync = Composer.Model.extend({
 		return new Promise(function(resolve, reject) {
 			var next = function()
 			{
-				var item = records.splice(0, 1)[0];
+				var sync = records.splice(0, 1)[0];
 				// resolve if we've iterated over all the items
-				if(!item) return resolve(sync_id);
+				if(!sync) return resolve(sync_id);
 
-				var sync = item._sync;
-				item = this.transform(item);
-				delete item._sync;
+				var item = sync.data;
+				delete sync.data;
+				item = this.transform(sync, item);
 				var table = this.type_to_table(sync.type);
 				if(!table)
 				{
