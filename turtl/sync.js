@@ -44,7 +44,9 @@ Composer.sync = function(method, model, options)
 			}
 			if(!options.skip_remote_sync)
 			{
-				turtl.sync.queue_outgoing_change(table, method, modeldata);
+				var sync_data = modeldata;
+				if(method == 'delete') sync_data = {id: modeldata.id};
+				turtl.sync.queue_outgoing_change(table, method, sync_data);
 			}
 		}
 
