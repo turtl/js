@@ -42,10 +42,6 @@ var Sync = Composer.Model.extend({
 		return this.parent();
 	},
 
-	init: function()
-	{
-	},
-
 	/**
 	 * Instruct the syncing system to start
 	 */
@@ -156,14 +152,15 @@ var Sync = Composer.Model.extend({
 			case 'delete': sync_action = 'delete'; break;
 			default: throw new Error('sync: queue outgoing change: bad action given: '+ action); break;
 		}
-		data._sync = {
+		var sync = {
 			type: this.table_to_type(table),
-			action: sync_action
+			action: sync_action,
+			data: data
 		};
 		var fail_count = 0;
 		var enqueue = function()
 		{
-			turtl.db.sync_outgoing.add(data).bind(this)
+			turtl.db.sync_outgoing.add(sync).bind(this)
 				.then(function() {
 					log.debug('sync: queue remote: send: ', data);
 					this.trigger('mem->db');
