@@ -19,7 +19,7 @@ Composer.cid = (function() {
 		counter++;
 		return ('000000000000' + new Date().getTime().toString(16)).substr(-12) +
 			turtl.client_id +
-			counter.toString(16);
+			('0000' + (counter & 65535).toString(16)).substr(-4);
 	};
 })();
 
