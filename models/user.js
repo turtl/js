@@ -142,10 +142,6 @@ var User = Protected.extend({
 					}.bind(this);
 					check_db.delay(1, this);
 				}.bind(this), 'user:join:add_local_record');
-			})
-			.catch(function(err) {
-				log.error('error: user: join: ', derr(err));
-				throw err;
 			});
 	},
 
