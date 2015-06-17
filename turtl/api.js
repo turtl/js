@@ -155,6 +155,7 @@ var Api = new Class({
 			.catch(function(e) {
 				var xhr = e.xhr;
 				var res;
+				var disconnected = xhr && xhr.status === 0;
 				if(timed_out)
 				{
 					res = 'timeout';
@@ -171,7 +172,12 @@ var Api = new Class({
 						log.debug('api: ', res);
 					}
 				}
-				throw {res: res, xhr: xhr};
+				throw {
+					res: res,
+					xhr: xhr,
+					disconnected: disconnected,
+					timed_out: timed_out
+				};
 			});
 	},
 
