@@ -1,10 +1,7 @@
 "use strict";
 var Sync = Composer.Model.extend({
 	// local model ID tracking (for preventing double syncs)
-	sync_ignore: {
-		local: [],
-		remote: []
-	},
+	sync_ignore: {},
 
 	// if false, syncing functions will no longer run
 	enabled: false,
@@ -12,12 +9,14 @@ var Sync = Composer.Model.extend({
 	// some polling vars
 	connected: true,
 	_polling: false,
+	_outgoing_sync_running: false,
 
 	// holds collections that are responsible for handling incoming data syncs
 	// from the API
 	local_trackers: {},
 
 	outgoing_timer: null,
+	outgoing_interval: null,
 
 	// used to track local syncs
 	local_sync_id: 0,
@@ -62,6 +61,8 @@ var Sync = Composer.Model.extend({
 
 		// runs our initial outgoing sync
 		this.outgoing_timer.reset();
+		// make sure outgoing sync runs at least once every 10s
+		this.outgoing_interval = setInterval(this.run_outgoing_sync.bind(this), 10000);
 	},
 
 	/**
@@ -75,6 +76,7 @@ var Sync = Composer.Model.extend({
 		this.outgoing_timer = null;
 		this.unbind('mem->db', 'sync:model:mem->db');
 		turtl.events.unbind('api:connect', 'sync:connect:run-outgoing');
+		clearInterval(this.outgoing_interval);
 	},
 
 	/**
@@ -90,31 +92,27 @@ var Sync = Composer.Model.extend({
 	 * This function (mainly called by Composer.sync) tells the sync system to
 	 * ignore a model on the next sync.
 	 */
-	ignore_on_next_sync: function(id, options)
+	ignore_on_next_sync: function(id)
 	{
-		options || (options = {});
-		if(!options.type) options.type = 'local';
-		this.sync_ignore[options.type].push(id);
+		this.sync_ignore[id] = true;
 	},
 
 	/**
 	 * See ignore_on_next_sync() ...this is the function the sync processes use
 	 * to determine if an item should be ignored.
 	 */
-	should_ignore: function(ids, options)
+	should_ignore: function(ids)
 	{
-		options || (options = {});
-		if(!options.type) options.type = 'local';
 		if(!(ids instanceof Array)) ids = [ids];
-		var ignores = this.sync_ignore[options.type];
+		var ignores = this.sync_ignore;
 		for(var i = 0; i < ids.length; i++)
 		{
 			var id = ids[i];
 			if(!id && id !== 0) continue;
-			if(ignores.contains(id))
+			if(ignores[id] === true)
 			{
-				log.debug('sync: ignore: '+ options.type, id);
-				ignores.erase(id);
+				log.debug('sync: ignore: ', id);
+				delete ignores[id];
 				return true;
 			}
 		}
@@ -177,15 +175,48 @@ var Sync = Composer.Model.extend({
 	run_outgoing_sync: function()
 	{
 		if(!turtl.sync_to_api) return false;
-		return turtl.db.sync_outgoing.query().all().execute()
+		return turtl.db.sync_outgoing.query().all().execute().bind(this)
 			.then(function(items) {
 				if(!items || !items.length) return;
-				return turtl.api.post('/v2/sync', items)
+				if(!this.connected) return;
+				// note that this check is closest to the place it matters: the API.
+				// we have no process in place to keep duplicate syncs from going
+				// out, so we have ot be careful about double-posting
+				if(this._outgoing_sync_running) return;
+				this._outgoing_sync_running = true;
+				return turtl.api.post('/v2/sync', items).bind(this)
 					.then(function(synced) {
-						// remove
+						if(synced.error)
+						{
+							log.error('sync: outgoing: api error: ', synced.error);
+							barfr.barf('There was a problem syncing to the server (we\'ll try again soon): '+ synced.error);
+						}
+						var actions = synced.success.map(function(sync) {
+							// these sync items will come through in our next
+							// sync request unless we ignore them
+							sync.sync_ids.map(this.ignore_on_next_sync.bind(this));
+							// remove the successful sync records (it passes
+							// back the IDs we handed it from our DB)
+							return turtl.db.sync_outgoing.remove(sync.id);
+						}.bind(this));
+						// wait for the sync records to delete, then update our
+						// local DB with the responses from the synced items
+						return Promise.all(actions).bind(this)
+							.then(function() {
+								var actions = synced.success.map(function(sync) {
+									if(sync.action == 'delete') return null;
+									return this.run_incoming_sync_item(sync);
+								}.bind(this));
+								return Promise.all(actions);
+							});
 					});
 			})
 			.catch(function(err) {
+				log.error('sync: outgoing: problem syncing items: ', err);
+				barfr.barf('There was a problem syncing to the server. Trying again soon.');
+			})
+			.finally(function() {
+				this._outgoing_sync_running = false;
 			});
 	},
 
@@ -211,6 +242,8 @@ var Sync = Composer.Model.extend({
 		if(!this.enabled) return false;
 		if(!turtl.user || !turtl.user.logged_in) return false;
 		if(!turtl.poll_api_for_changes) return false;
+
+		if(this._polling) return;
 
 		this._polling = true;
 		var failed = false;
@@ -285,6 +318,53 @@ var Sync = Composer.Model.extend({
 		return this.table_type_map[table];
 	},
 
+	run_incoming_sync_item: function(sync)
+	{
+		var item = sync.data;
+		delete sync.data;
+		item = this.transform(sync, item);
+		var table = this.type_to_table(sync.type);
+		var db_table = turtl.db[table];
+		if(!table || !db_table)
+		{
+			log.error('sync: api->db: error processing sync item (bad table): ', table, sync);
+			throw new Error('sync: api->db: error processing sync item (bad sync.type): '+ sync.type);
+		}
+
+		/*
+		if(sync.type == 'file')
+		{
+			var file = new FileData(item);
+			turtl.files.download(file, file.download);
+		}
+		*/
+
+		// save to the DB
+		if(sync.action == 'delete')
+		{
+			var fn = 'remove';
+			var rec = item.id;
+		}
+		else
+		{
+			var fn = 'update';
+			var rec = item;
+		}
+		return (db_table[fn])(rec).bind(this)
+			.then(function() {
+				// ok, we saved it to the DB, now notify our sync tracker for
+				// this type of item that we just saved an item it might care
+				// about
+				var tracker = this.local_trackers[table];
+				if(!tracker) return false;
+				return tracker.run_incoming_sync_item(sync, item);
+			})
+			.catch(function(err) {
+				log.error('sync: api->db: error saving to table: ', table, err);
+				throw err;
+			});
+	},
+
 	update_local_db_from_api_sync: function(sync_collection, options)
 	{
 		options || (options = {});
@@ -298,26 +378,8 @@ var Sync = Composer.Model.extend({
 				// resolve if we've iterated over all the items
 				if(!sync) return resolve(sync_id);
 
-				var item = sync.data;
-				delete sync.data;
-				item = this.transform(sync, item);
-				var table = this.type_to_table(sync.type);
-				if(!table)
-				{
-					return reject(new Error('sync: api->db: error processing sync item (bad _sync.type): ', sync));
-				}
-
-				/*
-				if(sync.type == 'file')
-				{
-					var file = new FileData(item);
-					turtl.files.download(file, file.download);
-				}
-				*/
-
-				// save to the DB then loop again, pulling the next item off the
-				// stack
-				return turtl.db[table].update(item).then(next)
+				// run the sync item then call next() again
+				return this.run_incoming_sync_item(sync).then(next);
 			}.bind(this);
 			next();
 		}.bind(this))
@@ -326,7 +388,7 @@ var Sync = Composer.Model.extend({
 			return this.save();
 		}.bind(this))
 		.catch(function(err) {
-			log.error('sync: api->db: error saving to table: ', table, err);
+			log.error('sync: api->db: error updating DB from sync: ', err);
 			throw err;
 		});
 	},
@@ -368,5 +430,9 @@ var Sync = Composer.Model.extend({
 });
 
 var SyncCollection = Composer.Collection.extend({
+	run_incoming_sync_item: function(sync, item)
+	{
+		log.warn('SyncCollection.run_incoming_sync_item(): override me!');
+	}
 });
 
