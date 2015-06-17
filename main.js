@@ -160,8 +160,8 @@ var turtl = {
 	{
 		options || (options = {});
 
-		// update the user_profiles collection on login
-		this.user.bind('login', function() {
+		var load_profile = function()
+		{
 			// if the user is logged in, we'll put their auth info into the api object
 			if(!window._disable_cookie)
 			{
@@ -219,15 +219,40 @@ var turtl = {
 					if(window.port) window.port.send('profile-load-complete');
 				})
 				.catch(function(err) {
-					barfr.barf('There was a problem with the initial load of your profile: '+ err.message);
+					barfr.barf('There was a problem with the initial load of your profile. Please try again.');
 					log.error(derr(err));
+					var what_next = new Element('div.choice');
+					var retry = new Element('a')
+						.set('href', '#retry')
+						.addClass('button')
+						.set('html', 'Retry')
+						.inject(what_next);
+					var logout = new Element('a')
+						.set('href', '#logout')
+						.addClass('button')
+						.set('html', 'Logout')
+						.inject(what_next);
+					turtl.events.trigger('loading:stop');
+					turtl.update_loading_screen(false);
+					turtl.update_loading_screen('Error loading profile');
+					turtl.update_loading_screen(what_next);
+					retry.addEvent('click', function(e) {
+						if(e) e.stop();
+						turtl.update_loading_screen(false);
+						load_profile();
+					});
+					logout.addEvent('click', function(e) {
+						if(e) e.stop();
+						turtl.user.logout();
+					});
 				});
 
 			// logout shortcut
 			turtl.keyboard.addEvent('shift+l', function() {
 				turtl.route('/users/logout');
 			}, 'dashboard:shortcut:logout');
-		}.bind(turtl));
+		}.bind(turtl);
+		this.user.bind('login', load_profile);
 		turtl.user.bind('logout', function() {
 			turtl.user.key = null;
 			turtl.user.auth = null;
