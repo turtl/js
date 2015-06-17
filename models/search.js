@@ -329,10 +329,10 @@ var Search = Composer.Collection.extend({
 		if(json.url && json.url.match(/^data:/)) json.url = '';
 		this.index_json.notes[note.id()] = json;
 
-		note.get('tags').each(function(tag) {
+		(note.get('tags') || []).each(function(tag) {
 			this.index_type('tags', tag.get('name'), note.id());
 		}.bind(this));
-		note.get('boards').forEach(function(board_id) {
+		(note.get('boards') || []).forEach(function(board_id) {
 			this.index_type('boards', board_id, note.id());
 		}.bind(this));
 
