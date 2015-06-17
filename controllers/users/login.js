@@ -48,9 +48,13 @@ var UserLoginController = FormController.extend({
 				}
 			})
 			.catch(function(err) {
+				if(err && err.xhr && err.xhr.status === 0)
+				{
+					barfr.barf('Couldn\'t connect to the server');
+					return;
+				}
 				barfr.barf('Login failed.');
 				log.error('login error: ', derr(err));
-				turtl.loading(false);
 			})
 			.finally(function() {
 				turtl.loading(false);

@@ -103,11 +103,6 @@ var UserJoinController = FormController.extend({
 
 		this.inp_submit.disabled = true;
 
-		if(password.length < 10)
-		{
-			barfr.barf('Your password is less than 10 characters. This is allowed, but we advise you to change to a passphrase of at least a few words.');
-		}
-
 		var user = new User({
 			username: username,
 			password: password
@@ -116,15 +111,25 @@ var UserJoinController = FormController.extend({
 		turtl.loading(true);
 		user.join({ promo: promo }).bind(this)
 			.then(function(userdata) {
+				if(password.length < 10)
+				{
+					barfr.barf('Your password is less than 10 characters. This is allowed, but we advise you to change to a passphrase of at least a few words.');
+				}
+
 				var data = user.toJSON();
 				data.id = userdata.id;
 				turtl.user.login(data);
 				turtl.route('/');
 			})
 			.catch(function(err) {
+				this.inp_submit.disabled = false;
+				if(err.disconnected)
+				{
+					barfr.barf('Couldn\'t connect to the server');
+					return;
+				}
 				turtl.events.trigger('ui-error', 'There was a problem saving that account', err);
 				log.error('users: join: ', this.model.id(), derr(err));
-				this.inp_submit.disabled = false;
 			})
 			.finally(function() {
 				turtl.loading(false);
