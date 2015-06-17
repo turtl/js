@@ -72,7 +72,7 @@ var Sync = Composer.Model.extend({
 	{
 		this.enabled = false;
 
-		this.outgoing_timer.unbind();
+		if(this.outgoing_timer) this.outgoing_timer.unbind();
 		this.outgoing_timer = null;
 		this.unbind('mem->db', 'sync:model:mem->db');
 		turtl.events.unbind('api:connect', 'sync:connect:run-outgoing');
@@ -295,6 +295,7 @@ var Sync = Composer.Model.extend({
 				item.boards = [item.board_id];
 				delete item.board_id;
 			}
+			if(!Array.isArray(item.boards)) item.boards = [];
 		}
 
 		if(type == 'file')
@@ -318,8 +319,10 @@ var Sync = Composer.Model.extend({
 		return this.table_type_map[table];
 	},
 
-	run_incoming_sync_item: function(sync)
+	run_incoming_sync_item: function(sync, options)
 	{
+		options || (options = {});
+
 		var item = sync.data;
 		delete sync.data;
 		item = this.transform(sync, item);
@@ -352,6 +355,7 @@ var Sync = Composer.Model.extend({
 		}
 		return (db_table[fn])(rec).bind(this)
 			.then(function() {
+				if(options.skip_local_tracker) return;
 				// ok, we saved it to the DB, now notify our sync tracker for
 				// this type of item that we just saved an item it might care
 				// about
@@ -379,7 +383,7 @@ var Sync = Composer.Model.extend({
 				if(!sync) return resolve(sync_id);
 
 				// run the sync item then call next() again
-				return this.run_incoming_sync_item(sync).then(next);
+				return this.run_incoming_sync_item(sync, options).then(next);
 			}.bind(this);
 			next();
 		}.bind(this))
