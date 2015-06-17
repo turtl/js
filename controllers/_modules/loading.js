@@ -17,6 +17,9 @@ var LoadingController = Composer.Controller.extend({
 			else this.hide();
 		}.bind(this));
 		this.with_bind(turtl.events, 'loading:log', this.do_log.bind(this));
+		this.with_bind(turtl.events, 'loading:stop', function() {
+			this.enabled = false;
+		}.bind(this))
 	},
 
 	render: function()
@@ -48,7 +51,16 @@ var LoadingController = Composer.Controller.extend({
 	do_log: function(msg)
 	{
 		if(!msg) return this.log.set('html', '');
-		var li = new Element('li').set('html', msg).inject(this.log);
+		var li = new Element('li');
+		if(msg.inject)
+		{
+			msg.inject(li);
+		}
+		else
+		{
+			li.set('html', msg)
+		}
+		li.inject(this.log);
 		setTimeout(function() { li.addClass('show'); }, 10);
 	}
 });
