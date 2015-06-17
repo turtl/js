@@ -31,6 +31,7 @@ Composer.sync = function(method, model, options)
 		throw new SyncError('Bad db.js table: '+ table);
 	}
 
+	var id = model.id();
 	var modeldata = null;
 
 	// define some callbacks for our indexeddb queries
@@ -45,7 +46,7 @@ Composer.sync = function(method, model, options)
 			if(!options.skip_remote_sync)
 			{
 				var sync_data = modeldata;
-				if(method == 'delete') sync_data = {id: modeldata.id};
+				if(method == 'delete') sync_data = {id: id};
 				turtl.sync.queue_outgoing_change(table, method, sync_data);
 			}
 		}
