@@ -252,6 +252,16 @@ var Sync = Composer.Model.extend({
 		if(!turtl.poll_api_for_changes) return false;
 
 		if(this._polling) return;
+		if(this._outgoing_sync_running)
+		{
+			// we're running an outgoing sync, wait for a bit then try again. we
+			// do this so's if we poll the api in the middle of an outgoing sync
+			// we may get things double-applying (this is mainly a problem with
+			// adding since it's not idempotent, an most likely wouldn't ever
+			// happen, but i'd rathe rit just not be an issue at all)
+			setTimeout(this.poll_api_for_changes, 1000);
+			return;
+		}
 
 		this._polling = true;
 		var failed = false;
@@ -346,6 +356,7 @@ var Sync = Composer.Model.extend({
 			throw new Error('sync: api->db: error processing sync item (bad sync.type): '+ sync.type);
 		}
 
+		// TODO: move this to Files tracker
 		/*
 		if(sync.type == 'file')
 		{
