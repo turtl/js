@@ -105,18 +105,19 @@ var Sync = Composer.Model.extend({
 	{
 		if(!(ids instanceof Array)) ids = [ids];
 		var ignores = this.sync_ignore;
+		var num_ignored = 0;
 		for(var i = 0; i < ids.length; i++)
 		{
 			var id = ids[i];
 			if(!id && id !== 0) continue;
 			if(ignores[id] === true)
 			{
-				log.debug('sync: ignore: ', id);
+				log.info('sync: ignore: ', id);
 				delete ignores[id];
-				return true;
+				num_ignored++;
 			}
 		}
-		return false;
+		return num_ignored;
 	},
 
 	/**
@@ -204,6 +205,13 @@ var Sync = Composer.Model.extend({
 						return Promise.all(actions).bind(this)
 							.then(function() {
 								var actions = synced.success.map(function(sync) {
+									// ignore the sync ids for actions that just
+									// happened (we don't want to double-apply
+									// changes since they will show up in the
+									// next sync poll)
+									(sync.sync_ids || []).each(function(sync_id) {
+										this.ignore_on_next_sync(sync_id);
+									}.bind(this));
 									if(sync.action == 'delete') return null;
 									return this.run_incoming_sync_item(sync);
 								}.bind(this));
@@ -323,6 +331,10 @@ var Sync = Composer.Model.extend({
 	{
 		options || (options = {});
 
+		if(this.should_ignore(sync.id))
+		{
+			return Promise.resolve();
+		}
 		var item = sync.data;
 		delete sync.data;
 		item = this.transform(sync, item);
