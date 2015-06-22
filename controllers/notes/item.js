@@ -26,6 +26,11 @@ var NotesItemController = NoteBaseController.extend({
 	{
 		var type = this.model.get('type');
 		var note = this.model.toJSON();
+		if(!type)
+		{
+			log.info('note: bad type: ', note);
+			throw new Error('note: bad type: '+ note.id);
+		}
 		if(note.file)
 		{
 			note.file.blob_url = this.model.get('file').get('blob_url');
