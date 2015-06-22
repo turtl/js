@@ -28,7 +28,6 @@ var NotesItemController = NoteBaseController.extend({
 		var note = this.model.toJSON();
 		if(!type)
 		{
-			log.info('note: bad type: ', note);
 			throw new Error('note: bad type: '+ note.id);
 		}
 		if(note.file)
