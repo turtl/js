@@ -58,7 +58,12 @@ var NotesEditBoardsController = FormController.extend({
 	{
 		if(e) e.stop();
 
-		this.model.set({boards: this.clone.get('boards').slice(0)});
+		var boards = (this.clone.get('boards') || []).slice(0)
+			.filter(function(bid) {
+				if(!bid.match(cid_match) && !bid.match(old_id_match)) return false;
+				return true;
+			});
+		this.model.set({boards: boards});
 		this.trigger('close');
 	},
 
