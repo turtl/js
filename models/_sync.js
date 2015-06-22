@@ -269,6 +269,15 @@ var Sync = Composer.Model.extend({
 		var sync_url = '/v2/sync?sync_id='+sync_id+'&immediate='+(options.immediate ? 1 : 0);
 		return turtl.api.get(sync_url, null, {timeout: 60000}).bind(this)
 			.then(function(sync) {
+				if(this._outgoing_sync_running)
+				{
+					// well, we got a response back during an outgoing sync.
+					// makes sense since we use changefeeds now. however, in
+					// this case the polling does too good of a job and creates
+					// issues for us, so we're going to throw out the results of
+					// the poll and run it again in 1s
+					return new Promise(function(resolve) { setTimeout(resolve, 1000); });
+				}
 				var orig = this.connected;
 				this.connected = true;
 				if(!orig && !options.skip_notify) turtl.events.trigger('api:connect');
