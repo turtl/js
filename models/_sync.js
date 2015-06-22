@@ -457,9 +457,39 @@ var Sync = Composer.Model.extend({
 });
 
 var SyncCollection = Composer.Collection.extend({
+	// OVERRIDE ME!!
+	//
+	// ... or don't. this function should be able to handle most syncing
 	run_incoming_sync_item: function(sync, item)
 	{
-		log.warn('SyncCollection.run_incoming_sync_item(): override me!');
+		log.info('sync: tracker: incoming: ', sync, item);
+		var promise = Promise.resolve();
+		switch(sync.action)
+		{
+			case 'add':
+				var model = new this.model(item);
+				promise = model.deserialize().bind(this)
+					.then(function() {
+						this.add(model);
+					});
+				break;
+			case 'edit':
+				var model = this.get(item.id);
+				if(model)
+				{
+					var temp = new this.model(item);
+					promise = temp.deserialize().bind(this)
+						.then(function() {
+							model.set(temp.toJSON());
+						});
+				}
+				break;
+			case 'delete':
+				var model = this.get(item.id);
+				promise = model.destroy({skip_remote_sync: true});
+				break;
+		}
+		return promise;
 	}
 });
 
