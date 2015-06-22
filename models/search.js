@@ -417,12 +417,17 @@ var Search = Composer.Collection.extend({
 
 	index_board: function(board)
 	{
-		this.index.boards[board.id()] = [];
+		if(!this.index.boards[board.id()]) this.index.boards[board.id()] = [];
 	},
 
-	unindex_board: function(board)
+	unindex_board: function(board, options)
 	{
-		delete this.index.boards[board.id()];
+		options || (options = {});
+
+		if(options.full)
+		{
+			delete this.index.boards[board.id()];
+		}
 	},
 
 	reindex_board: function(board)

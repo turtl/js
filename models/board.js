@@ -33,7 +33,7 @@ var Board = Protected.extend({
 
 	init: function()
 	{
-		this.bind('destroy', turtl.search.unindex_board.bind(turtl.search));
+		this.bind('destroy', turtl.search.unindex_board.bind(turtl.search, this, {full: true}));
 		this.bind('change', function() {
 			if(!this.id(true)) return;
 			turtl.search.reindex_board(this);
