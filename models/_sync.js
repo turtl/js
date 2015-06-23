@@ -310,6 +310,12 @@ var Sync = Composer.Model.extend({
 	{
 		var type = sync.type;
 
+		// mark any items we don't directly own as shared
+		if(item.user_id && item.user_id != turtl.user.id())
+		{
+			item.shared = true;
+		}
+
 		if(type == 'user')
 		{
 			item.key = 'user';
@@ -471,7 +477,7 @@ var SyncCollection = Composer.Collection.extend({
 	// ... or don't. this function should be able to handle most syncing
 	run_incoming_sync_item: function(sync, item)
 	{
-		log.info('sync: tracker: incoming: ', sync, item);
+		log.debug('sync: tracker: incoming: ', sync, item);
 		var promise = Promise.resolve();
 		switch(sync.action)
 		{
