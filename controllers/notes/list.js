@@ -175,15 +175,17 @@ var NotesListController = Composer.ListController.extend({
 		this.pagination.set('html', '');
 		if(this.search.page > 1)
 		{
+			/*
 			var first = new Element('a')
 				.set('href', '#first')
 				.set('rel', 'first')
-				.set('html', 'First')
+				.set('html', '&laquo;First')
 				.inject(this.pagination);
+			*/
 			var prev = new Element('a')
 				.set('href', '#prev')
 				.set('rel', 'prev')
-				.set('html', 'Prev')
+				.set('html', '&lt; Prev')
 				.inject(this.pagination);
 		}
 		if((this.search.page * this.search.per_page) < turtl.search.total)
@@ -191,13 +193,15 @@ var NotesListController = Composer.ListController.extend({
 			var next = new Element('a')
 				.set('href', '#next')
 				.set('rel', 'next')
-				.set('html', 'Next')
+				.set('html', 'Next &gt;')
 				.inject(this.pagination);
+			/*
 			var last = new Element('a')
 				.set('href', '#last')
 				.set('rel', 'last')
-				.set('html', 'Last')
+				.set('html', 'Last&raquo;')
 				.inject(this.pagination);
+			*/
 		}
 	},
 
