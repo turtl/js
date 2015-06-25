@@ -669,6 +669,41 @@ var tcrypt = {
 	},
 
 	/**
+	 * Generate a key using the webcrypto api (async, obvis)
+	 */
+	key_native: function(passphrase, salt, options)
+	{
+		options || (options = {});
+		var iterations = (options.iterations || 400);
+		var key_size = (options.key_size || 32);
+		var hasher = (options.hasher || 'SHA-256');
+
+		var convert = function(str)
+		{
+			var bytes = sjcl.codec.bytes.fromBits(sjcl.codec.utf8String.toBits(str));
+			return new Uint8Array(bytes).buffer;
+		};
+		passphrase = convert(passphrase);
+		salt = convert(salt);
+
+		return window.crypto.subtle.importKey('raw', passphrase, {name: 'PBKDF2'}, false, ['deriveKey'])
+			.then(function(base) {
+				return window.crypto.subtle.deriveKey({
+					name: 'PBKDF2',
+					salt: salt,
+					iterations: iterations,
+					hash: hasher
+				}, base, {name: 'AES-GCM', length: key_size * 8}, true, ['encrypt', 'decrypt']);
+			})
+			.then(function(key) {
+				return window.crypto.subtle.exportKey('raw', key);
+			})
+			.then(function(bytes) {
+				return sjcl.codec.bytes.toBits(new Uint8Array(bytes));
+			});
+	},
+
+	/**
 	 * convert word array to base64
 	 */
 	to_base64: function(words)
