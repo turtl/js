@@ -13,7 +13,6 @@ var UserJoinController = FormController.extend({
 		'click .button.confirm': 'finalize'
 	},
 
-	model: false,
 	promo: null,
 
 	buttons: false,
@@ -118,8 +117,10 @@ var UserJoinController = FormController.extend({
 
 				var data = user.toJSON();
 				data.id = userdata.id;
-				turtl.user.login(data);
-				turtl.route('/');
+				turtl.user.login(data)
+					.then(function() {
+						turtl.route('/');
+					});
 			})
 			.catch(function(err) {
 				this.inp_submit.disabled = false;
@@ -129,7 +130,7 @@ var UserJoinController = FormController.extend({
 					return;
 				}
 				turtl.events.trigger('ui-error', 'There was a problem saving that account', err);
-				log.error('users: join: ', this.model.id(), derr(err));
+				log.error('users: join: ', derr(err));
 			})
 			.finally(function() {
 				turtl.loading(false);

@@ -173,7 +173,7 @@ var turtl = {
 			turtl.profile = new Profile();
 			turtl.search = new Search();
 			turtl.files = new Files();
-			turtl.api.set_auth(turtl.user.get_auth());
+			turtl.user.get_auth().then(turtl.api.set_auth.bind(turtl.api))
 
 			// setup invites and move invites from local storage into collection
 			if(!turtl.invites) turtl.invites = new Invites();

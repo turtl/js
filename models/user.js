@@ -34,24 +34,26 @@ var User = Protected.extend({
 		options || (options = {});
 
 		this.set(data, {ignore_body: this.key ? false : true});
-		this.get_auth(options);
-		this.unset('username');
-		this.unset('password');
-		this.logged_in = true;
+		return this.get_auth(options).bind(this)
+			.then(function(auth) {
+				this.unset('username');
+				this.unset('password');
+				this.logged_in = true;
 
-		// now grab the user record by ID from the API.
-		// TODO: OFFLINE: persist to local storage for offline mode.
-		turtl.api.set_auth(this.get_auth(options));
-		turtl.api.get('/users/'+this.id(), {}).bind(this)
-			.then(function(user) {
-				this.set(user);
-				this.write_cookie();
-				if(!options.silent) this.trigger('login', this);
-			})
-			.catch(function(err) {
-				log.error('user: problem grabbing user record: ', derr(err));
+				// now grab the user record by ID from the API.
+				turtl.api.set_auth(auth);
+				var promise = turtl.api.get('/users/'+this.id(), {}).bind(this)
+					.then(function(user) {
+						this.set(user);
+						this.write_cookie();
+						if(!options.silent) this.trigger('login', this);
+					})
+					.catch(function(err) {
+						log.error('user: problem grabbing user record: ', derr(err));
+					});
+				turtl.api.clear_auth();
+				return promise;
 			});
-		turtl.api.clear_auth();
 	},
 
 	login_from_auth: function(auth)
@@ -97,21 +99,27 @@ var User = Protected.extend({
 	join: function(options)
 	{
 		options || (options = {});
-		var data = {data: {a: this.get_auth({skip_cache: true})}};
-		if(localStorage.invited_by)
-		{
-			data.invited_by = localStorage.invited_by;
-		}
+		var data;
+		return this.get_auth({skip_cache: true}).bind(this)
+			.then(function(auth) {
+				data = {data: {a: auth}};
+				if(localStorage.invited_by)
+				{
+					data.invited_by = localStorage.invited_by;
+				}
 
-		// grab the promo code, if we haven't already used it.
-		var used_promos = JSON.parse(localStorage.used_promos || '[]');
-		var promo = options.promo;
-		if(promo) //&& (!used_promos || !used_promos.contains(promo)))
-		{
-			data.promo = promo;
-		}
+				/*
+				// grab the promo code, if we haven't already used it.
+				var used_promos = JSON.parse(localStorage.used_promos || '[]');
+				var promo = options.promo;
+				if(promo) //&& (!used_promos || !used_promos.contains(promo)))
+				{
+					data.promo = promo;
+				}
+				*/
 
-		return turtl.api.post('/users', data).bind(this)
+				return turtl.api.post('/users', data);
+			})
 			.tap(function(user) {
 				if(data.promo)
 				{
@@ -163,35 +171,58 @@ var User = Protected.extend({
 	 */
 	change_password: function(username, password)
 	{
-		var old_auth = this.get_auth();
-
-		var user = new User({username: username, password: password});
-		var key = user.get_key({skip_cache: true});
-		var auth = user.get_auth({skip_cache: true});
-
-		var data = {data: {a: auth}};
-		return turtl.api.put('/users/'+this.id(), data, {auth: old_auth}).bind(this)
-			.then(function(userdata) {
-				var actions = [];
-				turtl.profile.get('keychain').each(function(kentry) {
-					kentry.key = key;
-					actions.push(kentry.save());
-				});
-				return Promise.all(actions);
+		var old_auth, new_auth;
+		var key;
+		var user;
+		return this.get_auth().bind(this)
+			.then(function(_old_auth) {
+				old_auth = _old_auth;
+				user = new User({username: username, password: password});
+				return user.get_key({skip_cache: true}).bind(this)
 			})
-			.then(function() {
+			.then(function(_key) {
+				key = _key;
+				return user.get_auth({skip_cache: true});
+			})
+			.then(function(_new_auth) {
+				new_auth = _new_auth;
+				var data = {data: {a: new_auth}};
+				return turtl.api.put('/users/'+this.id(), data, {auth: old_auth})
+			})
+			.then(function(userdata) {
+				turtl.sync_to_api = false;
+				var keychain_actions = turtl.profile.get('keychain').map(function(kentry) {
+					kentry.key = key;
+					return kentry.save();
+				});
+				var persona_actions = turtl.profile.get('personas')
+					.filter(function(persona) {
+						return persona.get('user_id') == this.id();
+					}.bind(this))
+					.map(function(persona) {
+						persona.key = key;
+						return persona.save();
+					});
+				return Promise.all(keychain_actions.concat(persona_actions));
+			})
+			.then(function(saved) {
+				log.info('keys/personas saved: ', saved.length);
 				user.clear();
 				this.key = key;
-				this.auth = auth;
+				this.auth = new_auth;
+				turtl.api.set_auth(new_auth);
 				this.trigger('change');
 			})
 			.catch(function(err) {
-				this.rollback_change_password(auth)
+				this.rollback_change_password(new_auth)
 					.catch(function(err) {
 						turtl.events.trigger('ui-error', 'Sorry, we couldn\'t undo the password change operation. You really should try changing your password again, or your profile may be stuck in limbo.', err);
 						log.error('user: pw rollback: ', err);
 					});
 				throw err;
+			})
+			.finally(function() {
+				turtl.sync_to_api = true;
 			});
 	},
 
@@ -203,10 +234,14 @@ var User = Protected.extend({
 	 */
 	rollback_change_password: function(new_auth)
 	{
-		var key = this.get_key();
-		var auth = this.get_auth();
-		var data = {data: {a: auth}};
-		return turtl.api.put('/users/'+this.id(), data, {auth: auth}).bind(this)
+		return this.get_key()
+			.then(function(key) {
+				return this.get_auth();
+			})
+			.then(function(auth) {
+				var data = {data: {a: auth}};
+				return turtl.api.put('/users/'+this.id(), data, {auth: auth}).bind(this)
+			})
 			.catch(function(err) {
 				return turtl.api.put('/users/'+this.id(), data, {auth: new_auth})
 			})
@@ -224,18 +259,25 @@ var User = Protected.extend({
 	{
 		options || (options = {});
 
-		var key = this.get_key();
-		var auth = this.get_auth();
-		if(!key || !auth) return false;
+		var key, auth;
+		return this.get_key().bind(this)
+			.then(function(_key) {
+				key = _key;
+				return this.get_auth();
+			})
+			.then(function(_auth) {
+				auth = _auth;
+				if(!key || !auth) return false;
 
-		var save = {
-			id: this.id(),
-			k: tcrypt.key_to_string(key),
-			a: auth,
-			invite_code: this.get('invite_code'),
-			storage: this.get('storage')
-		};
-		localStorage[config.user_cookie] = JSON.stringify(save);
+				var save = {
+					id: this.id(),
+					k: tcrypt.key_to_string(key),
+					a: auth,
+					invite_code: this.get('invite_code'),
+					storage: this.get('storage')
+				};
+				localStorage[config.user_cookie] = JSON.stringify(save);
+			});
 	},
 
 	logout: function()
@@ -279,15 +321,15 @@ var User = Protected.extend({
 		var old = options.old;
 
 		var key = this.key;
-		if(key && !options.skip_cache) return key;
+		if(key && !options.skip_cache) return Promise.resolve(key);
 
 		var username = this.get('username');
 		var password = this.get('password');
 
-		if(!username || !password) return false;
+		if(!username || !password) return Promise.resolve(false);
 
 		// allows custom iterations
-		var iter = options.iterations || 16000;
+		var iter = options.iterations || 100000;
 
 		if(old)
 		{
@@ -295,17 +337,29 @@ var User = Protected.extend({
 			// iterations and an entropy-reducing hardcoded salt string.
 			// luckily this was the first bit of crypto code i'd ever written
 			var key = tcrypt.key(password, username + ':a_pinch_of_salt', {key_size: 32, iterations: 400});
+			var promise = Promise.resolve(key);
 		}
 		else
 		{
 			// create a salt based off hashed username
 			var salt = tcrypt.hash(username);
-			var key = tcrypt.key(password, salt, {key_size: 32, iterations: iter, hasher: tcrypt.get_hasher('SHA256')});
+			try
+			{
+				var key = tcrypt.key_native(password, salt, {key_size: 32, iterations: iter, hasher: 'SHA-256'});
+			}
+			catch(e)
+			{
+				// probably some idiotic "safe origin" policy crap. revert to sync/SJCL method
+				log.error('user: get_key: ', e);
+				var key = tcrypt.key(password, salt, {key_size: 32, iterations: iter, hasher: 'SHA-256'});
+			}
+			var promise = Promise.resolve(key);
 		}
 
-		if(!options.skip_cache) this.key = key;
-
-		return key;
+		return promise.bind(this)
+			.tap(function(key) {
+				if(!options.skip_cache) this.key = key;
+			});
 	},
 
 	get_auth: function(options)
@@ -313,51 +367,54 @@ var User = Protected.extend({
 		options || (options = {});
 		var old = options.old;
 
-		if(this.auth && !options.skip_cache) return this.auth;
+		if(this.auth && !options.skip_cache) return Promise.resolve(this.auth);
 
 		var username = this.get('username');
 		var password = this.get('password');
 
-		if(!username || !password) return false;
+		if(!username || !password) return Promise.resolve(false);
 
 		// generate (or grab existing) the user's key based on username/password
-		var key = this.get_key(options);
+		return this.get_key(options).bind(this)
+			.then(function(key) {
+				// create a static IV (based on username) and a user record string
+				// (based on hashed username/password). this record string will then be
+				// encrypted with the user's key and sent as the auth token to the API.
+				if(old)
+				{
+					// let's reduce entropy by using a hardcoded string. then if we XOR
+					// the data via another string and base64 the payload, we've pretty
+					// much got AES (but better, IMO).
+					var iv = tcrypt.iv(username+'4c281987249be78a');
+					var user_record = tcrypt.hash(password) +':'+ username;
+					// note we serialize with version 0 (the original Turtl serialization
+					// format) for backwards compat
+					var auth = tcrypt.encrypt(key, user_record, {iv: iv, version: 0});
+				}
+				else
+				{
+					var iv = tcrypt.iv(tcrypt.hash(password + username));
+					var user_record = tcrypt.hash(password) +':'+ tcrypt.hash(username);
+					// supply a deterministic UTF8 "random" byte for the auth string
+					// encryption so we get the same result every time (otherwise
+					// tcrypt.encrypt will pick a random value for us).
+					var utf8_random = parseInt(user_record.substr(18, 2), 16) / 256;
+					var auth = tcrypt.to_base64(tcrypt.encrypt(key, user_record, {iv: iv, utf8_random: utf8_random}));
+				}
 
-		// create a static IV (based on username) and a user record string
-		// (based on hashed username/password). this record string will then be
-		// encrypted with the user's key and sent as the auth token to the API.
-		if(old)
-		{
-			// let's reduce entropy by using a hardcoded string. then if we XOR
-			// the data via another string and base64 the payload, we've pretty
-			// much got AES (but better, IMO).
-			var iv = tcrypt.iv(username+'4c281987249be78a');
-			var user_record = tcrypt.hash(password) +':'+ username;
-			// note we serialize with version 0 (the original Turtl serialization
-			// format) for backwards compat
-			var auth = tcrypt.encrypt(key, user_record, {iv: iv, version: 0});
-		}
-		else
-		{
-			var iter = options.iter || 16000;
-			var iv = tcrypt.iv(tcrypt.hash(password + iter + username));
-			var user_record = tcrypt.hash(password) +':'+ tcrypt.hash(username);
-			// supply a deterministic UTF8 "random" byte for the auth string
-			// encryption so we get the same result every time (otherwise
-			// tcrypt.encrypt will pick a random value for us).
-			var utf8_random = parseInt(user_record.substr(18, 2), 16) / 256;
-			var auth = tcrypt.to_base64(tcrypt.encrypt(key, user_record, {iv: iv, utf8_random: utf8_random}));
-		}
-
-		if(!options.skip_cache) this.auth = auth;
-
-		return auth;
+				return auth;
+			})
+			.tap(function(auth) {
+				if(!options.skip_cache) this.auth = auth;
+			});
 	},
 
 	test_auth: function()
 	{
-		var auth = this.get_auth({skip_cache: true});
-		return turtl.api.post('/auth', {}, {auth: auth}).bind(this)
+		return this.get_auth({skip_cache: true}).bind(this)
+			.then(function(auth) {
+				return turtl.api.post('/auth', {}, {auth: auth})
+			})
 			.then(function(id) {
 				return [id, {old: false}];
 			})
@@ -366,8 +423,11 @@ var User = Protected.extend({
 				{
 					// ok, login failed using the CORRECT keygen method, try the
 					// old shitty version
-					turtl.api.set_auth(this.get_auth({old: true, skip_cache: true}));
-					return turtl.api.post('/auth', {}).bind(this)
+					return this.get_auth({old: true, skip_cache: true}).bind(this)
+						.then(function(auth) {
+							turtl.api.set_auth(auth);
+							return turtl.api.post('/auth', {})
+						})
 						.then(function(id) {
 							// mark is as old so the user model knows to use it
 							// from now on

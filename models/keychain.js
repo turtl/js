@@ -15,7 +15,12 @@ var KeychainEntry = Protected.extend({
 	initialize: function()
 	{
 		// copy key from user
-		if(!this.key) this.key = turtl.user.get_key();
+		if(!this.key) this.key = turtl.user.key;
+		return this.parent.apply(this, arguments);
+	},
+
+	save: function()
+	{
 		return this.parent.apply(this, arguments);
 	}
 });

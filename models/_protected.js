@@ -131,7 +131,11 @@ var Protected = Composer.RelationalModel.extend({
 				rawdata: options.rawdata
 			};
 			cqueue.push(msg, function(res) {
-				if(res.error) return reject(res.error);
+				if(res.error)
+				{
+					log.error('protected: deserialize: ', this.id(), this.base_url, res.error);
+					return reject(res.error);
+				}
 				this.set(res.success, options);
 				resolve(res.success);
 			}.bind(this))
@@ -183,7 +187,7 @@ var Protected = Composer.RelationalModel.extend({
 		// automatically add a user entry to the key search
 		if(!search.u) search.u = [];
 		if(search.u && typeOf(search.u) != 'array') search.u = [search.u];
-		search.u.push({id: turtl.user.id(), k: turtl.user.get_key()});
+		search.u.push({id: turtl.user.id(), k: turtl.user.key});
 
 		var search_keys = Object.keys(search);
 		var encrypted_key = false;

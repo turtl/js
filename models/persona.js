@@ -25,7 +25,7 @@ var Persona = Protected.extend({
 		// steal user's key for this persona
 		if(turtl.user.logged_in && data && data.user_id == turtl.user.id())
 		{
-			this.key = turtl.user.get_key();
+			this.key = turtl.user.key;
 		}
 
 		// fix "false" pubkey bug

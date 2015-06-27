@@ -39,23 +39,39 @@ var ChangePasswordController = FormController.extend({
 		var new_password = this.inp_new_password.get('value');
 		var new_confirm = this.inp_new_confirm.get('value');
 
-		var errors = [];
 		var user = new User({username: cur_username, password: cur_password});
-		var cur_key = JSON.stringify(turtl.user.get_key());
-		if(JSON.stringify(user.get_key({skip_cache: true})) != cur_key && JSON.stringify(user.get_key({old: true, skip_cache: true})) != cur_key)
-		{
-			errors.push([this.inp_cur_username, 'The current username/password you entered do not match the currently logged in user\'s.']);
-		}
-		if(!this.check_errors(errors)) return;
+		var cur_key = JSON.stringify();
 
-		var errors = UserJoinController.prototype.check_login(this.inp_new_username, this.inp_new_password, this.inp_new_confirm);
-		if(!this.check_errors(errors)) return;
+		Promise.all([
+			turtl.user.get_key(),
+			user.get_key({skip_cache: true}),
+			user.get_key({old: true, skip_cache: true})
+		]).bind(this)
+			.spread(function(cur_key, new_key, new_key_old) {
+				var errors = [];
+				cur_key = JSON.stringify(cur_key);
+				new_key = JSON.stringify(new_key);
+				new_key_old = JSON.stringify(new_key_old);
+				if(new_key != cur_key && new_key_old != cur_key)
+				{
+					errors.push([this.inp_cur_username, 'The current username/password you entered do not match the currently logged in user\'s.']);
+				}
 
-		this.inp_submit.disabled = true;
-		turtl.user.change_password(new_username, new_password).bind(this)
-			.then(function() {
-				barfr.barf('Your login was changed successfully!');
-				turtl.route('/settings');
+				if(!this.check_errors(errors)) return;
+
+				var errors = UserJoinController.prototype.check_login(this.inp_new_username, this.inp_new_password, this.inp_new_confirm);
+				if(!this.check_errors(errors)) return;
+
+				this.inp_submit.disabled = true;
+				var pending_barf = barfr.barf('Updating your login. Please be patient (and DO NOT close the app)!');
+				return turtl.user.change_password(new_username, new_password)
+					.then(function() {
+						barfr.barf('Your login was changed successfully!');
+						turtl.route('/settings');
+					})
+					.finally(function() {
+						barfr.close_barf(pending_barf);
+					});
 			})
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', 'There was a problem changing your login. We are undoing the changes. Please try again.', err);
