@@ -200,12 +200,12 @@ var turtl = {
 					return turtl.profile.load();
 				})
 				.then(function() {
+					return turtl.setup_syncing();
+				})
+				.then(function() {
 					log.info('profile: loaded in: ', (new Date().getTime()) - this.start);
 					turtl.update_loading_screen('Indexing notes');
 					return turtl.search.reindex();
-				})
-				.then(function() {
-					return turtl.setup_syncing();
 				})
 				.then(function() {
 					setTimeout(turtl.show_loading_screen.bind(null, false), 200);

@@ -64,8 +64,7 @@ var Profile = Composer.RelationalModel.extend({
 		// the db, set the sync time record, and continue loading.
 		this.profile_data = true;
 		var profile_data = {};
-		return turtl.db.user.get('user')
-			.bind(this)
+		return turtl.db.user.get('user').bind(this)
 			.then(function(userdata) {
 				turtl.user.set(userdata);
 			})
@@ -81,16 +80,18 @@ var Profile = Composer.RelationalModel.extend({
 				}
 				else
 				{
+					// let's run an initial API -> DB sync, we may be behind.
+					// if we load old data against a new password, we're screwed
 					turtl.sync.set({sync_id: res.value});
+					return turtl.sync.poll_api_for_changes({immediate: true, force: true});
 				}
-				return res;
 			})
 			.then(function() {
 				turtl.update_loading_screen('Loading profile');
 				return ['keychain', 'personas', 'boards', 'notes'];
 			})
 			.map(function(itemname) {
-				return turtl.db[itemname].query().filter().execute().then(function(res) {
+				return turtl.db[itemname].query().all().execute().then(function(res) {
 					profile_data[itemname] = res;
 				});
 			})
