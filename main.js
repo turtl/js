@@ -232,6 +232,11 @@ var turtl = {
 						.addClass('button')
 						.set('html', 'Logout')
 						.inject(what_next);
+					var wipe = new Element('a')
+						.set('href', '#wipe')
+						.addClass('button')
+						.set('html', 'Clear local data')
+						.inject(what_next);
 					turtl.events.trigger('loading:stop');
 					turtl.update_loading_screen(false);
 					turtl.update_loading_screen('Error loading profile');
@@ -244,6 +249,10 @@ var turtl = {
 					logout.addEvent('click', function(e) {
 						if(e) e.stop();
 						turtl.user.logout();
+					});
+					wipe.addEvent('click', function(e) {
+						var settings = new SettingsController();
+						settings.wipe_data(e);
 					});
 				});
 

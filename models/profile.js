@@ -76,6 +76,7 @@ var Profile = Composer.RelationalModel.extend({
 				// API, or do we sync it incrementally?
 				if(!res)
 				{
+					turtl.update_loading_screen('Grabbing profile from server');
 					return this.load_profile_from_api();
 				}
 				else
@@ -83,7 +84,11 @@ var Profile = Composer.RelationalModel.extend({
 					// let's run an initial API -> DB sync, we may be behind.
 					// if we load old data against a new password, we're screwed
 					turtl.sync.set({sync_id: res.value});
-					return turtl.sync.poll_api_for_changes({immediate: true, force: true});
+					turtl.update_loading_screen('Syncing changes from server');
+					return turtl.sync.poll_api_for_changes({
+						immediate: true,
+						force: true
+					});
 				}
 			})
 			.then(function() {
@@ -108,7 +113,6 @@ var Profile = Composer.RelationalModel.extend({
 
 	load_profile_from_api: function()
 	{
-		turtl.update_loading_screen('Grabbing profile from server');
 		return turtl.api.get('/v2/sync/full', null, {timeout: 600000})
 			.then(function(profile_sync) {
 				return turtl.sync.update_local_db_from_api_sync(profile_sync);

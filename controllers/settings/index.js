@@ -24,9 +24,20 @@ var SettingsController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 
-		if(!confirm('This will erase all your local data and log you out. Your profile will be downloaded again next time you log in. Continue?')) return;
-		turtl.wipe_local_db()
-			.then(function() { return turtl.user.logout(); })
+		turtl.db.sync_outgoing.query().all().execute().bind(this)
+			.then(function(res) {
+				var outgoing_msg = '';
+				if(res.length > 0)
+				{
+					outgoing_msg = ', however you have '+res.length+' changes waiting to be synced that will be lost if you do this';
+				}
+				if(!confirm('This will erase all your local data and log you out. Your profile will be downloaded again next time you log in'+ outgoing_msg +'. Continue?'))
+				{
+					return;
+				}
+				turtl.wipe_local_db()
+					.then(function() { return turtl.user.logout(); })
+			})
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', 'There was a problem clearing your profile', err);
 				log.error('settings: wipe db: ', derr(err));

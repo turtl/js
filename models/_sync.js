@@ -290,6 +290,7 @@ var Sync = Composer.Model.extend({
 				}
 			})
 			.catch(function(err) {
+				if(options.force) throw err;
 				failed = true;
 				var orig = this.connected;
 				this.connected = false;
@@ -298,13 +299,16 @@ var Sync = Composer.Model.extend({
 			})
 			.finally(function() {
 				this._polling = false;
-				if(failed)
+				if(!options.force)
 				{
-					setTimeout(this.poll_api_for_changes.bind(this, {immediate: true}), 15000);
-				}
-				else
-				{
-					this.poll_api_for_changes();
+					if(failed)
+					{
+						setTimeout(this.poll_api_for_changes.bind(this, {immediate: true}), 15000);
+					}
+					else
+					{
+						this.poll_api_for_changes();
+					}
 				}
 			});
 	},
