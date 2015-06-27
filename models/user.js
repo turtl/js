@@ -343,17 +343,13 @@ var User = Protected.extend({
 		{
 			// create a salt based off hashed username
 			var salt = tcrypt.hash(username);
-			try
-			{
-				var key = tcrypt.key_native(password, salt, {key_size: 32, iterations: iter, hasher: 'SHA-256'});
-			}
-			catch(e)
-			{
-				// probably some idiotic "safe origin" policy crap. revert to sync/SJCL method
-				log.error('user: get_key: ', e);
-				var key = tcrypt.key(password, salt, {key_size: 32, iterations: iter, hasher: 'SHA-256'});
-			}
-			var promise = Promise.resolve(key);
+			var key = tcrypt.key_native(password, salt, {key_size: 32, iterations: iter, hasher: 'SHA-256'})
+			var promise = Promise.resolve(key)
+				.catch(DOMException, function(err) {
+					// probably some idiotic "safe origin" policy crap. revert to sync/SJCL method
+					log.error('user: get_key: ', err);
+					return tcrypt.key(password, salt, {key_size: 32, iterations: iter, hasher: tcrypt.get_hasher('SHA256')});
+				})
 		}
 
 		return promise.bind(this)
