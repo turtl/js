@@ -247,20 +247,23 @@ var Sync = Composer.Model.extend({
 	{
 		options || (options = {});
 
-		if(!this.enabled) return false;
-		if(!turtl.user || !turtl.user.logged_in) return false;
-		if(!turtl.poll_api_for_changes) return false;
-
-		if(this._polling) return;
-		if(this._outgoing_sync_running)
+		if(!options.force)
 		{
-			// we're running an outgoing sync, wait for a bit then try again. we
-			// do this so's if we poll the api in the middle of an outgoing sync
-			// we may get things double-applying (this is mainly a problem with
-			// adding since it's not idempotent, an most likely wouldn't ever
-			// happen, but i'd rathe rit just not be an issue at all)
-			setTimeout(this.poll_api_for_changes, 1000);
-			return;
+			if(!this.enabled) return false;
+			if(!turtl.user || !turtl.user.logged_in) return false;
+			if(!turtl.poll_api_for_changes) return false;
+
+			if(this._polling) return;
+			if(this._outgoing_sync_running)
+			{
+				// we're running an outgoing sync, wait for a bit then try again. we
+				// do this so's if we poll the api in the middle of an outgoing sync
+				// we may get things double-applying (this is mainly a problem with
+				// adding since it's not idempotent, an most likely wouldn't ever
+				// happen, but i'd rathe rit just not be an issue at all)
+				setTimeout(this.poll_api_for_changes, 1000);
+				return;
+			}
 		}
 
 		this._polling = true;
@@ -269,7 +272,7 @@ var Sync = Composer.Model.extend({
 		var sync_url = '/v2/sync?sync_id='+sync_id+'&immediate='+(options.immediate ? 1 : 0);
 		return turtl.api.get(sync_url, null, {timeout: 60000}).bind(this)
 			.then(function(sync) {
-				if(this._outgoing_sync_running)
+				if(!options.force && this._outgoing_sync_running)
 				{
 					// well, we got a response back during an outgoing sync.
 					// makes sense since we use changefeeds now. however, in
