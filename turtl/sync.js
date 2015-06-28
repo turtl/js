@@ -58,53 +58,74 @@ Composer.sync = function(method, model, options)
 		if(options.success) options.success(res);
 	};
 
-	var promise = Promise.resolve();
-
-	if(options.skip_serialize)
+	var do_sync = function()
 	{
-		// model was pre-serialized
-		promise = Promise.resolve([model.toJSON()]);
-	}
-	else if(!['read', 'delete'].contains(method))
+		var promise = Promise.resolve();
+
+		if(options.skip_serialize)
+		{
+			// model was pre-serialized
+			promise = Promise.resolve([model.toJSON()]);
+		}
+		else if(!['read', 'delete'].contains(method))
+		{
+			// serialize our model, and add in any extra data needed
+			promise = model.serialize();
+		}
+
+		return promise
+			.spread(function(serialized) {
+				if(serialized) modeldata = serialized;
+				if(modeldata && options.args) modeldata.meta = options.args;
+				// any k/v data that doesn't go by the "id" field should have it's key field
+				// filled in here.
+				if(table == 'user')
+				{
+					modeldata.key = 'user';
+				}
+
+				switch(method)
+				{
+				case 'read':
+					turtl.db[table].get(model.id()).then(success).catch(error);
+					break;
+				case 'create':
+					model.set({id: model.cid()}, {silent: true});
+					modeldata.id = model.id();
+
+					turtl.db[table].add(modeldata).then(success).catch(error);
+					break;
+				case 'delete':
+					turtl.db[table].remove(model.id()).then(success).catch(error);
+					break;
+				case 'update':
+					turtl.db[table].update(modeldata).then(success).catch(error);
+					break;
+				default:
+					throw new SyncError('Bad method passed to Composer.sync: '+ method);
+					return false;
+				}
+				log.debug('save: '+ table +': '+ method, modeldata);
+			});
+	}.bind(this);
+
+	// if we're changing the password, delay any fetches/saves until we're
+	// finished. this ensures we don't cross wires when changing keys. we really
+	// only need to do this for personas/keychain but i like to err on the side
+	// of safety when it comes to this stuff.
+	if(turtl.user.changing_password)
 	{
-		// serialize our model, and add in any extra data needed
-		promise = model.serialize();
-	}
-
-	promise
-		.spread(function(serialized) {
-			if(serialized) modeldata = serialized;
-			if(modeldata && options.args) modeldata.meta = options.args;
-			// any k/v data that doesn't go by the "id" field should have it's key field
-			// filled in here.
-			if(table == 'user')
-			{
-				modeldata.key = 'user';
-			}
-
-			switch(method)
-			{
-			case 'read':
-				turtl.db[table].get(model.id()).then(success).catch(error);
-				break;
-			case 'create':
-				model.set({id: model.cid()}, {silent: true});
-				modeldata.id = model.id();
-
-				turtl.db[table].add(modeldata).then(success).catch(error);
-				break;
-			case 'delete':
-				turtl.db[table].remove(model.id()).then(success).catch(error);
-				break;
-			case 'update':
-				turtl.db[table].update(modeldata).then(success).catch(error);
-				break;
-			default:
-				throw new SyncError('Bad method passed to Composer.sync: '+ method);
-				return false;
-			}
-			log.debug('save: '+ table +': '+ method, modeldata);
+		// wait until password change operationis done
+		return new Promise(function(resolve) {
+			turtl.events.bind_once('user:change-password:finish', function() {
+				resolve(do_sync());
+			});
 		});
+	}
+	else
+	{
+		return do_sync();
+	}
 };
 
 /**

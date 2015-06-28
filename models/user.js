@@ -18,6 +18,7 @@ var User = Protected.extend({
 	],
 
 	logged_in: false,
+	changing_password: false,
 
 	auth: null,
 
@@ -174,6 +175,13 @@ var User = Protected.extend({
 		var old_auth, new_auth;
 		var key;
 		var user;
+
+		if(this.changing_password)
+		{
+			// FORGET ABOUT IT
+			return Promise.reject(new Error('there is already a password change in process'));
+		}
+
 		return this.get_auth().bind(this)
 			.then(function(_old_auth) {
 				old_auth = _old_auth;
@@ -203,9 +211,12 @@ var User = Protected.extend({
 						persona.key = key;
 						return persona.save();
 					});
+				turtl.events.trigger('user:change-password:pre-save');
+				this.changing_password = true;
 				return Promise.all(keychain_actions.concat(persona_actions));
 			})
 			.then(function(saved) {
+				turtl.events.trigger('user:change-password:post-save');
 				log.info('keys/personas saved: ', saved.length);
 				user.clear();
 				this.key = key;
@@ -223,6 +234,8 @@ var User = Protected.extend({
 			})
 			.finally(function() {
 				turtl.sync_to_api = true;
+				this.changing_password = false;
+				turtl.events.trigger('user:change-password:finish');
 			});
 	},
 
