@@ -348,7 +348,8 @@ var FileData = Protected.extend({
 			.then(function(notedata) {
 				if(notedata && notedata[0])
 				{
-					turtl.sync.notify_local_change('notes', 'update', notedata[0]);
+					// TODO: wut?
+					//turtl.sync.notify_local_change('notes', 'update', notedata[0]);
 				}
 				return this;
 			})
@@ -504,7 +505,8 @@ var Files = SyncCollection.extend({
 			.then(function(notedata) {
 				if(notedata && notedata[0])
 				{
-					turtl.sync.notify_local_change('notes', 'update', notedata[0]);
+					// TODO: wut?
+					//turtl.sync.notify_local_change('notes', 'update', notedata[0]);
 				}
 			})
 			.catch(function(err) {
