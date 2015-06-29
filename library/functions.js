@@ -59,7 +59,14 @@ var select_text = function(inp, from, to)
 var id_timestamp = function(id, options)
 {
 	options || (options = {});
-	var timestamp = parseInt(id.substr(0, 11), 16);
+	if(id.length == 24)
+	{
+		var timestamp = parseInt(id.substr(0, 8), 16) * 1000;
+	}
+	else
+	{
+		var timestamp = parseInt(id.substr(0, 12), 16);
+	}
 	if(options.unix)
 	{
 		timestamp = Math.round(timestamp / 1000);
