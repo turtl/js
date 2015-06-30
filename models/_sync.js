@@ -185,6 +185,7 @@ var Sync = Composer.Model.extend({
 				// out, so we have ot be careful about double-posting
 				if(this._outgoing_sync_running) return;
 				this._outgoing_sync_running = true;
+				log.debug('sync: outgoing: ', items);
 				return turtl.api.post('/v2/sync', items).bind(this)
 					.then(function(synced) {
 						if(synced.error)
@@ -254,36 +255,40 @@ var Sync = Composer.Model.extend({
 			if(!turtl.poll_api_for_changes) return false;
 
 			if(this._polling) return;
-			if(this._outgoing_sync_running)
+			if(this._outgoing_sync_running || turtl.user.changing_password)
 			{
-				// we're running an outgoing sync, wait for a bit then try again. we
-				// do this so's if we poll the api in the middle of an outgoing sync
-				// we may get things double-applying (this is mainly a problem with
-				// adding since it's not idempotent, an most likely wouldn't ever
-				// happen, but i'd rathe rit just not be an issue at all)
+				// we're running an outgoing sync (or a pw change) wait for a
+				// bit then try again. we do this so's if we poll the api in the
+				// middle of an outgoing sync we may get things double-applying
+				// (this is mainly a problem with adding since it's not
+				// idempotent, an most likely wouldn't ever happen, but i'd
+				// rather rit just not be an issue at all)
 				setTimeout(this.poll_api_for_changes, 1000);
 				return;
 			}
 		}
 
 		this._polling = true;
+		this.trigger('poll:start');
 		var failed = false;
 		var sync_id = this.get('sync_id');
 		var sync_url = '/v2/sync?sync_id='+sync_id+'&immediate='+(options.immediate ? 1 : 0);
 		return turtl.api.get(sync_url, null, {timeout: 60000}).bind(this)
 			.then(function(sync) {
-				if(!options.force && this._outgoing_sync_running)
+				if(!options.force && (this._outgoing_sync_running || turtl.user.changing_password))
 				{
-					// well, we got a response back during an outgoing sync.
-					// makes sense since we use changefeeds now. however, in
-					// this case the polling does too good of a job and creates
-					// issues for us, so we're going to throw out the results of
-					// the poll and run it again in 1s
+					this._polling = false;
+					this.trigger('poll:finished');
+					// well, we got a response back during an outgoing sync or a
+					// password change, both plausible. so what we're going to
+					// do is throw out the sync results ew got back and poll
+					// again in a second
 					return new Promise(function(resolve) { setTimeout(resolve, 1000); });
 				}
 				var orig = this.connected;
 				this.connected = true;
 				if(!orig && !options.skip_notify) turtl.events.trigger('api:connect');
+				this.trigger('poll:have-sync', sync);
 				if(sync)
 				{
 					return this.update_local_db_from_api_sync(sync);
@@ -299,6 +304,7 @@ var Sync = Composer.Model.extend({
 			})
 			.finally(function() {
 				this._polling = false;
+				this.trigger('poll:finished');
 				if(!options.force)
 				{
 					if(failed)
@@ -330,7 +336,7 @@ var Sync = Composer.Model.extend({
 
 		if(type == 'note')
 		{
-			if(item.board_id)
+			if(item.board_id && !item.boards)
 			{
 				item.boards = [item.board_id];
 				delete item.board_id;
@@ -474,7 +480,7 @@ var Sync = Composer.Model.extend({
 
 	download_pending_files: function()
 	{
-		return turtl.files.queue_download_blank_files();
+		//return turtl.files.queue_download_blank_files();
 	}
 });
 

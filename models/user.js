@@ -182,7 +182,20 @@ var User = Protected.extend({
 			return Promise.reject(new Error('there is already a password change in process'));
 		}
 
-		return this.get_auth().bind(this)
+		var promise = Promise.resolve();
+		// if the sync system is in the middle of polling the API, wait for it
+		// to finish before initiating the password change
+		if(turtl.sync._polling)
+		{
+			promise = new Promise(function(resolve) {
+				turtl.sync.bind_once('poll:finished', resolve);
+			});
+		}
+
+		return promise.bind(this)
+			.then(function() {
+				return this.get_auth()
+			})
 			.then(function(_old_auth) {
 				old_auth = _old_auth;
 				user = new User({username: username, password: password});
