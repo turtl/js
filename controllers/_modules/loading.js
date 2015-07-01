@@ -19,6 +19,8 @@ var LoadingController = Composer.Controller.extend({
 		this.with_bind(turtl.events, 'loading:log', this.do_log.bind(this));
 		this.with_bind(turtl.events, 'loading:stop', function() {
 			this.enabled = false;
+			var imgs = this.el.getElements('p.animate > img');
+			imgs.forEach(function(img) { img.removeClass('active'); });
 		}.bind(this))
 	},
 
