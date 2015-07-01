@@ -5,8 +5,8 @@ html, body {width: 100%; height: 100%;}
 html {
 	-ms-touch-action: manipulation;
 	touch-action: manipulation;
-	overflow: -moz-scrollbars-vertical;
-	overflow-y: scroll;
+	//overflow: -moz-scrollbars-vertical;
+	//overflow-y: scroll;
 }
 
 ::selection {background: #bfe1de;}
@@ -27,7 +27,7 @@ a { text-decoration: none; }
 @font-face {font-family: 'Raleway'; font-style: normal; font-weight: 600; src: local('Raleway SemiBold'), local('Raleway-SemiBold'), url(../images/font/raleway-semibold.woff) format('woff');}
 
 //#wrap {position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: scroll;}
-#wrap {}
+#wrap {height: 100%; overflow-y: scroll; overflow-x: hidden;}
 #app {.transition(left .3s);}
 #main {position: relative; left: 0; z-index: 5; padding: @header_height 0 64rem 0; .transition(left .3s);}
 
@@ -87,4 +87,9 @@ body.page-slide {overflow: hidden;}
 body.page-slide #tmp-slide {display: block;}
 
 body.settings,
-body.modal {overflow-y: hidden !important;}
+body.modal {
+	#wrap {height: 100%; overflow: hidden;}
+}
+
+//body.settings,
+//body.modal {overflow-y: hidden !important;}
