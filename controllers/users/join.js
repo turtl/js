@@ -75,16 +75,15 @@ var UserJoinController = FormController.extend({
 		}
 		else if(password.length < 4)
 		{
-			errors.push([inp_password, 'We don\'t mean to tell you your business, but a password less than four characters won\'t cut it. Try again.']);
+			errors.push([inp_password, 'We don\'t mean to tell you your business, but a passphrase less than four characters won\'t cut it. Try again.']);
 		}
 		else if(password != pconfirm)
 		{
-			errors.push([inp_pconfirm, 'Your password does not match the confirmation.']);
+			errors.push([inp_pconfirm, 'Your passphrase does not match the confirmation.']);
 		}
-
-		if(password.toLowerCase() == 'password')
+		else if(password.toLowerCase() == 'password')
 		{
-			errors.push([inp_password, 'You want to secure all of your data using <em>that</em> password? Be our guest...']);
+			errors.push([inp_password, 'That passphrase is making me cringe.']);
 		}
 		return errors;
 	},
