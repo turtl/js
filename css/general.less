@@ -102,7 +102,8 @@ p.page-empty {
 #loading-overlay.show {display: block;}
 #loading-overlay {
 	> div {padding-top: 36vh;}
-	img {width: 64rem;}
+	img {width: 40rem; margin: 0 2rem; opacity: .2; .transition(opacity .5s);}
+	img.active {opacity: 1;}
 	ul {display: block; width: 195rem; height: 0; margin: 12rem auto 0 auto; text-align: left; font-weight: bold; overflow: visible; list-style: none;}
 	ul {
 		li {opacity: 0; margin: 3rem 0 3rem 0; padding: 4rem 0 7rem 0; font-size: 1.3em; text-align: center; .transition(opacity .6s);}

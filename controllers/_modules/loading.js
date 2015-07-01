@@ -32,13 +32,24 @@ var LoadingController = Composer.Controller.extend({
 	{
 		this.enabled = true;
 		this.el.addClass('show');
-		var do_pulse = function()
+		var idx = 0;
+		var imgs = this.el.getElements('p.animate > img');
+		var do_animate = function()
 		{
 			if(!this.enabled) return false;
-			Velocity(this.logo, 'callout.pulse', {duration: 1000})
-				.then(do_pulse);
-		}.bind(this);
-		do_pulse();
+			if(idx >= imgs.length)
+			{
+				imgs.forEach(function(img) { img.removeClass('active'); });
+				idx = 0;
+			}
+			else
+			{
+				imgs[idx].addClass('active');
+				idx++;
+			}
+			setTimeout(do_animate, 750);
+		}.bind(this)
+		do_animate();
 	},
 
 	hide: function()
