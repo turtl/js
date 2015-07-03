@@ -262,12 +262,17 @@ var Sync = Composer.Model.extend({
 	{
 		options || (options = {});
 
-		if(!options.force)
+		var enabled = function()
 		{
 			if(!this.enabled) return false;
 			if(!turtl.user || !turtl.user.logged_in) return false;
 			if(!turtl.poll_api_for_changes) return false;
+			return true;
+		}.bind(this);
 
+		if(!options.force)
+		{
+			if(!enabled()) return false;
 			if(this._polling) return;
 			if(this._outgoing_sync_running || turtl.user.changing_password)
 			{
@@ -289,6 +294,8 @@ var Sync = Composer.Model.extend({
 		var sync_url = '/v2/sync?sync_id='+sync_id+'&immediate='+(options.immediate ? 1 : 0);
 		return turtl.api.get(sync_url, null, {timeout: 60000}).bind(this)
 			.then(function(sync) {
+				if(!enabled()) return false;
+
 				if(!options.force && (this._outgoing_sync_running || turtl.user.changing_password))
 				{
 					this._polling = false;
@@ -310,6 +317,9 @@ var Sync = Composer.Model.extend({
 			})
 			.catch(function(err) {
 				if(options.force) throw err;
+
+				if(!enabled()) return false;
+
 				failed = true;
 				var orig = this.connected;
 				this.connected = false;
@@ -319,6 +329,8 @@ var Sync = Composer.Model.extend({
 			.finally(function() {
 				this._polling = false;
 				this.trigger('poll:finished');
+
+				if(!enabled()) return false;
 				if(!options.force)
 				{
 					if(failed)
