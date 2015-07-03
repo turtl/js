@@ -263,7 +263,6 @@ var Protected = Composer.RelationalModel.extend({
 	 *
 	 * Also note that this operation *wipes out all subkeys for this object* and
 	 * replaces them. You must pass in all required data each time!
-	 * TODO: possibly remove above restriction.
 	 */
 	generate_subkeys: function(members, options)
 	{
