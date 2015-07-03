@@ -188,6 +188,7 @@ var Sync = Composer.Model.extend({
 				log.debug('sync: outgoing: ', items);
 				return turtl.api.post('/v2/sync', items).bind(this)
 					.then(function(synced) {
+						log.debug('sync: outgoing: response: ', synced);
 						if(synced.error)
 						{
 							log.error('sync: outgoing: api error: ', synced.error);
@@ -213,7 +214,20 @@ var Sync = Composer.Model.extend({
 									(sync.sync_ids || []).each(function(sync_id) {
 										this.ignore_on_next_sync(sync_id);
 									}.bind(this));
+
+									// if we deleted an item, then the delete
+									// already went through before we synced and
+									// we don't need to run it again
 									if(sync.action == 'delete') return null;
+
+									// we don't want to run "add" events twice,
+									// otherwise we may get dupes. so let's edit
+									// instead
+									if(sync.action == 'add') sync.action = 'edit';
+
+									// re-apply our sync (basically, update what
+									// is in the DB with what the API handed to
+									// us, which is our source of truth).
 									return this.run_incoming_sync_item(sync);
 								}.bind(this));
 								return Promise.all(actions);
