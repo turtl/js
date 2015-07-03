@@ -95,7 +95,7 @@ var Note = Protected.extend({
 			// key doesn't exist, add it
 			return keychain.add_key(this.id(), 'note', this.key);
 		}
-		else if(JSON.stringify(existing) != JSON.stringify(this.key))
+		else if(this.key && JSON.stringify(existing) != JSON.stringify(this.key))
 		{
 			// key exists, but is out of date. remove/readd it
 			return keychain.remove_key(this.id()).bind(this)
