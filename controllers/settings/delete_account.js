@@ -25,6 +25,9 @@ var DeleteAccountController = FormController.extend({
 		if(!confirm('Just making sure...do you really want to delete your account?')) return;
 
 		turtl.user.delete_account()
+			.then(function() {
+				barfr.barf('Your account has been deleted.');
+			})
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', 'There was a problem deleting your account. Please try again.', err);
 				log.error('account: delete: ', turtl.user.id(), derr(err));
