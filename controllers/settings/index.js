@@ -35,7 +35,7 @@ var SettingsController = Composer.Controller.extend({
 				{
 					return;
 				}
-				turtl.wipe_local_db()
+				return turtl.wipe_local_db()
 					.then(function() { return turtl.user.logout(); })
 			})
 			.catch(function(err) {

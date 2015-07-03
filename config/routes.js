@@ -10,6 +10,7 @@ config.routes = {
 
 	'/settings': ['settings', 'index'],
 	'/settings/password': ['settings', 'password'],
+	'/settings/delete-account': ['settings', 'delete_account'],
 
 	'/personas': ['personas', 'index'],
 

@@ -155,6 +155,20 @@ var User = Protected.extend({
 	},
 
 	/**
+	 * Remove a user's account and all their data.
+	 */
+	delete_account: function(options)
+	{
+		return turtl.api._delete('/users/'+this.id())
+			.then(function(res) {
+				return turtl.wipe_local_db();
+			})
+			.then(function() {
+				return turtl.user.logout();
+			});
+	},
+
+	/**
 	 * change the username/password.
 	 *
 	 * this assumes the current account has been verified, and does no checking
