@@ -67,25 +67,43 @@ var Note = Protected.extend({
 		this.trigger('change:id');
 	},
 
-	init_new: function(options)
+	update_keys: function(options)
 	{
 		options || (options = {});
 
-		var data = {user_id: turtl.user.id()};
+		if(this.is_new()) this.generate_key();
+		else this.ensure_key_exists();
 
-		this.generate_key();
-		var board = turtl.profile.get('boards').find_by_id(options.board_id);
-		var parent_id = board ? board.get('parent_id') : false;
-		var parent = turtl.profile.get('boards').find_by_id(parent_id);
-		if(board)
+		var boards = this.get('boards') || [];
+		var subkeys = [];
+		boards.forEach(function(bid) {
+			var board = turtl.profile.get('boards').get(bid);
+			var parent_id = board ? board.get('parent_id') : false;
+			var parent = turtl.profile.get('boards').get(parent_id);
+			if(!board) return;
+			subkeys.push({b: board.id(), k: board.key});
+			if(!parent) return;
+			subkeys.push({b: parent.id(), k: parent.key});
+		}.bind(this));
+
+		this.generate_subkeys(subkeys);
+
+		var keychain = turtl.profile.get('keychain');
+		var existing = keychain.find_key(this.id());
+		if(!existing)
 		{
-			var subkeys = [{b: board.id(), k: board.key}];
-			if(parent) subkeys.push({b: parent.id(), k: parent.key});
-			this.generate_subkeys(subkeys);
-			data.boards = [board.id()];
+			// key doesn't exist, add it
+			return keychain.add_key(this.id(), 'note', this.key);
 		}
-		this.set(data, options);
-		return turtl.profile.get('keychain').add_key(this.id(), 'note', this.key);
+		else if(JSON.stringify(existing) != JSON.stringify(this.key))
+		{
+			// key exists, but is out of date. remove/readd it
+			return keychain.remove_key(this.id()).bind(this)
+				.then(function() {
+					return keychain.add_key(this.id(), 'note', this.key);
+				});
+		}
+		return Promise.resolve();
 	},
 
 	ensure_key_exists: function()

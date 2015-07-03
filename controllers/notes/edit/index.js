@@ -213,18 +213,18 @@ var NotesEditController = FormController.extend({
 			text: text
 		};
 
-		var keypromise = Promise.resolve();
 		if(this.model.is_new())
 		{
-			keypromise = this.model.init_new({board_id: this.board_id, silent: true});
-			this.clone.key = this.model.key;
-			this.clone.get('file').key = this.model.key;
+			data.user_id = turtl.user.id();
 		}
 
 		var clone = this.clone;
+		var keypromise = clone.update_keys({silent: true});
+		clone.key = this.model.key;
+		clone.get('file').key = this.model.key;
 		clone.set(data);
 
-		// grab the file binary 
+		// grab the file binary, and clear it out from the model
 		var filebin = clone.get('file').get('data');
 		clone.get('file').unset('data');
 
@@ -233,6 +233,7 @@ var NotesEditController = FormController.extend({
 				return clone.save();
 			})
 			.then(function() {
+				if(!this.model.key) this.model.key = clone.key;
 				this.model.set(clone.toJSON({get_file: true}));
 				if(clone.get('file').get('cleared'))
 				{
