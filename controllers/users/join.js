@@ -5,12 +5,16 @@ var UserJoinController = FormController.extend({
 		'input[name=confirm]': 'inp_confirm',
 		'input[name=promo]': 'inp_promo',
 		'input[type=submit': 'inp_submit',
-		'div.promo': 'promo_section'
+		'div.promo': 'promo_section',
+		'.strength': 'strength_container',
+		'.strength .inner': 'strength_bar',
+		'.strength .status': 'strength_status'
 	},
 
 	events: {
 		'click a[href=#open-promo]': 'open_promo',
-		'click .button.confirm': 'finalize'
+		'click .button.confirm': 'finalize',
+		'input input[name=password]': 'update_meter'
 	},
 
 	promo: null,
@@ -55,6 +59,7 @@ var UserJoinController = FormController.extend({
 			this.promo_section.get('slide').hide();
 		}
 		(function() { this.inp_username.focus(); }).delay(100, this);
+		this.update_meter();
 	},
 
 	check_login: function(inp_username, inp_password, inp_pconfirm)
@@ -109,11 +114,6 @@ var UserJoinController = FormController.extend({
 		turtl.loading(true);
 		user.join({ promo: promo }).bind(this)
 			.then(function(userdata) {
-				if(password.length < 10)
-				{
-					barfr.barf('Your password is less than 10 characters. This is allowed, but we advise you to change to a passphrase of at least a few words.');
-				}
-
 				var data = user.toJSON();
 				data.id = userdata.id;
 				turtl.user.login(data)
@@ -134,6 +134,43 @@ var UserJoinController = FormController.extend({
 			.finally(function() {
 				turtl.loading(false);
 			});
+	},
+
+	update_meter: function(e)
+	{
+		var passphrase = this.inp_password.get('value');
+		var status = ' - ';
+		if(passphrase.length >= 32)
+		{
+			status = 'excellent';
+		}
+		else if(passphrase.length >= 24)
+		{
+			status = 'great';
+		}
+		else if(passphrase.length >= 16)
+		{
+			status = 'good';
+		}
+		else if(passphrase.length >= 10)
+		{
+			status = 'ok';
+		}
+		else if(passphrase.length > 4)
+		{
+			status = 'weak';
+		}
+		else if(passphrase.length > 0)
+		{
+			status = 'too short';
+		}
+
+		var width = Math.min(passphrase.length / 32, 1) * 100;
+
+		this.strength_status.set('html', status);
+		this.strength_bar.setStyles({width: width + '%'});
+		this.strength_container.className = this.strength_container.className.replace(/level-.*( |$)/, '');
+		this.strength_container.addClass('level-'+sluggify(status));
 	},
 
 	open_promo: function(e)

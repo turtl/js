@@ -4,6 +4,23 @@
 .user-join {
 	form {padding-top: 38rem; .uncard();}
 	.button {margin: 32rem 0 16rem 0;}
+
+	.strength {margin: 16rem 8rem 0 8rem;}
+	.strength {
+		p {padding: 4px 0; font-size: 14rem; text-align: center;}
+		&.level-too-short .inner {background: @theme_warn;}
+		&.level-too-short span {color: @theme_warn;}
+		&.level-weak .inner {background: #e88755;}
+		&.level-weak span {color: #e88755;}
+		&.level-ok .inner {background: #9ab389;}
+		&.level-ok span {color: #9ab389;}
+		&.level-good .inner {background: @theme_primary;}
+		&.level-good span {color: @theme_primary;}
+		&.level-great .inner,
+		&.level-excellent .inner {background: @theme_accent;}
+		&.level-great span,
+		&.level-excellent span {color: @theme_accent;}
+	}
 }
 
 .user-join.confirm {}

@@ -1,6 +1,14 @@
 <input type="text" name="username" placeholder="Username" tabindex="4" autocorrect="off" autocapitalize="none">
 <input type="password" name="password" placeholder="Passphrase" tabindex="5">
 <input type="password" name="confirm" placeholder="Confirm passphrase" tabindex="6">
+
+<div class="strength">
+	<div class="progress-bar">
+		<div class="inner">&nbsp;</div>
+	</div>
+	<p>Passphrase strength: <span class="status"></span></p>
+</div>
+
 <!--
 {{#if enable_promo}}
 	{{#unless promo}}
