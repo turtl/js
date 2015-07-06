@@ -1,4 +1,0 @@
-#!/bin/bash
-
-ssh deploy@54.191.190.217 -p 50390 sudo -u ansible /etc/ansible/scripts/deploy periscope-mobile
-
