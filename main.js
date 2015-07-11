@@ -4,9 +4,6 @@ var $ES = function(selector, filter) {return ($(filter) || document).getElements
 // we need CBC for backwards compat
 sjcl.beware['CBC mode is dangerous because it doesn\'t protect message integrity.']();
 
-// set up workers for openpgp.js (if native crypto ain't available)
-openpgp.initWorker(asset('/library/openpgp/openpgp.worker.js'));
-
 // make our client IDs such that they are always sorted *after* real,
 // server-generated IDs ('z.') and they are chronologically sortable from each
 // other. Also, append in the original cid() at the end for easier debugging.
@@ -562,6 +559,11 @@ window.addEvent('domready', function() {
 	if(!clid) clid = localStorage.client_id = tcrypt.random_hash();
 	turtl.client_id = clid;
 	turtl.init();
+
+	// set up workers for openpgp.js (if native crypto ain't available)
+	openpgp.initWorker(asset('/library/openpgp/openpgp.worker.js'));
+	//var blob = new Blob([$('script-inline-openpgp-worker-js').textContent], {type: 'application/javascript'})
+	//openpgp.initWorker(window.URL.createObjectURL(blob));
 });
 
 // set up a global error handler that XHRs shit to the API so we know when bugs
