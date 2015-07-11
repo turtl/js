@@ -1,7 +1,9 @@
 var UserLoginController = FormController.extend({
 	elements: {
 		'input[name=username]': 'inp_username',
-		'input[name=password]': 'inp_password'
+		'input[name=password]': 'inp_password',
+		'input[type=submit]': 'inp_submit',
+		'p.load': 'el_loader'
 	},
 
 	buttons: false,
@@ -32,6 +34,8 @@ var UserLoginController = FormController.extend({
 			password: password
 		});
 
+		this.el_loader.addClass('active');
+		this.inp_submit.set('disabled', 'disabled');
 		turtl.loading(true);
 		user.test_auth().bind(this)
 			.spread(function(id, meta) {
@@ -58,6 +62,8 @@ var UserLoginController = FormController.extend({
 			})
 			.finally(function() {
 				turtl.loading(false);
+				this.el_loader.removeClass('active');
+				this.inp_submit.set('disabled', '');
 			});
 	}
 });

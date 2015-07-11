@@ -5,6 +5,8 @@ var UserJoinController = FormController.extend({
 		'input[name=confirm]': 'inp_confirm',
 		'input[name=promo]': 'inp_promo',
 		'input[type=submit': 'inp_submit',
+		'input[type=submit]': 'inp_submit',
+		'p.load': 'el_loader',
 		'div.promo': 'promo_section',
 		'.strength': 'strength_container',
 		'.strength .inner': 'strength_bar',
@@ -111,6 +113,8 @@ var UserJoinController = FormController.extend({
 			password: password
 		});
 
+		this.el_loader.addClass('active');
+		this.inp_submit.set('disabled', 'disabled');
 		turtl.loading(true);
 		user.join({ promo: promo }).bind(this)
 			.then(function(userdata) {
@@ -133,6 +137,8 @@ var UserJoinController = FormController.extend({
 			})
 			.finally(function() {
 				turtl.loading(false);
+				this.el_loader.removeClass('active');
+				this.inp_submit.set('disabled', '');
 			});
 	},
 
