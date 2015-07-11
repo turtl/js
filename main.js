@@ -131,7 +131,7 @@ var turtl = {
 		turtl.setup_user({initial_route: initial_route});
 
 		// if a user exists, log them in
-		if(!window._disable_cookie)
+		if(config.cookie_login)
 		{
 			this.user.login_from_cookie();
 		}
