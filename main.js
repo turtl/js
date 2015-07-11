@@ -529,6 +529,10 @@ window.addEvent('domready', function() {
 		}
 	);
 
+	var font_size = 1;
+	if(window.navigator.userAgent.match(/DROID4/)) font_size = 1.12;
+	$E('html').setStyles({'font-size': font_size + 'px'});
+
 	turtl.back = new Backstate();
 
 	// create the barfr
