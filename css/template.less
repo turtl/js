@@ -9,6 +9,9 @@ html {
 	//overflow-y: scroll;
 }
 
+// width testing
+#wrap:after {display: none; content: " "; position: absolute; z-index: 9999; top: 0; left: 0; width: 318rem; height: 10rem; background: black; border: 1rem solid blue;}
+
 ::selection {background: #bfe1de;}
 ::-moz-selection {background: #bfe1de;}
 * {
@@ -52,7 +55,7 @@ header {
 		em {color: #8fc46a;}
 		em {
 			> span,
-			a {display: inline-block; max-width: 100%; padding: 7rem 0 7rem 0; color: #8fc46a; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}
+			a {display: inline-block; max-width: 100%; margin: 0 0 0 -10rem; padding: 7rem 0 7rem 10rem; color: #8fc46a; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}
 			a icon {vertical-align: -12%; margin-right: 8rem; color: #8fc46a; font-size: 1.4em;}
 		}
 	}
