@@ -58,6 +58,11 @@ div.button {
 	span {display: inline-block; padding: 13rem 32rem 11rem 32rem; color: #fff; text-transform: none; line-height: 12rem; font-size: 18.4rem; font-weight: normal; background: none; border: 0; box-shadow: none;}
 	input[type="submit"],
 	input[type="button"] {margin: 0; font-family: 'raleway', helvetica, arial, sans-serif;}
+	input[type="submit"],
+	input[type="button"] {
+		& {.transition(background .3s);}
+		&:disabled {background: lighten(@theme_primary, 20%);}
+	}
 	icon {float: left; margin: 0 8rem 0 0; color: rgba(255, 255, 255, .6); font-size: 12rem; line-height: 10rem; vertical-align: baseline;}
 }
 div.button.flat {box-shadow: none;}
@@ -116,7 +121,7 @@ p.page-empty {
 }
 
 /* progress bar */
-.progress-bar {height: 16rem; padding: 0 1rem; border: 1px solid @form_border; border-radius: 3rem;}
+.progress-bar {height: 16rem; padding: 0 1rem; background: @theme_gray_light; border: 1px solid @form_border; border-radius: 3rem;}
 .progress-bar {
 	.inner {height: 14rem; margin: 1rem 0 0 0; background: @theme_primary; border-radius: 2rem;}
 }
