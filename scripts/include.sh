@@ -2,13 +2,21 @@
 
 function print_css() {
 	cssfile=$1
-	echo -ne "\n<link rel=\"stylesheet\" href=\"/$cssfile\">"
+	echo -ne "\n<link rel=\"stylesheet\" href=\"${ASSET_ROOT}${cssfile}\">"
 }
 
 function print_js() {
 	jsfile=$1
 	jsfile="`echo $jsfile | sed 's|___| |g'`"
-	echo -ne "\n<script src=\"/$jsfile\"></script>"
+	echo -ne "\n<script src=\"${ASSET_ROOT}${jsfile}\"></script>"
+}
+
+function print_inline_js() {
+	jsfile=$1
+	jsfile="`echo $jsfile | sed 's|___| |g'`"
+	echo -ne "\n<script id=\"script-inline-$(basename $jsfile | sed 's|[^a-z0-9]|-|g')\" type=\"javascript/inline\">"
+	cat $jsfile
+	echo -ne "\n</script>"
 }
 
 function path_to_js() {
@@ -17,10 +25,10 @@ function path_to_js() {
 }
 
 function all_css() {
-	echo 'css/reset.css'
-	echo 'css/template.css'
-	echo 'css/general.css'
-	cssfiles="`find css -name '*.css' \
+	echo "${SEARCH_PATH}css/reset.css"
+	echo "${SEARCH_PATH}css/template.css"
+	echo "${SEARCH_PATH}css/general.css"
+	cssfiles="`find ${SEARCH_PATH}css -name '*.css' \
 		| sort \
 		| grep -v 'template.css' \
 		| grep -v 'general.css' \
@@ -32,17 +40,17 @@ function all_css() {
 }
 
 function all_js() {
-	echo 'library/mootools-core-1.5.1.js'
-	echo 'library/mootools-more-1.5.1.js'
-	echo 'library/composer.js'
-	echo 'library/bluebird.js'
-	echo 'library/handlebars.runtime-v2.0.0.js'
+	echo "${SEARCH_PATH}library/mootools-core-1.5.1.js"
+	echo "${SEARCH_PATH}library/mootools-more-1.5.1.js"
+	echo "${SEARCH_PATH}library/composer.js"
+	echo "${SEARCH_PATH}library/bluebird.js"
+	echo "${SEARCH_PATH}library/handlebars.runtime-v2.0.0.js"
 	
-	path_to_js 'config/config.js'
-	find config -name '*.js' \
+	path_to_js "${SEARCH_PATH}config/config.js"
+	find ${SEARCH_PATH}config -name '*.js' \
 		| sort \
 		| grep -v 'config\.js'
-	find library -name '*.js' \
+	find ${SEARCH_PATH}library -name '*.js' \
 		| sort \
 		| grep -v 'ignore' \
 		| grep -v 'mootools-' \
@@ -56,21 +64,26 @@ function all_js() {
 		| sed 's| |___|g'
 	for jsfile in $jsfiles; do print_js $jsfile; done
 
-	path_to_js 'controllers'
-	path_to_js 'models'
-	path_to_js 'handlers'
-	path_to_js 'turtl'
+	path_to_js "${SEARCH_PATH}controllers"
+	path_to_js "${SEARCH_PATH}models"
+	path_to_js "${SEARCH_PATH}handlers"
+	path_to_js "${SEARCH_PATH}turtl"
 
-	echo 'library/templates.js'
-	echo 'main.js'
+	echo "${SEARCH_PATH}library/templates.js"
+	echo "${SEARCH_PATH}main.js"
+}
+
+function inline_js() {
+	echo "${SEARCH_PATH}library/openpgp/openpgp.worker.js"
 }
 
 function do_replace() {
 	template=$1
 	from=$2
-	to=$3
+	to=$(echo "$3" | sed 's|&|\\\\&|g')
 
-	echo "$template" | awk -v r="${to//$'\n'/\\n}" "{gsub(/${from}/,r)}1"
+	echo "$template" \
+		| awk -v r="${to//$'\n'/\\n}" "{gsub(/${from}/,r)}1"
 }
 
 
