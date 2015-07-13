@@ -113,7 +113,7 @@ var Profile = Composer.RelationalModel.extend({
 
 	load_profile_from_api: function()
 	{
-		return turtl.api.get('/v2/sync/full', null, {timeout: 600000})
+		return turtl.api.get('/sync/full', null, {timeout: 600000})
 			.then(function(profile_sync) {
 				return turtl.sync.update_local_db_from_api_sync(profile_sync);
 			})

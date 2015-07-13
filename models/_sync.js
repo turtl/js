@@ -186,7 +186,7 @@ var Sync = Composer.Model.extend({
 				if(this._outgoing_sync_running) return;
 				this._outgoing_sync_running = true;
 				log.debug('sync: outgoing: ', items);
-				return turtl.api.post('/v2/sync', items).bind(this)
+				return turtl.api.post('/sync', items).bind(this)
 					.then(function(synced) {
 						log.debug('sync: outgoing: response: ', synced);
 						if(synced.error)
@@ -291,7 +291,7 @@ var Sync = Composer.Model.extend({
 		this.trigger('poll:start');
 		var failed = false;
 		var sync_id = this.get('sync_id');
-		var sync_url = '/v2/sync?sync_id='+sync_id+'&immediate='+(options.immediate ? 1 : 0);
+		var sync_url = '/sync?sync_id='+sync_id+'&immediate='+(options.immediate ? 1 : 0);
 		return turtl.api.get(sync_url, null, {timeout: 60000}).bind(this)
 			.then(function(sync) {
 				if(!enabled()) return false;
