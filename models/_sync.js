@@ -540,7 +540,10 @@ var SyncCollection = Composer.Collection.extend({
 				break;
 			case 'delete':
 				var model = this.get(item.id);
-				promise = model.destroy({skip_remote_sync: true});
+				if(model)
+				{
+					promise = model.destroy({skip_remote_sync: true});
+				}
 				break;
 		}
 		return promise;
