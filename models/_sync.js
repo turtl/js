@@ -176,6 +176,7 @@ var Sync = Composer.Model.extend({
 	run_outgoing_sync: function()
 	{
 		if(!turtl.sync_to_api) return false;
+		if(!this.connected) return false;
 		return turtl.db.sync_outgoing.query().all().execute().bind(this)
 			.then(function(items) {
 				if(!items || !items.length) return;
