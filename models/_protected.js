@@ -175,6 +175,12 @@ var Protected = Composer.RelationalModel.extend({
 		search || (search = {});
 		options || (options = {});
 
+		// first, check the keychain
+		log.trace('find_key: ', keys, search, options);
+		var key = turtl.profile.get('keychain').find_key(this.id());
+		log.trace('find_key: ', key ? 'found in keychain' : 'not in keychain, searching');
+		if(key) return key;
+
 		// clone the keys since we perform destructive operations on them during
 		// processing and without copying it destroys the original key object,
 		// meaning this object can never be decrypted without re-downloading.
@@ -200,6 +206,7 @@ var Protected = Composer.RelationalModel.extend({
 			delete(key.k);
 			var match = false;
 			Object.each(key, function(id, type) {
+				log.trace('find_key: ', id, type);
 				if(encrypted_key) return;
 				if(search[type] && search[type].id && search[type].id == id)
 				{
@@ -225,19 +232,12 @@ var Protected = Composer.RelationalModel.extend({
 			if(encrypted_key) break;
 		}
 
-		var key = false;
 		if(decrypting_key && encrypted_key)
 		{
 			key = this.decrypt_key(decrypting_key, encrypted_key);
 		}
 
-		// if we didn't find our key, check the user's data
-		if(!key)
-		{
-			key = turtl.profile.get('keychain').find_key(this.id());
-		}
-
-		return key;
+		return key || false;
 	},
 
 	/**
