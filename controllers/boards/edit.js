@@ -16,7 +16,7 @@ var BoardsEditController = FormController.extend({
 		this.action = this.model.is_new() ? 'Create': 'Edit';
 
 		var child = '';
-		if(this.model.get('parent_id')) child = ' child';
+		if(this.model.get('parent_id')) child = ' nested';
 
 		this.modal = new TurtlModal({
 			show_header: true,

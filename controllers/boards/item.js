@@ -10,7 +10,7 @@ var BoardsItemController = Composer.Controller.extend({
 		'click': 'open_board',
 		'click .menu a[rel=edit]': 'open_edit',
 		'click .menu a[rel=delete]': 'open_delete',
-		'click .menu a[rel=create-child-board]': 'open_create_child'
+		'click .menu a[rel=create-nested-board]': 'open_create_child'
 	},
 
 	model: null,
@@ -34,7 +34,7 @@ var BoardsItemController = Composer.Controller.extend({
 				];
 				if(!this.model.get('parent_id'))
 				{
-					actions.push([{name: 'Create child board'}]);
+					actions.push([{name: 'Create nested board'}]);
 				}
 				actions.push([{name: 'Share this board', href: '/boards/share/'+this.model.id()}]);
 				this.track_subcontroller('actions', function() {
