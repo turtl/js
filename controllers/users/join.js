@@ -4,19 +4,22 @@ var UserJoinController = FormController.extend({
 		'input[name=password]': 'inp_password',
 		'input[name=confirm]': 'inp_confirm',
 		'input[name=promo]': 'inp_promo',
-		'input[type=submit': 'inp_submit',
+		'input[name=server]': 'inp_server',
 		'input[type=submit]': 'inp_submit',
 		'p.load': 'el_loader',
 		'div.promo': 'promo_section',
 		'.strength': 'strength_container',
 		'.strength .inner': 'strength_bar',
-		'.strength .status': 'strength_status'
+		'.strength .status': 'strength_status',
+		'a.open-settings': 'el_open_settings',
+		'p.settings': 'el_settings'
 	},
 
 	events: {
 		'click a[href=#open-promo]': 'open_promo',
 		'click .button.confirm': 'finalize',
-		'input input[name=password]': 'update_meter'
+		'input input[name=password]': 'update_meter',
+		'click a.open-settings': 'toggle_settings'
 	},
 
 	promo: null,
@@ -51,6 +54,7 @@ var UserJoinController = FormController.extend({
 	render: function()
 	{
 		var content = view.render('users/join', {
+			server: config.api_url,
 			enable_promo: config.enable_promo,
 			promo: localStorage.promo
 		});
@@ -62,6 +66,9 @@ var UserJoinController = FormController.extend({
 		}
 		(function() { this.inp_username.focus(); }).delay(100, this);
 		this.update_meter();
+
+		this.el_settings.set('slide', {duration: 300});
+		this.el_settings.get('slide').hide();
 	},
 
 	check_login: function(inp_username, inp_password, inp_pconfirm)
@@ -98,6 +105,21 @@ var UserJoinController = FormController.extend({
 	submit: function(e)
 	{
 		if(e) e.stop();
+
+		var server = this.inp_server.get('value').trim();
+		if(server)
+		{
+			server = server.replace(/\/+$/, '');
+			if(server != config.api_url)
+			{
+				log.debug('user: persisting api url');
+				config.api_url = server;
+				turtl.api.api_url = server;
+				// persist it
+				localStorage.config_api_url = config.api_url;
+			}
+		}
+
 		var username = this.inp_username.get('value');
 		var password = this.inp_password.get('value');
 		var pconfirm = this.inp_confirm.get('value');
@@ -186,5 +208,21 @@ var UserJoinController = FormController.extend({
 		e.target.dispose();
 		this.promo_section.addClass('open');
 		this.promo_section.get('slide').slideIn();
+	},
+
+	toggle_settings: function(e)
+	{
+		if(e) e.stop();
+
+		if(this.el_open_settings.hasClass('active'))
+		{
+			this.el_open_settings.removeClass('active');
+			this.el_settings.slide('out');
+		}
+		else
+		{
+			this.el_open_settings.addClass('active');
+			this.el_settings.slide('in');
+		}
 	}
 });

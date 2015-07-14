@@ -196,6 +196,7 @@ function icon(name)
 		lock: 'e821',
 		logout: 'e838',
 		menu: 'e808',
+		more: 'e80b',
 		next: 'e80b',
 		note: 'e804',
 		notes: 'e809',

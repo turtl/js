@@ -2,8 +2,15 @@ var UserLoginController = FormController.extend({
 	elements: {
 		'input[name=username]': 'inp_username',
 		'input[name=password]': 'inp_password',
+		'input[name=server]': 'inp_server',
 		'input[type=submit]': 'inp_submit',
-		'p.load': 'el_loader'
+		'p.load': 'el_loader',
+		'a.open-settings': 'el_open_settings',
+		'p.settings': 'el_settings'
+	},
+
+	events: {
+		'click a.open-settings': 'toggle_settings'
 	},
 
 	buttons: false,
@@ -19,14 +26,34 @@ var UserLoginController = FormController.extend({
 
 	render: function()
 	{
-		var content = view.render('users/login');
+		var content = view.render('users/login', {
+			server: config.api_url
+		});
 		this.html(content);
 		(function() { this.inp_username.focus(); }).delay(10, this);
+
+		this.el_settings.set('slide', {duration: 300});
+		this.el_settings.get('slide').hide();
 	},
 
 	submit: function(e)
 	{
 		if(e) e.stop();
+
+		var server = this.inp_server.get('value').trim();
+		if(server)
+		{
+			server = server.replace(/\/+$/, '');
+			if(server != config.api_url)
+			{
+				log.debug('user: persisting api url');
+				config.api_url = server;
+				turtl.api.api_url = server;
+				// persist it
+				localStorage.config_api_url = config.api_url;
+			}
+		}
+
 		var username = this.inp_username.get('value');
 		var password = this.inp_password.get('value');
 		var user = new User({
@@ -65,6 +92,22 @@ var UserLoginController = FormController.extend({
 				this.el_loader.removeClass('active');
 				this.inp_submit.set('disabled', '');
 			});
+	},
+
+	toggle_settings: function(e)
+	{
+		if(e) e.stop();
+
+		if(this.el_open_settings.hasClass('active'))
+		{
+			this.el_open_settings.removeClass('active');
+			this.el_settings.slide('out');
+		}
+		else
+		{
+			this.el_open_settings.addClass('active');
+			this.el_settings.slide('in');
+		}
 	}
 });
 
