@@ -10,8 +10,8 @@ var database = {
 	{
 		// initialize our backing local storage.
 		return db.open({
-			// DB has user id in it...client might have multiple users
-			server: 'turtl.'+turtl.user.id(),
+			// DB has server/user id in it...client might have multiple users
+			server: 'turtl.server:'+config.api_url+',user:'+turtl.user.id(),
 			version: 10,
 			schema: function() { log.info('db.js: create schema'); return {
 				// -------------------------------------------------------------
@@ -58,8 +58,7 @@ var database = {
 					}
 				},
 				// note that the files table holds raw/encrypted file data for
-				// note attachments. the 'id' field is the HMAC hash from the
-				// payload. also, there isn't a 1 to 1 mapping between records
+				// note attachments. there's not a 1-1 mapping between records
 				// in the files table and in-memory models, mainly because files
 				// are decrypted on-demand and aren't always going to be loaded
 				// in memory.

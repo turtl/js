@@ -93,6 +93,9 @@ var turtl = {
 	// which stores files and notes locally).
 	db: null,
 
+	// holds our db-backed queue
+	hustle: null,
+
 	// Files collection, used to track file uploads/downloads
 	files: null,
 
@@ -305,7 +308,26 @@ var turtl = {
 			.then(function(db) {
 				turtl.db = db;
 				turtl.events.trigger('db-init');
-			});
+			})
+			.then(function() {
+				return new Promise(function(resolve, reject) {
+					var hustle = new Hustle({
+						tubes: ['files'],
+						db_name: 'turtl.hustle.server:'+ config.api_url +',user:'+turtl.user.id(),
+						db_version: 2,
+						maintenance_delay: 5000
+					});
+					hustle.open({
+						success: function() {
+							turtl.hustle = hustle;
+							resolve(hustle);
+						},
+						error: function(err) {
+							reject(err);
+						}
+					});
+				});
+			})
 	},
 
 	wipe_local_db: function(options)
