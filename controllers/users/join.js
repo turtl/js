@@ -142,7 +142,8 @@ var UserJoinController = FormController.extend({
 			.then(function(userdata) {
 				var data = user.toJSON();
 				data.id = userdata.id;
-				turtl.user.login(data)
+				turtl.events.bind_once('profile-loaded', this.create_initial_boards.bind(this));
+				return turtl.user.login(data)
 					.then(function() {
 						turtl.route('/');
 					});
@@ -161,6 +162,44 @@ var UserJoinController = FormController.extend({
 				turtl.loading(false);
 				this.el_loader.removeClass('active');
 				this.inp_submit.set('disabled', '');
+			});
+	},
+
+	create_initial_boards: function()
+	{
+		// create some initial boardssss
+		var add_board = function(name, parent_id)
+		{
+			parent_id = (parent_id || false);
+			var board = new Board({title: name});
+			if(parent_id) board.set({parent_id: parent_id});
+
+			return board.init_new()
+				.then(function() {
+					return board.save();
+				})
+				.then(function() {
+					turtl.profile.get('boards').upsert(board);
+					return board;
+				});
+		};
+		return add_board('Bookmarks')
+			.then(function(board) {
+				var id = board.id();
+				return Promise.all([
+					add_board('Save for later', id),
+					add_board('Photos', id)
+				]);
+			})
+			.then(function() {
+				return add_board('Passwords');
+			})
+			.then(function() {
+				return add_board('Ideas');
+			})
+			.catch(function(err) {
+				turtl.events.trigger('ui-error', 'There was a problem creating your initial boards', err);
+				log.error('users: join: initial boards: ', derr(err));
 			});
 	},
 
