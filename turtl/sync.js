@@ -19,7 +19,7 @@ Composer.sync = function(method, model, options)
 
 	// some debugging, can make tracking down sync issues easier
 	var action = method == 'delete' ? 'delete' : (method == 'create' ? 'add' : 'edit');
-	log.info('save: '+ table +': mem -> db ('+ action +')');
+	log.info('model: save: '+ table +': mem -> db ('+ action +')');
 
 	var error = options.error || function() {};
 	if(!turtl.db)
