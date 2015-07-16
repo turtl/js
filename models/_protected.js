@@ -85,28 +85,58 @@ var Protected = Composer.RelationalModel.extend({
 		});
 		var action = 'encrypt';
 		if(options.hash) action = 'encrypt+hash';
-		return new Promise(function(resolve, reject) {
-			var msg = {
-				action: action,
-				key: this.key,
-				data: data,
-				private_fields: this.private_fields,
-				rawdata: options.rawdata
-			};
-			cqueue.push(msg, function(res) {
-				if(res.error) return reject(res.error);
-				var obj = {};
-				var enc = res.success[0];
-				if(!options.skip_base64) enc = btoa(enc);
-				obj[this.body_key] = enc;
-				this.set(obj, options);
-				this.public_fields.forEach(function(pub) {
-					if(json[pub] === undefined) return;
-					obj[pub] = json[pub];
+
+		// serialize all *public* relations into an object
+		var public_data = {};
+		return Promise.all(Object.keys(this.relations).map(function(key) {
+			var rel = this.get(key);
+			if(!rel) return false;
+			if(!this.public_fields.contains(key)) return false;
+			if(key == 'keys') return false;
+			if(rel instanceof Composer.Model)
+			{
+				var promise = rel.serialize();
+			}
+			else if(rel instanceof Composer.Collection)
+			{
+				var promise = Promise.all(rel.map(function(model) {
+					return model.serialize();
+				}));
+			}
+			return promise
+				.then(function(reldata) {
+					// set the result of the serialization into the public data
+					public_data[key] = reldata[0];
+					// make sure the json object doesn't override our relation's
+					// serialization
+					delete json[key];
+				});
+		}.bind(this))).bind(this)
+			.then(function() {
+				// serialize the main object now
+				var msg = {
+					action: action,
+					key: this.key,
+					data: data,
+					private_fields: this.private_fields,
+					rawdata: options.rawdata
+				};
+				return new Promise(function(resolve, reject) {
+					cqueue.push(msg, function(res) {
+						if(res.error) return reject(res.error);
+						var enc = res.success[0];
+						if(!options.skip_base64) enc = btoa(enc);
+						// update our public data object with the encrypted
+						public_data[this.body_key] = enc;
+						this.set(public_data, options);
+						this.public_fields.forEach(function(pub) {
+							if(json[pub] === undefined) return;
+							public_data[pub] = json[pub];
+						}.bind(this));
+						return resolve([public_data, res.success[1]]);
+					}.bind(this))
 				}.bind(this));
-				resolve([obj, res.success[1]]);
-			}.bind(this))
-		}.bind(this));
+			});
 	},
 
 	/**
@@ -122,24 +152,46 @@ var Protected = Composer.RelationalModel.extend({
 		}
 
 		var data = this.detect_old_format(this.get(this.body_key));
-		return new Promise(function(resolve, reject) {
-			var msg = {
-				action: 'decrypt',
-				key: this.key,
-				data: data,
-				private_fields: this.private_fields,
-				rawdata: options.rawdata
-			};
-			cqueue.push(msg, function(res) {
-				if(res.error)
-				{
-					log.error('protected: deserialize: ', this.id(), this.base_url, res.error);
-					return reject(res.error);
-				}
-				this.set(res.success, options);
-				resolve(res.success);
-			}.bind(this))
-		}.bind(this));
+
+		// decrypt all relational objects first
+		return Promise.all(Object.keys(this.relations).map(function(key) {
+			var rel = this.get(key);
+			if(!rel) return false;
+			if(!this.public_fields.contains(key)) return false;
+			if(key == 'keys') return false;
+			if(rel instanceof Composer.Model)
+			{
+				return rel.deserialize();
+			}
+			else if(rel instanceof Composer.Collection)
+			{
+				return Promise.all(rel.map(function(model) {
+					return model.deserialize();
+				}));
+			}
+			return promise;
+		}.bind(this))).bind(this)
+			.then(function() {
+				// now decrypt the main object
+				return new Promise(function(resolve, reject) {
+					var msg = {
+						action: 'decrypt',
+						key: this.key,
+						data: data,
+						private_fields: this.private_fields,
+						rawdata: options.rawdata
+					};
+					cqueue.push(msg, function(res) {
+						if(res.error)
+						{
+							log.error('protected: deserialize: ', this.id(), this.base_url, res.error);
+							return reject(res.error);
+						}
+						this.set(res.success, options);
+						return resolve(res.success);
+					}.bind(this))
+				}.bind(this));
+			});
 	},
 
 	/**
