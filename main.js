@@ -59,7 +59,6 @@ var turtl = {
 		pages: null,
 		header: null,
 		sidebar: null,
-		sync: null,
 		loading: null
 	},
 
@@ -185,10 +184,6 @@ var turtl = {
 			if(window.port) window.port.bind('invites-populate', function(invite_data) {
 				turtl.invites.reset(Object.values(invite_data));
 			}.bind(this));
-
-			// init our sync interface (shows updates on syncing/uploads/downloads)
-
-			turtl.controllers.sync = new SyncController;
 
 			turtl.show_loading_screen(true);
 			turtl.update_loading_screen('Initializing Turtl');

@@ -14,6 +14,8 @@ config.routes = {
 
 	'/personas': ['personas', 'index'],
 
+	'/sync': ['sync', 'index'],
+
 	'/': ['notes', 'index']
 };
 
