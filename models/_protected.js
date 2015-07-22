@@ -93,6 +93,11 @@ var Protected = Composer.RelationalModel.extend({
 			if(!rel) return false;
 			if(!this.public_fields.contains(key)) return false;
 			if(key == 'keys') return false;
+
+			// make sure the json object doesn't override our relation's
+			// serialization
+			delete json[key];
+
 			if(rel instanceof Composer.Model)
 			{
 				var promise = rel.serialize();
@@ -107,9 +112,6 @@ var Protected = Composer.RelationalModel.extend({
 				.then(function(reldata) {
 					// set the result of the serialization into the public data
 					public_data[key] = reldata[0];
-					// make sure the json object doesn't override our relation's
-					// serialization
-					delete json[key];
 				});
 		}.bind(this))).bind(this)
 			.then(function() {
