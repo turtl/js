@@ -310,23 +310,14 @@ var turtl = {
 				turtl.events.trigger('db-init');
 			})
 			.then(function() {
-				return new Promise(function(resolve, reject) {
-					var hustle = new Hustle({
-						tubes: ['files'],
-						db_name: 'turtl.hustle.server:'+ config.api_url +',user:'+turtl.user.id(),
-						db_version: 2,
-						maintenance_delay: 5000
-					});
-					hustle.open({
-						success: function() {
-							turtl.hustle = hustle;
-							resolve(hustle);
-						},
-						error: function(err) {
-							reject(err);
-						}
-					});
+				var hustle = new Hustle({
+					tubes: ['files'],
+					db_name: 'turtl.hustle.server:'+ config.api_url +',user:'+turtl.user.id(),
+					db_version: 2,
+					maintenance_delay: 5000
 				});
+				hustle.promisify();
+				return hustle.open();
 			})
 	},
 
