@@ -191,6 +191,8 @@ var Sync = Composer.Model.extend({
 				log.debug('sync: outgoing: ', items);
 				var file_syncs = [];
 				items = items.filter(function(item) {
+					// we grab newly created files and upload them by hand. file
+					// deletes are allowed to pass as normal sync items
 					if(item.type == 'file' && item.action == 'add')
 					{
 						file_syncs.push(item);
@@ -251,17 +253,15 @@ var Sync = Composer.Model.extend({
 					.then(function() {
 						var queued = file_syncs.map(function(sync) {
 							var filejob = {id: sync.data.id};
-							return turtl.hustle.Queue.put(filejob, {tube: 'files:upload'});
+							// queue the file for upload, and once we have an ack
+							// from the queue, we delete the outgoing sync
+							return turtl.hustle.Queue.put(filejob, {tube: 'files:upload'})
+								.then(function() {
+									return turtl.db.sync_outgoing.remove(sync.id);
+								})
+								
 						});
 						return Promise.all(queued);
-					})
-					.then(function() {
-						// our files are now queued (separately form the regular
-						// outgoing sync queue, they are in a file-specific
-						// queue) so we can delete the outgoing sync items
-						return Promise.all(file_syncs.map(function(sync) {
-							return turtl.db.sync_outgoing.remove(sync.id);
-						}));
 					});
 			})
 			.catch(function(err) {

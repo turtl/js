@@ -402,7 +402,8 @@ var Files = SyncCollection.extend({
 					{
 						turtl.events.trigger('ui-error', 'There was a problem uploading a file. View it in the "Sync" panel in the main menu.', err);
 						log.error('file: upload: ', this.model.id(), derr(err));
-						// bury the item
+						// bury the item (will be available for inspection in the
+						// sync page)
 						return turtl.hustle.Queue.bury(job.id);
 					}
 					else
@@ -422,112 +423,36 @@ var Files = SyncCollection.extend({
 
 	setup_downloader: function()
 	{
-		//if(this.consumers.download) this.consumers.download.stop();
-		//this.consumers.download = new turtl.hustle.Queue.Consumer(function(job) {
-		//}, {
-			//tube: 'files:download',
-			//delay: turtl.sync.hustle_poll_delay,
-			//enable_fn: function() {
-				//return turtl.user.logged_in && turtl.sync_to_api && turtl.sync.connected
-			//}
-		//});
-	},
+		return;
 
-	/**
-	 * given notes that have files but don't have file data, create dummy file
-	 * records for those files that will be filled in by the syncing system
-	 *
-	 * possible values for note.has_file:
-	 *   0: has no file
-	 *   1: has a file but doesn't have file data (or does but we aren't sure)
-	 *   2: has a file and has data for that file
-	 */
-	create_dummy_file_records: function()
-	{
-		// this code creates empty file records in the files table from notes
-		// that we know have file data
-		//
-		// what we do here is search for notes with has_file = 1 (0 is does not
-		// have a file, 1 is has a file but not sure if the file record exists
-		// in the files table, and 2 is note has a file and file record is 
-		// definitely in the files table)
-		return turtl.db.notes
-			.query('has_file')
-			.only(1)		// only query notes that we're uncertain if it has matching file record
-			.execute()
-			.then(function(res) {
-				if(!res.length) return;
-				log.info('sync: create dummy files: ', res.length);
-				return Promise.all(res.map(function(notedata) {
-					if(!notedata || !notedata.file || !notedata.file.hash) return false;
-
-					var filedata = {
-						id: notedata.file.hash,
-						note_id: notedata.id,
-						has_data: 0
-					};
-					return turtl.db.files.get(filedata.id).then(function(file) {
-						// mark note as definitely having file record
-						turtl.db.notes
-							.query()
-							.only(notedata.id)
-							.modify({has_file: 2})
-							.execute()
-							.catch(function(err) {
-								log.error('sync: notes: set has_file = 2', derr(err));
-							});
-						// no need to mess with the file record if we've got one already
-						if(file) return false;
-						// file record doesn't exist! add it.
-						return turtl.db.files.update(filedata).catch(function(err) {
-							log.error('sync: files: insert file record: ', derr(err));
-						});
-					});
-				}));
-			});
-	},
-
-	start_consumer: function()
-	{
-		// poll for blank file records and queue them for download
-		turtl.sync.register_poller(this.queue_download_blank_files.bind(this))
-
-		this.queue_consumer = new turtl.hustle.Queue.Consumer(function(job) {
-			log.debug('files: job: ', job);
-			switch(job.data.type)
-			{
-			case 'download':
-				var model = this.create_remote_model(job.data.filedata);
-				turtl.files.download(model, model.download).bind(this)
-					.catch(function(err) {
-						var xhr = err.xhr || {};
-						if(job.releases > 3)
-						{
-							turtl.hustle.Queue.delete(job.id);
-							log.error('files: download: giving up on '+ job.id +': too many releases', job.releases);
-							return;
-						}
-
-						if(xhr.status == 404)
-						{
-							turtl.hustle.Queue.delete(job.id);
-							log.error('files: download: giving up on '+ job.id +': got 404 while downloading');
-							return;
-						}
-
-						turtl.hustle.Queue.release(job.id, {
-							delay: 30,
-							error: function(err) {
-								log.error('files: download: release '+ job.id +': error releasing: ', err);
-							}
-						});
-					});
-				break;
-			}
-		}.bind(this), {
-			tube: 'files',
+		if(this.consumers.download) this.consumers.download.stop();
+		this.consumers.download = new turtl.hustle.Queue.Consumer(function(job) {
+			var file = new FileData({id: job.data.id});
+			this.download(file, file.save, options)
+				.then(function() {
+					return turtl.hustle.Queue.delete(job.id);
+				})
+				.catch(function(err) {
+					if(job.releases > 2)
+					{
+						turtl.events.trigger('ui-error', 'There was a problem uploading a file. View it in the "Sync" panel in the main menu.', err);
+						log.error('file: upload: ', this.model.id(), derr(err));
+						// bury the item (will be available for inspection in the
+						// sync page)
+						return turtl.hustle.Queue.bury(job.id);
+					}
+					else
+					{
+						// try again in 30s
+						return turtl.hustle.Queue.release(job.id, {delay: 30});
+					}
+				});
+		}, {
+			tube: 'files:download',
 			delay: turtl.sync.hustle_poll_delay,
-			enable_fn: function() { return turtl.user.logged_in && turtl.poll_api_for_changes; }
+			enable_fn: function() {
+				return turtl.user.logged_in && turtl.sync_to_api && turtl.sync.connected
+			}
 		});
 	},
 
@@ -576,43 +501,6 @@ var Files = SyncCollection.extend({
 			.catch(function(err) {
 				log.error('file: update from api save: update note: ', derr(err));
 				throw err;
-			});
-	},
-
-	queue_download_blank_files: function()
-	{
-		// grab the files collection, used to track downloads
-		turtl.db.files
-			.query('has_data')
-			.only(0)
-			.modify({has_data: -1})		// -1 means "in downloading limbo"
-			.execute()
-			.then(function(res) {
-				return Promise.all(res.each(function(filedata) {
-					if(!filedata.note_id) return false;
-					var failues = 0;
-					var do_add_queue_item = function()
-					{
-						log.debug('files: queue for download: ', filedata.id);
-						turtl.hustle.Queue.put({type: 'download', filedata: filedata}, {
-							tube: 'files',
-							error: function(err) {
-								log.error('files: queue download: ', derr(err));
-								if(failures >= 2)
-								{
-									log.error('files: queue download: giving up ('+ failures +' fails)');
-									return false;
-								}
-								failures++;
-								do_add_queue_item.delay(1000);
-							}
-						});
-					};
-					do_add_queue_item();
-				}));
-			})
-			.catch(function(e) {
-				console.error('sync: files: download: ', e);
 			});
 	},
 
