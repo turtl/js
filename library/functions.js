@@ -207,6 +207,7 @@ function icon(name)
 		settings: 'e807',
 		share: 'e81c',
 		sort: 'e80b',
+		sync: 'e82d',
 		tag: 'e80f',
 		write: 'e804'
 	};
