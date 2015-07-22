@@ -33,6 +33,9 @@ var Sync = Composer.Model.extend({
 	// generated from the above
 	table_type_map: {},
 
+	// hustle sync settings
+	hustle_poll_delay: 1000,
+
 	initialize: function()
 	{
 		Object.keys(this.type_table_map).forEach(function(key) {
@@ -48,7 +51,6 @@ var Sync = Composer.Model.extend({
 	{
 		this.enabled = true;
 		this.start_remote_poll();
-		this.sync_files();
 
 		this.outgoing_timer = new Timer(2000);
 		this.outgoing_timer.bind('fired', this.run_outgoing_sync.bind(this));
@@ -187,6 +189,18 @@ var Sync = Composer.Model.extend({
 				if(this._outgoing_sync_running) return;
 				this._outgoing_sync_running = true;
 				log.debug('sync: outgoing: ', items);
+				var file_syncs = [];
+				items = items.filter(function(item) {
+					if(item.type == 'file' && item.action == 'add')
+					{
+						file_syncs.push(item);
+						return false;
+					}
+					else
+					{
+						return true;
+					}
+				});
 				return turtl.api.post('/sync', items).bind(this)
 					.then(function(synced) {
 						log.debug('sync: outgoing: response: ', synced);
@@ -233,6 +247,21 @@ var Sync = Composer.Model.extend({
 								}.bind(this));
 								return Promise.all(actions);
 							});
+					})
+					.then(function() {
+						var queued = file_syncs.map(function(sync) {
+							var filejob = {id: sync.data.id};
+							turtl.hustle.Queue.put(filejob, {tube: 'files:upload'});
+						});
+						return Promise.all(queued);
+					})
+					.then(function() {
+						// our files are now queued (separately form the regular
+						// outgoing sync queue, they are in a file-specific
+						// queue) so we can delete the outgoing sync items
+						return Promise.all(file_syncs.map(function(sync) {
+							return turtl.db.sync_outgoing.remove(sync.id);
+						}));
 					});
 			})
 			.catch(function(err) {
@@ -474,41 +503,6 @@ var Sync = Composer.Model.extend({
 			log.error('sync: api->db: error updating DB from sync: ', err);
 			throw err;
 		});
-	},
-
-	// -------------------------------------------------------------------------
-	// file syncing section
-	// -------------------------------------------------------------------------
-
-	sync_files: function()
-	{
-		if(!this.enabled) return;
-		Promise.all([
-			this.upload_pending_files(),
-			this.create_dummy_file_records()
-				.then(this.download_pending_files.bind(this))
-		]).bind(this)
-			.catch(function(err) {
-				log.error('sync: files: ', err);
-			})
-			.finally(function() {
-				this.sync_files.delay(1000, this);
-			});
-	},
-
-	create_dummy_file_records: function()
-	{
-		return turtl.files.create_dummy_file_records();
-	},
-
-	upload_pending_files: function()
-	{
-		return Promise.resolve();
-	},
-
-	download_pending_files: function()
-	{
-		//return turtl.files.queue_download_blank_files();
 	}
 });
 

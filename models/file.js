@@ -370,6 +370,69 @@ var Files = SyncCollection.extend({
 	// used to track which files are currently uploading from this client.
 	uploads: {},
 
+	consumers: {},
+
+	start_syncing: function()
+	{
+		this.setup_uploader();
+		this.setup_downloader();
+	},
+
+	stop_syncing: function()
+	{
+		['upload', 'download'].forEach(function(key) {
+			var consumer = this.consumers[key];
+			if(!consumer) return;
+			consumer.stop();
+			delete this.consumers[key];
+		}.bind(this));
+	},
+
+	setup_uploader: function()
+	{
+		if(this.consumers.upload) this.consumers.upload.stop();
+		this.consumers.upload = new turtl.hustle.Queue.Consumer(function(job) {
+			var file = new FileData({id: job.data.id});
+			this.upload(file, file.save, options)
+				.then(function() {
+					return turtl.hustle.Queue.delete(job.id);
+				})
+				.catch(function(err) {
+					if(job.releases > 2)
+					{
+						turtl.events.trigger('ui-error', 'There was a problem uploading a file. View it in the "Sync" panel in the main menu.', err);
+						log.error('file: upload: ', this.model.id(), derr(err));
+						// bury the item
+						return turtl.hustle.Queue.bury(job.id);
+					}
+					else
+					{
+						// try again in 30s
+						return turtl.hustle.Queue.release(job.id, {delay: 30});
+					}
+				});
+		}.bind(this), {
+			tube: 'files:upload',
+			delay: turtl.sync.hustle_poll_delay,
+			enable_fn: function() {
+				return turtl.user.logged_in && turtl.sync_to_api && turtl.sync.connected
+			}
+		});
+	},
+
+	setup_downloader: function()
+	{
+		//if(this.consumers.download) this.consumers.download.stop();
+		//this.consumers.download = new turtl.hustle.Queue.Consumer(function(job) {
+		//}, {
+			//tube: 'files:download',
+			//delay: turtl.sync.hustle_poll_delay,
+			//enable_fn: function() {
+				//return turtl.user.logged_in && turtl.sync_to_api && turtl.sync.connected
+			//}
+		//});
+	},
+
 	/**
 	 * given notes that have files but don't have file data, create dummy file
 	 * records for those files that will be filled in by the syncing system

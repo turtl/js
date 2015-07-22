@@ -263,6 +263,7 @@ var turtl = {
 			turtl.user.auth = null;
 
 			// stop syncing
+			turtl.files.stop_syncing();
 			turtl.sync.stop();
 
 			turtl.controllers.pages.release_sub();
@@ -306,13 +307,14 @@ var turtl = {
 			})
 			.then(function() {
 				var hustle = new Hustle({
-					tubes: ['files'],
+					tubes: ['files:download', 'files:upload'],
 					db_name: 'turtl.hustle.server:'+ config.api_url +',user:'+turtl.user.id(),
-					db_version: 2,
+					db_version: 4,
 					maintenance_delay: 5000
 				});
 				hustle.promisify();
-				return hustle.open();
+				return hustle.open()
+					.then(function() { turtl.hustle = hustle; });
 			})
 	},
 
@@ -362,6 +364,8 @@ var turtl = {
 		turtl.sync.register_local_tracker('boards', turtl.profile.get('boards'));
 		turtl.sync.register_local_tracker('notes', turtl.profile.get('notes'));
 		turtl.sync.register_local_tracker('files', turtl.files);
+
+		turtl.files.start_syncing();
 	},
 
 	stop_spinner: false,
