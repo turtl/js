@@ -114,6 +114,7 @@ var FileData = Protected.extend({
 
 	public_fields: [
 		'id',
+		'hash',
 		'note_id',
 
 		'synced',		// needed?
