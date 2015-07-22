@@ -46,7 +46,16 @@ Composer.sync = function(method, model, options)
 			if(!options.skip_remote_sync)
 			{
 				var sync_data = modeldata;
+
+				// if we're deleting, all we need is an ID
 				if(method == 'delete') sync_data = {id: id};
+
+				// if this is a file sync, we don't want to pass the file data
+				// through the outgoing queue (this gets handled by the file
+				// handler later on in the sync process)
+				if(table == 'files') delete sync_data.data;
+
+				// let sync know we have an outgoing change!
 				turtl.sync.queue_outgoing_change(table, method, sync_data);
 			}
 		}
