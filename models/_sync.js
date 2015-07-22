@@ -251,7 +251,7 @@ var Sync = Composer.Model.extend({
 					.then(function() {
 						var queued = file_syncs.map(function(sync) {
 							var filejob = {id: sync.data.id};
-							turtl.hustle.Queue.put(filejob, {tube: 'files:upload'});
+							return turtl.hustle.Queue.put(filejob, {tube: 'files:upload'});
 						});
 						return Promise.all(queued);
 					})
