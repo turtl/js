@@ -26,15 +26,24 @@
 			if(!task) return;
 			var worker = workers.shift();
 			var was_completed = false;		// prevents double-finishing
-			var complete = function(res)
+			var complete = function(err, res)
 			{
 				if(was_completed) return;
 				was_completed = true;
 				workers.push(worker);
-				if(task.complete) task.complete(res);
+				if(task.complete) task.complete(err, res);
 				notify();
 			};
-			setTimeout(function() { workerfn.call(worker, task.task, complete); });
+			setTimeout(function() {
+				try
+				{
+					workerfn.call(worker, task.task, complete);
+				}
+				catch(err)
+				{
+					complete(err, null);
+				}
+			});
 		};
 
 		this.push = function(task, complete)

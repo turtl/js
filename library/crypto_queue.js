@@ -151,7 +151,7 @@
 						res = {data: res};
 						res = completefn(res);
 					}
-					done(res);
+					done(null, res);
 				});
 			}
 			else
@@ -169,7 +169,7 @@
 					{
 						res = {error: {res: res, data: err.message, stack: err.stack}}
 					}
-					done(res);
+					done(null, res);
 				}.bind(this);
 				worker.addEventListener('message', msgfn);
 			}

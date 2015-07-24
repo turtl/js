@@ -124,8 +124,8 @@ var Protected = Composer.RelationalModel.extend({
 					rawdata: options.rawdata
 				};
 				return new Promise(function(resolve, reject) {
-					cqueue.push(msg, function(res) {
-						if(res.error) return reject(res.error);
+					cqueue.push(msg, function(err, res) {
+						if(err || res.error) return reject(err || res.error);
 						var enc = res.success[0];
 						if(!options.skip_base64) enc = btoa(enc);
 						// update our public data object with the encrypted
@@ -183,11 +183,11 @@ var Protected = Composer.RelationalModel.extend({
 						private_fields: this.private_fields,
 						rawdata: options.rawdata
 					};
-					cqueue.push(msg, function(res) {
-						if(res.error)
+					cqueue.push(msg, function(err, res) {
+						if(err || res.error)
 						{
-							log.error('protected: deserialize: ', this.id(), this.base_url, res.error);
-							return reject(res.error);
+							log.error('protected: deserialize: ', this.id(), this.base_url, (err || res.error));
+							return reject(err || res.error);
 						}
 						this.set(res.success, options);
 						return resolve(res.success);
