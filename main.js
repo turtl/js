@@ -20,6 +20,9 @@ Composer.cid = (function() {
 	};
 })();
 
+// keeps track of our db naming process
+var dbname = function(api_url, user_id) { return 'turtl.server:'+api_url+',user:'+user_id; };
+
 // 014d837656f10c160d0f98670a355bdfc69985137ab2a434d8995bc28027139cdb54310e29622253
 var cid_match = /[0-9a-f]+/;
 // 55553b952b137507650026a3
@@ -330,7 +333,7 @@ var turtl = {
 		}
 		turtl.sync.stop();
 		if(turtl.db) turtl.db.close();
-		window.indexedDB.deleteDatabase('turtl.'+turtl.user.id());
+		window.indexedDB.deleteDatabase(dbname(config.api_url, turtl.user.id()));
 		turtl.db = null;
 		if(options.restart)
 		{

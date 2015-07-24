@@ -11,7 +11,7 @@ var database = {
 		// initialize our backing local storage.
 		return db.open({
 			// DB has server/user id in it...client might have multiple users
-			server: 'turtl.server:'+config.api_url+',user:'+turtl.user.id(),
+			server: dbname(config.api_url, turtl.user.id()),
 			version: 10,
 			schema: function() { log.info('db.js: create schema'); return {
 				// -------------------------------------------------------------
