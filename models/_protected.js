@@ -155,6 +155,8 @@ var Protected = Composer.RelationalModel.extend({
 
 		var data = this.detect_old_format(this.get(this.body_key));
 
+		if(!data) return new Promise.reject('protected: deserialize: missing data: ', this.table, this.id());
+
 		// decrypt all relational objects first
 		return Promise.all(Object.keys(this.relations).map(function(key) {
 			var rel = this.get(key);

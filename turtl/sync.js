@@ -48,12 +48,19 @@ Composer.sync = function(method, model, options)
 				var sync_data = modeldata;
 
 				// if we're deleting, all we need is an ID
-				if(method == 'delete') sync_data = {id: id};
+				if(method == 'delete')
+				{
+					// files are special, because we want to look up the note by
+					// note id, not file id, when performing operations
+					if(table == 'files') sync_data = {id: model.get('note_id')};
+					// not a file? just use the regular id
+					else sync_data = {id: id};
+				}
 
 				// if this is a file sync, we don't want to pass the file data
 				// through the outgoing queue (this gets handled by the file
 				// handler later on in the sync process)
-				if(table == 'files') delete sync_data.data;
+				if(table == 'files') delete sync_data.body;
 
 				// let sync know we have an outgoing change!
 				turtl.sync.queue_outgoing_change(table, method, sync_data);

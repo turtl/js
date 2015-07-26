@@ -372,10 +372,10 @@ var Search = Composer.Collection.extend({
 		var id = note.id();
 		var json = this.index_json.notes[id];
 		if(!json) return false;
-		json.tags.each(function(tag) {
+		(json.tags || []).each(function(tag) {
 			this.unindex_type('tags', tag, id);
 		}.bind(this));
-		json.boards.each(function(board_id) {
+		(json.boards || []).each(function(board_id) {
 			this.unindex_type('boards', board_id, id);
 		}.bind(this));
 

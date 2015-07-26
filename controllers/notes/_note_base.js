@@ -12,24 +12,30 @@ var NoteBaseController = Composer.Controller.extend({
 
 	update_preview: function()
 	{
+		var file = this.model.get('file');
 		if(this.model.get('type') != 'image') return;
-		if(!this.model.get('file').get('hash')) return;
+		if(!file.id(true)) return;
+		if(file.get('no_preview')) return;
 
-		var blob_url = this.model.get('file').get('blob_url');
+		var blob_url = file.get('blob_url');
 		if(blob_url) return;
 
 		// here we load the blob (which automatically sets file.blob_url), but
 		// we silence it and pre-load the image. this reduces obnoxious flckering
 		// when a bunch of images all load at once.
-		this.model.get('file').to_blob({silent: true}).bind(this)
-			.then(function() {
-				var img = new Image();
-				img.onload = function()
-				{
-					// ok, img loaded, NOW trigger the blob change events
-					this.model.get('file').trigger('change:blob_url').trigger('change');
-				}.bind(this);
-				img.src = this.model.get('file').get('blob_url');
+		file.has_data().bind(this)
+			.then(function(res) {
+				if(!res) return;
+				return file.to_blob({silent: true}).bind(this)
+					.then(function() {
+						var img = new Image();
+						img.onload = function()
+						{
+							// ok, img loaded, NOW trigger the blob change events
+							file.trigger('change:blob_url').trigger('change');
+						}.bind(this);
+						img.src = file.get('blob_url');
+					})
 			})
 			.catch(function(err) {
 				if(err.in_progress) return;

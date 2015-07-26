@@ -334,7 +334,9 @@ var turtl = {
 		turtl.sync.stop();
 		if(turtl.db) turtl.db.close();
 		window.indexedDB.deleteDatabase(dbname(config.api_url, turtl.user.id()));
+		turtl.hustle.wipe();
 		turtl.db = null;
+		turtl.hustle = null;
 		if(options.restart)
 		{
 			return turtl.setup_local_db()

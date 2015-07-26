@@ -227,9 +227,11 @@ var NotesEditController = FormController.extend({
 		// grab the file binary, and clear it out from the model
 		var filebin = clone.get('file').get('data');
 		clone.get('file').unset('data');
+		var file_id = clone.get('file').id();
 
 		keypromise.bind(this)
 			.then(function() {
+				clone.get('file').set({id: file_id, no_preview: true}, {silent: true});
 				return clone.save();
 			})
 			.then(function() {
@@ -274,18 +276,20 @@ var NotesEditController = FormController.extend({
 				log.debug('file: pre: ', filebin.length);
 				return filedata.serialize().bind(this)
 					.spread(function(res) {
-						// NOTE: we no longer use "hash" for the file ID, we are
-						// now just using a regular Composer-generated ID.
-						var hash = Composer.cid();
-						log.debug('file: post: ', res.body.length);
-						res.note_id = this.model.id();
+						res.id = file_id;
 						var encfile = new FileData(res);
-						encfile._cid = hash;
 						encfile.key = this.model.key;
-						modeldata = {hash: hash, has_data: 2, size: res.body.length};
+						log.debug('file: post: ', file_id, res.body.length);
+						encfile.set({note_id: this.model.id()});
+						modeldata = {id: file_id, has_data: 2, size: res.body.length};
+						// force this to be an "add"
+						encfile.unset('id');
+						encfile._cid = file_id;
 						return encfile.save({skip_serialize: true});
 					})
 					.then(function() {
+						// once the file is saved, update the note to have the
+						// correct meta info about it
 						this.model.set({has_file: 1})
 							.get('file')
 							.unset('encrypting')
@@ -293,7 +297,7 @@ var NotesEditController = FormController.extend({
 						return this.model.save()
 					})
 					.then(function() {
-						file.unset('set');
+						file.unset('no_preview').unset('set');
 					})
 					.catch(function(err) {
 						turtl.events.trigger('ui-error', 'There was a problem saving the attachment', err);

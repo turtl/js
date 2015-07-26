@@ -165,7 +165,7 @@ var Note = Protected.extend({
 		options || (options = {});
 
 		var data = this.parent.apply(this, arguments);
-		if(!options.get_file && (!this.get('file') || (!this.get('file').get('hash') && !this.get('file').get('encrypting'))))
+		if(!options.get_file && (!this.get('file') || (!this.get('file').id() && !this.get('file').get('encrypting'))))
 		{
 			delete data.file;
 		}
@@ -198,26 +198,15 @@ var Note = Protected.extend({
 		options || (options = {});
 		var args = {};
 
-		if(options.api_save)
-		{
-			var args = {};
-			var meta = this.get('meta');
-			if(meta && meta.persona)
-			{
-				args.persona = meta.persona;
-			}
-			options.args = args;
-		}
-		else
-		{
-			this.get('file').revoke()
+		this.get('file').revoke()
 
-			if(this.get('file').get('hash'))
-			{
-				this.clear_files();
-			}
+		var promise = Promise.resolve();
+		if(this.get('file').id())
+		{
+			promise = this.clear_files();
 		}
-		return this.parent(options);
+		var parentfn = this.$get_parent();
+		return promise.then(parentfn.bind(this, options));
 	},
 
 	// remove all file records attached to this note
@@ -258,11 +247,11 @@ var Note = Protected.extend({
 	// ID.
 	sync_post_create: function()
 	{
-		var hash = this.get('file').get('hash');
-		if(!hash) return;
+		var id = this.get('file').id();
+		if(!id) return;
 
 		turtl.db.files.query()
-			.only(hash)
+			.only(id)
 			.modify({note_id: this.id()})
 			.execute()
 			.then(function(filedata) {
@@ -272,7 +261,7 @@ var Note = Protected.extend({
 				turtl.sync.queue_remote_change('files', 'create', filedata);
 			})
 			.catch(function(err) {
-				log.error('Error uploading file: ', hash, derr(err));
+				log.error('Error uploading file: ', id, derr(err));
 			});
 	}
 });

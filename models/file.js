@@ -6,7 +6,7 @@ var NoteFile = Protected.extend({
 	},
 
 	public_fields: [
-		'hash',
+		'id',
 		'size',
 		'upload_id',
 		'has_data'
@@ -44,17 +44,33 @@ var NoteFile = Protected.extend({
 		return this.parent.apply(this, arguments);
 	},
 
+	has_data: function()
+	{
+		if(!this.id()) return Promise.reject('file: has_data: bad id');
+		return turtl.db.files.get(this.id()).bind(this)
+			.then(function(filedata) {
+				if(!filedata) return false;
+				return turtl.db.notes.get(filedata.note_id).bind(this)
+					.then(function(notedata) {
+						if(!notedata) return false;
+						var size = ((notedata.file || {}).size || 0);
+						if(size == 0) return false;
+						return size <= (filedata.body || '').length;
+					});
+			});
+	},
+
 	to_array: function(options)
 	{
 		options || (options = {});
 
-		var hash = this.get('hash');
-		if(!hash)
+		var id = this.id()
+		if(!id)
 		{
-			return Promise.reject(new Error('file: to_array: bad_hash'));
+			return Promise.reject(new Error('file: to_array: bad_id'));
 		}
 
-		return turtl.db.files.get(hash).bind(this)
+		return turtl.db.files.get(id).bind(this)
 			.then(function(filedata) {
 				if(!filedata)
 				{
@@ -114,7 +130,6 @@ var FileData = Protected.extend({
 
 	public_fields: [
 		'id',
-		'hash',
 		'note_id',
 
 		'synced',		// needed?
@@ -135,6 +150,19 @@ var FileData = Protected.extend({
 		return data;
 	},
 
+	// search in-mem notes for our key
+	find_key: function()
+	{
+		var note_id = this.get('note_id');
+		if(note_id) var note = turtl.profile.get('notes').get(note_id);
+		if(note)
+		{
+			this.key = note.key;
+			return this.key;
+		}
+		return this.parent.apply(this, arguments);
+	},
+
 	// set some binary-friendly options
 	serialize: function(options)
 	{
@@ -153,60 +181,59 @@ var FileData = Protected.extend({
 	},
 	// -------------------------------------------------------------------------
 
-	save: function(options)
+	upload: function(options)
 	{
 		options || (options = {});
 
-		if(options.api_save)
+		var url = null;
+		var save_fn = function(options)
 		{
-			var save_fn = get_parent(this);
-			return turtl.db.files.get(this.id())
-				.then(function(filedata) {
-					if(!filedata)
-					{
-						log.error('files: save: missing file: ', this.id());
-						throw new Error('file: missing file locally');
-					}
-					var data = filedata;
-					// don't try to upload until we have a real note id
-					if(!data.note_id || !data.note_id.match(/[0-9a-f]+/)) return false;
-					var body = data.body;
-					var data = {
-						hash: data.id,
-						cid: this.cid()
-					};
+			var data = options.data;
+			delete options.data;
+			if(!options.headers) options.headers = {};
+			options.headers['Content-Type'] = 'application/octet-stream';
+			return turtl.api.put(url, data, options);
+		};
+		return turtl.db.files.get(this.id()).bind(this)
+			.then(function(filedata) {
+				if(!filedata)
+				{
+					log.error('files: save: missing file: ', this.id());
+					throw new Error('file: missing file locally');
+				}
+				var data = filedata;
+				var note_id = data.note_id;
+				// don't try to upload until we have a real note id
+				if(!note_id) return false;
 
-					// convert body to Uint8Array
-					var raw = new Uint8Array(body.length);
-					for(var i = 0, n = body.length; i < n; i++)
-					{
-						raw[i] = body.charCodeAt(i);
-					}
+				url = '/notes/'+note_id+'/file';
 
-					// mark the save as raw and fire it off
-					options.rawUpload = true;
-					options.data = raw;
-					options.args = data;
-					this.url = '/notes/'+this.get('note_id')+'/file';
-					options.uploadprogress = function(ev) {
-						console.log('progress: ', ev);
-					};
-					return turtl.db.notes.get(this.get('note_id'));
-				})
-				.then(function(note_data) {
-					if(!note_data) return false;
-					var persona_id = false;
-					if(note_data.meta && note_data.meta.persona)
-					{
-						options.args.persona = note_data.meta.persona;
-					}
-					return turtl.files.upload(this, save_fn, options);
-				});
-		}
-		else
-		{
-			return this.parent.apply(this, arguments);
-		}
+				var body = data.body;
+				var data = {
+					id: this.id()
+				};
+
+				// convert body to Uint8Array
+				var raw = new Uint8Array(body.length);
+				for(var i = 0, n = body.length; i < n; i++)
+				{
+					raw[i] = body.charCodeAt(i);
+				}
+
+				// mark the save as raw and fire it off
+				options.data = raw;
+				options.querydata = data;
+				var progressfn = options.uploadprogress;
+				options.uploadprogress = function(ev) {
+					progressfn.apply(this, arguments);
+					log.info('progress: ', ev);
+				};
+				return turtl.db.notes.get(note_id)
+					.then(function(note_data) {
+						if(!note_data) return false;
+						return save_fn(options);
+					});
+			});
 	},
 
 	destroy: function(options)
@@ -242,45 +269,42 @@ var FileData = Protected.extend({
 	 * wrapper around calling of download API to make some tricky things easier
 	 * (properly handling redirects in various buggy browsers, mainly).
 	 */
-	_do_download: function(options)
+	_do_download: function(note_id, options)
 	{
-		var args = {hash: this.get('id')};
-		if(options.persona) args.persona = options.persona;
-
+		var args = {};
 		if(window._in_desktop || window.firefox || window.chrome)
 		{
 			// we're in desktop/FF. 302 redirect won't work, so we do it by hand
 			// by asking the api to just send the URL for the file back.
 			var do_download = function(url)
 			{
-				return new Promise(function(resolve, reject) {
-					new Request({
-						url: url,
-						method: 'GET',
-						responseType: 'arraybuffer',
-						onSuccess: resolve,
-						onProgress: function(event, xhr) {
-							var progress = {total: event.total, loaded: event.loaded};
-							if(options.progress) options.progress(progress, xhr);
-						},
-						onFailure: function(xhr) {
-							var err = uint8array_to_string(xhr.response);
-							reject({res: err, xhr: xhr});
-						}
-					}).send();
-				});
+				var request = {
+					url: url,
+					method: 'get',
+					timeout: 30000,
+					response_type: 'arraybuffer',
+					onprogress: function(event, xhr) {
+						var progress = {total: event.total, loaded: event.loaded};
+						if(options.progress) options.progress(progress, xhr);
+					},
+					onFailure: function(xhr) {
+						var err = uint8array_to_string(xhr.response);
+						reject({res: err, xhr: xhr});
+					}
+				};
+				return Sexhr(request);
 			}.bind(this);
 
 			// chrome/firefox are both being really bitchy about a very simple 302
 			// redirect, so we essentially just do it ourselves here.
 			args.disable_redirect = 1;
-			return turtl.api.get('/notes/'+this.get('note_id')+'/file', args).bind(this)
+			return turtl.api.get('/notes/'+note_id+'/file', args).bind(this)
 				.then(do_download);
 		}
 		else
 		{
-			return turtl.api.get('/notes/'+this.get('note_id')+'/file', args, {
-				responseType: 'arraybuffer',
+			return turtl.api.get('/notes/'+note_id+'/file', args, {
+				response_type: 'arraybuffer',
 				progress: options.progress
 			});
 		}
@@ -294,63 +318,44 @@ var FileData = Protected.extend({
 	{
 		options || (options = {});
 
-		if(!this.get('note_id') || !this.get('id')) return Promise.reject(new Error('file: download: bad note id'));
-		return turtl.db.notes.get(this.get('note_id')).bind(this)
+		var note_id = null;
+		return turtl.db.files.get(this.id()).bind(this)
+			.then(function(filedata) {
+				if(!filedata) throw new Error('file: download: missing file data: '+ this.id());
+				note_id = filedata.note_id;
+				if(!note_id) throw new Error('file: download: bad note id: '+this.id());
+				return turtl.db.notes.get(note_id)
+			})
 			.then(function(note_data) {
 				if(!note_data) throw new Error('file: download: missing note in local db');
-				var persona_id = false;
-				if(note_data.meta && note_data.meta.persona)
-				{
-					persona_id = note_data.meta.persona;
-				}
-
-				return this._do_download({ persona: persona_id, progress: options.progress });
+				return this._do_download(note_id, {progress: options.progress});
 			})
-			.then(function(res) {
+			.spread(function(res, xhr) {
 				var body = uint8array_to_string(res);
 
-				this.set({data: body});
+				//this.set({data: body});
 
-				var hash = this.id();
+				var id = this.id();
 				var data = {
-					id: hash,
-					note_id: this.get('note_id'),
-					body: body,
-					synced: 1,
-					has_data: 1
+					id: id,
+					note_id: note_id,
+					body: body
 				};
 
 				// clear out extra files
-				var note = new Note({id: this.get('note_id')});
-				note.clear_files({ exclude: [hash] });
-
-				// save the file data into the db
-				return turtl.db.files.update(data);
-			})
-			.then(function() {
-				// now update the note so it knows it has file contents
-				return turtl.db.notes
-					.query()
-					.only(this.get('note_id'))
-					.modify({
-						file: function(n) {
-							n.file.hash = hash;
-							// increment has_file. this notifies the in-mem
-							// model to reload.
-							var has_data = (n.file.has_data && n.file.has_data > 0 && n.file.has_data) || 0;
-							console.log('file: download: has_data: ', has_data);
-							n.file.has_data = has_data < 1 ? 1 : has_data + 1;
-							return n.file;
-						},
-						has_file: 2
-					})
-					.execute();
+				var note = new Note({id: note_id});
+				return note.clear_files({ exclude: [id] }).bind(this)
+					.then(function() {
+						// save the file data into the db
+						return turtl.db.files.update(data);
+					});
 			})
 			.then(function(notedata) {
-				if(notedata && notedata[0])
+				var note = turtl.profile.get('notes').get(note_id);
+
+				if(note && note.get('file'))
 				{
-					// TODO: wut?
-					//turtl.sync.notify_local_change('notes', 'update', notedata[0]);
+					note.get('file').trigger('change');
 				}
 				return this;
 			})
@@ -392,12 +397,24 @@ var Files = SyncCollection.extend({
 	{
 		if(this.consumers.upload) this.consumers.upload.stop();
 		this.consumers.upload = new turtl.hustle.Queue.Consumer(function(job) {
+			log.info('file: upload: ', job);
 			var file = new FileData({id: job.data.id});
-			this.upload(file, file.save, options)
-				.then(function() {
+			var progress_counter = 0;
+			var progressfn = function()
+			{
+				progress_counter = (progress_counter + 1) % 10;
+				if(progress_counter == 0)
+				{
+					turtl.hustle.Queue.touch(job.id);
+				}
+			};
+			turtl.files.upload(file, file.upload, {uploadprogress: progressfn}).bind(this)
+				.then(function(sync) {
+					(sync.sync_ids || []).map(turtl.sync.ignore_on_next_sync.bind(turtl.sync));
 					return turtl.hustle.Queue.delete(job.id);
 				})
 				.catch(function(err) {
+					log.error('file: upload: ', err);
 					if(job.releases > 2)
 					{
 						turtl.events.trigger('ui-error', 'There was a problem uploading a file. View it in the "Sync" panel in the main menu.', err);
@@ -423,20 +440,29 @@ var Files = SyncCollection.extend({
 
 	setup_downloader: function()
 	{
-		return;
-
 		if(this.consumers.download) this.consumers.download.stop();
 		this.consumers.download = new turtl.hustle.Queue.Consumer(function(job) {
+			log.info('file: download: ', job);
 			var file = new FileData({id: job.data.id});
-			this.download(file, file.save, options)
+			var progress_counter = 0;
+			var progressfn = function()
+			{
+				progress_counter = (progress_counter + 1) % 10;
+				if(progress_counter == 0)
+				{
+					turtl.hustle.Queue.touch(job.id);
+				}
+			};
+			turtl.files.download(file, file.download, {progress: progressfn}).bind(this)
 				.then(function() {
 					return turtl.hustle.Queue.delete(job.id);
 				})
 				.catch(function(err) {
+					log.error('file: download: ', err);
 					if(job.releases > 2)
 					{
-						turtl.events.trigger('ui-error', 'There was a problem uploading a file. View it in the "Sync" panel in the main menu.', err);
-						log.error('file: upload: ', this.model.id(), derr(err));
+						turtl.events.trigger('ui-error', 'There was a problem downloading a file. View it in the "Sync" panel in the main menu.', err);
+						log.error('file: download: ', this.model.id(), derr(err));
 						// bury the item (will be available for inspection in the
 						// sync page)
 						return turtl.hustle.Queue.bury(job.id);
@@ -447,74 +473,13 @@ var Files = SyncCollection.extend({
 						return turtl.hustle.Queue.release(job.id, {delay: 30});
 					}
 				});
-		}, {
+		}.bind(this), {
 			tube: 'files:download',
 			delay: turtl.sync.hustle_poll_delay,
 			enable_fn: function() {
 				return turtl.user.logged_in && turtl.sync_to_api && turtl.sync.connected
 			}
 		});
-	},
-
-	update_record_from_api_save: function(modeldata, record, options)
-	{
-		options || (options = {});
-
-		log.info('save: '+ this.local_table +': mem -> db ', modeldata);
-
-		// note that we don't need all the cid renaming heeby jeeby here since
-		// we already have an id (the hash) AND the object we're attaching to
-		// (teh note) must always have an id before uploading. so instead, we're
-		// going to update the model data into the note's [file] object.
-		var note_id = modeldata.note_id;
-		var hash = modeldata.id;
-		return turtl.db.files
-			.query()
-			.only(hash)
-			.modify({synced: 1, has_data: 1})
-			.execute()
-			.catch(function(e) {
-				console.error('file: error setting file.synced = true', e);
-				throw e;
-			})
-			.then(function() {
-				return turtl.db.notes
-					.query()
-					.only(note_id)
-					.modify({
-						file: function(note) {
-							if(!note.file) note.file = {};
-							note.file.hash = hash;
-							note.file.has_data = (note.file.has_data || 0) + 1;
-							return note.file;
-						},
-					})
-					.execute();
-			})
-			.then(function(notedata) {
-				if(notedata && notedata[0])
-				{
-					// TODO: wut?
-					//turtl.sync.notify_local_change('notes', 'update', notedata[0]);
-				}
-			})
-			.catch(function(err) {
-				log.error('file: update from api save: update note: ', derr(err));
-				throw err;
-			});
-	},
-
-	sync_record_from_api: function(item)
-	{
-		if(!item.file || !item.file.hash) return false;
-
-		var filedata = {
-			_sync: item._sync,
-			id: item.file.hash,
-			note_id: item.id,
-			has_data: 0
-		};
-		return this.parent.call(this, filedata);
 	},
 
 	track_file: function(type, track_id, trigger_fn, options)
@@ -547,9 +512,8 @@ var Files = SyncCollection.extend({
 		// run the actual download
 		log.debug('file: '+ type + ': ', track_id);
 		return trigger_fn(options).bind(this)
-			.then(function() {
+			.tap(function() {
 				delete this[type][track_id];
-				if(success) success.apply(this, arguments);
 				this.trigger(type+'-success', track_id);
 			})
 			.catch(function(err) {

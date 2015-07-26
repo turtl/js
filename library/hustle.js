@@ -418,9 +418,9 @@
 			if(qoptions.tubes.indexOf(tube) < 0) throw new HustleBadTube('tube '+ tube +' doesn\'t exist');
 
 			var item = create_queue_item(data, options);
+			item.tube = tube;
 			if(item.delay && item.delay > 0)
 			{
-				item.tube = tube;
 				item.activate = new Date().getTime() + (1000 * item.delay);
 				tube = tbl.delayed;
 				delete item.delayed;
@@ -472,7 +472,6 @@
 			{
 				item = citem;
 				item.reserves++;
-				item.tube = tube;
 				if(item.ttr > 0)
 				{
 					item.expire = new Date().getTime() + (1000 * item.ttr);
@@ -559,15 +558,8 @@
 
 					var tube = item.tube;
 
-					if(options.delay)
-					{
-						var delay = parseInt(options.delay);
-						if(delay)
-						{
-							item.activate = new Date().getTime() + (1000 * delay);
-							tube = tbl.delayed;
-						}
-					}
+					var delay = options.delay && parseInt(options.delay);
+					if(delay) tube = tbl.delayed;
 
 					move_item(id, tbl.reserved, tube, {
 						transform: function(item) {
@@ -577,7 +569,7 @@
 								var pri = parseInt(options.priority);
 								if(pri) item.priority = pri;
 							}
-							delete item.tube;
+							if(delay) item.activate = new Date().getTime() + (1000 * delay);
 							return item;
 						},
 						success: options.success,
@@ -653,7 +645,6 @@
 				var tube = item.tube;
 				// remove the buried table's ID
 				delete item._id;
-				delete item.tube;
 				var store = trx.objectStore(tube)
 				var req = store.add(item);
 				req.onsuccess = success;
@@ -698,7 +689,6 @@
 						transform: function(item) {
 							item.kicks++;
 							delete item._id;
-							delete item.tube;
 							return item;
 						},
 						success: options.success,
@@ -769,6 +759,58 @@
 			{
 				count = req.result;
 			};
+		};
+
+		var list = function(tube, options)
+		{
+			check_db();
+			options || (options = {});
+
+			var results = [];
+
+			var trx = db.transaction([tube, tbl.reserved, tbl.delayed, tbl.buried], 'readonly');
+			trx.oncomplete = function(e) { 
+				if(options.success) options.success(results);
+			};
+			trx.onerror = function(e) { if(options.error) options.error(e); }
+
+			var load_results = function(table, options)
+			{
+				var store = trx.objectStore(table);
+				var req = store.openCursor();
+				req.onsuccess = function(e)
+				{
+					var cursor = e.target.result;
+					if(cursor)
+					{
+						var rec = cursor.value;
+						if(rec.tube == tube)
+						{
+							if(table != tube) rec.state = table.replace(/^_/, '');
+							results.push(rec);
+						}
+						cursor.continue();
+					}
+					else
+					{
+						options && options.success && options.success();
+					}
+				};
+			};
+
+			load_results(tube, {
+				success: function() {
+					load_results(tbl.reserved, {
+						success: function() {
+							load_results(tbl.delayed, {
+								success: function() {
+									load_results(tbl.buried);
+								}
+							});
+						}
+					});
+				}
+			});
 		};
 
 		/**
@@ -959,6 +1001,7 @@
 			kick_job: kick_job,
 			touch: touch,
 			count_ready: count_ready,
+			list: list,
 			Consumer: Consumer
 		};
 		this.open = open;
@@ -993,6 +1036,7 @@
 			this.Queue.kick_job = do_promisify(this.Queue.kick_job, 1);
 			this.Queue.touch = do_promisify(this.Queue.touch, 1);
 			this.Queue.count_ready = do_promisify(this.Queue.count_ready, 1);
+			this.Queue.list = do_promisify(this.Queue.list, 1);
 			return this;
 		}.bind(this);
 		this.debug = {

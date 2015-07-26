@@ -41,6 +41,13 @@ var Sync = Composer.Model.extend({
 		Object.keys(this.type_table_map).forEach(function(key) {
 			this.table_type_map[this.type_table_map[key]] = key;
 		}.bind(this));
+
+		// load ignored items (across loads, hahaha peasants)
+		if(localStorage.sync_ignore)
+		{
+			this.sync_ignore = JSON.parse(localStorage.sync_ignore);
+		}
+
 		return this.parent();
 	},
 
@@ -97,6 +104,7 @@ var Sync = Composer.Model.extend({
 	ignore_on_next_sync: function(id)
 	{
 		this.sync_ignore[id] = true;
+		localStorage.sync_ignore = JSON.stringify(this.sync_ignore);
 	},
 
 	/**
@@ -116,6 +124,7 @@ var Sync = Composer.Model.extend({
 			{
 				log.info('sync: ignore: ', id);
 				delete ignores[id];
+				localStorage.sync_ignore = JSON.stringify(ignores);
 				num_ignored++;
 			}
 		}
@@ -214,7 +223,7 @@ var Sync = Composer.Model.extend({
 						var actions = synced.success.map(function(sync) {
 							// these sync items will come through in our next
 							// sync request unless we ignore them
-							sync.sync_ids.map(this.ignore_on_next_sync.bind(this));
+							(sync.sync_ids || []).map(this.ignore_on_next_sync.bind(this));
 							// remove the successful sync records (it passes
 							// back the IDs we handed it from our DB)
 							return turtl.db.sync_outgoing.remove(sync.id);
@@ -255,7 +264,7 @@ var Sync = Composer.Model.extend({
 							var filejob = {id: sync.data.id};
 							// queue the file for upload, and once we have an ack
 							// from the queue, we delete the outgoing sync
-							return turtl.hustle.Queue.put(filejob, {tube: 'files:upload'})
+							return turtl.hustle.Queue.put(filejob, {tube: 'files:upload', ttr: 300})
 								.then(function() {
 									return turtl.db.sync_outgoing.remove(sync.id);
 								})
@@ -380,6 +389,16 @@ var Sync = Composer.Model.extend({
 	{
 		var type = sync.type;
 
+		if(!item)
+		{
+			if(type == 'file') item = {};
+			else
+			{
+				log.error('sync: transform: bad item: ', sync, item);
+				throw new Error('sync: transform: bad item');
+			}
+		}
+
 		// mark any items we don't directly own as shared
 		if(item.user_id && item.user_id != turtl.user.id())
 		{
@@ -401,12 +420,19 @@ var Sync = Composer.Model.extend({
 			if(!Array.isArray(item.boards)) item.boards = [];
 		}
 
-		if(type == 'file')
+		if(type == 'file' && item.file)
 		{
+			var note_id = item.id;
 			item = item.file;
-			item.id = item.hash;
-			item.has_data = 0;
-			delete item.hash;
+			// don't let sync items overide the body on accident (body is synced
+			// separately via the file queue)
+			delete item.body;
+			if(!item.note_id) item.note_id = note_id;
+			if(!item.id)
+			{
+				item.id = item.hash;
+				delete item.hash;
+			}
 		}
 
 		return item;
@@ -441,14 +467,11 @@ var Sync = Composer.Model.extend({
 			throw new Error('sync: api->db: error processing sync item (bad sync.type): '+ sync.type);
 		}
 
-		// TODO: move this to Files tracker
-		/*
-		if(sync.type == 'file')
+		if(sync.type == 'file' && sync.action == 'edit')
 		{
-			var file = new FileData(item);
-			turtl.files.download(file, file.download);
+			// don't care about file edits
+			return Promise.resolve();
 		}
-		*/
 
 		// save to the DB
 		if(sync.action == 'delete')
@@ -463,18 +486,27 @@ var Sync = Composer.Model.extend({
 		}
 		return (db_table[fn])(rec).bind(this)
 			.then(function() {
+				// if we're ading a new file, skip the local tracker and handle
+				// this matter via the designated file queue
+				if(sync.type == 'file' && sync.action == 'add')
+				{
+					var file_id = item.id;
+					if(!file_id) return Promise.resolve();
+					var filejob = {id: file_id};
+					return turtl.hustle.Queue.put(filejob, {tube: 'files:download', ttr: 300});
+				}
 				if(options.skip_local_tracker) return;
 				// ok, we saved it to the DB, now notify our sync tracker for
 				// this type of item that we just saved an item it might care
 				// about
 				var tracker = this.local_trackers[table];
 				if(!tracker) return false;
-				return tracker.run_incoming_sync_item(sync, item);
+				return tracker.run_incoming_sync_item(sync, item)
+					.catch(function(err) {
+						log.error('sync: api->db: error saving to table: ', {table: table, sync: sync}, err);
+						throw err;
+					});
 			})
-			.catch(function(err) {
-				log.error('sync: api->db: error saving to table: ', table, err);
-				throw err;
-			});
 	},
 
 	update_local_db_from_api_sync: function(sync_collection, options)
@@ -520,7 +552,10 @@ var SyncCollection = Composer.Collection.extend({
 				var model = new this.model(item);
 				promise = model.deserialize().bind(this)
 					.then(function() {
-						this.add(model);
+						// this.add() is a more "correct" option, but in case we
+						// for some reason already have this record, i'd rather
+						// update it than duplicate it just in case...
+						this.upsert(model);
 					});
 				break;
 			case 'edit':

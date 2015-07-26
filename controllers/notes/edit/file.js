@@ -45,7 +45,6 @@ var NotesEditFileController = Composer.Controller.extend({
 			// overwrite it, otherwise create a new one
 			this.model.get('file').set({
 				set: true,		// lets us know we did change the file
-				hash: false,
 				name: file.name,
 				type: file.type,
 				size: binary.length,

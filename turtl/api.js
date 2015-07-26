@@ -86,13 +86,17 @@ var Api = new Class({
 		var headers = params.headers || {};
 
 		var querydata = null;
-		if(data && method.toLowerCase() == 'get')
+		if(params.querydata)
+		{
+			querydata = params.querydata;
+		}
+		else if(data && method.toLowerCase() == 'get')
 		{
 			querydata = data;
 			data = null;
 		}
 
-		if(typeof(data) == 'object' && typeof(headers['content-type']) == 'undefined')
+		if(typeof(data) == 'object' && typeof(headers['Content-Type']) == 'undefined')
 		{
 			headers['Content-Type'] = 'application/json';
 			data = JSON.stringify(data);
