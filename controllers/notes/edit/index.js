@@ -253,12 +253,13 @@ var NotesEditController = FormController.extend({
 			})
 			.then(function() {
 				var file = this.model.get('file');
-				if(file.get('cleared'))
+				if(clone.get('file').get('cleared'))
 				{
 					file.clear();
 					return this.model.clear_files().bind(this)
 						.then(function() {
 							this.model.set({has_file: 0});
+							return this.model.save();
 						})
 						.catch(function(err) {
 							turtl.events.trigger('ui-error', 'There was a problem removing the attachement', err);
