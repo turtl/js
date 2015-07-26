@@ -8,6 +8,9 @@ var cqueue = new CryptoQueue({
 	workers: 4
 });
 
+var ProtectedError = extend_error(Error, 'ProtectedError');
+var ProtectedMissingBodyError = extend_error(ProtectedError, 'ProtectedMissingBodyError');
+
 var Protected = Composer.RelationalModel.extend({
 	relations: {
 		keys: { collection: 'Keys' }
@@ -159,8 +162,10 @@ var Protected = Composer.RelationalModel.extend({
 		}
 		catch(err)
 		{
-			log.error('protected: deserialize: problem detecting format: ', this.id(), this.table || this.base_url, this.body_key);
-			throw err;
+			var proterr = new ProtectedMissingBodyError();
+			proterr.message = err.message;
+			proterr.stack = err.stack;
+			throw proterr;
 		}
 
 		if(!data) return new Promise.reject('protected: deserialize: missing data: ', this.table || this.base_url, this.id());
@@ -171,20 +176,31 @@ var Protected = Composer.RelationalModel.extend({
 			if(!rel) return false;
 			if(!this.public_fields.contains(key)) return false;
 			if(key == 'keys') return false;
-			var should_try_deserialize = function(model)
+
+			var do_deserialize = function(model)
 			{
-				return !!model.get(model.body_key);
+				try
+				{
+					var promise = model.deserialize();
+				}
+				catch(err)
+				{
+					if(err instanceof ProtectedMissingBodyError)
+					{
+						return false;
+					}
+					throw err;
+				}
 			};
+
 			if(rel instanceof Composer.Model)
 			{
-				if(!should_try_deserialize(rel)) return false;
-				return rel.deserialize();
+				return do_deserialize(rel);
 			}
 			else if(rel instanceof Composer.Collection)
 			{
 				return Promise.all(rel.map(function(model) {
-					if(!should_try_deserialize(model)) return false;
-					return model.deserialize();
+					return do_deserialize(model);
 				}));
 			}
 			return promise;
