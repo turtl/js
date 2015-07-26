@@ -487,7 +487,11 @@ var Files = SyncCollection.extend({
 		options || (options = {});
 
 		// download in progress? GTFO
-		if(this[type][track_id]) return false;
+		if(this[type][track_id])
+		{
+			log.warn('files: track: operation in progress: ', type, track_id);
+			return Promise.resolve({});
+		}
 
 		// track it
 		this[type][track_id] = true;
