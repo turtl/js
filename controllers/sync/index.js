@@ -1,4 +1,6 @@
 var SyncController = Composer.Controller.extend({
+	class_name: 'sync-settings',
+
 	init: function()
 	{
 		this.render();
@@ -6,6 +8,7 @@ var SyncController = Composer.Controller.extend({
 
 	render: function()
 	{
+		this.html(view.render('sync/index'));
 	}
 });
 
