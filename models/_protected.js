@@ -153,9 +153,17 @@ var Protected = Composer.RelationalModel.extend({
 			return Promise.reject(new Error('no key found for '+ this.base_url + ': ' + this.id()));
 		}
 
-		var data = this.detect_old_format(this.get(this.body_key));
+		try
+		{
+			var data = this.detect_old_format(this.get(this.body_key));
+		}
+		catch(err)
+		{
+			log.error('protected: deserialize: problem detecting format: ', this.id(), this.table || this.base_url, this.body_key);
+			throw err;
+		}
 
-		if(!data) return new Promise.reject('protected: deserialize: missing data: ', this.table, this.id());
+		if(!data) return new Promise.reject('protected: deserialize: missing data: ', this.table || this.base_url, this.id());
 
 		// decrypt all relational objects first
 		return Promise.all(Object.keys(this.relations).map(function(key) {
@@ -163,13 +171,19 @@ var Protected = Composer.RelationalModel.extend({
 			if(!rel) return false;
 			if(!this.public_fields.contains(key)) return false;
 			if(key == 'keys') return false;
+			var should_try_deserialize = function(model)
+			{
+				return !!model.get(model.body_key);
+			};
 			if(rel instanceof Composer.Model)
 			{
+				if(!should_try_deserialize(rel)) return false;
 				return rel.deserialize();
 			}
 			else if(rel instanceof Composer.Collection)
 			{
 				return Promise.all(rel.map(function(model) {
+					if(!should_try_deserialize(model)) return false;
 					return model.deserialize();
 				}));
 			}
