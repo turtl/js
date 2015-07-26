@@ -165,7 +165,7 @@ var Note = Protected.extend({
 		options || (options = {});
 
 		var data = this.parent.apply(this, arguments);
-		if(!options.get_file && (!this.get('file') || (!this.get('file').id() && !this.get('file').get('encrypting'))))
+		if(!options.get_file && (!this.get('file') || (!this.get('file').id(true) && !this.get('file').get('encrypting'))))
 		{
 			delete data.file;
 		}
