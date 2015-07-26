@@ -9,6 +9,7 @@ var cqueue = new CryptoQueue({
 });
 
 var ProtectedError = extend_error(Error, 'ProtectedError');
+var ProtectedEmptyError = extend_error(ProtectedError, 'ProtectedEmptyError');
 var ProtectedMissingBodyError = extend_error(ProtectedError, 'ProtectedMissingBodyError');
 
 var Protected = Composer.RelationalModel.extend({
@@ -86,6 +87,12 @@ var Protected = Composer.RelationalModel.extend({
 			if(typeof json[k] == 'undefined') return;
 			data[k] = json[k];
 		});
+
+		if(options.alert_empty && Object.keys(data).length == 0)
+		{
+			throw new ProtectedEmptyError();
+		}
+
 		var action = 'encrypt';
 		if(options.hash) action = 'encrypt+hash';
 
@@ -101,16 +108,30 @@ var Protected = Composer.RelationalModel.extend({
 			// serialization
 			delete json[key];
 
+			var do_serialize = function(model)
+			{
+				try
+				{
+					return model.serialize({alert_empty: true});
+				}
+				catch(err)
+				{
+					return false;
+				}
+			};
+
 			if(rel instanceof Composer.Model)
 			{
-				var promise = rel.serialize();
+				var promise = do_serialize(rel);
 			}
 			else if(rel instanceof Composer.Collection)
 			{
 				var promise = Promise.all(rel.map(function(model) {
-					return model.serialize();
-				}));
+					return do_serialize(model);
+				}).filter(function(p) { return !!p; }));
 			}
+			if(!promise) return false;
+
 			return promise
 				.then(function(reldata) {
 					// set the result of the serialization into the public data
@@ -181,7 +202,7 @@ var Protected = Composer.RelationalModel.extend({
 			{
 				try
 				{
-					var promise = model.deserialize();
+					return model.deserialize();
 				}
 				catch(err)
 				{
