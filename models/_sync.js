@@ -212,7 +212,20 @@ var Sync = Composer.Model.extend({
 						return true;
 					}
 				});
-				return turtl.api.post('/sync', items).bind(this)
+
+				// this little bit of logic keeps us from bugging the API
+				// needlessly if the only thing we're syncing is file record(s)
+				var promise;
+				if(items.length == 0)
+				{
+					promise = promise.resolve({});
+				}
+				else
+				{
+					promise = turtl.api.post('/sync', items);
+				}
+
+				return promise.bind(this)
 					.then(function(synced) {
 						log.debug('sync: outgoing: response: ', synced);
 						if(synced.error)
@@ -220,6 +233,8 @@ var Sync = Composer.Model.extend({
 							log.error('sync: outgoing: api error: ', synced.error);
 							barfr.barf('There was a problem syncing to the server (we\'ll try again soon): '+ synced.error);
 						}
+						if(!synced.success) return;
+
 						var actions = synced.success.map(function(sync) {
 							// these sync items will come through in our next
 							// sync request unless we ignore them
