@@ -74,7 +74,8 @@ function all_js() {
 }
 
 function inline_js() {
-	echo "${SEARCH_PATH}library/openpgp/openpgp.worker.js"
+	:
+	#echo "${SEARCH_PATH}library/openpgp/openpgp.worker.js"
 }
 
 function do_replace() {

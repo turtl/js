@@ -588,8 +588,6 @@ window.addEvent('domready', function() {
 
 	// set up workers for openpgp.js (if native crypto ain't available)
 	openpgp.initWorker(asset('/library/openpgp/openpgp.worker.js'));
-	//var blob = new Blob([$('script-inline-openpgp-worker-js').textContent], {type: 'application/javascript'})
-	//openpgp.initWorker(window.URL.createObjectURL(blob));
 });
 
 // set up a global error handler that XHRs shit to the API so we know when bugs
