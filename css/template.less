@@ -63,6 +63,9 @@ header {
 	ul.actions {
 		> li {display: inline-block; width: 44rem; height: @header_height; vertical-align: top;}
 		> li {
+			&.mod {position: relative;}
+			&.mod:after {display: block; content: " "; position: absolute; top: 6rem; right: 6rem; width: 10rem; height: 10rem; margin: 0 0 0 0; background: @theme_warn; border-radius: 5rem;}
+
 			> a {display: inline-block; width: @header_adjusted; height: @header_adjusted; line-height: 42rem; text-align: center;}
 			> a {
 				icon {font-size: 22rem; color: #eee; vertical-align: middle;}

@@ -124,6 +124,16 @@ var NotesIndexController = Composer.Controller.extend({
 		search.bind('do-search', function() {
 			this.get_subcontroller('list').trigger('search');
 		}.bind(this))
+		// kind of hacky to apply a class by reaching outside of the controller
+		// but it works great (and abstracting it into a variable makes it a
+		// single-place hack)
+		var search_btn = $E('header li[rel=search]');
+		search.bind('search-mod', function() {
+			search_btn.addClass('mod');
+		}.bind(this));
+		search.bind('search-reset', function() {
+			search_btn.removeClass('mod');
+		}.bind(this));
 
 		// if we have save tags, hand them to the search controller
 		if(this.saved_tags)

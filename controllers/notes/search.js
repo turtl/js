@@ -144,6 +144,7 @@ var NotesSearchController = Composer.Controller.extend({
 		this.search.tags = [];
 		this.search.colors = [];
 		this.trigger('do-search');
+		this.trigger('search-reset');
 		this.render();
 	},
 
@@ -166,6 +167,7 @@ var NotesSearchController = Composer.Controller.extend({
 		this.search.sort = sort;
 		this.render();
 		this.trigger('do-search');
+		this.trigger('search-mod');
 	},
 
 	show_all_tags: function(e)
@@ -181,6 +183,7 @@ var NotesSearchController = Composer.Controller.extend({
 		var text = this.inp_text.get('value');
 		this.search.text = text;
 		this.trigger('search-text');
+		this.trigger('search-mod');
 	},
 
 	toggle_tag: function(e)
@@ -202,6 +205,7 @@ var NotesSearchController = Composer.Controller.extend({
 
 		this.render();
 		this.trigger('do-search');
+		this.trigger('search-mod');
 	},
 
 	toggle_color: function(e)
@@ -231,6 +235,7 @@ var NotesSearchController = Composer.Controller.extend({
 		}.bind(this));
 
 		this.trigger('do-search');
+		this.trigger('search-mod');
 	}
 });
 
