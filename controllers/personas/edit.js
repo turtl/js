@@ -79,7 +79,7 @@ var PersonasEditController = FormController.extend({
 		var is_new = this.model.is_new();
 		if(is_new)
 		{
-			keypromise = this.model.init_new({silent: true});
+			keypromise = this.model.update_keys({silent: true});
 		}
 		var clone = this.model.clone();
 		clone.set({

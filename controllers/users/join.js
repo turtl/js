@@ -174,7 +174,7 @@ var UserJoinController = FormController.extend({
 			var board = new Board({title: name});
 			if(parent_id) board.set({parent_id: parent_id});
 
-			return board.init_new()
+			return board.update_keys()
 				.then(function() {
 					return board.save();
 				})

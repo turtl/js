@@ -73,7 +73,7 @@ var Persona = Protected.extend({
 		}
 	},
 
-	init_new: function(options)
+	update_keys: function(options)
 	{
 		options || (options = {});
 

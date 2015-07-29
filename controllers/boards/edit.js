@@ -67,7 +67,7 @@ var BoardsEditController = FormController.extend({
 		var keypromise = Promise.resolve();
 		if(this.model.is_new())
 		{
-			keypromise = this.model.init_new({silent: true})
+			keypromise = this.model.update_keys({silent: true})
 		}
 
 		var clone = this.model.clone();
