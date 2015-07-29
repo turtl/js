@@ -212,7 +212,11 @@ var turtl = {
 					if(initial_route.match(/^\/users\//)) initial_route = default_route;
 					if(initial_route.match(/index.html/)) initial_route = default_route;
 					if(initial_route.match(/background.html/)) initial_route = default_route;
-					turtl.route(initial_route);
+					var dont_initial_route = ['/users/join', '/personas/join'];
+					if(!dont_initial_route.contains(turtl.router.cur_path()))
+					{
+						turtl.route(initial_route);
+					}
 					options.initial_route = '/';
 					if(window.port) window.port.send('profile-load-complete');
 					turtl.events.trigger('profile-loaded');

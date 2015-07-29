@@ -144,9 +144,11 @@ var UserJoinController = FormController.extend({
 				data.id = userdata.id;
 				turtl.events.bind_once('profile-loaded', this.create_initial_boards.bind(this));
 				return turtl.user.login(data)
-					.then(function() {
-						turtl.route('/');
-					});
+			})
+			.then(function() {
+				turtl.events.bind_once('profile-loaded', function() {
+					turtl.route('/personas/join');
+				});
 			})
 			.catch(function(err) {
 				this.inp_submit.disabled = false;

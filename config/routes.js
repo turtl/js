@@ -13,6 +13,7 @@ config.routes = {
 	'/settings/delete-account': ['settings', 'delete_account'],
 
 	'/personas': ['personas', 'index'],
+	'/personas/join': ['personas', 'join'],
 
 	'/sync': ['sync', 'index'],
 

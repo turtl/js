@@ -8,6 +8,7 @@ var PersonasEditController = FormController.extend({
 		'input input[name=email]': 'email_search'
 	},
 
+	in_modal: true,
 	modal: null,
 
 	model: null,
@@ -18,21 +19,26 @@ var PersonasEditController = FormController.extend({
 		if(!this.model) this.model = new Persona();
 		this.action = this.model.is_new() ? 'Add' : 'Edit';
 
-		this.modal = new TurtlModal({
-			show_header: true,
-			title: this.action + ' persona'
-		});
+		if(this.in_modal)
+		{
+			this.modal = new TurtlModal({
+				show_header: true,
+				title: this.action + ' persona'
+			});
+		}
 
 		this.parent();
 		this.render();
 
-		var close = this.modal.close.bind(this.modal);
-		this.modal.open(this.el);
-		this.with_bind(this.modal, 'close', this.release.bind(this));
+		if(this.in_modal)
+		{
+			var close = this.modal.close.bind(this.modal);
+			this.modal.open(this.el);
+			this.with_bind(this.modal, 'close', this.release.bind(this));
+			this.bind(['cancel', 'close'], close);
+		}
 
 		this.requires_connection({msg: 'Adding/editing personas requires a connection to the Turtl server.'});
-
-		this.bind(['cancel', 'close'], close);
 
 		var email = null;
 		var email_timer = new Timer(500);
@@ -86,7 +92,7 @@ var PersonasEditController = FormController.extend({
 			email: email,
 			name: name
 		});
-		keypromise.bind(this)
+		return keypromise.bind(this)
 			.then(function() {
 				return clone.save();
 			})
