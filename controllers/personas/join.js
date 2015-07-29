@@ -27,6 +27,7 @@ var PersonasJoinController = PersonasEditController.extend({
 	{
 		this.parent.apply(this, arguments)
 			.then(function() {
+				barfr.barf('Your public persona has been created!');
 				turtl.route('/');
 			});
 	}
