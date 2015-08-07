@@ -100,7 +100,7 @@ var FormController = Composer.Controller.extend({
 			}
 			else
 			{
-				barfr.barf('You are in offline mode. Adding/editing personas requires a connection to the Turtl server.');
+				barfr.barf(options.msg);
 				this.disable(true);
 			}
 		}.bind(this);
