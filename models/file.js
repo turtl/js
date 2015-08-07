@@ -418,7 +418,7 @@ var Files = SyncCollection.extend({
 					if(job.releases > 2)
 					{
 						turtl.events.trigger('ui-error', 'There was a problem uploading a file. View it in the "Sync" panel in the main menu.', err);
-						log.error('file: upload: ', this.model.id(), derr(err));
+						log.error('file: upload: ', file.id(), derr(err));
 						// bury the item (will be available for inspection in the
 						// sync page)
 						return turtl.hustle.Queue.bury(job.id);
@@ -462,7 +462,7 @@ var Files = SyncCollection.extend({
 					if(job.releases > 2)
 					{
 						turtl.events.trigger('ui-error', 'There was a problem downloading a file. View it in the "Sync" panel in the main menu.', err);
-						log.error('file: download: ', this.model.id(), derr(err));
+						log.error('file: download: ', file.id(), derr(err));
 						// bury the item (will be available for inspection in the
 						// sync page)
 						return turtl.hustle.Queue.bury(job.id);
