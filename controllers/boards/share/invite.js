@@ -1,18 +1,30 @@
 var BoardsShareInviteController = FormController.extend({
+	class_name: 'board-share',
+
 	elements: {
 		'input[name=email]': 'inp_email',
-		'.loader svg': 'loader'
+		'input[name=challenge]': 'inp_challenge',
+		'input[name=response]': 'inp_response',
+		'input[name=use-challenge]': 'inp_use_challenge',
+		'.loader svg': 'loader',
+		'.invite-type': 'el_invite_type',
+		'.challenge': 'el_challenge',
+		'.challenge .inner': 'el_challenge_inner'
 	},
 
 	events: {
-		'keyup input[name=email]': 'update_email'
+		'keyup input[name=email]': 'update_email',
+		'change input[name=use-challenge]': 'toggle_challenge'
 	},
 
 	modal: null,
 	model: null,
 	formclass: 'boards-invite',
-	buttons: false,
+	buttons: true,
+	button_tabindex: 5,
+	action: 'Invite',
 
+	email: null,
 	email_timer: null,
 
 	init: function()
@@ -35,10 +47,7 @@ var BoardsShareInviteController = FormController.extend({
 		this.with_bind(this.modal, 'close', this.release.bind(this));
 		this.bind(['cancel', 'close'], close);
 
-		var disable = function(yesno) { this.disabled = !!yesno; }.bind(this);
-		turtl.events.bind('api:connect', disable.bind(this, false));
-		turtl.events.bind('api:disconnect', disable.bind(this, true));
-		disable(!turtl.api.connected);
+		this.requires_connection({msg: 'Sharing a board requires a connection to the Turtl server.'});
 
 		this.email_timer = new Timer(500);
 		this.email_timer.bind('fired', this.query_email.bind(this));
@@ -51,16 +60,59 @@ var BoardsShareInviteController = FormController.extend({
 			board: board
 		}));
 		(function() { this.inp_email.focus(); }).delay(300, this);
+		this.el_challenge_inner.set('slide', {duration: 300});
+		this.el_challenge_inner.get('slide').hide();
+	},
+
+	render_invite_type: function(typeclass, email)
+	{
+		this.track_subcontroller('invite-type', function() {
+			var con = new typeclass({
+				inject: this.el_invite_type,
+				model: this.model,
+				email: email
+			});
+			return con;
+		}.bind(this));
 	},
 
 	submit: function(e)
 	{
 		if(e) e.stop();
-		console.log('LOOOL');
+		var email = this.email;
+		var set_challenge = this.inp_use_challenge.get('checked');
+		var challenge = this.inp_challenge.get('value');
+		var response = this.inp_response.get('value');
+		var errors = [];
+		if(!email) errors.push([this.inp_email, 'Please enter a valid email']);
+
+		var share = {
+			email: email
+		};
+
+		if(set_challenge)
+		{
+			if(!challenge) errors.push([this.inp_challenge, 'Please enter a question only the recipient will know the answer to']);
+			if(!response) errors.push([this.inp_response, 'Please enter the answer to the question']);
+			share.challenge = challenge;
+			share.response = response;
+		}
+
+		if(!this.check_errors(errors)) return;
+
+		return this.model.create_share(share)
+			.then(function() {
+				this.trigger('close');
+			})
+			.catch(function(err) {
+				turtl.events.trigger('ui-error', 'There was a problem sending that invite', err);
+				log.error('board: share: ', this.model.id(), derr(err));
+			});
 	},
 
 	update_email: function(e)
 	{
+		this.email = false;
 		this.email_timer.reset();
 	},
 
@@ -68,7 +120,39 @@ var BoardsShareInviteController = FormController.extend({
 	{
 		var email = this.inp_email.get('value');
 		if(!email.match(/@/)) return;
-		console.log('oh nooo');
+
+		new Persona().get_by_email(email).bind(this)
+			.then(function(persona) {
+				this.render_invite_type(BoardsShareInvitePersonaController, email);
+			})
+			.catch(function(err) {
+				if(err && err.xhr && err.xhr.status == 404)
+				{
+					return this.render_invite_type(BoardsShareInviteEmailController, email);
+				}
+				throw err;
+			})
+			.finally(function() {
+				this.email = email;
+			});
+	},
+
+	toggle_challenge: function(e)
+	{
+		var checked = this.inp_use_challenge.get('checked');
+		if(checked)
+		{
+			this.el_challenge_inner.slide('in');
+			this.el_challenge.addClass('active');
+			setTimeout(function() {
+				this.inp_challenge.focus();
+			}.bind(this), 100);
+		}
+		else
+		{
+			this.el_challenge_inner.slide('out');
+			this.el_challenge.removeClass('active');
+		}
 	}
 });
 

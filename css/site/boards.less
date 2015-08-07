@@ -57,8 +57,24 @@
 	}
 }
 
-.board-share {padding: 8rem;}
+.board-share {padding: 0;}
 .board-share {
+	p.head {font-size: 14rem;}
+	.challenge {margin: 8rem 0 32rem 0;}
+	.challenge {
+		&.active icon {transform: rotate(90deg);}
+		icon {font-size: 14rem; transform: rotate(270deg); .transition(transform .3s);}
+		label {display: block; margin: 0 0 10rem 0; font-size: 15rem;}
+		.inner {margin: 10rem 0 0 0; padding: 4rem 10rem; background: @theme_gray_white;}
+		.inner {
+			p, li {font-size: 14rem;}
+			ul {list-style: none;}
+			li {margin: 0 0 12rem 6rem; line-height: 16rem;}
+			li {
+				strong {display: block; margin: 0 0 4rem 0;}
+			}
+		}
+	}
 }
 .boards-invite {
 	.loader {position: relative;}

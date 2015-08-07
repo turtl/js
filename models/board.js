@@ -96,6 +96,10 @@ var Board = Protected.extend({
 		return this.parent(keys, search, options);
 	},
 
+	create_share: function(share)
+	{
+	},
+
 	each_note: function(callback)
 	{
 		var cnotes = turtl.profile.get('notes');

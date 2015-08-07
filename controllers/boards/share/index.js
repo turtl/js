@@ -39,11 +39,6 @@ var BoardsShareController = Composer.Controller.extend({
 
 	open_add: function()
 	{
-		if(!turtl.api.connected)
-		{
-			barfr.barf('You are currently disconnected, and sharing requires a connection to the Turtl server');
-			return;
-		}
 		new BoardsShareInviteController({model: this.model});
 	}
 });

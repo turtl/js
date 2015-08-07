@@ -1,6 +1,29 @@
 <div class="loader">
-	<input type="text" name="email" value="" placeholder="Invitee's email address">
+	<input type="text" class="req" name="email" value="" placeholder="Invitee's email address">
 	{{svg 'load'}}
 </div>
 
+<div class="invite-type"></div>
+
+<div class="challenge">
+	<label>
+		<input type="checkbox" name="use-challenge" value="1">
+		Protect this invite {{icon 'more'}}
+	</label>
+	<div class="inner">
+		<input type="text" name="challenge" placeholder="Ask a question (shared)">
+		<input type="text" name="response" placeholder="Answer the question (private)">
+		<p>
+			Ask a question only the invitee would know the answer to. The answer
+			encrypts the invite, and must be guessed properly to unlock it.
+			Example:
+		</p>
+		<ul>
+			<li>
+				<strong>What notebook do you bring to Mr. Weber's class? (three words, lowercase)</strong>
+				outdoor outdoor outdoor
+			</li>
+		</ul>
+	</div>
+</div>
 
