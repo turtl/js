@@ -292,7 +292,8 @@ var FileData = Protected.extend({
 						reject({res: err, xhr: xhr});
 					}
 				};
-				return Sexhr(request);
+				return Sexhr(request)
+					.spread(function(res, xhr) { return res; });
 			}.bind(this);
 
 			// chrome/firefox are both being really bitchy about a very simple 302
@@ -330,7 +331,7 @@ var FileData = Protected.extend({
 				if(!note_data) throw new Error('file: download: missing note in local db');
 				return this._do_download(note_id, {progress: options.progress});
 			})
-			.spread(function(res, xhr) {
+			.then(function(res) {
 				var body = uint8array_to_string(res);
 
 				//this.set({data: body});
