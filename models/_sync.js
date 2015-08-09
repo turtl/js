@@ -218,7 +218,7 @@ var Sync = Composer.Model.extend({
 				var promise;
 				if(items.length == 0)
 				{
-					promise = promise.resolve({});
+					promise = Promise.resolve({});
 				}
 				else
 				{
