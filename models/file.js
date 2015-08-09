@@ -272,43 +272,51 @@ var FileData = Protected.extend({
 	_do_download: function(note_id, options)
 	{
 		var args = {};
-		if(window._in_desktop || window.firefox || window.chrome)
+		// we're in desktop/FF. 302 redirect won't work, so we do it by hand
+		// by asking the api to just send the URL for the file back.
+		var do_download = function(url)
 		{
-			// we're in desktop/FF. 302 redirect won't work, so we do it by hand
-			// by asking the api to just send the URL for the file back.
-			var do_download = function(url)
+			var headers = {};
+			var is_turtl_api = url.indexOf(config.api_url) == 0;
+			if(is_turtl_api)
 			{
-				var request = {
-					url: url,
-					method: 'get',
-					timeout: 30000,
-					response_type: 'arraybuffer',
-					onprogress: function(event, xhr) {
-						var progress = {total: event.total, loaded: event.loaded};
-						if(options.progress) options.progress(progress, xhr);
-					},
-					onFailure: function(xhr) {
-						var err = uint8array_to_string(xhr.response);
-						reject({res: err, xhr: xhr});
-					}
-				};
-				return Sexhr(request)
-					.spread(function(res, xhr) { return res; });
-			}.bind(this);
-
-			// chrome/firefox are both being really bitchy about a very simple 302
-			// redirect, so we essentially just do it ourselves here.
-			args.disable_redirect = 1;
-			return turtl.api.get('/notes/'+note_id+'/file', args).bind(this)
-				.then(do_download);
-		}
-		else
-		{
-			return turtl.api.get('/notes/'+note_id+'/file', args, {
+				// only send our auth if we're grabbing the file directly from
+				// the turtl api (as opposed to someone like Amazon, who we
+				// don't want getting our auth key)
+				var auth_key = (turtl.api.user || {}).auth_key;
+				if(auth_key)
+				{
+					headers['Authorization'] = 'Basic ' + btoa('user:' + auth_key);
+				}
+			}
+			var request = {
+				url: url,
+				method: 'get',
+				headers: headers,
+				timeout: 30000,
 				response_type: 'arraybuffer',
-				progress: options.progress
-			});
-		}
+				onprogress: function(event, xhr) {
+					var progress = {total: event.total, loaded: event.loaded};
+					if(options.progress) options.progress(progress, xhr);
+				},
+				onFailure: function(xhr) {
+					var err = uint8array_to_string(xhr.response);
+					reject({res: err, xhr: xhr});
+				}
+			};
+			return Sexhr(request)
+				.spread(function(res, xhr) { return res; });
+		}.bind(this);
+
+		// chrome/firefox are both being really bitchy about a very simple 302
+		// redirect, so we essentially just do it ourselves here.
+		args.disable_redirect = 1;
+		return turtl.api.get('/notes/'+note_id+'/file', args).bind(this)
+			.then(do_download);
+		//return turtl.api.get('/notes/'+note_id+'/file', args, {
+		//	response_type: 'arraybuffer',
+		//	progress: options.progress
+		//});
 	},
 
 	/**
