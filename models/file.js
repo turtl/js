@@ -8,7 +8,6 @@ var NoteFile = Protected.extend({
 	public_fields: [
 		'id',
 		'size',
-		'upload_id',
 		'has_data'
 	],
 
@@ -132,13 +131,31 @@ var FileData = Protected.extend({
 		'id',
 		'note_id',
 
-		'synced',		// needed?
 		'has_data'		// needed?
 	],
 
 	private_fields: [
 		'data'
 	],
+
+	toJSON: function()
+	{
+		var data = this.get(this.body_key);
+		if(data)
+		{
+			this.unset(this.body_key, {silent: true});
+			var json = this.parent.apply(this, arguments);
+			json[this.body_key] = data;
+			var obj = {};
+			obj[this.body_key] = data;
+			this.set(obj, {silent: true});
+			return json;
+		}
+		else
+		{
+			return this.parent.apply(this, arguments);
+		}
+	},
 
 	// -------------------------------------------------------------------------
 	// hook into some of the Protected model's crypto functions.
@@ -214,11 +231,8 @@ var FileData = Protected.extend({
 				};
 
 				// convert body to Uint8Array
-				var raw = new Uint8Array(body.length);
-				for(var i = 0, n = body.length; i < n; i++)
-				{
-					raw[i] = body.charCodeAt(i);
-				}
+				// OH WAIT IT ALREADY IS
+				var raw = body;
 
 				// mark the save as raw and fire it off
 				options.data = raw;
@@ -340,9 +354,7 @@ var FileData = Protected.extend({
 				return this._do_download(note_id, {progress: options.progress});
 			})
 			.then(function(res) {
-				var body = uint8array_to_string(res);
-
-				//this.set({data: body});
+				var body = new Uint8Array(res);
 
 				var id = this.id();
 				var data = {

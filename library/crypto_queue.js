@@ -64,8 +64,14 @@
 					// for hash
 					if(action == 'encrypt') res.data = {c: res.data, h: null};
 
-					// TODO: uint8array?
-					var enc = tcrypt.words_to_bin(res.data.c);
+					if(rawdata)
+					{
+						var enc = new Uint8Array(sjcl.codec.bytes.fromBits(res.data.c));
+					}
+					else
+					{
+						var enc = tcrypt.words_to_bin(res.data.c);
+					}
 					var hash = res.data.h;
 
 					return {success: [enc, hash]};
