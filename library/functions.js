@@ -105,12 +105,13 @@ function uint8array_to_string(array)
 	{
 		array = new Uint8Array(array);
 	}
-	var str = '';
-	for(var i = 0, n = array.length; i < n; i++)
+	var CHUNK_SZ = 0x8000;
+	var c = [];
+	for(var i = 0; i < array.length; i+=CHUNK_SZ)
 	{
-		str	+=	String.fromCharCode(array[i]);
+		c.push(String.fromCharCode.apply(null, array.subarray(i, i+CHUNK_SZ)));
 	}
-	return str;
+	return c.join("");
 }
 
 /**
