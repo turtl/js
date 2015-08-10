@@ -81,7 +81,7 @@ Composer.sync = function(method, model, options)
 		if(options.skip_serialize)
 		{
 			// model was pre-serialized
-			promise = Promise.resolve([model.toJSON()]);
+			promise = Promise.resolve([model.safe_json()]);
 		}
 		else if(!['read', 'delete'].contains(method))
 		{

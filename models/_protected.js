@@ -250,6 +250,24 @@ var Protected = Composer.RelationalModel.extend({
 	},
 
 	/**
+	 * like toJSON(), but only returns public fields (and the body field) in the
+	 * returned object. This is a good function to call on a model if you are
+	 * persisting it to disk/API.
+	 */
+	safe_json: function()
+	{
+		var data = this.toJSON();
+		var safe_keys = this.public_fields.slice(0);
+		safe_keys.push(this.body_key);
+		var safe = {};
+		Object.keys(data).forEach(function(key) {
+			if(!safe_keys.contains(key)) return;
+			safe[key] = data[key];
+		});
+		return safe;
+	},
+
+	/**
 	 * Given a set of keys for an object and a search pattern, find the matching
 	 * key and decrypt it using one of the decrypting keys provided by the
 	 * search object. This in turn allows the object to be decrypted.
