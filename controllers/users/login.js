@@ -86,11 +86,11 @@ var UserLoginController = FormController.extend({
 				}
 				barfr.barf('Login failed.');
 				log.error('login error: ', derr(err));
+				this.inp_submit.set('disabled', '');
 			})
 			.finally(function() {
 				turtl.loading(false);
 				this.el_loader.removeClass('active');
-				this.inp_submit.set('disabled', '');
 			});
 	},
 

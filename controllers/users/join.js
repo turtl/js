@@ -159,11 +159,11 @@ var UserJoinController = FormController.extend({
 				}
 				turtl.events.trigger('ui-error', 'There was a problem saving that account', err);
 				log.error('users: join: ', derr(err));
+				this.inp_submit.set('disabled', '');
 			})
 			.finally(function() {
 				turtl.loading(false);
 				this.el_loader.removeClass('active');
-				this.inp_submit.set('disabled', '');
 			});
 	},
 
