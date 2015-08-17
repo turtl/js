@@ -79,6 +79,7 @@ var UserLoginController = FormController.extend({
 				}
 			})
 			.catch(function(err) {
+				this.inp_submit.set('disabled', '');
 				if(err && err.xhr && err.xhr.status === 0)
 				{
 					barfr.barf('Couldn\'t connect to the server');
@@ -86,7 +87,6 @@ var UserLoginController = FormController.extend({
 				}
 				barfr.barf('Login failed.');
 				log.error('login error: ', derr(err));
-				this.inp_submit.set('disabled', '');
 			})
 			.finally(function() {
 				turtl.loading(false);
