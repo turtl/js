@@ -184,6 +184,7 @@ var FileData = Protected.extend({
 	serialize: function(options)
 	{
 		options || (options = {});
+		// TODO: move these options to class params
 		options.rawdata = true;
 		options.skip_base64 = true;
 		return this.parent.call(this, options);
@@ -193,6 +194,7 @@ var FileData = Protected.extend({
 	deserialize: function(options)
 	{
 		options || (options = {});
+		// TODO: move these options to class params
 		options.rawdata = true;
 		return this.parent.call(this, options);
 	},
@@ -233,6 +235,8 @@ var FileData = Protected.extend({
 				// convert body to Uint8Array
 				// OH WAIT IT ALREADY IS
 				var raw = body;
+
+				//console.log('file: hash: upload: ', raw.length, tcrypt.hash(sjcl.codec.bytes.toBits(raw)));
 
 				// mark the save as raw and fire it off
 				options.data = raw;
