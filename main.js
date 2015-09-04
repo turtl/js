@@ -555,6 +555,10 @@ window.addEvent('domready', function() {
 		}
 	);
 
+	// custom sizing per-device, mainly to make everything look exactly like it
+	// does size-wise (in inches) on the iphone5. this is all made possible by
+	// using rem font/box sizes everywhere instead of px...we can resize the
+	// entire app in just one place.
 	var font_size = 1;
 	if(window.navigator.userAgent.match(/DROID4/)) font_size = 1.12;
 	$E('html').setStyles({'font-size': font_size + 'px'});
