@@ -85,10 +85,13 @@ var Profile = Composer.RelationalModel.extend({
 					// if we load old data against a new password, we're screwed
 					turtl.sync.set({sync_id: res.value});
 					turtl.update_loading_screen('Syncing changes from server');
-					return turtl.sync.poll_api_for_changes({
-						immediate: true,
-						force: true
-					});
+					return turtl.sync.poll_api_for_changes({immediate: true, force: true})
+						.catch(function(err) {
+							// if we have a connection error, continue without
+							// the initial sync. it's not essential, but nice to
+							// have
+							if(!(err && err.disconnected)) throw err;
+						});
 				}
 			})
 			.then(function() {
