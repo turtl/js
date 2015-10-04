@@ -1,0 +1,16 @@
+<div class="invite-actions"></div>
+<h2>
+	{{#if persona}}
+		{{#if persona.name}}
+			{{persona.name}} &lt;{{persona.email}}&gt;
+		{{else}}
+			{{persona.email}}
+		{{/if}}
+	{{else}}
+		{{share.to}}
+	{{/if}}
+</h2>
+{{#if pending}}
+	<p>(invite pending)</p>
+{{/if}}
+

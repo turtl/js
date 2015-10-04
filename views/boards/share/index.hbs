@@ -1,21 +1,5 @@
 {{#if has_shares}}
-	<ul class="item-list">
-		{{#each members}}
-		{{/each}}
-		{{#each pending}}
-			<li class="pending" rel="{{id}}">
-				<div class="invite-actions"></div>
-				<h2>
-					{{#if to_persona.name}}
-						{{to_persona.name}} &lt;{{to_persona.email}}&gt;
-					{{else}}
-						{{to_persona.email}}
-					{{/if}}
-				</h2>
-				<p>(invite pending)</p>
-			</li>
-		{{/each}}
-	</ul>
+	<ul class="item-list"></ul>
 {{else}}
 	<p class="page-empty">
 		{{icon 'share'}}
