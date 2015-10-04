@@ -1,6 +1,7 @@
 var BoardsShareInviteEmailController = Composer.Controller.extend({
 	model: null,
 	email: null,
+	outdated_key: false,
 
 	init: function()
 	{
@@ -10,7 +11,8 @@ var BoardsShareInviteEmailController = Composer.Controller.extend({
 	render: function()
 	{
 		this.html(view.render('boards/share/invite_email', {
-			email: this.email
+			email: this.email,
+			outdated_key: this.outdated_key
 		}));
 	}
 });

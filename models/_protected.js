@@ -4,6 +4,7 @@
 var Keys = Composer.Collection.extend({});
 
 // threaded decryption queue
+// NOTE: this goes away if/when we implement native crypto
 var cqueue = new CryptoQueue({
 	workers: 4
 });
@@ -448,5 +449,31 @@ var Protected = Composer.RelationalModel.extend({
 });
 
 var ProtectedShared = Protected.extend({
+	public_key: null,
+	private_key: null,
+
+	encrypt: function()
+	{
+		var body = this.get(this.body_key);
+		return tcrypt.asym.encrypt(this.public_key, body).bind(this)
+			.then(function(msg) {
+				var set = {};
+				set[this.body_key] = msg;
+				this.set(set);
+				return msg;
+			});
+	},
+
+	decrypt: function()
+	{
+		var msg = this.get(this.body_key);
+		return tcrypt.asym.decrypt(this.private_key, msg).bind(this)
+			.then(function(data) {
+				var set = {};
+				set[this.body_key] = data;
+				this.set(set);
+				return data;
+			});
+	}
 });
 

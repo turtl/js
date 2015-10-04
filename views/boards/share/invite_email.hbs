@@ -1,5 +1,9 @@
 <p class="head">
-	<em>{{email}}</em> is not a current Turtl user. This share will happen over
-	email. It's recommended you protect the invite.
+	{{#if outdated_key}}
+		<em>{{email}}</em> needs to upgrade their persona.
+	{{else}}
+		<em>{{email}}</em> is not a current Turtl user. 
+	{{/if}}
+	This share will happen over email. It's recommended you protect the invite.
 </p>
 

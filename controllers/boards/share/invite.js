@@ -3,8 +3,9 @@ var BoardsShareInviteController = FormController.extend({
 
 	elements: {
 		'input[name=email]': 'inp_email',
-		'input[name=challenge]': 'inp_challenge',
-		'input[name=response]': 'inp_response',
+		'input[name=passphrase]': 'inp_passphrase',
+		//'input[name=challenge]': 'inp_challenge',
+		//'input[name=response]': 'inp_response',
 		'input[name=use-challenge]': 'inp_use_challenge',
 		'.loader svg': 'loader',
 		'.invite-type': 'el_invite_type',
@@ -26,6 +27,7 @@ var BoardsShareInviteController = FormController.extend({
 
 	email: null,
 	email_timer: null,
+	persona: null,
 
 	init: function()
 	{
@@ -64,14 +66,18 @@ var BoardsShareInviteController = FormController.extend({
 		this.el_challenge_inner.get('slide').hide();
 	},
 
-	render_invite_type: function(typeclass, email)
+	render_invite_type: function(typeclass, email, extra_params)
 	{
+		extra_params || (extra_params = {});
+
 		this.track_subcontroller('invite-type', function() {
-			var con = new typeclass({
+			var params = {
 				inject: this.el_invite_type,
 				model: this.model,
 				email: email
-			});
+			};
+			Object.keys(extra_params).forEach(function(key) { params[key] = extra_params[key]; });
+			var con = new typeclass(params);
 			return con;
 		}.bind(this));
 	},
@@ -79,29 +85,41 @@ var BoardsShareInviteController = FormController.extend({
 	submit: function(e)
 	{
 		if(e) e.stop();
+		var my_persona = turtl.profile.get('personas').first();
 		var email = this.email;
 		var set_challenge = this.inp_use_challenge.get('checked');
-		var challenge = this.inp_challenge.get('value');
-		var response = this.inp_response.get('value');
+		var passphrase = this.inp_passphrase.get('value');
+		//var challenge = this.inp_challenge.get('value');
+		//var response = this.inp_response.get('value');
 		var errors = [];
 		if(!email) errors.push([this.inp_email, 'Please enter a valid email']);
 
-		var share = {
-			email: email
+		var invite_data = {
+			object_id: this.model.id(),
+			perms: 2,
+			to_persona: this.persona || null,
+			from: my_persona.id(),
+			to: this.persona ? this.persona.id(true) : email,
+			key: this.model.key
 		};
 
 		if(set_challenge)
 		{
-			if(!challenge) errors.push([this.inp_challenge, 'Please enter a question only the recipient will know the answer to']);
-			if(!response) errors.push([this.inp_response, 'Please enter the answer to the question']);
-			share.challenge = challenge;
-			share.response = response;
+			if(!passphrase) errors.push([this.inp_passphrase, 'Please enter a passphrase to protect the invite']);
+			invite_data.passphrase = passphrase;
+
+			//if(!challenge) errors.push([this.inp_challenge, 'Please enter a question only the recipient will know the answer to']);
+			//if(!response) errors.push([this.inp_response, 'Please enter the answer to the question']);
+			//invite_data.challenge = challenge;
+			//invite_data.response = response;
 		}
 
 		if(!this.check_errors(errors)) return;
 
-		return this.model.create_share(share)
+		var invite = new Invite(invite_data);
+		return this.model.create_share(invite).bind(this)
 			.then(function() {
+				barfr.barf('Invite sent');
 				this.trigger('close');
 			})
 			.catch(function(err) {
@@ -121,14 +139,21 @@ var BoardsShareInviteController = FormController.extend({
 		var email = this.inp_email.get('value');
 		if(!email.match(/@/)) return;
 
-		new Persona().get_by_email(email).bind(this)
+		this.persona = null;
+		new Persona().get_by_email(email, {require_pubkey: true}).bind(this)
 			.then(function(persona) {
+				this.persona = persona;
 				this.render_invite_type(BoardsShareInvitePersonaController, email);
 			})
 			.catch(function(err) {
-				if(err && err.xhr && err.xhr.status == 404)
+				if(err && (err.outdated_key || (err.xhr && err.xhr.status == 404)))
 				{
-					return this.render_invite_type(BoardsShareInviteEmailController, email);
+					this.persona = null;
+					this.inp_use_challenge.set('checked', true);
+					this.toggle_challenge();
+					return this.render_invite_type(BoardsShareInviteEmailController, email, {
+						outdated_key: !!err.outdated_key
+					});
 				}
 				throw err;
 			})
@@ -144,9 +169,12 @@ var BoardsShareInviteController = FormController.extend({
 		{
 			this.el_challenge_inner.slide('in');
 			this.el_challenge.addClass('active');
-			setTimeout(function() {
-				this.inp_challenge.focus();
-			}.bind(this), 100);
+			if(e)
+			{
+				setTimeout(function() {
+					this.inp_passphrase.focus();
+				}.bind(this), 100);
+			}
 		}
 		else
 		{

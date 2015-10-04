@@ -96,8 +96,15 @@ var Board = Protected.extend({
 		return this.parent(keys, search, options);
 	},
 
-	create_share: function(share)
+	create_share: function(invite)
 	{
+		var passphrase = invite.get('passphrase') || false;
+		invite.unset('passphrase');
+
+		return invite.seal(passphrase).bind(this)
+			.then(function(invite_data) {
+				return turtl.api.post(this.get_url() + '/invites', invite_data);
+			});
 	},
 
 	each_note: function(callback)

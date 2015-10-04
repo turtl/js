@@ -73,7 +73,7 @@ div.button.flat {
 	input[type="button"],
 	span {padding-left: 15rem; padding-right: 15rem; font-size: 17rem; color: @theme_primary;}
 	&.disabled {
-		* {color: @theme_gray_light !important;}
+		* {cursor: default !important; color: @theme_gray_light !important;}
 	}
 }
 div.button.cancel {background: @theme_gutter;}
@@ -85,7 +85,7 @@ div.button.cancel {
 /* generic guttered item list (one per line) */
 ul.item-list {list-style: none; width: 94%; margin: 16rem auto 0 auto; .card();}
 ul.item-list {
-	> li {display: block; padding: 6rem 9rem; line-height: 14rem; border-bottom: 1rem solid @theme_border;}
+	> li {display: block; padding: 6rem 9rem; line-height: 14rem; cursor: pointer; border-bottom: 1rem solid @theme_border;}
 	> li {
 		h2 {margin: 0 0 2rem 0; padding: 3rem 0; font-size: 17rem; line-height: 18.2rem;}
 		p {font-size: 13rem; line-height: 14rem;}

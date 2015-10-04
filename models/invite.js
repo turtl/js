@@ -1,3 +1,138 @@
+var Invite = ProtectedShared.extend({
+	relations: {
+		from_persona: {model: 'Persona'},
+		to_persona: {model: 'Persona'}
+	},
+
+	public_fields: [
+		'id',
+		'object_id',
+		'perms',
+		'token_server',
+		'has_passphrase',
+		'has_persona',
+		'from',
+		'to'
+	],
+
+	private_fields: [
+		'key',
+		'token',
+		'message'
+	],
+
+	init: function()
+	{
+		// we always give invites a unique id
+		if(this.is_new()) this.set({id: this.cid()});
+	},
+
+	generate_token: function()
+	{
+		var token = tcrypt.uuid();
+		this.set({token: token, token_server: token});
+	},
+
+	passphrase_to_key: function(passphrase)
+	{
+		if(!passphrase)
+		{
+			// generate a static key. note that these values can never change
+			// lest we break all non-protected pending invites
+			var salt = tcrypt.hash('andrew rulez');
+			var iter = 1;
+			passphrase = tcrypt.hash('hai')
+		}
+		else
+		{
+			// generate a key from our passphrase
+			var salt = tcrypt.hash(this.id());
+			var iter = 100000;
+		}
+		var key = tcrypt.key_native(passphrase, salt, {key_size: 32, iterations: iter, hasher: 'SHA-256'})
+		return Promise.resolve(key).bind(this)
+			.catch(DOMException, function(err) {
+				// probably some idiotic "safe origin" policy crap. revert to sync/SJCL method
+				log.error('user: get_key: ', err);
+				return tcrypt.key(passphrase, salt, {key_size: 32, iterations: iter, hasher: tcrypt.get_hasher('SHA256')});
+			})
+			.tap(function(key) {
+				this.key = key;
+			});
+	},
+
+	seal: function(passphrase)
+	{
+		var promise = Promise.resolve(false);
+		var persona = this.get('to_persona');
+		var have_persona = !persona.is_new();
+		var have_passphrase = !!passphrase;
+		this.set({has_passphrase: have_passphrase});
+		this.generate_token();
+		return this.passphrase_to_key(passphrase).bind(this)
+			.then(function() {
+				return this.serialize();
+			})
+			.then(function() {
+				if(!have_persona) return;
+				this.set({has_persona: true});
+				this.public_key = persona.get('pubkey');
+				return this.encrypt();
+			})
+			.then(function() {
+				return this.safe_json();
+			});
+	},
+
+	open: function(passphrase)
+	{
+		return this.passphrase_to_key(passphrase).bind(this)
+			.then(function() {
+				if(!this.get('has_persona')) return;
+				// TODO: try multiple personas
+				var persona = turtl.profile.get('personas').first();
+				this.private_key = persona.get('privkey');
+				return this.decrypt();
+			})
+			.then(function() {
+				return this.deserialize();
+			})
+			.tap(function() {
+				if(this.get('token') != this.get('token_server'))
+				{
+					// overwrite the random token if we get one out of data
+					this.set({token_server: this.get('token')});
+				}
+			});
+	}
+});
+
+var Invites = SyncCollection.extend({
+	model: Invite,
+
+	run_incoming_sync_item: function(sync, item)
+	{
+		var promise = Promise.resolve();
+		// hook into the actions that trigger deserialization and stop them
+		switch(sync.action)
+		{
+			case 'add':
+				var model = new this.model(item);
+				this.upsert(model);
+				break;
+			case 'edit':
+				var model = this.get(item.id);
+				if(model) model.set(item);
+				break;
+			default:
+				promise = this.parent.apply(this, arguments);
+				break;
+		}
+		return promise;
+	}
+});
+
+/*
 var Invite = Composer.Model.extend({
 	encrypt_key: function(key, secret, options)
 	{
@@ -155,4 +290,5 @@ var BoardInvite = Invite.extend({
 var Invites = Composer.Collection.extend({
 	model: Invite
 });
+*/
 

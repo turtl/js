@@ -100,10 +100,6 @@ var turtl = {
 
 	// Files collection, used to track file uploads/downloads
 	files: null,
-
-	// holds all non-messaged invites (for instance, once we get via the addon
-	// or desktop invite page scraping)
-	invites: null,
 	// -------------------------------------------------------------------------
 
 	init: function()
@@ -171,22 +167,10 @@ var turtl = {
 			}
 			turtl.controllers.pages.release_sub();
 			turtl.sync = new Sync();
-			turtl.messages = new Messages();
 			turtl.profile = new Profile();
 			turtl.search = new Search();
 			turtl.files = new Files();
 			turtl.user.get_auth().then(turtl.api.set_auth.bind(turtl.api))
-
-			// setup invites and move invites from local storage into collection
-			if(!turtl.invites) turtl.invites = new Invites();
-			if(localStorage.invites)
-			{
-				turtl.invites.reset(Object.values(JSON.parse(localStorage.invites)));
-			}
-			localStorage.invites = '{}';	// wipe local storage
-			if(window.port) window.port.bind('invites-populate', function(invite_data) {
-				turtl.invites.reset(Object.values(invite_data));
-			}.bind(this));
 
 			turtl.show_loading_screen(true);
 			turtl.update_loading_screen('Initializing Turtl');
@@ -279,18 +263,12 @@ var turtl = {
 			turtl.user.unbind('change', 'user:write_changes_to_cookie');
 			turtl.api.clear_auth();
 
-			localStorage.invites = '{}';	// wipe local storage
-
 			// local storage is for logged in people only
 			if(turtl.db)
 			{
 				turtl.db.close();
 				turtl.db = null;
 			}
-
-			// clear out invites
-			turtl.invites.clear();
-			turtl.invites.unbind();
 
 			// this should give us a clean slate
 			turtl.profile.destroy();
@@ -373,6 +351,7 @@ var turtl = {
 		turtl.sync.register_local_tracker('boards', turtl.profile.get('boards'));
 		turtl.sync.register_local_tracker('notes', turtl.profile.get('notes'));
 		turtl.sync.register_local_tracker('files', turtl.files);
+		turtl.sync.register_local_tracker('invites', turtl.profile.get('invites'));
 
 		turtl.files.start_syncing();
 	},

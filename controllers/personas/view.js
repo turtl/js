@@ -13,7 +13,7 @@ var PersonasViewController = Composer.Controller.extend({
 		if(!this.model) throw new Error('persona view: bad persona passed');
 
 		turtl.events.trigger('header:set-actions', [
-			{name: 'menu', actions: [{name: 'Delete'}]}
+			{name: 'menu', actions: [{name: 'Delete persona'}]}
 		]);
 		this.with_bind(turtl.events, 'header:menu:fire-action', function(action) {
 			switch(action)
@@ -101,7 +101,7 @@ var PersonasViewController = Composer.Controller.extend({
 			switch(type)
 			{
 				case 'checkbox':
-					settings[name] = el.get('checked') ? val : false;
+					settings[name] = el.get('checked') ? true : false;
 					break;
 			}
 		});

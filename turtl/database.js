@@ -12,7 +12,7 @@ var database = {
 		return db.open({
 			// DB has server/user id in it...client might have multiple users
 			server: dbname(config.api_url, turtl.user.id()),
-			version: 10,
+			version: 11,
 			schema: function() { log.info('db.js: create schema'); return {
 				// -------------------------------------------------------------
 				// k/v tables - always has "key" field as primary key
@@ -56,6 +56,10 @@ var database = {
 						boards: {multiEntry: true},
 						has_file: {},
 					}
+				},
+				invites: {
+					key: { keyPath: 'id', autoIncrement: false },
+					indexes: { }
 				},
 				// note that the files table holds raw/encrypted file data for
 				// note attachments. there's not a 1-1 mapping between records

@@ -15,6 +15,9 @@ var Profile = Composer.RelationalModel.extend({
 				forward_all_events: true,
 				refresh_on_change: false
 			}
+		},
+		invites: {
+			collection: 'Invites'
 		}
 	},
 
@@ -96,7 +99,7 @@ var Profile = Composer.RelationalModel.extend({
 			})
 			.then(function() {
 				turtl.update_loading_screen('Loading profile');
-				return ['keychain', 'personas', 'boards', 'notes'];
+				return ['keychain', 'personas', 'boards', 'notes', 'invites'];
 			})
 			.map(function(itemname) {
 				return turtl.db[itemname].query().all().execute().then(function(res) {
@@ -169,7 +172,8 @@ var Profile = Composer.RelationalModel.extend({
 			populate('personas', profile.personas),
 			populate('boards', profile.boards),
 			populate('notes', profile.notes),
-			populate('files', profile.files)
+			populate('files', profile.files),
+			populate('invites', profile.invites)
 		])
 			.then(function() {
 				turtl.sync.set({sync_id: profile.sync_id});
@@ -191,6 +195,7 @@ var Profile = Composer.RelationalModel.extend({
 		var personas = this.get('personas');
 		var boards = this.get('boards');
 		var notes = this.get('notes');
+		var invites = this.get('invites');
 
 		// import the keychain first, since decrypting just about anything
 		// requires it.
@@ -201,6 +206,9 @@ var Profile = Composer.RelationalModel.extend({
 			})
 			.then(function() {
 				return boards.reset_async(data.boards);
+			})
+			.then(function() {
+				return invites.reset_async(data.invites);
 			})
 			.then(function() {
 				this.loaded = true;

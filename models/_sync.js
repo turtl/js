@@ -27,7 +27,8 @@ var Sync = Composer.Model.extend({
 		persona: 'personas',
 		board: 'boards',
 		note: 'notes',
-		file: 'files'
+		file: 'files',
+		invite: 'invites'
 	},
 
 	// generated from the above

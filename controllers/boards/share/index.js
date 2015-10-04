@@ -1,6 +1,10 @@
 var BoardsShareController = Composer.Controller.extend({
 	class_name: 'board-share',
 
+	events: {
+		'click .nopersona a': 'open_add_persona'
+	},
+
 	board_id: null,
 
 	model: null,
@@ -17,29 +21,59 @@ var BoardsShareController = Composer.Controller.extend({
 		turtl.push_title('Sharing: '+ this.model.get('title'), '/boards');
 		this.bind('release', turtl.pop_title.bind(null, false));
 
-		this.render();
+		var has_persona = turtl.profile.get('personas').size() > 0;
+		this.render({no_persona: !has_persona});
+
+		this.with_bind(turtl.profile.get('invites'), ['add', 'remove', 'reset', 'change'], this.render.bind(this));
 
 		// set up the action button
-		this.track_subcontroller('actions', function() {
-			var actions = new ActionController();
-			actions.set_actions([{title: 'New member', name: 'share', icon: 'add_user'}]);
-			this.with_bind(actions, 'actions:fire', this.open_add.bind(this));
-			return actions;
-		}.bind(this));
+		if(has_persona)
+		{
+			this.track_subcontroller('actions', function() {
+				var actions = new ActionController();
+				actions.set_actions([{title: 'New member', name: 'share', icon: 'add_user'}]);
+				this.with_bind(actions, 'actions:fire', this.open_add.bind(this));
+				return actions;
+			}.bind(this));
+		}
 	},
 
-	render: function()
+	render: function(options)
 	{
-		var board = this.model.toJSON();
-		this.html(view.render('boards/share/index', {
-			board: board,
-			members: board.personas
-		}));
+		options || (options = {});
+
+		if(options.no_persona)
+		{
+			this.html(view.render('boards/share/nopersona'));
+		}
+		else
+		{
+			var board = this.model.toJSON();
+			var members = board.personas;
+			var pending = turtl.profile.get('invites').toJSON().filter(function(invite) {
+				return invite.object_id == board.id;
+			});
+			this.html(view.render('boards/share/index', {
+				board: board,
+				has_shares: members.length > 0 || pending.length > 0,
+				members: members,
+				pending: pending
+			}));
+		}
 	},
 
 	open_add: function()
 	{
 		new BoardsShareInviteController({model: this.model});
+	},
+
+	open_add_persona: function(e)
+	{
+		if(e) e.stop();
+		turtl.route('/personas');
+		setTimeout(function() {
+			new PersonasEditController();
+		}, 10);
 	}
 });
 

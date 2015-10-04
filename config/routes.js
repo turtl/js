@@ -15,6 +15,8 @@ config.routes = {
 	'/personas': ['personas', 'index'],
 	'/personas/join': ['personas', 'join'],
 
+	'/sharing': ['sharing', 'index'],
+
 	'/sync': ['sync', 'index'],
 
 	'/': ['notes', 'index']

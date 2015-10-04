@@ -116,14 +116,29 @@ var Persona = Protected.extend({
 		{
 			args.require_key = 1;
 		}
-		return turtl.api.get('/personas/email/'+email, args, options);
+		return turtl.api.get('/personas/email/'+email, args, options).bind(this)
+			.then(function(data) {
+				if(!this.key_is_pgp(data.pubkey))
+				{
+					var err = new Error('Persona has invalid key')
+					err.outdated_key = true;
+					throw err;
+				}
+				return new Persona(data);
+			});
+	},
+
+	key_is_pgp: function(key)
+	{
+		var is_pgp = !!(key && key.match(/^-----BEGIN PGP/));
+		return is_pgp;
 	},
 
 	has_keypair: function()
 	{
 		var pubkey = this.get('pubkey');
 		var privkey = this.get('privkey');
-		var is_pgp = !!(pubkey && pubkey.match(/^-----BEGIN PGP/));
+		var is_pgp = this.key_is_pgp(pubkey);
 		return is_pgp && pubkey && privkey && true;
 	},
 
@@ -145,15 +160,22 @@ var Persona = Protected.extend({
 	}
 });
 
-var BoardPersona = Persona.extend({
-	auto_upgrade_key: false
-});
-
 var Personas = SyncCollection.extend({
 	model: Persona
 });
 
-var BoardPersonas = SyncCollection.extend({
-	model: BoardPersona
+// don't upgrade keys for board personas since we likely don't own them =]
+var BoardPersona = Persona.extend({
+	auto_upgrade_key: false,
+
+	// deserializing boards will try to recursively deserialize related objects.
+	// we don't want personas being deserialized because we don't have their
+	// keys, so we create a dummy function here that just returns the public
+	// data.
+	deserialize: function()
+	{
+		return Promise.resolve(this.toJSON());
+	}
 });
+var BoardPersonas = SyncCollection.extend({ model: BoardPersona });
 
