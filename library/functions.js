@@ -206,7 +206,7 @@ function icon(name)
 		search: 'e83a',
 		selected: 'e81e',
 		settings: 'e807',
-		share: 'e81c',
+		share: 'e810',
 		sort: 'e80b',
 		sync: 'e82d',
 		tag: 'e80f',
