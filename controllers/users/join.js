@@ -190,8 +190,10 @@ var UserJoinController = FormController.extend({
 				var id = board.id();
 				return Promise.all([
 					add_board('Save for later', id),
-					add_board('Photos', id)
 				]);
+			})
+			.then(function() {
+				return add_board('Photos')
 			})
 			.then(function() {
 				return add_board('Passwords');
