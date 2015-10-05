@@ -6,6 +6,8 @@ var SharingController = Composer.Controller.extend({
 		this.with_bind(turtl.profile.get('boards'), ['add', 'remove', 'reset', 'change'], this.render.bind(this));
 		this.with_bind(turtl.profile.get('invites'), ['add', 'remove', 'reset', 'change'], this.render.bind(this));
 
+		turtl.events.trigger('notification:clear', 'share');
+
 		this.render();
 	},
 

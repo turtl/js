@@ -102,9 +102,12 @@ var Sync = Composer.Model.extend({
 	 * This function (mainly called by Composer.sync) tells the sync system to
 	 * ignore a model on the next sync.
 	 */
-	ignore_on_next_sync: function(id)
+	ignore_on_next_sync: function(ids)
 	{
-		this.sync_ignore[id] = true;
+		if(!Array.isArray(ids)) ids = [ids];
+		ids.forEach(function(id) {
+			this.sync_ignore[id] = true;
+		}.bind(this));
 		localStorage.sync_ignore = JSON.stringify(this.sync_ignore);
 	},
 
@@ -408,6 +411,11 @@ var Sync = Composer.Model.extend({
 		if(!item)
 		{
 			if(type == 'file') item = {};
+			else if(sync.missing)
+			{
+				log.info('sync: got missing item, probably an add/delete', sync, item);
+				return false;
+			}
 			else
 			{
 				log.error('sync: transform: bad item: ', sync, item);
@@ -475,6 +483,8 @@ var Sync = Composer.Model.extend({
 		var item = sync.data;
 		delete sync.data;
 		item = this.transform(sync, item);
+		if(!item) return Promise.resolve();
+
 		var table = this.type_to_table(sync.type);
 		var db_table = turtl.db[table];
 		if(!table || !db_table)

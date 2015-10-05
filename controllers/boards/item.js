@@ -25,9 +25,18 @@ var BoardsItemController = Composer.Controller.extend({
 	{
 		this.model.note_count().bind(this)
 			.then(function(num_notes) {
+				var board_id = this.model.id();
+				var parent_id = this.model.get('parent_id');
+				var my_persona = turtl.profile.get('personas').first().id();
+				var shared = turtl.profile.get('invites').filter(function(inv) {
+					var obj = inv.get('object_id')
+					return (obj == board_id) &&
+							inv.get('from') == my_persona;
+				}.bind(this));
 				this.html(view.render('boards/item', {
 					board: this.model.toJSON(),
-					num_notes: num_notes
+					num_notes: num_notes,
+					shared: shared
 				}));
 				var actions = [
 					[{name: 'Edit'}, {name: 'Delete'}],
@@ -55,7 +64,7 @@ var BoardsItemController = Composer.Controller.extend({
 
 	open_board: function(e)
 	{
-		if(e && Composer.find_parent('.board-actions', e.target))
+		if(e && (Composer.find_parent('.board-actions', e.target) || Composer.find_parent('.status', e.target)))
 		{
 			return;
 		}

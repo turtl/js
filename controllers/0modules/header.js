@@ -15,6 +15,7 @@ var HeaderController = Composer.Controller.extend({
 	actions: [],
 
 	bind_to: null,
+	notifications: {},
 
 	init: function()
 	{
@@ -27,6 +28,14 @@ var HeaderController = Composer.Controller.extend({
 			this.set_actions(actions);
 			binder.bind('close', this.set_actions.bind(this, old_actions));
 		}.bind(this));
+		this.with_bind(turtl.events, 'notification:set', function(type) {
+			this.notifications[type] = true;
+			this.update_notification();
+		}.bind(this));
+		this.with_bind(turtl.events, 'notification:clear', function(type) {
+			delete this.notifications[type];
+			this.update_notification();
+		}.bind(this));
 	},
 
 	render: function()
@@ -36,6 +45,7 @@ var HeaderController = Composer.Controller.extend({
 			actions: this.actions
 		}));
 		this.render_actions();
+		this.update_notification();
 	},
 
 	render_title: function(title, backurl)
@@ -118,6 +128,18 @@ var HeaderController = Composer.Controller.extend({
 		setTimeout(function() {
 			this.bind_to.trigger('header:menu:fire-action', rel);
 		}.bind(this));
+	},
+
+	update_notification: function()
+	{
+		if(turtl.user.logged_in && Object.keys(this.notifications).length > 0)
+		{
+			this.el.addClass('notify');
+		}
+		else
+		{
+			this.el.removeClass('notify');
+		}
 	}
 });
 

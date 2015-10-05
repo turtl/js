@@ -45,6 +45,10 @@ header {
 		img {position: relative; z-index: 2; max-width: 100%; height: 100%; margin: 0 0 0 8rem;}
 		icon {position: absolute; z-index: 1; margin: 6rem 0 0 -14rem; font-size: 28.5rem; color: #8fc46a; .transition(margin-left .3s);}
 	}
+	a.logo:before {content: " "; position: fixed; opacity: 0; z-index: 4; top: 26rem; left: 8rem; width: 12rem; height: 12rem; background: @theme_warn; border-radius: 6rem; .transition(opacity .3s);}
+	.notify {
+		a.logo:before {opacity: 1;}
+	}
 	.has-back {
 		h1 {margin-left: 10rem;}
 		a.logo {display: none;}

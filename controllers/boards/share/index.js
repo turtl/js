@@ -2,7 +2,8 @@ var BoardsShareController = Composer.Controller.extend({
 	class_name: 'board-share',
 
 	elements: {
-		'ul.item-list': 'el_item_list'
+		'.members': 'el_members',
+		'.pending': 'el_pending'
 	},
 
 	events: {
@@ -29,6 +30,7 @@ var BoardsShareController = Composer.Controller.extend({
 		this.render({no_persona: !has_persona});
 
 		this.with_bind(this.model, ['change'], this.render.bind(this));
+		this.with_bind(turtl.profile.get('invites'), ['add', 'remove'], this.render.bind(this));
 
 		// set up the action button
 		if(has_persona)
@@ -49,6 +51,10 @@ var BoardsShareController = Composer.Controller.extend({
 		if(options.no_persona)
 		{
 			this.html(view.render('boards/share/nopersona'));
+			var conmem = this.get_subcontroller('members');
+			var conpen = this.get_subcontroller('pending');
+			if(conmem) conmem.release();
+			if(conpen) conpen.release();
 		}
 		else
 		{
@@ -63,14 +69,14 @@ var BoardsShareController = Composer.Controller.extend({
 			}));
 			this.track_subcontroller('members', function() {
 				return new BoardsShareListController({
-					el: this.el_item_list,
+					inject: this.el_members,
 					model: this.model,
 					collection: this.model.get('personas')
 				});
 			}.bind(this));
 			this.track_subcontroller('pending', function() {
 				return new BoardsShareListController({
-					el: this.el_item_list,
+					inject: this.el_pending,
 					model: this.model,
 					pending: true,
 					collection: turtl.profile.get('invites')

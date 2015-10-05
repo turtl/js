@@ -1,7 +1,16 @@
 <div class="board-actions"></div>
 
-<h2>{{board.title}}</h2>
-<p>{{num_notes}} notes</p>
+<div class="status">
+	{{#if shared}}
+		<a href="/boards/share/{{board.id}}">{{icon 'share'}}</a>
+	{{/if}}
+</div>
+<h2>
+	{{board.title}}
+</h2>
+<p>
+	{{num_notes}} notes
+</p>
 
 <div class="children"></div>
 

@@ -16,6 +16,10 @@
 				a {
 					icon {display: inline-block; width: 24rem; margin: 0 8rem 0 0; font-size: 1.3em; color: @theme_gray; text-align: center;}
 				}
+				a:before {content: " "; position: absolute; opacity: 0; z-index: 4; right: 10rem; margin: 4rem 0 0 0; width: 12rem; height: 12rem; background: @theme_warn; border-radius: 6rem; .transition(opacity .3s);}
+				&.notify {
+					a:before {opacity: 1;}
+				}
 			}
 		}
 	}

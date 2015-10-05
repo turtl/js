@@ -10,6 +10,7 @@ var BoardsShareItemController = Composer.Controller.extend({
 	},
 
 	model: null,
+	board: null,
 	pending: false,
 
 	init: function()
@@ -44,7 +45,13 @@ var BoardsShareItemController = Composer.Controller.extend({
 	open_delete: function(e)
 	{
 		if(e) e.stop();
-		console.log('delete');
+		if(!confirm('Really delete this '+ (this.pending ? 'invite' : 'share') +' form this board?')) return;
+
+		this.board.reject_share(this.model)
+			.catch(function(err) {
+				barfr.barf('Error removing invite.');
+				log.error('board: share: remove invite: ', err);
+			});
 	}
 });
 

@@ -104,6 +104,27 @@ var Board = Protected.extend({
 		return invite.seal(passphrase).bind(this)
 			.then(function(invite_data) {
 				return turtl.api.post(this.get_url() + '/invites', invite_data);
+			})
+			.tap(function(invite_data) {
+				invite.set(invite_data);
+				// no point to this, sync almost always comes through before
+				// the DELETE finishes. might as well let it sync
+				//turtl.sync.ignore_on_next_sync(invite_data.sync_ids || []);
+				//return new Invite(invite_data).save({skip_serialize: true, skip_remote_sync: true})
+				//	.then(function(invite) {
+				//		return turtl.profile.get('invites').upsert(invite);
+				//	});
+			});
+	},
+
+	reject_share: function(invite)
+	{
+		return turtl.api._delete(this.get_url() + '/invites/'+invite.id())
+			.then(function(data) {
+				// no point to this, sync almost always comes through before
+				// the DELETE finishes. might as well let it sync
+				//turtl.sync.ignore_on_next_sync(data.sync_ids || []);
+				return invite.destroy({skip_remote_sync: true});
 			});
 	},
 

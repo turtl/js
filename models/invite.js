@@ -1,4 +1,6 @@
 var Invite = ProtectedShared.extend({
+	base_url: '/invites',
+
 	relations: {
 		from_persona: {model: 'Persona'},
 		to_persona: {model: 'Persona'}
@@ -119,6 +121,17 @@ var Invites = SyncCollection.extend({
 			case 'add':
 				var model = new this.model(item);
 				this.upsert(model);
+
+				var my_persona = turtl.profile.get('personas').first();
+				if(!my_persona) return;
+				var persona_id = my_persona.id();
+				if(persona_id == model.get('to'))
+				{
+					var from = model.get('from_persona');
+					var fromstr = from.get('name') ? from.get('name') : from.get('email');
+					var msg = fromstr + ' shared a board with you. Open the "Sharing" panel to accept it.';
+					turtl.events.trigger('notification:set', 'share', msg);
+				}
 				break;
 			case 'edit':
 				var model = this.get(item.id);

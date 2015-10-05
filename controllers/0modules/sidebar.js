@@ -2,7 +2,8 @@ var SidebarController = Composer.Controller.extend({
 	el: '#sidebar',
 
 	elements: {
-		'> .overlay': 'overlay'
+		'> .overlay': 'overlay',
+		'li[rel=share]': 'el_share'
 	},
 
 	events: {
@@ -15,6 +16,22 @@ var SidebarController = Composer.Controller.extend({
 	{
 		this.render();
 		this.with_bind(turtl.events, 'sidebar:toggle', this.toggle.bind(this));
+		var get_notify_el = function(type)
+		{
+			switch(type)
+			{
+			case 'share': return this.el_share; break;
+			}
+		}.bind(this);
+		this.with_bind(turtl.events, 'notification:set', function(type) {
+			var el = get_notify_el(type);
+			console.log('el: ', el);
+			if(el) el.addClass('notify');
+		});
+		this.with_bind(turtl.events, 'notification:clear', function(type) {
+			var el = get_notify_el(type);
+			if(el) el.removeClass('notify');
+		});
 	},
 
 	render: function()
