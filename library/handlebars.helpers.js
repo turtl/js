@@ -140,3 +140,27 @@ Handlebars.registerHelper('json', function(obj, options) {
 	return JSON.stringify(obj);
 });
 
+Handlebars.registerHelper('ago-time', function(timestamp) {
+	var diff = new Date().getTime() - timestamp;
+	var diffsec = Math.round(diff / 1000);
+	var muls = [
+		[60, 'Just now'],
+		[60, '{n} minutes ago'],
+		[24, '{n} hours ago'],
+		[Number.POSITIVE_INFINITY, '{n} days ago']
+	];
+	var str = '';
+	for(var i = 0, next = diffsec; i < muls.length; i++)
+	{
+		var entry = muls[i];
+		var mult = entry[0];
+		var label = entry[1];
+		if(next < mult)
+		{
+			str = label.replace(/\{n\}/, Math.round(next));
+			break;
+		}
+		next /= mult;
+	};
+	return str;
+});
