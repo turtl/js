@@ -42,11 +42,16 @@ var ChangePasswordController = FormController.extend({
 		var user = new User({username: cur_username, password: cur_password});
 		var cur_key = JSON.stringify();
 
-		Promise.all([
-			turtl.user.get_key(),
-			user.get_key({skip_cache: true}),
-			user.get_key({old: true, skip_cache: true})
-		]).bind(this)
+		this.inp_submit.set('disabled', true);
+		var pending_barf = barfr.barf('Updating your login. Please be patient (and DO NOT close the app)!');
+		return delay(300).bind(this)
+			.then(function() {
+				return Promise.all([
+					turtl.user.get_key(),
+					user.get_key({skip_cache: true}),
+					user.get_key({old: true, skip_cache: true})
+				]);
+			})
 			.spread(function(cur_key, new_key, new_key_old) {
 				var errors = [];
 				cur_key = JSON.stringify(cur_key);
@@ -57,13 +62,21 @@ var ChangePasswordController = FormController.extend({
 					errors.push([this.inp_cur_username, 'The current username/password you entered do not match the currently logged in user\'s.']);
 				}
 
-				if(!this.check_errors(errors)) return;
+				if(!this.check_errors(errors))
+				{
+					this.inp_submit.set('disabled', false);
+					barfr.close_barf(pending_barf);
+					return;
+				}
 
 				var errors = UserJoinController.prototype.check_login(this.inp_new_username, this.inp_new_password, this.inp_new_confirm);
-				if(!this.check_errors(errors)) return;
+				if(!this.check_errors(errors))
+				{
+					this.inp_submit.set('disabled', false);
+					barfr.close_barf(pending_barf);
+					return;
+				}
 
-				this.inp_submit.disabled = true;
-				var pending_barf = barfr.barf('Updating your login. Please be patient (and DO NOT close the app)!');
 				return turtl.user.change_password(new_username, new_password)
 					.then(function() {
 						barfr.barf('Your login was changed successfully!');
@@ -76,7 +89,7 @@ var ChangePasswordController = FormController.extend({
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', 'There was a problem changing your login. We are undoing the changes. Please try again.', err);
 				log.error('settings: change password: ', derr(err));
-				this.inp_submit.disabled = false;
+				this.inp_submit.set('disabled', false);
 			});
 	},
 
