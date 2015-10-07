@@ -21,6 +21,16 @@ var extend_error = function(extend, errname)
 	return err;
 }
 
+/**
+ * a promisified delay function.
+ */
+var delay = function(ms)
+{
+	return new Promise(function(resolve) {
+		setTimeout(resolve.bind(this, 'Thanks for waiting =]'), ms);
+	});
+};
+
 var string_repeat = function(string, num)
 {
 	return new Array(parseInt(num) + 1).join(string);
