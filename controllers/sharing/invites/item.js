@@ -4,7 +4,8 @@ var SharingInviteItemController = Composer.Controller.extend({
 	elements: {
 		'.invite-actions': 'actions',
 		'.unlocker': 'el_unlocker',
-		'input[name=passphrase]': 'inp_passphrase'
+		'input[name=passphrase]': 'inp_passphrase',
+		'.unlocker input[type=submit]': 'inp_unlock_submit'
 	},
 
 	events: {
@@ -66,9 +67,22 @@ var SharingInviteItemController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		var passphrase = this.inp_passphrase.get('value');
+
+		this.inp_unlock_submit.set('disabled', true);
+		return this.model.open(passphrase).bind(this)
+			.then(function() {
+				this.do_accept();
+			})
+			.catch(function(err) {
+				log.error('invite: unlock: ', err);
+				barfr.barf('There was a problem unlocking the invite. Do you have the right passphrase?');
+			})
+			.finally(function() {
+				this.inp_unlock_submit.set('disabled', false);
+			});
 	},
 
-	open_accept: function(e)
+	do_accept: function(e)
 	{
 		if(e) e.stop();
 		console.log('accept')
@@ -77,6 +91,7 @@ var SharingInviteItemController = Composer.Controller.extend({
 	open_reject: function(e)
 	{
 		if(e) e.stop();
+		if(!confirm('Really reject this invite?')) return;
 		this.model.reject()
 			.catch(function(err) {
 				barfr.barf('There was a problem rejecting that invite. Please try again.');
