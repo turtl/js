@@ -354,6 +354,9 @@ var Sync = Composer.Model.extend({
 			.then(function(sync) {
 				if(!enabled()) return false;
 
+				var orig = this.connected;
+				this.connected = true;
+
 				if(!options.force && (this._outgoing_sync_running || turtl.user.changing_password))
 				{
 					this._polling = false;
@@ -364,8 +367,6 @@ var Sync = Composer.Model.extend({
 					// again in a second
 					return new Promise(function(resolve) { setTimeout(resolve, 1000); });
 				}
-				var orig = this.connected;
-				this.connected = true;
 				if(!orig && !options.skip_notify) turtl.events.trigger('api:connect');
 				this.trigger('poll:have-sync', sync);
 				if(sync)
@@ -375,13 +376,14 @@ var Sync = Composer.Model.extend({
 				}
 			})
 			.catch(function(err) {
+				var orig = this.connected;
+				this.connected = false;
+
 				if(options.force) throw err;
 
 				if(!enabled()) return false;
 
 				failed = true;
-				var orig = this.connected;
-				this.connected = false;
 				if(orig && !options.skip_notify) turtl.events.trigger('api:disconnect');
 				if(err instanceof Error) throw err;
 			})
