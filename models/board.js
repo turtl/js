@@ -128,6 +128,28 @@ var Board = Protected.extend({
 			});
 	},
 
+	get_invite_from_code: function(code, options)
+	{
+		options || (options = {});
+
+		var split = atob(code).split(/:/);
+		var invite_id = split[0];
+		var board_id = split[1];
+		return turtl.api.get('/boards/'+board_id+'/invites/'+invite_id)
+			.then(function(invite_data) {
+				var invite = new Invite(invite_data);
+				if(options.save)
+				{
+					return invite.save(options)
+						.then(function() {
+							turtl.profile.get('invites').add(invite, options);
+							return invite;
+						});
+				}
+				return invite;
+			});
+	},
+
 	each_note: function(callback)
 	{
 		var cnotes = turtl.profile.get('notes');

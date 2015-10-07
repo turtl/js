@@ -28,7 +28,8 @@ var BoardsShareItemController = Composer.Controller.extend({
 		this.html(view.render('boards/share/item', {
 			pending: this.pending,
 			persona: persona,
-			share: data
+			share: data,
+			timestamp_created: this.pending ? id_timestamp(this.model.id()) : false
 		}));
 
 		var actions = [

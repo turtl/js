@@ -2,6 +2,7 @@ var BoardsShareInviteController = FormController.extend({
 	class_name: 'board-share',
 
 	elements: {
+		'input[name=title]': 'inp_title',
 		'input[name=email]': 'inp_email',
 		'input[name=passphrase]': 'inp_passphrase',
 		//'input[name=challenge]': 'inp_challenge',
@@ -86,12 +87,15 @@ var BoardsShareInviteController = FormController.extend({
 	{
 		if(e) e.stop();
 		var my_persona = turtl.profile.get('personas').first();
+
+		var title = this.inp_title.get('value');
 		var email = this.email;
 		var set_challenge = this.inp_use_challenge.get('checked');
 		var passphrase = this.inp_passphrase.get('value');
 		//var challenge = this.inp_challenge.get('value');
 		//var response = this.inp_response.get('value');
 		var errors = [];
+		if(!title) errors.push([this.inp_title, 'Please give this invite a title']);
 		if(!email) errors.push([this.inp_email, 'Please enter a valid email']);
 
 		var invite_data = {
@@ -100,6 +104,7 @@ var BoardsShareInviteController = FormController.extend({
 			to_persona: this.persona || null,
 			from: my_persona.id(),
 			to: this.persona ? this.persona.id(true) : email,
+			title: title,
 			key: this.model.key
 		};
 

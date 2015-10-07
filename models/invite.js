@@ -14,7 +14,8 @@ var Invite = ProtectedShared.extend({
 		'has_passphrase',
 		'has_persona',
 		'from',
-		'to'
+		'to',
+		'title'
 	],
 
 	private_fields: [
@@ -27,6 +28,16 @@ var Invite = ProtectedShared.extend({
 	{
 		// we always give invites a unique id
 		if(this.is_new()) this.set({id: this.cid()});
+	},
+
+	safe_json: function()
+	{
+		// we don't want the from_persona to get serialized, but we do want it
+		// to return when we save the model.
+		var data = this.parent.apply(this, arguments);
+		var persona = this.get('from_persona');
+		if(!persona.is_new()) data.from_persona = persona.safe_json();
+		return data;
 	},
 
 	generate_token: function()
@@ -55,7 +66,10 @@ var Invite = ProtectedShared.extend({
 		return Promise.resolve(key).bind(this)
 			.catch(DOMException, function(err) {
 				// probably some idiotic "safe origin" policy crap. revert to sync/SJCL method
-				log.error('user: get_key: ', err);
+				if(!(err instanceof DOMException))
+				{
+					log.error('invite: get_key: ', err);
+				}
 				return tcrypt.key(passphrase, salt, {key_size: 32, iterations: iter, hasher: tcrypt.get_hasher('SHA256')});
 			})
 			.tap(function(key) {
@@ -106,6 +120,10 @@ var Invite = ProtectedShared.extend({
 					this.set({token_server: this.get('token')});
 				}
 			});
+	},
+
+	reject: function()
+	{
 	}
 });
 

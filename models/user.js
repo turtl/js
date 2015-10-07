@@ -374,7 +374,10 @@ var User = Protected.extend({
 			var promise = Promise.resolve(key)
 				.catch(DOMException, function(err) {
 					// probably some idiotic "safe origin" policy crap. revert to sync/SJCL method
-					log.error('user: get_key: ', err);
+					if(!(err instanceof DOMException))
+					{
+						log.error('user: get_key: ', err);
+					}
 					return tcrypt.key(password, salt, {key_size: 32, iterations: iter, hasher: tcrypt.get_hasher('SHA256')});
 				})
 		}

@@ -2,7 +2,7 @@
 <h2>
 	{{#if persona}}
 		{{#if persona.name}}
-			{{persona.name}} &lt;{{persona.email}}&gt;
+			{{persona.name}}
 		{{else}}
 			{{persona.email}}
 		{{/if}}
@@ -11,6 +11,8 @@
 	{{/if}}
 </h2>
 {{#if pending}}
-	<p>(invite pending)</p>
+	<p>
+		Invite pending. Sent {{ago-time timestamp_created}}
+	</p>
 {{/if}}
 
