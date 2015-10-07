@@ -122,6 +122,7 @@ var BoardsShareInviteController = FormController.extend({
 		if(!this.check_errors(errors)) return;
 
 		var invite = new Invite(invite_data);
+		this.disable(true);
 		return this.model.create_share(invite).bind(this)
 			.then(function() {
 				barfr.barf('Invite sent');
@@ -130,6 +131,7 @@ var BoardsShareInviteController = FormController.extend({
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', 'There was a problem sending that invite', err);
 				log.error('board: share: ', this.model.id(), derr(err));
+				this.disable(false);
 			});
 	},
 
