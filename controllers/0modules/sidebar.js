@@ -3,7 +3,8 @@ var SidebarController = Composer.Controller.extend({
 
 	elements: {
 		'> .overlay': 'overlay',
-		'li[rel=share]': 'el_share'
+		'li[rel=share]': 'el_share',
+		'.inner > .connection': 'el_connection'
 	},
 
 	events: {
@@ -23,9 +24,11 @@ var SidebarController = Composer.Controller.extend({
 			case 'share': return this.el_share; break;
 			}
 		}.bind(this);
+		this.with_bind(turtl.events, 'api:connect', this.update_connection_status.bind(this));
+		this.with_bind(turtl.events, 'api:disconnect', this.update_connection_status.bind(this));
+		this.with_bind(turtl.events, 'app:load:profile-loaded', this.render.bind(this));
 		this.with_bind(turtl.events, 'notification:set', function(type) {
 			var el = get_notify_el(type);
-			console.log('el: ', el);
 			if(el) el.addClass('notify');
 		});
 		this.with_bind(turtl.events, 'notification:clear', function(type) {
@@ -37,6 +40,7 @@ var SidebarController = Composer.Controller.extend({
 	render: function()
 	{
 		this.html(view.render('modules/sidebar', {
+			connected: (turtl.sync || {}).connected
 		}));
 	},
 
@@ -70,6 +74,23 @@ var SidebarController = Composer.Controller.extend({
 		else
 		{
 			this.open();
+		}
+	},
+
+	update_connection_status: function()
+	{
+		var connected = turtl.sync.connected;
+		if(connected)
+		{
+			this.el_connection
+				.removeClass('disconnected')
+				.addClass('connected');
+		}
+		else
+		{
+			this.el_connection
+				.removeClass('connected')
+				.addClass('disconnected');
 		}
 	}
 });

@@ -6,7 +6,7 @@
 	> .overlay.show {opacity: 1; cursor: pointer;}
 	> .inner {position: absolute; z-index: 11; top: 0; left: 0; width: @sidebar_travel; height: 100%; overflow-y: auto; .layer-hover(); background: #fff;}
 	> .inner {
-		> .gutter {padding: 0 0 64rem 0;}
+		> .gutter {padding: 0 0 42rem 0;}
 		> .gutter {
 			ul {margin: 0; padding: 0; list-style: none;}
 			li {border-bottom: 1rem solid @theme_border;}
@@ -20,6 +20,18 @@
 				&.notify {
 					a:before {opacity: 1;}
 				}
+			}
+		}
+
+		.connection {text-align: center;}
+		.connection {
+			icon {font-size: 32rem; color: @theme_gray_midlight;}
+			span {display: block; padding: 12rem 0; font-size: 16rem; color: @theme_gray;}
+			span.connected {display: none;}
+			&.connected {
+				icon {color: @theme_accent;}
+				span.disconnected {display: none;}
+				span.connected {display: block;}
 			}
 		}
 	}
