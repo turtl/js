@@ -124,6 +124,17 @@ var Invite = ProtectedShared.extend({
 
 	reject: function()
 	{
+		if(this.get('has_persona'))
+		{
+			// NOTE: we don't .then(destroy) here since the sync will probably
+			// come through before the delete finishes, and the invite will be
+			// destroyed then
+			return turtl.api._delete('/boards/'+this.get('object_id')+'/invites/'+this.id());
+		}
+		else
+		{
+			return this.destroy({skip_remote_sync: true});
+		}
 	}
 });
 

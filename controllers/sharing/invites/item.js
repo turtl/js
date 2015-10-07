@@ -77,7 +77,11 @@ var SharingInviteItemController = Composer.Controller.extend({
 	open_reject: function(e)
 	{
 		if(e) e.stop();
-		console.log('reject')
+		this.model.reject()
+			.catch(function(err) {
+				barfr.barf('There was a problem rejecting that invite. Please try again.');
+				log.error('invite: reject: ', err);
+			})
 	}
 });
 
