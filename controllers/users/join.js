@@ -142,11 +142,11 @@ var UserJoinController = FormController.extend({
 			.then(function(userdata) {
 				var data = user.toJSON();
 				data.id = userdata.id;
-				turtl.events.bind_once('profile-loaded', this.create_initial_boards.bind(this));
+				turtl.events.bind_once('app:load:profile-loaded', this.create_initial_boards.bind(this));
 				return turtl.user.login(data)
 			})
 			.then(function() {
-				turtl.events.bind_once('profile-loaded', function() {
+				turtl.events.bind_once('app:load:profile-loaded', function() {
 					turtl.route('/personas/join');
 				});
 			})

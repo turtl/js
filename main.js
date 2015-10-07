@@ -203,7 +203,7 @@ var turtl = {
 					}
 					options.initial_route = '/';
 					if(window.port) window.port.send('profile-load-complete');
-					turtl.events.trigger('profile-loaded');
+					turtl.events.trigger('app:load:profile-loaded');
 				})
 				.catch(function(err) {
 					barfr.barf('There was a problem with the initial load of your profile. Please try again.');
