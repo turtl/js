@@ -5,7 +5,8 @@ var ChangePasswordController = FormController.extend({
 		'input[name=new_username]': 'inp_new_username',
 		'input[name=new_password]': 'inp_new_password',
 		'input[name=new_confirm]': 'inp_new_confirm',
-		'input[type=submit]': 'inp_submit'
+		'input[type=submit]': 'inp_submit',
+		'.buttons .button': 'el_loader'
 	},
 
 	events: {
@@ -42,8 +43,16 @@ var ChangePasswordController = FormController.extend({
 		var user = new User({username: cur_username, password: cur_password});
 		var cur_key = JSON.stringify();
 
-		this.inp_submit.set('disabled', true);
+		var loading = function(yesno)
+		{
+			this.inp_submit.set('disabled', yesno);
+			if(yesno) this.el_loader.addClass('active');
+			else this.el_loader.removeClass('active');
+		}.bind(this);
+
 		var pending_barf = barfr.barf('Updating your login. Please be patient (and DO NOT close the app)!');
+		loading(true);
+		window._loading=loading;
 		return delay(300).bind(this)
 			.then(function() {
 				return Promise.all([
@@ -64,7 +73,7 @@ var ChangePasswordController = FormController.extend({
 
 				if(!this.check_errors(errors))
 				{
-					this.inp_submit.set('disabled', false);
+					loading(false);
 					barfr.close_barf(pending_barf);
 					return;
 				}
@@ -72,7 +81,7 @@ var ChangePasswordController = FormController.extend({
 				var errors = UserJoinController.prototype.check_login(this.inp_new_username, this.inp_new_password, this.inp_new_confirm);
 				if(!this.check_errors(errors))
 				{
-					this.inp_submit.set('disabled', false);
+					loading(false);
 					barfr.close_barf(pending_barf);
 					return;
 				}
@@ -89,7 +98,7 @@ var ChangePasswordController = FormController.extend({
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', 'There was a problem changing your login. We are undoing the changes. Please try again.', err);
 				log.error('settings: change password: ', derr(err));
-				this.inp_submit.set('disabled', false);
+				loading(false);
 			});
 	},
 
