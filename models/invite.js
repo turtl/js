@@ -85,7 +85,10 @@ var Invite = ProtectedShared.extend({
 		var have_passphrase = !!passphrase;
 		this.set({has_passphrase: have_passphrase});
 		this.generate_token();
-		return this.passphrase_to_key(passphrase).bind(this)
+		return delay(1).bind(this)
+			.then(function() {
+				return this.passphrase_to_key(passphrase);
+			})
 			.then(function() {
 				return this.serialize();
 			})
@@ -102,7 +105,10 @@ var Invite = ProtectedShared.extend({
 
 	open: function(passphrase)
 	{
-		return this.passphrase_to_key(passphrase).bind(this)
+		return delay(1).bind(this)
+			.then(function() {
+				return this.passphrase_to_key(passphrase);
+			})
 			.then(function() {
 				if(!this.get('has_persona')) return;
 				// TODO: try multiple personas
