@@ -6,7 +6,7 @@ var ChangePasswordController = FormController.extend({
 		'input[name=new_password]': 'inp_new_password',
 		'input[name=new_confirm]': 'inp_new_confirm',
 		'input[type=submit]': 'inp_submit',
-		'.buttons .button': 'el_loader'
+		'p.load': 'el_loader'
 	},
 
 	events: {
