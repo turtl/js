@@ -23,7 +23,7 @@
 
 	var global = this;
 	if(!global.Composer) global.Composer = {
-		version: '1.1.8',
+		version: '1.1.13',
 
 		// note: this used to be "export" but IE is a whiny little bitch, so now
 		// we're sup3r 1337 h4x0r5
@@ -306,8 +306,7 @@
 		if(obj == null) return 'null';
 		var type = typeof(obj);
 		if(type != 'object') return type;
-		if(Array.isArray && Array.isArray(obj)) return 'array';
-		else if(Object.prototype.toString.call(obj) === '[object Array]') return 'array';
+		if(obj instanceof Array) return 'array';
 		return type;
 	};
 
@@ -317,13 +316,84 @@
 	var merge = function(into, from, options)
 	{
 		options || (options = {});
-		for(var k in from)
+		var keys = Object.keys(from);
+		var transform = options.transform;
+		for(var i = 0, n = keys.length; i < n; i++)
 		{
-			if(!from.hasOwnProperty(k)) continue;
-			if(options.transform) options.transform(into, from, k);
+			var k = keys[i];
+			if(transform) transform(into, from, k);
 			into[k] = from[k];
 		}
 		return into;
+	};
+
+	/**
+	 * Given an object, copy the subobjects/subarrays recursively
+	 */
+	var copy = function(obj)
+	{
+		// we can't do Object.keys or hasOwnProperty here because we actually
+		// want to look at all inherited objects as well as owned objects.
+		for(var k in obj)
+		{
+			var val = obj[k];
+			var type = typeOf(val);
+			if(type == 'object')
+			{
+				obj[k] = copy(merge({}, val));
+			}
+			else if(type == 'array')
+			{
+				obj[k] = val.map(copy);
+			}
+		}
+		return obj;
+	};
+
+	/**
+	 * Create a new class prototype from the given base class.
+	 */
+	var create = function(base)
+	{
+		if('create' in Object)
+		{
+			// create the new object from the prototype
+			var prototype = Object.create(base.prototype);
+		}
+		else
+		{
+			// of we won't have Object.create, then we need to let the object
+			// know we want a bare instance (without initializing it)
+			base.$initializing = true;
+			var prototype = new base();
+			delete base.$initializing;
+		}
+
+		var cls = function Omni()
+		{
+			// don't run the ctor if we're just trying to get a prototype
+			if(cls.$initializing) return this;
+
+			// if we don't copy the objects in the prototype, then if we have an
+			// object in the prototype like so:
+			// {
+			//     count: {x: 0},
+			//     ...
+			// }
+			//
+			// Then by doing `new Counter().count.x = 5`, we set x=5 for the
+			// entire prototype, and hence all the subsequent instantiations of
+			// the class.
+			copy(this);
+			this.$state = {parents: {}, fn: []};
+			if(this.initialize) return this.initialize.apply(this, arguments);
+			else return this;
+		};
+		cls.$constructor = prototype.$constructor = cls;
+		cls.prototype = prototype;
+		cls.prototype.$parent = base;
+
+		return cls;
 	};
 
 	/**
@@ -356,51 +426,6 @@
 				from[k].$parent = into[k];
 			}
 		});
-	};
-
-	/**
-	 * Given an object, copy the subobjects/subarrays recursively
-	 */
-	var copy = function(obj)
-	{
-		for(var k in obj)
-		{
-			var val = obj[k];
-			switch(typeOf(val))
-			{
-			case 'object':
-				obj[k] = copy(merge({}, val));
-				break;
-			case 'array':
-				obj[k] = val.slice(0);
-				break;
-			}
-		}
-		return obj;
-	}
-
-	/**
-	 * Create a new class prototype from the given base class.
-	 */
-	var create = function(base)
-	{
-		base.$initializing = true;
-		var prototype = new base();
-		delete base.$initializing;
-
-		var cls = function Omni()
-		{
-			copy(this);
-			if(cls.$initializing) return this;
-			this.$state = {parents: {}, fn: []};
-			if(this.initialize) return this.initialize.apply(this, arguments);
-			else return this;
-		};
-		cls.$constructor = prototype.$constructor = cls;
-		cls.prototype = prototype;
-		cls.prototype.$parent = base;
-
-		return cls;
 	};
 
 	/**
@@ -580,12 +605,25 @@
 			var args = Array.prototype.slice.call(arguments, 0);
 			var handlers = this._handlers[event_name] || [];
 			var catch_all = this._handlers['all'] || [];
-			handlers.slice(0).forEach(function(handler) {
-				handler.apply(this, args.slice(1));
-			}.bind(this));
-			catch_all.slice(0).forEach(function(handler) {
-				handler.apply(this, args.slice(0));
-			}.bind(this));
+
+			// we do a copy so unbinds during a trigger don't corrupt the
+			// handler array
+			var handlers_copy = handlers.slice(0);
+			var handlers_args = args.slice(1);
+			for(var i = 0, n = handlers_copy.length; i < n; i++)
+			{
+				handlers_copy[i].apply(this, handlers_args);
+			}
+
+			// we do a copy so unbinds during a trigger don't corrupt the
+			// handler array
+			var catchall_copy = catch_all.slice(0);
+			var catchall_args = args.slice(0);
+			for(var i = 0, n = catchall_copy.length; i < n; i++)
+			{
+				catchall_copy[i].apply(this, catchall_args);
+			}
+
 			return this;
 		}
 	});
@@ -1266,7 +1304,7 @@
 			{
 				// if we have a sorting function, get the index the model should exist at
 				// and add it to that position
-				var index = options.at ? parseInt(options.at) : this.sort_index(model);
+				var index = options.at ? parseInt(options.at) : this.sort_index(model, options);
 				this._models.splice(index, 0, model);
 			}
 			else
@@ -1473,8 +1511,9 @@
 		 * given the current sort function and a model passecd in, determine the
 		 * index the model should exist at in the collection's model list.
 		 */
-		sort_index: function(model)
+		sort_index: function(model, options)
 		{
+			options || (options = {});
 			if(this._models.length == 0) return 0;
 
 			if(!this.sortfn)
@@ -1484,7 +1523,9 @@
 				return idx;
 			}
 
-			var sorted = this._models.slice(0).sort(this.sortfn);
+			var sorted = this._models;
+			if(options.accurate_sort) sorted = sorted.slice(0).sort(this.sortfn);
+
 			for(var i = 0; i < sorted.length; i++)
 			{
 				if(model == sorted[i]) return i;
@@ -1711,11 +1752,13 @@
 		/**
 		 * given the current sort function, find the model at the given position
 		 */
-		sort_at: function(n)
+		sort_at: function(n, options)
 		{
+			options || (options = {});
 			if(!this.sortfn) return false;
 
-			var sorted = this._models.slice(0).sort(this.sortfn);
+			var sorted = this._models;
+			if(options.accurate_sort) sorted = sorted.slice(0).sort(this.sortfn);
 			return sorted[n];
 		},
 
@@ -1904,8 +1947,13 @@
 	})();
 
 
+	var captured_events = {
+		'focus': true,
+		'blur': true
+	};
 	var add_event = (function() {
 		return function(el, ev, fn, selector) {
+			var capture = captured_events[ev] || false;
 			if(selector)
 			{
 				el.addEventListener(ev, function(event) {
@@ -1925,7 +1973,7 @@
 							target = false;
 						}
 					}
-				});
+				}, capture);
 			}
 			else
 			{
@@ -1933,7 +1981,7 @@
 					// if we have a mootools event class, wrap the event in it
 					if(event && window.MooTools && window.DOMEvent) event = new DOMEvent(event);
 					fn.apply(this, [event].concat(event.params || []));
-				}, false);
+				}, capture);
 			}
 		};
 	})();
@@ -2104,7 +2152,7 @@
 		{
 			if(!this.el) this._ensure_el();
 
-			if(obj.appendChild && obj.tagName)
+			if(obj.appendChild)
 			{
 				this.el.innerHTML = '';
 				this.el.appendChild(obj);
@@ -2482,8 +2530,8 @@
 
 			// inject the controller at the correct position, according to the
 			// collection's sortfn
-			var sort_idx = this._collection.sort_index(model);
-			var before_model = this._collection.sort_at(sort_idx - 1) || false;
+			var sort_idx = this._collection.sort_index(model, options);
+			var before_model = this._collection.sort_at(sort_idx - 1, options) || false;
 			var before_con = this.lookup_controller(before_model);
 
 			var parent = con.el.parentNode;
@@ -2842,7 +2890,7 @@
 			var route_link = function(e)
 			{
 				if(e.defaultPrevented) return;
-				if(e.ctrlKey || e.shiftKey || e.altKey) return;
+				if(e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
 
 				var a = Composer.find_parent(selector, e.target);
 				var button = typeof(e.button) != 'undefined' ? e.button : e.event.button;
@@ -3399,16 +3447,17 @@
 				}
 			}
 
-			// if the number of elements in the FC changed, just fire a standard
-			// "change" event (with the forwarded args), otherwise the change
-			// triggered a membership change, so fire a "reset"
+			// if the number of elements in the FC is unchanged, just fire a
+			// standard "change" event (with the forwarded args), otherwise the
+			// change triggered a membership change...in this case, the
+			// add/remove events should cover the change.
 			if(this._models.length == num_items)
 			{
 				forward_args.shift();
 				var args = ['change', options].concat(forward_args);
 				this.fire_event.apply(this, args);
 			}
-			else
+			else if(this.options.refresh_on_change)
 			{
 				this.fire_event('reset', options);
 			}
