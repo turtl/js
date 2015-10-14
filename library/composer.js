@@ -3397,7 +3397,9 @@
 			options || (options = {});
 
 			// see if this model even belongs to this collection
-			if(!model || (this.models().indexOf(model) < 0 && !this.filter(model, this))) return false;
+			var cur_index = this.models().indexOf(model);
+			var filters = this.filter(model, this);
+			if(!model || (cur_index < 0 && !filters)) return false;
 
 			// track the current number of items and reloda the data
 			var num_items = this._models.length;
@@ -3411,15 +3413,14 @@
 			else
 			{
 				// a more tactful approach
-				var cur_index = this._models.indexOf(model);
 				var new_index = this.sort_index(model);
 
-				if(cur_index == -1 && this.filter(model, this))
+				if(cur_index == -1 && filters)
 				{
 					// welcome to the team!
 					this.add(model, options);
 				}
-				else if(cur_index > -1 && !this.filter(model, this))
+				else if(cur_index > -1 && !filters)
 				{
 					// we feel that your interests no longer align with the team's
 					// ...we're going to have to let you go.
@@ -3532,7 +3533,7 @@
 			if(this.limit) this._models.splice(this.limit);
 			// after sort/limit, model may not actually be in the FC, so
 			// check before wildly firing add/sort events
-			if(this.index_of(model))
+			if(this.index_of(model) >= 0)
 			{
 				// model was actually added, fire "add" event
 				this.fire_event('add', options, model, this, options);
