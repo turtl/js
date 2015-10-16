@@ -126,6 +126,63 @@ var Invite = ProtectedShared.extend({
 					this.set({token_server: this.get('token')});
 				}
 			});
+	}
+});
+
+var BoardInvite = Invite.extend({
+	create: function()
+	{
+		var passphrase = this.get('passphrase') || false;
+		this.unset('passphrase');
+
+		return this.seal(passphrase).bind(this)
+			.then(function(invite_data) {
+				return turtl.api.post('/boards/'+this.get('object_id')+'/invites', invite_data);
+			})
+			.tap(function(invite_data) {
+				this.set(invite_data);
+			});
+	},
+
+	accept: function()
+	{
+		var next = Promise.resolve();
+		if(!this.get('token')) next = this.open();
+		// make the call to the sharing API, accept the invite. if all goes well
+		// it will just return the board data (ignored), and trigger a sync
+		// action "board.share" that prompts the sync system to send the board
+		// and all of its notes our way. in other words, we send a simple
+		// "invite accept!" call and the rest happens via sync.
+		return next.bind(this)
+			.then(function() {
+				if(!this.get('key')) throw new Error('invite key missing');
+				if(!this.get('token')) throw new Error('invite token missing');
+				var token = this.get('token');
+				var key = this.get('key');
+				var board_id = this.get('object_id');
+				var persona_id = turtl.profile.get('personas').first().id();
+				var keychain = turtl.profile.get('keychain');
+				// add the key to the keychain BEFORE we accept via the API
+				// because the sync record might come through before the call
+				// finishes, and then we're screwed because we have a board w/
+				// notes but no key in the keychain to decrypt them. now that's
+				// what i call a STICKY SITUATION.
+				return keychain.add_key(board_id, 'board', key).bind(this)
+					.then(function() {
+						var params = {
+							'token': token,
+							'to_persona_id': persona_id
+						};
+						var qs = Object.keys(params).map(function(key) { return key+'='+encodeURIComponent(params[key]);}).join('&');
+						return turtl.api.put('/boards/'+this.get('object_id')+'/invites/'+this.id()+'/accept?'+qs)
+					})
+					.catch(function(err) {
+						// failure? undo adding the key to the keychain, and
+						// rethrow the error once done.
+						return keychain.remove_key(board_id)
+							.finally(function() { throw err; });
+					});
+			});
 	},
 
 	reject: function()
@@ -141,11 +198,33 @@ var Invite = ProtectedShared.extend({
 		{
 			return this.destroy({skip_remote_sync: true});
 		}
+	},
+
+	get_invite_from_code: function(code, options)
+	{
+		options || (options = {});
+
+		var split = atob(code).split(/:/);
+		var invite_id = split[0];
+		var board_id = split[1];
+		return turtl.api.get('/boards/'+board_id+'/invites/'+invite_id).bind(this)
+			.then(function(invite_data) {
+				var invite = new this.$constructor(invite_data);
+				if(options.save)
+				{
+					return invite.save(options)
+						.then(function() {
+							turtl.profile.get('invites').add(invite, options);
+							return invite;
+						});
+				}
+				return invite;
+			});
 	}
 });
 
 var Invites = SyncCollection.extend({
-	model: Invite,
+	model: BoardInvite,
 
 	run_incoming_sync_item: function(sync, item)
 	{

@@ -96,60 +96,6 @@ var Board = Protected.extend({
 		return this.parent(keys, search, options);
 	},
 
-	create_share: function(invite)
-	{
-		var passphrase = invite.get('passphrase') || false;
-		invite.unset('passphrase');
-
-		return invite.seal(passphrase).bind(this)
-			.then(function(invite_data) {
-				return turtl.api.post(this.get_url() + '/invites', invite_data);
-			})
-			.tap(function(invite_data) {
-				invite.set(invite_data);
-				// no point to this, sync almost always comes through before
-				// the DELETE finishes. might as well let it sync
-				//turtl.sync.ignore_on_next_sync(invite_data.sync_ids || []);
-				//return new Invite(invite_data).save({skip_serialize: true, skip_remote_sync: true})
-				//	.then(function(invite) {
-				//		return turtl.profile.get('invites').upsert(invite);
-				//	});
-			});
-	},
-
-	reject_share: function(invite)
-	{
-		return turtl.api._delete(this.get_url() + '/invites/'+invite.id())
-			.then(function(data) {
-				// no point to this, sync almost always comes through before
-				// the DELETE finishes. might as well let it sync
-				//turtl.sync.ignore_on_next_sync(data.sync_ids || []);
-				return invite.destroy({skip_remote_sync: true});
-			});
-	},
-
-	get_invite_from_code: function(code, options)
-	{
-		options || (options = {});
-
-		var split = atob(code).split(/:/);
-		var invite_id = split[0];
-		var board_id = split[1];
-		return turtl.api.get('/boards/'+board_id+'/invites/'+invite_id)
-			.then(function(invite_data) {
-				var invite = new Invite(invite_data);
-				if(options.save)
-				{
-					return invite.save(options)
-						.then(function() {
-							turtl.profile.get('invites').add(invite, options);
-							return invite;
-						});
-				}
-				return invite;
-			});
-	},
-
 	each_note: function(callback)
 	{
 		var cnotes = turtl.profile.get('notes');
@@ -193,6 +139,15 @@ var Board = Protected.extend({
 			}
 		}.bind(this));
 		return children;
+	},
+
+	remove_persona: function(persona)
+	{
+		return turtl.api._delete(this.get_url() + '/persona/'+persona.id())
+			.then(function(board) {
+				// do nothing, the sync system will update the board for us,
+				// probably before the sync call even returns
+			});
 	}
 });
 

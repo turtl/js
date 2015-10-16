@@ -40,7 +40,10 @@ var SharingController = Composer.Controller.extend({
 		});
 		var boards_to_me = new Composer.FilterCollection(boards, {
 			filter: function(model) {
-				return model.get('shared');
+				var privs = model.get('privs');
+				return model.get('shared') &&
+					privs &&
+					(privs[persona_id] || {}).perms > 0
 			}
 		});
 

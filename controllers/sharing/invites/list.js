@@ -70,7 +70,7 @@ var SharingInvitesListController = Composer.ListController.extend({
 
 		if(!code) return close();
 
-		new Board().get_invite_from_code(code, {save: true, skip_remote_sync: true, skip_serialize: true})
+		new BoardInvite().get_invite_from_code(code, {save: true, skip_remote_sync: true, skip_serialize: true})
 			.bind(this)
 			.then(close)
 			.catch(function(err) {

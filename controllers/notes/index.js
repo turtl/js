@@ -46,7 +46,8 @@ var NotesIndexController = Composer.Controller.extend({
 			{
 				title = parent.get('title') + '/' + title;
 			}
-			var back = '/boards';
+			var back = turtl.router.get_param(window.location.search, 'back');
+			if(!back) back = '/boards';
 		}
 
 		var tagsearch = clone(this.search);

@@ -30,6 +30,10 @@ var BoardsShareInviteController = FormController.extend({
 	email_timer: null,
 	persona: null,
 
+	// set to true if the user toggles the "Protect this invite" box so we know
+	// NOT to negate their selection
+	user_toggled_protect: false,
+
 	init: function()
 	{
 		if(!this.model)
@@ -121,9 +125,9 @@ var BoardsShareInviteController = FormController.extend({
 
 		if(!this.check_errors(errors)) return;
 
-		var invite = new Invite(invite_data);
+		var invite = new BoardInvite(invite_data);
 		this.disable(true);
-		return this.model.create_share(invite).bind(this)
+		return invite.create().bind(this)
 			.then(function() {
 				barfr.barf('Invite sent');
 				this.trigger('close');
@@ -151,13 +155,21 @@ var BoardsShareInviteController = FormController.extend({
 			.then(function(persona) {
 				this.persona = persona;
 				this.render_invite_type(BoardsShareInvitePersonaController, email);
+				if(!this.user_toggled_protect)
+				{
+					this.inp_use_challenge.set('checked', false);
+					this.toggle_challenge();
+				}
 			})
 			.catch(function(err) {
 				if(err && (err.outdated_key || (err.xhr && err.xhr.status == 404)))
 				{
 					this.persona = null;
-					this.inp_use_challenge.set('checked', true);
-					this.toggle_challenge();
+					if(!this.user_toggled_protect)
+					{
+						this.inp_use_challenge.set('checked', true);
+						this.toggle_challenge();
+					}
 					return this.render_invite_type(BoardsShareInviteEmailController, email, {
 						outdated_key: !!err.outdated_key
 					});
@@ -171,6 +183,7 @@ var BoardsShareInviteController = FormController.extend({
 
 	toggle_challenge: function(e)
 	{
+		if(e) this.user_toggled_protect = true;
 		var checked = this.inp_use_challenge.get('checked');
 		if(checked)
 		{

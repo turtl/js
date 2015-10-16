@@ -1,0 +1,22 @@
+<div class="share-actions"></div>
+<h2>
+	{{board.title}}
+</h2>
+<p>
+	{{permissions}} permissions
+</p>
+{{#if invite.has_passphrase}}
+<div class="clearMe"></div>
+<div class="unlocker">
+	<form class="standard-form">
+		<input type="text" name="passphrase" value="" placeholder="Passphrase">
+		<div class="submit">
+			<div class="button">
+				<input type="submit" value="Unlock and accept">
+			</div>
+		</div>
+	</form>
+</div>
+{{/if}}
+
+

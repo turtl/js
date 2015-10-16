@@ -42,8 +42,11 @@ var SharingInviteItemController = Composer.Controller.extend({
 				actions: actions
 			});
 		}.bind(this));
-		this.el_unlocker.set('slide', {duration: 300});
-		this.el_unlocker.get('slide').hide();
+		if(this.el_unlocker)
+		{
+			this.el_unlocker.set('slide', {duration: 300});
+			this.el_unlocker.get('slide').hide();
+		}
 	},
 
 	open_unlocker: function(e)
@@ -85,7 +88,20 @@ var SharingInviteItemController = Composer.Controller.extend({
 	do_accept: function(e)
 	{
 		if(e) e.stop();
-		console.log('accept')
+		var persona = turtl.profile.get('personas').first();
+		if(!persona)
+		{
+			barfr.barf('Accepting invites requires a persona.');
+			return;
+		}
+		this.model.accept()
+			.then(function() {
+				barfr.barf('Invite accepted!');
+			})
+			.catch(function(err) {
+				log.error('invite: accept: ', err);
+				barfr.barf('There was a problem accepting that invite. Please try again.');
+			});
 	},
 
 	open_reject: function(e)

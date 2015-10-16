@@ -25,9 +25,19 @@ var BoardsShareItemController = Composer.Controller.extend({
 		var persona = this.pending ? data.to_persona : data;
 		if(!persona.id) persona = false;
 
+		var perms = '';
+		var privs = this.board.get('privs') || {};
+		switch((privs[persona.id] || {}).perms)
+		{
+		case 1: perms = 'Read'; break;
+		case 2: perms = 'Write'; break;
+		case 3: perms = 'Admin'; break;
+		}
+
 		this.html(view.render('boards/share/item', {
 			pending: this.pending,
 			persona: persona,
+			permissions: perms,
 			share: data,
 			timestamp_created: this.pending ? id_timestamp(this.model.id()) : false
 		}));
@@ -48,7 +58,7 @@ var BoardsShareItemController = Composer.Controller.extend({
 		if(e) e.stop();
 		if(!confirm('Really delete this '+ (this.pending ? 'invite' : 'share') +' form this board?')) return;
 
-		this.board.reject_share(this.model)
+		this.board.remove_persona(this.model)
 			.catch(function(err) {
 				barfr.barf('Error removing invite.');
 				log.error('board: share: remove invite: ', err);
