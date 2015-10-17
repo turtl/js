@@ -61,7 +61,6 @@ var Sync = Composer.Model.extend({
 		this.start_remote_poll();
 
 		this.outgoing_timer = new Timer(2000);
-		this.outgoing_timer.bind('fired', this.run_outgoing_sync.bind(this));
 		this.outgoing_timer.bind('fired', function() {
 			if(!this.connected) return;
 			this.run_outgoing_sync();
@@ -583,6 +582,13 @@ var SyncCollection = Composer.Collection.extend({
 						// this.add() is a more "correct" option, but in case we
 						// for some reason already have this record, i'd rather
 						// update it than duplicate it just in case...
+						//
+						// keep in mind that for sharing, if Board A is shared,
+						// then Board B is shared and Board B contains some of
+						// the same notes as Board A, those same notes will come
+						// through in the sync regardless of whether or not we
+						// already have them, so we really do need to upsert
+						// here instead of add.
 						this.upsert(model);
 					});
 				break;
