@@ -107,7 +107,7 @@ var Keychain = SyncCollection.extend({
 
 		var model = this.find_key(item_id, {return_model: true});
 		if(!model) return false;
-		return model.destroy()
+		return model.destroy(options)
 			.catch(function(err) {
 				barfr.barf('Error removing key for item: '+ err);
 				throw err;

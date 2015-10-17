@@ -40,25 +40,33 @@ var Board = Protected.extend({
 		}.bind(this));
 
 		this.bind('destroy', function(_1, _2, options) {
-			turtl.profile.get('keychain').remove_key(this.id());
+			options || (options = {});
+
+			turtl.profile.get('keychain').remove_key(this.id(), options);
 			this.get('boards').each(function(board) {
 				board.destroy(options);
 			});
 
 			var boards = turtl.profile.get('boards');
-			if(options.delete_notes)
+			// NOTE: if we're skipping remote sync, this is coming from a sync
+			// item (almost assuredly) and we don't want to edit/remove the
+			// notes
+			if(!options.skip_remote_sync)
 			{
-				this.each_note(function(note) { note.destroy(); });
-			}
-			else
-			{
-				var board_id = this.id();
-				this.each_note(function(note) {
-					var boards = note.get('boards').slice(0);
-					boards = boards.erase(board_id);
-					note.set({boards: boards});
-					note.save();
-				}.bind(this));
+				if(options.delete_notes)
+				{
+					this.each_note(function(note) { note.destroy(options); });
+				}
+				else
+				{
+					var board_id = this.id();
+					this.each_note(function(note) {
+						var boards = note.get('boards').slice(0);
+						boards = boards.erase(board_id);
+						note.set({boards: boards}, options);
+						note.save(options);
+					}.bind(this));
+				}
 			}
 		}.bind(this));
 	},
