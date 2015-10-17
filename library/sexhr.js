@@ -66,11 +66,15 @@
 			{
 				reject({xhr: xhr, code: -1, msg: 'error'});
 			};
+			xhr.ontimeout = function(e)
+			{
+				reject({xhr: xhr, code: -3, msg: 'timeout'});
+			};
 
 			// set xhr.on[progress|abort|etc]
 			Object.keys(options).forEach(function(k) {
 				if(k.substr(0, 2) != 'on') return false;
-				if(['onload', 'onerror', 'onabort'].indexOf(k) >= 0) return false;
+				if(['onload', 'onerror', 'onabort', 'ontimeout'].indexOf(k) >= 0) return false;
 				var fn = options[k];
 				xhr[k] = function(e) { fn(e, xhr); };
 			});
