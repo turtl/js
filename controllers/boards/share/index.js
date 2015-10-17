@@ -14,6 +14,8 @@ var BoardsShareController = Composer.Controller.extend({
 
 	model: null,
 
+	auto_opened: false,
+
 	init: function()
 	{
 		if(!this.board_id) throw new Error('boards: share: board_id not specified');
@@ -63,9 +65,10 @@ var BoardsShareController = Composer.Controller.extend({
 			var pending = turtl.profile.get('invites').toJSON().filter(function(invite) {
 				return invite.object_id == board.id;
 			});
+			var has_shares = members.length > 0 || pending.length > 0;
 			this.html(view.render('boards/share/index', {
 				board: board,
-				has_shares: members.length > 0 || pending.length > 0
+				has_shares: has_shares
 			}));
 			this.track_subcontroller('members', function() {
 				return new BoardsShareListController({
@@ -82,6 +85,13 @@ var BoardsShareController = Composer.Controller.extend({
 					collection: turtl.profile.get('invites')
 				});
 			}.bind(this));
+
+			// why not just dump them into the invite interface directly?
+			if(!has_shares && turtl.last_url && !this.auto_opened)
+			{
+				this.open_add();
+			}
+			this.auto_opened = true;
 		}
 	},
 
