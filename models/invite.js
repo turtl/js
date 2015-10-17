@@ -196,6 +196,9 @@ var BoardInvite = Invite.extend({
 		}
 		else
 		{
+			// this is an invite added via code. we don't want to remove the
+			// invite on the server because how do we verify we own it? instead
+			// just remove it from local data, and never speak of this again...
 			return this.destroy({skip_remote_sync: true});
 		}
 	},
