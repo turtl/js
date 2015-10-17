@@ -19,7 +19,8 @@ Composer.sync = function(method, model, options)
 
 	// some debugging, can make tracking down sync issues easier
 	var action = method == 'delete' ? 'delete' : (method == 'create' ? 'add' : 'edit');
-	log.info('model: save: '+ table +': mem -> db ('+ action +')');
+	var skip_remote = options.skip_remote_sync ? ', skip remote' : '';
+	log.info('model: save: '+ table +': mem -> db ('+ action + skip_remote +')');
 
 	var error = options.error || function() {};
 	if(!turtl.db)
