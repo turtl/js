@@ -212,7 +212,7 @@ function icon(name)
 		next: 'e80b',
 		note: 'e804',
 		notes: 'e809',
-		personas: 'e800',
+		persona: 'e800',
 		protected: 'e821',
 		remove: 'e81d',
 		search: 'e83a',

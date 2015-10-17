@@ -1,9 +1,14 @@
 var personas = {
 	index: function()
 	{
+		var slide = false;
+		if(turtl.controllers.pages.is(SettingsController))
+		{
+			slide = 'left';
+		}
 		turtl.back.clear();
 		turtl.controllers.pages.load(PersonasController, {}, {
-			slide: false
+			slide: slide
 		});
 	},
 

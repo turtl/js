@@ -9,7 +9,9 @@ var PersonasController = Composer.Controller.extend({
 
 	init: function()
 	{
-		turtl.push_title('Your persona');
+		var back = turtl.router.get_param(window.location.search, 'back');
+		if(!back) back = '/settings';
+		turtl.push_title('Your persona', back);
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		this.filter = turtl.profile.get('personas');
