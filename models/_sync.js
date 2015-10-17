@@ -370,7 +370,7 @@ var Sync = Composer.Model.extend({
 				this.trigger('poll:have-sync', sync);
 				if(sync)
 				{
-					log.info('sync: poll: ', sync);
+					log.info('sync: poll: ', clone(sync));
 					return this.update_local_db_from_api_sync(sync);
 				}
 			})
