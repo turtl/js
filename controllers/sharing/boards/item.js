@@ -63,6 +63,7 @@ var SharingBoardsItemController = Composer.Controller.extend({
 	leave_board: function(e)
 	{
 		if(e) e.stop();
+		if(!confirm('Really leave this board?')) return;
 		var persona = turtl.profile.get('personas').first();
 		this.model.remove_persona(persona);
 	}
