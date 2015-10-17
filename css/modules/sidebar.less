@@ -12,7 +12,7 @@
 			li {border-bottom: 1rem solid @theme_border;}
 			li {
 				&.sep {border-bottom: 1rem solid @theme_gray_light;}
-				a {display: block; padding: 0.9em; font-size: 1.8em;}
+				a {display: block; padding: 16rem; font-size: 1.8em;}
 				a {
 					icon {display: inline-block; width: 24rem; margin: 0 8rem 0 0; font-size: 1.3em; color: @theme_gray; text-align: center;}
 				}
@@ -23,15 +23,15 @@
 			}
 		}
 
-		.connection {text-align: center;}
+		.connection {position: absolute; bottom: @header_height; padding: 16rem;}
 		.connection {
-			icon {font-size: 32rem; color: @theme_gray_midlight;}
-			span {display: block; padding: 12rem 0; font-size: 16rem; color: @theme_gray;}
+			icon {margin: 0 8rem 0 0; font-size: 24rem; color: @theme_gray_midlight;}
+			span {display: inline; padding: 12rem 0; font-size: 15rem; color: @theme_gray;}
 			span.connected {display: none;}
 			&.connected {
 				icon {color: @theme_accent;}
 				span.disconnected {display: none;}
-				span.connected {display: block;}
+				span.connected {display: inline;}
 			}
 		}
 	}
