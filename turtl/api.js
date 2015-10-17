@@ -102,8 +102,6 @@ var Api = new Class({
 			data = JSON.stringify(data);
 		}
 
-		var timed_out = false;
-
 		var request = {
 			url: url,
 			method: method,
@@ -118,7 +116,6 @@ var Api = new Class({
 				var progress = {total: event.total, loaded: event.loaded};
 				if(params.progress) params.progress(progress, xhr);
 			},
-			ontimeout: function() { timed_out = true; },
 			upload: {
 				onprogress: function(event, xhr)
 				{
@@ -160,6 +157,7 @@ var Api = new Class({
 				var xhr = e.xhr;
 				var res;
 				var disconnected = xhr && xhr.status === 0;
+				var timed_out = e.msg == 'timeout';
 				if(timed_out)
 				{
 					res = 'timeout';
