@@ -396,7 +396,7 @@ var Sync = Composer.Model.extend({
 				{
 					if(failed)
 					{
-						setTimeout(this.poll_api_for_changes.bind(this, {immediate: true}), 15000);
+						setTimeout(this.poll_api_for_changes.bind(this, {immediate: true}), 10000);
 					}
 					else
 					{
