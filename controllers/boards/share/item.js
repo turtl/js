@@ -58,11 +58,22 @@ var BoardsShareItemController = Composer.Controller.extend({
 		if(e) e.stop();
 		if(!confirm('Really delete this '+ (this.pending ? 'invite' : 'share') +' form this board?')) return;
 
-		this.board.remove_persona(this.model)
-			.catch(function(err) {
-				barfr.barf('Error removing invite.');
-				log.error('board: share: remove invite: ', err);
-			});
+		if(this.pending)
+		{
+			this.model.reject()
+				.catch(function(err) {
+					barfr.barf('Error removing invite.');
+					log.error('board: share: remove invite: ', err);
+				});
+		}
+		else
+		{
+			this.board.remove_persona(this.model)
+				.catch(function(err) {
+					barfr.barf('Error removing share.');
+					log.error('board: share: remove share: ', err);
+				});
+		}
 	}
 });
 
