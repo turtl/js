@@ -18,7 +18,7 @@ var PersonasViewController = Composer.Controller.extend({
 		this.with_bind(turtl.events, 'header:menu:fire-action', function(action) {
 			switch(action)
 			{
-				case 'delete': this.delete_persona(); break;
+				case 'delete-persona': this.delete_persona(); break;
 			}
 		}.bind(this));
 
