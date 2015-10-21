@@ -2,7 +2,7 @@
 
 <div class="status">
 	{{#if shared}}
-		<a href="/boards/share/{{board.id}}">{{icon 'share'}}</a>
+		{{icon 'share'}}
 	{{/if}}
 </div>
 <h2>
@@ -10,6 +10,9 @@
 </h2>
 <p>
 	{{num_notes}} notes
+	{{#if shared_with_me_directly}}
+		<small>- Shared with me</small>
+	{{/if}}
 </p>
 
 <div class="children"></div>
