@@ -3,6 +3,9 @@
 .turtl-modal.search {width: 90%; background: rgba(255, 255, 255, 1);}
 .turtl-modal.search {
 	header {width: 90%;}
+	@media @desktop {
+		&, header {width: @desktop_modal_width / 2;}
+	}
 }
 
 .search-filters {padding: 16rem 6rem 0 6rem;}

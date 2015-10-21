@@ -25,7 +25,14 @@
 // -----------------------------------------------------------------------------
 @header_height: 44rem;
 @sidebar_travel: 90%;
-.standard-width () {width: 94%; margin-left: auto; margin-right: auto;}
+@desktop_modal_width: 700rem;
+.standard-width () {
+	& {width: 94%; margin-left: auto; margin-right: auto;}
+	@media @desktop {
+		& {width: 640rem; margin-left: auto; margin-right: auto;}
+	}
+}
+@page_top_padding: 16rem;
 
 // -----------------------------------------------------------------------------
 // layering stuff

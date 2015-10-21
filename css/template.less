@@ -33,6 +33,8 @@ a { text-decoration: none; }
 #wrap {height: 100%; overflow-y: scroll; overflow-x: hidden;}
 #app {.transition(left .3s);}
 #main {position: relative; left: 0; z-index: 5; padding: @header_height 0 64rem 0; .transition(left .3s);}
+#main > div,
+#tmp-slide > div {padding-top: @page_top_padding;}
 
 @header_pad_top: 4rem;
 @header_adjusted: (@header_height - @header_pad_top);
@@ -92,7 +94,7 @@ body.settings {
 }
 
 /* body page slide shite */
-#tmp-slide {position: absolute; top: @header_height; display: none; width: 100%; .transition(left .3s);}
+#tmp-slide {position: absolute; top: @header_height; display: none; width: 100%; .transition(left 0.3s);}
 body.page-slide {overflow: hidden;}
 body.page-slide #tmp-slide {display: block;}
 

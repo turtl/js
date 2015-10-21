@@ -3,6 +3,7 @@
 .turtl-modal {position: fixed; top: 0; right: -100%; z-index: 20; width: 100%; height: 100%; overflow-x: hidden; background: @theme_gutter; .transition(right .3s); background: #fff; .layer-hover(); .touch-scroll();}
 .turtl-modal.active {right: 0%;}
 .turtl-modal {
+	@media @desktop { width: @desktop_modal_width; }
 	header {background: @theme_black_bg;}
 	header {
 		a.logo {display: none;}

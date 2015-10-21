@@ -1,5 +1,8 @@
 @import 'variables';
 
+#main > .notes-container,
+#tmp-slide > .notes-container {padding-top: 0;}
+
 .notes {
 	@note_list_margin: 3.125rem;
 	.list-container {padding: (@note_list_margin * 2) @note_list_margin;}
@@ -18,6 +21,11 @@
 	@media @landscape {
 		ul.note-list.masonry {
 			> li {width: 32%;}
+		}
+	}
+	@media @desktop {
+		ul.note-list.masonry {
+			> li {width: 232px;}
 		}
 	}
 	ul.note-list.column {
@@ -180,7 +188,10 @@
 		}
 		.note {
 			.backing {min-height: @header_height;}
-			.header-backing {display: block; position: fixed; .fixed-fix(); z-index: 9; top: 0; left: 0; width: 100%; height: @header_height; background: @theme_black_bg;}
+			.header-backing {display: block; position: fixed; .fixed-fix(); z-index: 9; top: 0; right: 0; width: 100%; height: @header_height; background: @theme_black_bg;}
+			@media @desktop {
+				.header-backing {width: @desktop_modal_width;}
+			}
 			.header-backing.hide {display: none;}
 			> .color {top: auto; right: 16rem; margin: -10rem -3rem 0 0;}
 			.note-gutter .content .body {padding-top: (@content_pad * 2);}

@@ -1,4 +1,6 @@
 var NotesIndexController = Composer.Controller.extend({
+	class_name: 'notes-container',
+
 	elements: {
 		'> .notes': 'note_list'
 	},
