@@ -4,7 +4,7 @@
 	<div class="color {{note.color_name}}">&nbsp;</div>
 {{/if}}
 
-{{#if note.file}}
+{{#if has_file}}
 	<div class="file {{#if note.file.encrypting}}encrypting{{/if}}">
 		{{#if note.file.encrypting}}
 			<strong class="encrypting">

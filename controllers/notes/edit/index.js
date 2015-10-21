@@ -225,9 +225,13 @@ var NotesEditController = FormController.extend({
 		clone.set(data);
 
 		// grab the file binary, and clear it out from the model
-		var filebin = clone.get('file').get('data');
-		clone.get('file').unset('data');
+		var file_set = clone.get('file').get('set');
 		var file_id = clone.get('file').id();
+		if(file_set)
+		{
+			var filebin = clone.get('file').get('data');
+			clone.get('file').unset('data');
+		}
 
 		keypromise.bind(this)
 			.then(function() {
@@ -266,7 +270,7 @@ var NotesEditController = FormController.extend({
 							log.error('note: edit: file: ', this.model.id(), derr(err));
 						});
 				}
-				if(!file.get('set')) return;
+				if(!file_set) return;
 				file.unset('set').revoke();
 
 				file.set({encrypting: true});

@@ -55,7 +55,6 @@ Handlebars.registerHelper('note', function(note, options) {
 	var data = options.hash;
 	var show_info = !!data.info;
 
-	// TODO: empty state: files
 	var empty =	true;
 	if(note.title || note.text) empty = false;
 	switch(note.type)
@@ -92,8 +91,10 @@ Handlebars.registerHelper('note', function(note, options) {
 	// NOTE: this will probably bite me sometime in the future
 	if(empty) content = '';
 
+	var has_file = note.file && note.file.id;
 	var rendered = view.render('notes/types/common', {
 		note: note,
+		has_file: has_file,
 		show_info: show_info,
 		have_boards: have_boards,
 		boards: boards,
