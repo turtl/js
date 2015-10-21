@@ -235,7 +235,10 @@ var NotesEditController = FormController.extend({
 
 		keypromise.bind(this)
 			.then(function() {
-				clone.get('file').set({id: file_id, no_preview: true}, {silent: true});
+				if(file_set || this.model.get('file').id(true))
+				{
+					clone.get('file').set({id: file_id, no_preview: true}, {silent: true});
+				}
 				return clone.save();
 			})
 			.then(function() {
