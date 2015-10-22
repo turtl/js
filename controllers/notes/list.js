@@ -35,9 +35,11 @@ var NotesListController = Composer.ListController.extend({
 		var resize_timer = new Timer(10);
 		var resize_reset = function()
 		{
-			this.el.getElements('li.note').each(function(el) {
-				el.setStyles({position: 'static'});
-			});
+			// TODO: why the hell did i ever put this in?? it seriously messes
+			// with the page when resizing.
+			//this.el.getElements('li.note').each(function(el) {
+				//el.setStyles({position: 'static'});
+			//});
 			resize_timer.reset();
 		}.bind(this);
 		window.addEvent('resize', resize_reset);
