@@ -26,8 +26,9 @@
 		}
 	}
 	@media @desktop {
+		& .list-container {padding: 16rem 0 0 0;}
 		ul.note-list.masonry {
-			> li {width: 232px; margin: 0 16rem 16rem 0;}
+			> li {width: 232px; margin: 0 0 16rem 16rem;}
 		}
 	}
 	ul.note-list.column {
@@ -46,6 +47,10 @@
 @content_pad: 6rem;
 .note {
 	p.empty {padding: 10rem 0; font-size: 13rem; color: @theme_gray; text-align: center;}
+
+	.note-gutter {
+		.content {width: 100%;}
+	}
 
 	&.text,
 	&.file,
@@ -70,6 +75,9 @@
 		@img_header_top_pad: 4rem;
 		@img_header_margin_bottom: 3rem;	// aligns the text as if header weren't there
 		.content h1 {position: relative; z-index: 11; display: block; height: @img_header_height; margin: -(@img_header_height + @img_header_top_pad) 0 @img_header_margin_bottom 0; padding: @img_header_top_pad 0 0 6%; line-height: @img_header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim(bottom, .45);}
+		@media @desktop {
+			.content h1 {padding-left: 24rem;}
+		}
 		&.view .file + .note-gutter .content h1 {top: -@file_height;}
 		&.preview:not(.view) {
 			.file {display: none;}
@@ -245,6 +253,7 @@
 				a icon {margin-right: 0;}
 			}
 		}
+		.boards-container {cursor: pointer;}
 	}
 
 	ul.colors {margin: 0; padding: 8rem 0 0 0; list-style: none; text-align: center;}

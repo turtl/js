@@ -20,6 +20,7 @@ var FormController = Composer.Controller.extend({
 	init: function()
 	{
 		turtl.keyboard.detach();	// disable keyboard shortcuts while editing
+		this.bind('release', function() { turtl.keyboard.attach(); });
 		return this.parent.apply(this, arguments);
 	},
 

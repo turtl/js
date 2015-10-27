@@ -41,6 +41,8 @@ var NotesEditController = FormController.extend({
 	{
 		if(this.board_id == 'all') this.board_id = null;
 
+		this.confirm_unsaved = config.confirm_unsaved;
+
 		if(!this.model) this.model = new Note({
 			boards: (this.board_id ? [this.board_id] : []),
 			type: this.type || 'text'
@@ -59,9 +61,17 @@ var NotesEditController = FormController.extend({
 			default: title = this.clone.get('type');
 		}
 		title = this.action + ' ' + title;
+
+		var conf = function()
+		{
+			if(this.confirm_unsaved && this.have_unsaved && !confirm('This note has unsaved changes. Really leave?')) return false;
+			return true;
+		}.bind(this);
+
 		this.modal = new TurtlModal({
 			show_header: true,
-			title: title
+			title: title,
+			closefn: conf
 		});
 
 		this.render();
@@ -70,7 +80,6 @@ var NotesEditController = FormController.extend({
 		this.form_data = this.el_form.toQueryString();
 		var close = function()
 		{
-			if(this.confirm_unsaved && this.have_unsaved && !confirm('This note has unsaved changes. Really leave?')) return;
 			this.modal.close();
 		}.bind(this);
 

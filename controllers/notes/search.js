@@ -33,6 +33,7 @@ var NotesSearchController = Composer.Controller.extend({
 
 		this.modal = new TurtlModal({
 			class_name: 'turtl-modal search',
+			skip_overlay: true,
 			show_header: true,
 			title: titlefn(turtl.search.total),
 			actions: [
@@ -45,6 +46,11 @@ var NotesSearchController = Composer.Controller.extend({
 		this.modal.open(this.el);
 		this.with_bind(this.modal, 'close', this.release.bind(this));
 		this.bind(['cancel', 'close'], close);
+
+		document.body.addClass('search');
+		this.bind('release', function() {
+			document.body.removeClass('search');
+		});
 
 		this.with_bind(this.modal, 'header:fire-action', function(action) {
 			switch(action)

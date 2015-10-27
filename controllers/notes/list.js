@@ -21,6 +21,8 @@ var NotesListController = Composer.ListController.extend({
 	search: {},
 	total: 0,
 
+	_last_search: [],
+
 	init: function()
 	{
 		this.masonry_timer = new Timer(10);
@@ -35,11 +37,6 @@ var NotesListController = Composer.ListController.extend({
 		var resize_timer = new Timer(10);
 		var resize_reset = function()
 		{
-			// TODO: why the hell did i ever put this in?? it seriously messes
-			// with the page when resizing.
-			//this.el.getElements('li.note').each(function(el) {
-				//el.setStyles({position: 'static'});
-			//});
 			resize_timer.reset();
 		}.bind(this);
 		window.addEvent('resize', resize_reset);
@@ -51,7 +48,10 @@ var NotesListController = Composer.ListController.extend({
 
 		// run an initial search
 		this.do_search().bind(this)
-			.spread(function(_, tags) {
+			.spread(function(ids, tags) {
+				// curtail rendering duplicate result sets
+				this._last_search = JSON.stringify(ids);
+
 				this.tags = tags;
 				this.bind('search', function() {
 					this.do_search({notify: true});
@@ -78,6 +78,12 @@ var NotesListController = Composer.ListController.extend({
 
 				this.with_bind(turtl.search, ['reset', 'add', 'remove'], this.update_view.bind(this));
 				this.bind('search-done', function(ids) {
+					// curtail rendering duplicate result sets
+					var string_ids = JSON.stringify(ids);
+					console.log('search: same? ', string_ids == this._last_search);
+					if(string_ids == this._last_search) return;
+					this._last_search = string_ids;
+
 					// let render know what's going on
 					if(ids.length == 0) { renderopts.no_results = true; }
 					else { delete renderopts.no_results; }
@@ -124,7 +130,7 @@ var NotesListController = Composer.ListController.extend({
 				return turtl.profile.get('notes').load_and_deserialize(res[0], {silent: true});
 			})
 			.tap(function(res) {
-				if(options.notify) this.trigger.apply(this, ['search-done'].concat(arguments));
+				if(options.notify) this.trigger.apply(this, ['search-done'].concat(res));
 			});
 	},
 
@@ -161,6 +167,7 @@ var NotesListController = Composer.ListController.extend({
 			resizeable: true,
 			itemSelector: '> li.note'
 		});
+		/*
 		var images = this.note_list.getElements('> li.note img');
 		images.each(function(img) {
 			if(img.complete || (img.naturalWidth && img.naturalWidth > 0)) return;
@@ -169,6 +176,7 @@ var NotesListController = Composer.ListController.extend({
 				this.masonry_timer.reset();
 			}.bind(this);
 		}.bind(this));
+		*/
 		//console.log('masonry time: ', (new Date().getTime()) - start);
 	},
 

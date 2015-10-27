@@ -20,8 +20,8 @@ var ItemActionsController = Composer.Controller.extend({
 		this.render();
 
 		var closebind = this.close.bind(this);
-		turtl.keyboard.addEvent('esc', closebind);
-		this.bind('release', function() { turtl.keyboard.removeEvent('esc', closebind); });
+		turtl.keyboard.bind('esc', closebind);
+		this.bind('release', function() { turtl.keyboard.unbind('esc', closebind); });
 
 		this.with_bind(turtl.events, 'menu:open', function(cid) {
 			if(cid == this.cid()) return false;

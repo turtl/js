@@ -46,6 +46,9 @@ var turtl = {
 	// global key handler for attaching keyboard events to the app
 	keyboard: null,
 
+	// a modal helper
+	overlay: null,
+
 	loaded: false,
 	router: false,
 
@@ -121,12 +124,10 @@ var turtl = {
 			barfr.barf(msg + ': ' + err.message);
 		});
 
-		turtl.keyboard = new Keyboard({
-			defaultEventType: 'keydown'
-		});
-		turtl.keyboard.attach = turtl.keyboard.activate;
-		turtl.keyboard.detach = turtl.keyboard.deactivate;
+		turtl.keyboard = new TurtlKeyboard();
 		turtl.keyboard.attach();
+
+		turtl.overlay = new TurtlOverlay();
 
 		var initial_route = window.location.pathname;
 		turtl.setup_user({initial_route: initial_route});
@@ -151,6 +152,11 @@ var turtl = {
 			log.info('API: disconnect');
 			if(connect_barf_id) barfr.close_barf(connect_barf_id);
 			connect_barf_id = barfr.barf('Disconnected from the Turtl service. Engaging offline mode. Your changes will be saved and synced once back online!', {persist: true});
+		});
+
+		turtl.keyboard.bind('?', function() {
+			if(!turtl.user.logged_in) return;
+			//new KeyboardShortcutHelpController();
 		});
 	},
 
@@ -244,7 +250,7 @@ var turtl = {
 				});
 
 			// logout shortcut
-			turtl.keyboard.addEvent('shift+l', function() {
+			turtl.keyboard.bind('shift+l', function() {
 				turtl.route('/users/logout');
 			}, 'dashboard:shortcut:logout');
 		}.bind(turtl);
@@ -258,7 +264,7 @@ var turtl = {
 			turtl.sync.stop();
 
 			turtl.controllers.pages.release_sub();
-			turtl.keyboard.removeEvents('shift+l');
+			turtl.keyboard.unbind('shift+l');
 			turtl.show_loading_screen(false);
 			turtl.user.unbind('change', 'user:write_changes_to_cookie');
 			turtl.api.clear_auth();

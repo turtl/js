@@ -10,16 +10,18 @@ var TurtlModal = Composer.Controller.extend({
 
 	events: {
 		'click header h1 a[rel=back]': 'close_back',
-		'click header': 'click_header'
+		'click header:not(a[rel=back])': 'click_header'
 	},
 
 	is_open: false,
+	skip_overlay: false,
 
 	show_header: false,
 	title: '',
 	actions: [],
 
 	release_on_close: true,
+	clonsefn: false,
 
 	init: function()
 	{
@@ -37,6 +39,9 @@ var TurtlModal = Composer.Controller.extend({
 			if(this.el) this.el.removeEvent('scroll', scroller);
 		}.bind(this));
 		this.with_bind(turtl.user, 'logout', this.close.bind(this));
+		this.with_bind(turtl.controllers.pages, 'load', this.close.bind(this));
+
+		this.with_bind(turtl.keyboard, 'esc', this.close.bind(this));
 	},
 
 	render: function()
@@ -86,11 +91,21 @@ var TurtlModal = Composer.Controller.extend({
 		}.bind(this);
 		if(options.immediate) do_open();
 		else setTimeout(do_open);
+
+		if(!this.skip_overlay)
+		{
+			turtl.events.trigger('overlay:open', this.close.bind(this));
+		}
 	},
 
-	close: function()
+	close: function(options)
 	{
-		if(!this.is_open) return;
+		options || (options = {});
+
+		if(!this.is_open) return false;
+		if(this.closefn && !this.closefn()) return false;
+		this.closefn = false;
+
 		// slide out
 		var html_copy = this.gutter.get('html');
 		this.el.removeClass('active');
@@ -102,6 +117,12 @@ var TurtlModal = Composer.Controller.extend({
 			if(this.release_on_close) this.release();
 			document.body.className = document.body.className.replace(/ modal/, '')
 		}).delay(500, this);
+
+		if(!options.from_overlay && !this.skip_overlay)
+		{
+			turtl.events.trigger('overlay:nop');
+		}
+		return true;
 	},
 
 	close_back: function(e)
