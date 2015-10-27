@@ -1,9 +1,9 @@
 Composer.suppress_warnings = true;
 
 setTimeout(function() {
-	var gui = require('nw.gui');
 	if(new String(config.client) == 'desktop')
 	{
+		var gui = require('nw.gui');
 		config.version = gui.App.manifest.version;
 	}
 });
