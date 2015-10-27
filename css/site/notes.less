@@ -25,21 +25,23 @@
 			> li {width: 32%;}
 		}
 	}
+
 	@desktop_li_margin: 1.25%;
+	@desktop_li_adjust: 0.15%;
 	@media only screen and (min-width: 800px) {
 		& .list-container {padding: @desktop_li_margin 0 0 0;}
 		ul.note-list.masonry {
-			> li {width: (25% - @desktop_li_margin - 0.1%); margin: 0 0 @desktop_li_margin @desktop_li_margin;}
+			> li {width: (25% - @desktop_li_margin - @desktop_li_adjust); margin: 0 0 @desktop_li_margin @desktop_li_margin;}
 		}
 	}
 	@media only screen and (min-width: 1024px) {
 		ul.note-list.masonry {
-			> li {width: (20% - @desktop_li_margin - 0.1%);}
+			> li {width: (20% - @desktop_li_margin - @desktop_li_adjust);}
 		}
 	}
 	@media only screen and (min-width: 1280px) {
 		ul.note-list.masonry {
-			> li {width: (16.66666666% - @desktop_li_margin - 0.1%);}
+			> li {width: (16.66666666% - @desktop_li_margin - @desktop_li_adjust);}
 		}
 	}
 	/*
