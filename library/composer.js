@@ -23,7 +23,7 @@
 
 	var global = this;
 	if(!global.Composer) global.Composer = {
-		version: '1.1.13',
+		version: '1.1.14',
 
 		// note: this used to be "export" but IE is a whiny little bitch, so now
 		// we're sup3r 1337 h4x0r5
@@ -2919,7 +2919,15 @@
 
 				if(e) e.preventDefault();
 
-				var href = a.href.replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
+				// turn:
+				//  - https://my-domain.com/nerd/city
+				//  - http://slappy.com/#!/nerd/city
+				//  - file:///D:/nerd/city
+				// into:
+				//  nerd/city
+				var href = a.href
+					.replace(/^[a-z]+:\/\/(\/)?.*?\//, '')
+					.replace(/^[#!\/]+/, '');
 				if(options.filter_trailing_slash) href = href.replace(/\/$/, '');
 				href = '/'+href;
 

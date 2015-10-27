@@ -1,10 +1,10 @@
 Composer.suppress_warnings = true;
 
-if(window._in_desktop)
-{
-	config.version = gui.App.manifest.version;
-	window.__api_url = config.api_url;
-	window._base_url = window.location.toString().replace(/^(.*)\/.*?$/, '$1/app');
-	window._disable_cookie = true;
-}
+setTimeout(function() {
+	var gui = require('nw.gui');
+	if(new String(config.client) == 'desktop')
+	{
+		config.version = gui.App.manifest.version;
+	}
+});
 

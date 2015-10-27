@@ -398,7 +398,7 @@ var turtl = {
 
 		options || (options = {});
 		options = Object.merge({
-			base: window._route_base || '',
+			base: config.route_base || '',
 			// we'll do our own first route
 			suppress_initial_route: true,
 			enable_cb: function(url) {
@@ -515,7 +515,8 @@ var turtl = {
 var barfr = null;
 var markdown = null;
 
-window.addEvent('domready', function() {
+var _turtl_init = function()
+{
 	// load the api URL from storage if it's there
 	if(localStorage.config_api_url) config.api_url = localStorage.config_api_url;
 
@@ -581,6 +582,10 @@ window.addEvent('domready', function() {
 
 	// set up workers for openpgp.js (if native crypto ain't available)
 	openpgp.initWorker(asset('/library/openpgp/openpgp.worker.js'));
+};
+
+window.addEvent('domready', function() {
+	setTimeout(_turtl_init, 1000);
 });
 
 // set up a global error handler that XHRs shit to the API so we know when bugs

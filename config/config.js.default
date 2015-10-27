@@ -11,10 +11,13 @@ var config = {
 
 	site_url: 'https://turtl.it',
 	base_url: '',
+	route_base: '',
 
 	// used to tell us where to store auth. this is only used when serving turtl
 	// as a webapp (big no no). the addons do their own auth.
 	user_cookie: 'turtl:user:v2',
+
+	cookie_login: true,
 
 	// the amount of time we let a client not sync with the server before
 	// forcing a profile refresh.
@@ -24,5 +27,13 @@ var config = {
 	catch_global_errors: false,
 
 	// enable things like INVITE TO GET MOAR STORAGE
-	enable_promo: false
+	enable_promo: false,
+
+	// if a note is changed in the note editor, pop up a confirmation before
+	// letting the unsaved changes get lost (due to modal closing)
+	confirm_unsaved: true,
+
+	// show a overlay under modals and above the main content (can be
+	// overridden).
+	modal_overlay: true
 }
