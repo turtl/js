@@ -19,7 +19,6 @@ var NotesItemController = NoteBaseController.extend({
 			setTimeout(function() {
 				if(!this.el) return;
 				var height = this.el.getCoordinates().height;
-				console.log('note: height? ', height == this._last_height, height, this._last_height);
 				if(height == this._last_height) return;
 				this._last_height = height;
 				this.trigger('update');
