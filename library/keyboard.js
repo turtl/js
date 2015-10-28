@@ -12,11 +12,13 @@ var TurtlKeyboard = Composer.Event.extend({
 	attach: function()
 	{
 		document.body.addEvent('keydown', this._key_listener);
+		return this;
 	},
 
 	detach: function()
 	{
 		document.body.removeEvent('keydown', this._key_listener);
+		return this;
 	},
 
 	keydown: function(e)
@@ -40,7 +42,7 @@ var TurtlKeyboard = Composer.Event.extend({
 			.sort(function(a, b) { return a.localeCompare(b); });
 
 		if(mods.indexOf(key) < 0) mods.push(key);
-		var ev = mods.join('+');
+		var ev = mods.join('+').toLowerCase();
 		this.trigger(ev);
 	}
 });
