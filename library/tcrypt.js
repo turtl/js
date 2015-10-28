@@ -994,7 +994,7 @@ tcrypt.asym_old = {
 	},
 
 	/**
-	 * Standard deserialization for asymetric data. See tcrypt.asym.serialize.
+	 * Standard deserialization for asymetric data. See tcrypt.asym_old.serialize.
 	 */
 	deserialize: function(enc, options)
 	{
@@ -1042,14 +1042,14 @@ tcrypt.asym_old = {
 	 *
 	 * Creates a key from the given binary, and uses it to extract a tag and an
 	 * AES (256bit) key. Encrypts the given data with the AES key, then wraps
-	 * the message up (version, tag, key) using tcrypt.asym.serialize so the
+	 * the message up (version, tag, key) using tcrypt.asym_old.serialize so the
 	 * whole thing can be returned as one binary blob.
 	 */
 	encrypt: function(key_bin, data, options)
 	{
 		options || (options = {});
 
-		var version = tcrypt.asym.current_version;
+		var version = tcrypt.asym_old.current_version;
 		var point = sjcl.ecc.curves.c384.fromBits(key_bin);
 		var key = new sjcl.ecc.elGamal.publicKey(sjcl.ecc.curves.c384, point)
 		var kem = key.kem(10);
@@ -1057,7 +1057,7 @@ tcrypt.asym_old = {
 		var tag = kem.tag;
 
 		var ciphertext = tcrypt.encrypt(symkey, data);
-		var serialized = tcrypt.asym.serialize('', {
+		var serialized = tcrypt.asym_old.serialize('', {
 			version: version,
 			tag: tcrypt.words_to_bin(tag)
 		});
@@ -1070,7 +1070,7 @@ tcrypt.asym_old = {
 	/**
 	 * Decrypt data via ECC.
 	 *
-	 * Uses tcrypt.asym.deserialize to extract the tag and ciphertext, then
+	 * Uses tcrypt.asym_old.deserialize to extract the tag and ciphertext, then
 	 * extracts the AES key using the private key + tag. The cipher text is then
 	 * decrypted and returned.
 	 */
@@ -1079,8 +1079,8 @@ tcrypt.asym_old = {
 		options || (options = {});
 
 		var key = new sjcl.ecc.elGamal.secretKey(sjcl.ecc.curves.c384, sjcl.bn.fromBits(key_bin));
-		var version = tcrypt.asym.current_version;
-		var params = tcrypt.asym.deserialize(data);
+		var version = tcrypt.asym_old.current_version;
+		var params = tcrypt.asym_old.deserialize(data);
 		var symkey = key.unkem(params.tag);
 
 		return tcrypt.decrypt(symkey, params.ciphertext, options);
