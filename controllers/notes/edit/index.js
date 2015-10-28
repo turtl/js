@@ -21,6 +21,7 @@ var NotesEditController = FormController.extend({
 	},
 
 	modal: null,
+	modal_opts: null,
 
 	model: null,
 	clone: null,
@@ -31,7 +32,7 @@ var NotesEditController = FormController.extend({
 	type: 'text',
 	board_id: null,
 
-	confirm_unsaved: false,
+	confirm_unsaved: null,
 	have_unsaved: false,
 	form_data: null,
 
@@ -41,7 +42,10 @@ var NotesEditController = FormController.extend({
 	{
 		if(this.board_id == 'all') this.board_id = null;
 
-		this.confirm_unsaved = config.confirm_unsaved;
+		if(!(this.confirm_unsaved === true || this.confirm_unsaved === false))
+		{
+			this.confirm_unsaved = config.confirm_unsaved;
+		}
 
 		if(!this.model) this.model = new Note({
 			boards: (this.board_id ? [this.board_id] : []),
@@ -68,11 +72,11 @@ var NotesEditController = FormController.extend({
 			return true;
 		}.bind(this);
 
-		this.modal = new TurtlModal({
+		this.modal = new TurtlModal(Object.merge({
 			show_header: true,
 			title: title,
 			closefn: conf
-		});
+		}, this.modal_opts && this.modal_opts() || {}));
 
 		this.render();
 
@@ -94,7 +98,12 @@ var NotesEditController = FormController.extend({
 		// handle our "you have unsaved changes" state stuff
 		var unsaved = function()
 		{
-			this.modal.set_title(title + ' <strong>*</strong>', turtl.last_url);
+			var set_back = false;
+			if(this.modal.el.getElement('a[rel=back]'))
+			{
+				set_back = true;
+			}
+			this.modal.set_title(title + ' <strong>*</strong>', set_back && turtl.last_url);
 			this.have_unsaved = true;
 			this.highlight_button();
 		}.bind(this);
@@ -361,7 +370,8 @@ var NotesEditController = FormController.extend({
 	{
 		if(e) e.stop();
 		new NotesEditBoardsController({
-			model: this.clone
+			model: this.clone,
+			modal_opts: this.modal_opts
 		});
 	},
 
@@ -369,7 +379,8 @@ var NotesEditController = FormController.extend({
 	{
 		if(e) e.stop();
 		new NotesEditTagsController({
-			model: this.clone
+			model: this.clone,
+			modal_opts: this.modal_opts
 		});
 	},
 

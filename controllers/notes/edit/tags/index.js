@@ -25,10 +25,10 @@ var NotesEditTagsController = FormController.extend({
 		this.clone = this.model.clone();
 		this.collection = new Tags();
 
-		this.modal = new TurtlModal({
+		this.modal = new TurtlModal(Object.merge({
 			show_header: true,
 			title: 'Tag note'
-		});
+		}, this.modal_opts && this.modal_opts() || {}));
 
 		this.parent();
 		this.render();

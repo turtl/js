@@ -7,6 +7,7 @@ var NotesEditBoardsController = FormController.extend({
 	},
 
 	modal: null,
+	modal_opts: null,
 
 	model: null,
 	clone: null,
@@ -21,11 +22,10 @@ var NotesEditBoardsController = FormController.extend({
 		this.clone = this.model.clone();
 		this.collection = new Boards();
 
-		this.modal = new TurtlModal({
+		this.modal = new TurtlModal(Object.merge({
 			show_header: true,
 			title: 'Select note boards'
-		});
-		this.modal.el.addClass('note-edit-boards');
+		}, this.modal_opts && this.modal_opts() || {}));
 
 		this.parent();
 		this.render();
@@ -40,7 +40,7 @@ var NotesEditBoardsController = FormController.extend({
 
 	render: function()
 	{
-		var note_boards = this.clone.get('boards');
+		var note_boards = this.clone.get('boards') || [];
 		var select = function(board)
 		{
 			if(note_boards.contains(board.id)) board.selected = true;
