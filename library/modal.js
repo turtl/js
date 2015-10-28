@@ -17,6 +17,7 @@ var TurtlModal = Composer.Controller.extend({
 	skip_overlay: false,
 
 	show_header: false,
+	show_back: true,
 	title: '',
 	actions: [],
 
@@ -59,7 +60,7 @@ var TurtlModal = Composer.Controller.extend({
 					logo: false,
 					actions: this.actions
 				});
-				con.render_title(this.title, turtl.last_url);
+				con.render_title(this.title, this.show_back ? turtl.last_url : null);
 				con.set_actions(this.actions);
 				return con;
 			}.bind(this));
