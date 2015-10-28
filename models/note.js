@@ -290,6 +290,7 @@ var Notes = SyncCollection.extend({
 				var note = new Note(notedata);
 				return note.deserialize().then(function() { return note; });
 			}).map(function(note) {
+				if(!(note instanceof Composer.Model)) return;
 				this.upsert(note, options);
 			});
 	}
