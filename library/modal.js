@@ -21,7 +21,7 @@ var TurtlModal = Composer.Controller.extend({
 	actions: [],
 
 	release_on_close: true,
-	clonsefn: false,
+	closefn: false,
 
 	init: function()
 	{
