@@ -321,6 +321,9 @@ var NotesEditController = FormController.extend({
 						log.error('note: edit: file: ', this.model.id(), derr(err));
 					});
 			})
+			.then(function() {
+				this.trigger('saved');
+			})
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', 'There was a problem updating that note', err);
 				log.error('note: edit: ', this.model.id(), derr(err));
