@@ -6,7 +6,7 @@ var BoardsShareItemController = Composer.Controller.extend({
 	},
 
 	events: {
-		'click .menu a[rel=delete]': 'open_delete'
+		'click .menu a[rel=unshare]': 'open_delete'
 	},
 
 	model: null,
@@ -43,7 +43,7 @@ var BoardsShareItemController = Composer.Controller.extend({
 		}));
 
 		var actions = [
-			[{name: 'Delete'}],
+			[{name: 'Unshare'}],
 		];
 		this.track_subcontroller('actions', function() {
 			return new ItemActionsController({
@@ -56,7 +56,7 @@ var BoardsShareItemController = Composer.Controller.extend({
 	open_delete: function(e)
 	{
 		if(e) e.stop();
-		if(!confirm('Really delete this '+ (this.pending ? 'invite' : 'share') +' form this board?')) return;
+		if(!confirm('Really '+ (this.pending ? 'remove this invite' : 'remove this user from the board') +'?')) return;
 
 		if(this.pending)
 		{
