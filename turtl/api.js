@@ -158,6 +158,24 @@ var Api = new Class({
 				var res;
 				var disconnected = xhr && xhr.status === 0;
 				var timed_out = e.msg == 'timeout';
+				var decode_msg = function()
+				{
+					var data;
+					switch(xhr.responseType)
+					{
+					case 'arraybuffer':
+						data = String.fromCharCode.apply(null, new Uint16Array(xhr.response));
+						break;
+					default:
+						data = xhr.responseText;
+						break;
+					}
+					return data;
+				};
+				var response = xhr && decode_msg();
+
+				if(xhr && xhr.msg && typeof(xhr.msg) != 'string') xhr.msg = response
+
 				if(timed_out)
 				{
 					res = 'timeout';
@@ -166,7 +184,8 @@ var Api = new Class({
 				{
 					try
 					{
-						res = JSON.parse(xhr.responseText);
+						var json = decode_msg();
+						res = JSON.parse(json);
 					}
 					catch(e)
 					{

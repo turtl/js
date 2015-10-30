@@ -55,7 +55,7 @@
 				}
 				else if(xhr.status >= 400)
 				{
-					reject({xhr: xhr, code: xhr.status, msg: xhr.responseText});
+					reject({xhr: xhr, code: xhr.status, msg: xhr.response});
 				}
 			};
 			xhr.onabort = function(e)
