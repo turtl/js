@@ -28,16 +28,17 @@ var BoardsItemController = Composer.Controller.extend({
 			.then(function(num_notes) {
 				var board_id = this.model.id();
 				var parent_id = this.model.get('parent_id');
-				var my_persona = turtl.profile.get('personas').first().id();
+				var my_persona = turtl.profile.get('personas').first();
+				var my_persona_id = my_persona && my_persona.id();
 				var has_invites = turtl.profile.get('invites').filter(function(inv) {
 					var obj = inv.get('object_id')
-					return (obj == board_id) && inv.get('from') == my_persona;
+					return (obj == board_id) && inv.get('from') == my_persona_id;
 				}.bind(this)).length > 0;
 				var has_shares = Object.keys(this.model.get('privs') || {}).length > 0;
 				var shared_with_me = !!this.model.get('shared');
 				var shared_by_me = !shared_with_me && (has_invites || has_shares);
 				var shared_with_me_directly = shared_with_me &&
-					!!(this.model.get('privs') || {})[my_persona];
+					!!(this.model.get('privs') || {})[my_persona_id];
 				this.html(view.render('boards/item', {
 					board: this.model.toJSON(),
 					num_notes: num_notes,
