@@ -9,6 +9,7 @@ var PersonasController = Composer.Controller.extend({
 
 	init: function()
 	{
+		var open = turtl.router.get_param(window.location.search, 'open');
 		var back = turtl.router.get_param(window.location.search, 'back');
 		if(!back) back = '/settings';
 		turtl.push_title('Your persona', back);
@@ -17,6 +18,8 @@ var PersonasController = Composer.Controller.extend({
 		this.filter = turtl.profile.get('personas');
 		this.with_bind(this.filter, ['add', 'remove', 'reset', 'change'], this.render.bind(this));
 		this.render();
+
+		if(open == '1') this.open_add();
 	},
 
 	render: function()

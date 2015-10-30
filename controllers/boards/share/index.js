@@ -7,7 +7,6 @@ var BoardsShareController = Composer.Controller.extend({
 	},
 
 	events: {
-		'click .nopersona a': 'open_add_persona'
 	},
 
 	board_id: null,
@@ -52,7 +51,9 @@ var BoardsShareController = Composer.Controller.extend({
 
 		if(options.no_persona)
 		{
-			this.html(view.render('boards/share/nopersona'));
+			this.html(view.render('boards/share/nopersona', {
+				back: encodeURIComponent(window.location.pathname)
+			}));
 			var conmem = this.get_subcontroller('members');
 			var conpen = this.get_subcontroller('pending');
 			if(conmem) conmem.release();
@@ -98,15 +99,6 @@ var BoardsShareController = Composer.Controller.extend({
 	open_add: function()
 	{
 		new BoardsShareInviteController({model: this.model});
-	},
-
-	open_add_persona: function(e)
-	{
-		if(e) e.stop();
-		turtl.route('/personas');
-		setTimeout(function() {
-			new PersonasEditController();
-		}, 10);
 	}
 });
 

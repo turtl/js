@@ -6,7 +6,6 @@ var personas = {
 		{
 			slide = 'left';
 		}
-		turtl.back.clear();
 		turtl.controllers.pages.load(PersonasController, {}, {
 			slide: slide
 		});
