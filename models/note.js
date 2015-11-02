@@ -237,7 +237,7 @@ var Note = Protected.extend({
 
 		var board_ids = this.get('boards') || [];
 		board_ids.forEach(function(board_id) {
-			var board_key = turtl.profile.get('boards').find_by_id(board_id).key;
+			var board_key = turtl.profile.get('boards').get(board_id).key;
 			if(board_key) search.b.push({id: board_id, k: board_key});
 		}.bind(this));
 		return this.parent(keys, search, options);
