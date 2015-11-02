@@ -378,6 +378,10 @@ var User = Protected.extend({
 					{
 						log.error('user: get_key: ', err);
 					}
+					else
+					{
+						log.warn('user: get_key: fallback to sync', err);
+					}
 					return tcrypt.key(password, salt, {key_size: 32, iterations: iter, hasher: tcrypt.get_hasher('SHA256')});
 				})
 		}
