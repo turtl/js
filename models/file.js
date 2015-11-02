@@ -236,8 +236,6 @@ var FileData = Protected.extend({
 				// OH WAIT IT ALREADY IS
 				var raw = body;
 
-				//console.log('file: hash: upload: ', raw.length, tcrypt.hash(sjcl.codec.bytes.toBits(raw)));
-
 				// mark the save as raw and fire it off
 				options.data = raw;
 				options.querydata = data;
