@@ -302,7 +302,7 @@ var Protected = Composer.RelationalModel.extend({
 		options || (options = {});
 
 		// first, check the keychain
-		log.trace('find_key: ', keys, search, options);
+		log.trace('find_key: init: ', keys, search, options);
 		var key = turtl.profile.get('keychain').find_key(this.id());
 		log.trace('find_key: ', key ? 'found in keychain' : 'not in keychain, searching');
 		if(key) return key;
@@ -315,6 +315,7 @@ var Protected = Composer.RelationalModel.extend({
 		// Also, grab the keys from this object's key store and concat them to
 		// the key search list
 		var keys = Array.clone(keys || []).concat(this.get('keys').toJSON());
+		log.trace('find_key: keys: ', keys);
 
 		// automatically add a user entry to the key search
 		if(!search.u) search.u = [];
@@ -326,25 +327,25 @@ var Protected = Composer.RelationalModel.extend({
 		var decrypting_key = false;
 		for(var x = 0; x < keys.length; x++)
 		{
-			var key = keys[x];
-			if(!key || !key.k) continue;
-			var enckey = key.k;
-			delete(key.k);
+			var ikey = keys[x];
+			log.trace('find_key: key: ', x, ikey, enckey, encrypted_key);
+			if(!ikey || !ikey.k) continue;
+			var enckey = ikey.k;
+			delete(ikey.k);
 			var match = false;
-			Object.each(key, function(id, type) {
-				log.trace('find_key: ', id, type);
+			Object.each(ikey, function(id, type) {
 				if(encrypted_key) return;
 				if(search[type] && search[type].id && search[type].id == id)
 				{
 					encrypted_key = enckey;
 					decrypting_key = search[type].k;
 				}
-				else if(typeOf(search[type] == 'array'))
+				else if(Array.isArray(search[type]))
 				{
 					var entries = search[type];
-					for(x in entries)
+					for(var y in entries)
 					{
-						var entry = entries[x];
+						var entry = entries[y];
 						if(!entry.k || !entry.id) return;
 						if(entry.id == id)
 						{
@@ -355,6 +356,7 @@ var Protected = Composer.RelationalModel.extend({
 					}
 				}
 			});
+			log.trace('find_key: found? ', x, encrypted_key, decrypting_key);
 			if(encrypted_key) break;
 		}
 
