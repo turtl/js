@@ -293,6 +293,65 @@ var Notes = SyncCollection.extend({
 				if(!(note instanceof Composer.Model)) return;
 				this.upsert(note, options);
 			});
+	},
+
+	/**
+	 * we need a version of this function that correctly sniffs out the proper
+	 * action on "edit" when dealing with a shared note.
+	 *
+	 * for isntance, if a note is edited, and it's shared by someone else, and
+	 * the note no longer contains in its keys any of the boards we have in data
+	 * then the note was essentially "unshared" from us.
+	 *
+	 * conversely if a note is edited, and it's shared, and it does NOT exist in
+	 * data currently, we should add (upsert) it because it was moved into one
+	 * of our boards
+	 */
+	run_incoming_sync_item: function(sync, item)
+	{
+		var promise = false;
+		if(sync.action == 'edit' && item.shared)
+		{
+			var board_ids = turtl.profile.get('boards').map(function(b) { return b.id(); });
+			var board_idx = make_index(board_ids);
+			// determine if the model is any in-mem boards
+			var in_board = false;
+			(item.boards || []).forEach(function(b) { in_board = board_idx[b]; });
+			var model = this.get(item.id);
+			if(model)
+			{
+				// ok, we have an existing in-mem model. if it's in any in-mem
+				// boards, matches, then upsert the data. if it isn't a member
+				// of any in-mem boards, then the only thing that's left is that
+				// is was edited to be removed from the board in question and
+				// should be destroyed locally
+				if(in_board)
+				{
+					var temp = new this.model(item);
+					promise = temp.deserialize().bind(this)
+						.then(function() {
+							model.set(temp.toJSON());
+						});
+				}
+				else
+				{
+					promise = model.destroy({skip_remote_sync: true});
+				}
+			}
+			else
+			{
+				model = new this.model(item);
+				promise = model.deserialize().bind(this)
+					.then(function() {
+						// yes, upsert.
+						// see SyncCollection.run_incoming_sync (models/_sync.js)
+						// if you REALLLLLYY need a full sexplanation
+						this.upsert(model);
+					});
+			}
+			if(promise) return promise;
+		}
+		return this.parent.apply(this, arguments);
 	}
 });
 
