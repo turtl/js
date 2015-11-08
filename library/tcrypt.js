@@ -438,7 +438,7 @@ var tcrypt = {
 		else
 		{
 			var utf8byte = String.fromCharCode(Math.floor(utf8_random * (256 - 128)));
-			data = sjcl.bitArray.concat([sjcl.bitArray.partial(8, utf8byte)], data)
+			data = sjcl.bitArray.concat([sjcl.bitArray.partial(8, utf8byte)], data);
 		}
 
 		// generate serialized description
