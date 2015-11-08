@@ -347,6 +347,20 @@ var Notes = SyncCollection.extend({
 						// see SyncCollection.run_incoming_sync (models/_sync.js)
 						// if you REALLLLLYY need a full sexplanation
 						this.upsert(model);
+					})
+					// check if we have a file attached to this new (shared) note.
+					// if so, create a dummy file record and then trigger the
+					// download
+					.tap(function() {
+						var file_id = model.get('file').id(true);
+						if(!file_id) return;
+
+						var file = new FileData({id: file_id, note_id: model.id()});
+						return file.save({skip_serialize: true, skip_remote_sync: true})
+							.then(function() {
+								var filejob = {id: file_id};
+								return turtl.hustle.Queue.put(filejob, {tube: 'files:download', ttr: 300});
+							});
 					});
 			}
 			if(promise) return promise;
