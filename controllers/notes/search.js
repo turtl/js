@@ -83,7 +83,6 @@ var NotesSearchController = Composer.Controller.extend({
 
 		var sort = this.search.sort || NOTE_DEFAULT_SORT;
 
-		// !!!! NOTE: duped in con/note/edit/idx.js !!!!
 		var colors = NOTE_COLORS;
 		colors = colors.map(function(color, i) {
 			var selected = (this.search.colors || []).contains(i.toString());
