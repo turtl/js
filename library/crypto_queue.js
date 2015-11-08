@@ -110,6 +110,7 @@
 				break;
 			}
 
+			// if we have less than 128kb, run the crypto sync
 			if(data.length < (1024 * 128))
 			{
 				var cmd = wmsg.cmd;
@@ -160,6 +161,7 @@
 					done(null, res);
 				});
 			}
+			// data is largish, might block interface. run this in a worker
 			else
 			{
 				var worker = this.worker;
