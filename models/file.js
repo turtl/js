@@ -378,7 +378,7 @@ var FileData = Protected.extend({
 
 				if(note && note.get('file'))
 				{
-					note.get('file').trigger('change');
+					note.get('file').revoke().trigger('change');
 				}
 				return this;
 			})
