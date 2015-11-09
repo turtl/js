@@ -11,14 +11,6 @@ function print_js() {
 	echo -ne "\n<script src=\"${ASSET_ROOT}${jsfile}\"></script>"
 }
 
-function print_inline_js() {
-	jsfile=$1
-	jsfile="`echo $jsfile | sed 's|___| |g'`"
-	echo -ne "\n<script id=\"script-inline-$(basename $jsfile | sed 's|[^a-z0-9]|-|g')\" type=\"javascript/inline\">"
-	cat $jsfile
-	echo -ne "\n</script>"
-}
-
 function path_to_js() {
 	path=$1
 	find $path -name '*.js' | sort | sed 's| |___|g'
@@ -71,11 +63,6 @@ function all_js() {
 
 	echo "${SEARCH_PATH}library/templates.js"
 	echo "${SEARCH_PATH}main.js"
-}
-
-function inline_js() {
-	:
-	#echo "${SEARCH_PATH}library/openpgp/openpgp.worker.js"
 }
 
 function do_replace() {
