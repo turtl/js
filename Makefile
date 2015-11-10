@@ -1,3 +1,5 @@
+.PHONY: all clean
+
 NODE := $(shell which node)
 LESSC := node_modules/.bin/lessc
 HANDLEBARS := node_modules/.bin/handlebars
@@ -8,29 +10,33 @@ lessfiles := $(shell find css/ -name "*.less")
 cssfiles := $(lessfiles:%.less=%.css)
 handlebars := $(shell find views/ -name "*.hbs")
 allcss = $(shell find css/ -name "*.css" \
-		 	| grep -v '\(jquery-ui\|perfect-scrollbar\)')
+			| grep -v 'reset.css')
 alljs = $(shell find {config,controllers,handlers,library,models} -name "*.js" \
 			| grep -v '(ignore|\.thread\.)')
-
-.PHONY: all
 
 all: $(cssfiles) library/templates.js .build/postcss index.html
 
 %.css: %.less
-	@echo "- Less:" $< "->" $@
+	@echo "- LESS:" $< "->" $@
 	@$(LESSC) --include-path=css/ $< > $@
 
 library/templates.js: $(handlebars)
 	@echo "- Handlebars: " $?
-	@$(HANDLEBARS) -r views -e "hbs" -n "Templates" -f $@ $^
-	@sed -i '1s/^/var Templates = {};\n/' $@
+	@$(HANDLEBARS) -r views -e "hbs" -n "TurtlTemplates" -f $@ $^
+	@sed -i '1s/^/var TurtlTemplates = {};\n/' $@
 
 .build/postcss: $(allcss) $(cssfiles)
-	@echo "- Post CSS" $^
+	@echo "- postcss:" $^
 	@$(NODE) $(POSTCSS) --use autoprefixer --replace $^
 	@touch $@
 
-index.html: $(allcss) $(alljs) $(cssfiles) .build/postcss
-	@echo "- Gen index: " $?
+index.html: $(allcss) $(alljs) $(cssfiles) library/templates.js views/layouts/default.html .build/postcss scripts/include.sh scripts/gen-index
+	@echo "- index.html: " $?
 	@./scripts/gen-index
+
+clean:
+	rm $(allcss)
+	rm library/templates.js
+	rm -f .build/*
+	rm index.html
 
