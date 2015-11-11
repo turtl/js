@@ -28,7 +28,9 @@ var NotesEditFileController = Composer.Controller.extend({
 		var accept = false;
 		switch(this.model.get('type'))
 		{
-		case 'image': accept = 'image/*'; break;
+		case 'image': accept = 'image/*;capture=camera'; break;
+		case 'audio': accept = 'audio/*;capture=microphone'; break;
+		case 'video': accept = 'video/*;capture=camcorder'; break;
 		case 'file': accept = '*/*'; break;
 		}
 		this.html(view.render('notes/edit/file', {
@@ -43,6 +45,16 @@ var NotesEditFileController = Composer.Controller.extend({
 	{
 		var file = e.target.files[0];
 		var reader = new FileReader();
+		log.debug('note: edit: chose file: ', file);
+		var error = function(e)
+		{
+			log.error('note: edit: file: reader error: ', file, e.target.error);
+			this.inp_file.set('value', '');
+			barfr.barf('There was a problem reading that file: ' + e.target.error.message);
+		}.bind(this);
+
+		reader.onerror = error;
+		reader.onabort = error;
 		reader.onload = function(e)
 		{
 			// create a new file record with the binary file data
@@ -57,6 +69,9 @@ var NotesEditFileController = Composer.Controller.extend({
 				size: binary.length,
 				data: binary
 			}).unset('cleared', {silent: true});
+			log.debug('note: edit: read file: ', binary.length);
+
+			// TODO: clear out this.model.get('meta')?
 
 			if(file.type.match(/^image\//))
 			{
