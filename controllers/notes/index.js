@@ -76,6 +76,7 @@ var NotesIndexController = Composer.Controller.extend({
 					break;
 			}
 		}.bind(this));
+		this.with_bind(turtl.events, 'search:toggle', this.toggle_search.bind(this));
 
 		this.render();
 
@@ -116,13 +117,30 @@ var NotesIndexController = Composer.Controller.extend({
 		});
 	},
 
+	toggle_search: function()
+	{
+		var search = this.get_subcontroller('search');
+		if(search)
+		{
+			search.release();
+		}
+		else
+		{
+			this.open_search();
+		}
+	},
+
 	open_search: function()
 	{
 		var tags = this.get_subcontroller('list').tags;
-		var search = new NotesSearchController({
-			tags: tags,
-			search: this.search
-		});
+		this.track_subcontroller('search', function() {
+			var search = new NotesSearchController({
+				tags: tags,
+				search: this.search
+			});
+			return search;
+		}.bind(this));
+		var search = this.get_subcontroller('search');
 
 		search.bind('do-search', function() {
 			this.get_subcontroller('list').trigger('search');

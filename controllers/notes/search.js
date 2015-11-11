@@ -45,7 +45,7 @@ var NotesSearchController = Composer.Controller.extend({
 		var close = this.modal.close.bind(this.modal);
 		this.modal.open(this.el);
 		this.with_bind(this.modal, 'close', this.release.bind(this));
-		this.bind(['cancel', 'close'], close);
+		this.bind(['cancel', 'close', 'release'], setTimeout.bind(window, close));
 
 		document.body.addClass('search');
 		this.bind('release', function() {
