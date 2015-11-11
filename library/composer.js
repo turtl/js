@@ -2926,7 +2926,8 @@
 				// into:
 				//  nerd/city
 				var href = a.href
-					.replace(/^[a-z]+:\/\/(\/)?([A-Z]:)?\//i, '')
+					.replace(/^file:\/\/(\/)?([a-z]:)?\//i, '')
+					.replace(/^[a-z]+:\/\/.*?\//i, '')
 					.replace(/^[#!\/]+/, '');
 				if(options.filter_trailing_slash) href = href.replace(/\/$/, '');
 				href = '/'+href;
