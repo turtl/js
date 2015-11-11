@@ -203,6 +203,7 @@ function icon(name)
 		clear: 'e81a',
 		connection: 'e839',
 		edit: 'e815',
+		feedback: 'e83e',
 		file: 'e837',
 		image: 'e80e',
 		invite: 'e810',

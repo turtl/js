@@ -19,6 +19,8 @@ config.routes = {
 
 	'/sync': ['sync', 'index'],
 
+	'/feedback': ['feedback', 'index'],
+
 	'/': ['notes', 'index']
 };
 
