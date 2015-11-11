@@ -13,6 +13,11 @@
 	</p>
 {{else}}
 	<label for="note_file_{{note_id}}">{{icon 'attach'}}</label>
-	<input id="note_file_{{note_id}}" type="file" name="file" placeholder="Attach a file">
+	<input
+		id="note_file_{{note_id}}"
+		type="file"
+		{{#if accept}}accept="{{accept}}"{{/if}}
+		name="file"
+		placeholder="Attach a file">
 {{/if}}
 

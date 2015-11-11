@@ -25,9 +25,16 @@ var NotesEditFileController = Composer.Controller.extend({
 	{
 		var note = this.model.toJSON();
 		var file = this.model.get('file').toJSON();
+		var accept = false;
+		switch(this.model.get('type'))
+		{
+		case 'image': accept = 'image/*'; break;
+		case 'file': accept = '*/*'; break;
+		}
 		this.html(view.render('notes/edit/file', {
 			note_id: this.model.id(),		// id OR cid
 			note: note,
+			accept: accept,
 			file: file
 		}));
 	},
