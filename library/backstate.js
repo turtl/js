@@ -37,6 +37,14 @@ var Backstate = Composer.Class.extend({
 	},
 
 	/**
+	 * test if empty
+	 */
+	empty: function()
+	{
+		return this.states.length == 0;
+	},
+
+	/**
 	 * clear all back states
 	 */
 	clear: function()
