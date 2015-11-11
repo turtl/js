@@ -11,7 +11,8 @@ cssfiles := $(lessfiles:%.less=%.css)
 handlebars := $(shell find views/ -name "*.hbs")
 allcss = $(shell find css/ -name "*.css" \
 			| grep -v 'reset.css')
-alljs = $(shell find {config,controllers,handlers,library,models} -name "*.js" \
+alljs = $(shell echo "main.js" \
+			&& find {config,controllers,handlers,library,models} -name "*.js" \
 			| grep -v '(ignore|\.thread\.)')
 
 all: $(cssfiles) library/templates.js .build/postcss index.html
