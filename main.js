@@ -546,7 +546,7 @@ var _turtl_init = function()
 	// using rem font/box sizes everywhere instead of px...we can resize the
 	// entire app in just one place.
 	var font_size = 1;
-	if(window.navigator.userAgent.match(/DROID4/)) font_size = 1.12;
+	if(window.navigator.userAgent.match(/(DROID4|XT894)/)) font_size = 1.12;
 	$E('html').setStyles({'font-size': font_size + 'px'});
 
 	turtl.back = new Backstate();
@@ -585,7 +585,7 @@ var _turtl_init = function()
 };
 
 window.addEvent('domready', function() {
-	setTimeout(_turtl_init, 1000);
+	setTimeout(_turtl_init, 100);
 });
 
 // set up a global error handler that XHRs shit to the API so we know when bugs
