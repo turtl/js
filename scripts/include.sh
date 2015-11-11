@@ -32,7 +32,7 @@ function all_css() {
 }
 
 function all_js() {
-	echo "${SEARCH_PATH}library/mootools-core-1.5.1.js"
+	echo "${SEARCH_PATH}library/mootools-core-1.5.2.js"
 	echo "${SEARCH_PATH}library/mootools-more-1.5.1.js"
 	echo "${SEARCH_PATH}library/composer.js"
 	echo "${SEARCH_PATH}library/bluebird.js"
