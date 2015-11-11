@@ -287,6 +287,8 @@ var User = Protected.extend({
 		options || (options = {});
 
 		var key, auth;
+		if(!config.cookie_login) return false;
+
 		return this.get_key().bind(this)
 			.then(function(_key) {
 				key = _key;
