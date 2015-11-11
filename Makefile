@@ -1,4 +1,4 @@
-.PHONY: all clean
+.PHONY: all clean watch
 
 NODE := $(shell which node)
 LESSC := node_modules/.bin/lessc
@@ -27,8 +27,8 @@ library/templates.js: $(handlebars)
 	@sed -i '1s/^/var TurtlTemplates = {};\n/' $@
 
 .build/postcss: $(allcss) $(cssfiles)
-	@echo "- postcss:" $^
-	@$(NODE) $(POSTCSS) --use autoprefixer --replace $^
+	@echo "- postcss:" $?
+	@$(NODE) $(POSTCSS) --use autoprefixer --replace $?
 	@touch $@
 
 index.html: $(allcss) $(alljs) $(cssfiles) library/templates.js views/layouts/default.html .build/postcss scripts/include.sh scripts/gen-index
@@ -40,4 +40,7 @@ clean:
 	rm library/templates.js
 	rm -f .build/*
 	rm index.html
+
+watch:
+	@./scripts/watch
 

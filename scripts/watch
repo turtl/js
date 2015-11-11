@@ -1,0 +1,9 @@
+#!/bin/bash
+
+while true; do
+	make \
+		| grep -v 'Nothing to be done' \
+		| grep -v '\(Entering\|Leaving\) directory'
+	sleep 2
+done
+
