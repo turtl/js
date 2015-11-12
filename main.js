@@ -460,17 +460,19 @@ var turtl = {
 		{
 			title = turtl.titles[0].title;
 			back = turtl.titles[0].back;
+			options = turtl.titles[0].options;
 		}
 
-		turtl.controllers.header.render_title(title, back);
+		turtl.controllers.header.render_title(title, back, options);
 	},
 
-	push_title: function(title, backurl)
+	push_title: function(title, backurl, options)
 	{
 		if(!backurl) turtl.titles = turtl.titles.slice(0, 5);
 		turtl.titles.unshift({
 			title: title,
-			back: backurl
+			back: backurl,
+			options: options
 		});
 		turtl._set_title();
 	},

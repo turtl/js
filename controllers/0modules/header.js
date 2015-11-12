@@ -48,8 +48,10 @@ var HeaderController = Composer.Controller.extend({
 		this.update_notification();
 	},
 
-	render_title: function(title, backurl)
+	render_title: function(title, backurl, options)
 	{
+		options || (options = {});
+
 		var html = title || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 		if(backurl)
 		{
