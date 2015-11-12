@@ -31,7 +31,11 @@ var FeedbackController = FormController.extend({
 		if(!turtl.sync.connected) return this.html(view.render('feedback/noconnection'));
 		this.html(view.render('feedback/index'));
 
-		if(this.inp_text) setTimeout(function() { autosize(this.inp_text); }.bind(this), 10);
+		if(this.inp_text)
+		{
+			setTimeout(function() { autosize(this.inp_text); }.bind(this), 10);
+			this.inp_text.focus();
+		}
 	},
 
 	render_thanks: function()
