@@ -52,6 +52,11 @@ var make_index = function(collection, idx_field)
 	return idx;
 };
 
+var escape_regex = function(s)
+{
+	return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+};
+
 var select_text = function(inp, from, to)
 {
 	var s = window.getSelection();
@@ -201,6 +206,7 @@ function icon(name)
 		boards: 'e803',
 		bookmark: 'e814',
 		clear: 'e81a',
+		close: 'e819',
 		connection: 'e839',
 		edit: 'e815',
 		feedback: 'e83e',
