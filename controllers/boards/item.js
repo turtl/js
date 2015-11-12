@@ -15,11 +15,13 @@ var BoardsItemController = Composer.Controller.extend({
 	},
 
 	model: null,
+	search: {},
 
 	init: function()
 	{
 		this.render();
 		this.with_bind(this.model, 'change', this.render.bind(this));
+		this.with_bind(this.model, 'navigate', this.open_board.bind(this));
 	},
 
 	render: function()
@@ -39,14 +41,24 @@ var BoardsItemController = Composer.Controller.extend({
 				var shared_by_me = !shared_with_me && (has_invites || has_shares);
 				var shared_with_me_directly = shared_with_me &&
 					!!(this.model.get('privs') || {})[my_persona_id];
+				var data = this.model.toJSON();
+				data.title = data.title.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+				if(this.search.filter)
+				{
+					var regex = new RegExp(escape_regex(this.search.filter), 'g');
+					data.title = data.title.replace(regex, function(match) {
+						return '<highlight>'+match+'</highlight>';
+					});
+				}
 				this.html(view.render('boards/item', {
-					board: this.model.toJSON(),
+					board: data,
 					num_notes: num_notes,
 					shared: shared_with_me_directly || shared_by_me,
 					shared_by_me: shared_by_me,
 					shared_with_me: shared_with_me,
 					shared_with_me_directly: shared_with_me_directly
 				}));
+				this.el.set('rel', this.model.id());
 
 				if(shared_with_me) this.el.addClass('shared-with-me');
 
@@ -78,7 +90,8 @@ var BoardsItemController = Composer.Controller.extend({
 					return new BoardsListController({
 						inject: this.children,
 						collection: this.model.get('boards'),
-						child: true
+						child: true,
+						search: this.search
 					});
 				}.bind(this))
 

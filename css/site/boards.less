@@ -1,5 +1,16 @@
 @import 'variables';
 
+.boards {
+	.search {margin: 0; .standard-width();}
+	.search {
+		form {.uncard(); padding: 0;}
+		icon {float: right; position: relative; top: 12rem; height: 0; font-size: 20rem; color: @theme_gray; opacity: 0; .transition(opacity .3s);}
+		icon.active {opacity: 1;}
+		input {}
+	}
+	.item-list li h2 highlight {background: #ffff99;}
+}
+
 .boards, .board-share, .sharing {
 	@item_height: 56rem;
 	@item_pad_top: 6rem;

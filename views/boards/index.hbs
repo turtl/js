@@ -1,2 +1,12 @@
-<div class="boards"></div>
+<div class="boards">
+	{{#if show_search}}
+		<div class="search">
+			<form class="standard-form">
+				{{icon 'close' class='close'}}
+				<input type="text" name="search" placeholder="Search for boards">
+			</form>
+		</div>
+	{{/if}}
+	<div class="boards-list"></div>
+</div>
 
