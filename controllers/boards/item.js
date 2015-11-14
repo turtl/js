@@ -45,7 +45,7 @@ var BoardsItemController = Composer.Controller.extend({
 				data.title = data.title.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 				if(this.search.filter)
 				{
-					var regex = new RegExp(escape_regex(this.search.filter), 'g');
+					var regex = new RegExp(escape_regex(this.search.filter), 'gi');
 					data.title = data.title.replace(regex, function(match) {
 						return '<highlight>'+match+'</highlight>';
 					});
