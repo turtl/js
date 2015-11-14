@@ -6,3 +6,5 @@ index.html
 !reset.css
 library/templates.js
 library/svg-icons.js
+*.stackdump
+
