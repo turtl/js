@@ -74,7 +74,9 @@ Handlebars.registerHelper('note', function(note, options) {
 	if(note.type == 'link')
 	{
 		if(!note.title) note.title = note.url;
-		note.title = '<a target="_blank" href="'+note.url+'">'+note.title+'</a>';
+		var url = note.url;
+		if(!url.match(/[a-z]+:\/\//)) url = 'http://'+url;
+		note.title = '<a target="_blank" href="'+url+'">'+note.title+'</a>';
 	}
 
 	var have_boards, boards;
