@@ -2,6 +2,10 @@ var NavController = Composer.Controller.extend({
 	inject: '#nav',
 	tag: 'ul',
 
+	elements: {
+		'a[href=/sharing]': 'el_share'
+	},
+
 	nav: [
 		{url: '/', name: 'All notes', icon: 'notes'},
 		{url: '/boards', name: 'Boards', icon: 'boards'},
@@ -14,6 +18,22 @@ var NavController = Composer.Controller.extend({
 		this.with_bind(turtl.router, 'route', this.update_nav.bind(this));
 		this.bind('release', function() { $('nav').removeClass('show'); });
 		this.setup_scroll();
+
+		var get_notify_el = function(type)
+		{
+			switch(type)
+			{
+			case 'share': return this.el_share; break;
+			}
+		}.bind(this);
+		this.with_bind(turtl.events, 'notification:set', function(type) {
+			var el = get_notify_el(type);
+			if(el) el.addClass('notify');
+		});
+		this.with_bind(turtl.events, 'notification:clear', function(type) {
+			var el = get_notify_el(type);
+			if(el) el.removeClass('notify');
+		});
 	},
 
 	render: function()

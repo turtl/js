@@ -17,24 +17,9 @@ var SidebarController = Composer.Controller.extend({
 	{
 		this.render();
 		this.with_bind(turtl.events, 'sidebar:toggle', this.toggle.bind(this));
-		var get_notify_el = function(type)
-		{
-			switch(type)
-			{
-			case 'share': return this.el_share; break;
-			}
-		}.bind(this);
 		this.with_bind(turtl.events, 'api:connect', this.update_connection_status.bind(this));
 		this.with_bind(turtl.events, 'api:disconnect', this.update_connection_status.bind(this));
 		this.with_bind(turtl.events, 'app:load:profile-loaded', this.render.bind(this));
-		this.with_bind(turtl.events, 'notification:set', function(type) {
-			var el = get_notify_el(type);
-			if(el) el.addClass('notify');
-		});
-		this.with_bind(turtl.events, 'notification:clear', function(type) {
-			var el = get_notify_el(type);
-			if(el) el.removeClass('notify');
-		});
 	},
 
 	render: function()
