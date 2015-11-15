@@ -3,7 +3,7 @@ var NavController = Composer.Controller.extend({
 	tag: 'ul',
 
 	nav: [
-		{url: '/', name: 'Notes', icon: 'notes'},
+		{url: '/', name: 'All notes', icon: 'notes'},
 		{url: '/boards', name: 'Boards', icon: 'boards'},
 		{url: '/sharing', name: 'Sharing', icon: 'share'},
 	],
