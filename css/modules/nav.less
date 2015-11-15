@@ -1,0 +1,17 @@
+@import 'variables';
+
+#nav {display: none; position: relative; z-index: 6; flex-direction: column; justify-content: flex-end; top: @header_height; width: 100%; height: @nav_height; background: @theme_black_bg; .layer-rest();}
+#nav.show {display: flex;}
+#nav {
+	ul {width: 100%; margin: 0; padding: 0; list-style: none; text-align: center;}
+	ul {
+		li {display: inline-block;}
+		li {
+			a {display: block; width: 100rem; margin: 0 0; padding: 0 0 6rem 0; border-bottom: 2rem solid @theme_black_bg; opacity: .7; .transition(border .3s, opacity .3s;);}
+			a, icon {font-size: 14rem; color: #fff;}
+			icon {margin: 0 6rem 0 0;}
+		}
+		li.sel a {opacity: 1; border-color: @theme_accent;}
+	}
+}
+

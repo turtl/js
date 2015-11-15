@@ -32,14 +32,14 @@ a { text-decoration: none; }
 //#wrap {position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: scroll;}
 #wrap {height: 100%; overflow-y: scroll; overflow-x: hidden;}
 #app {.transition(left .3s);}
-#main {position: relative; left: 0; z-index: 5; padding: @header_height 0 64rem 0; .transition(left .3s);}
+#main {position: relative; left: 0; z-index: 5; padding: (@header_height) 0 64rem 0; .transition(left .3s);}
 #main > div,
 #tmp-slide > div {padding-top: @page_top_padding;}
 
 @header_pad_top: 4rem;
 @header_adjusted: (@header_height - @header_pad_top);
 
-header {position: fixed; .fixed-fix(); z-index: 14; width: 100%; height: @header_adjusted; margin: 0 0 0 0; padding: @header_pad_top 0 0 0; background: @theme_black_bg; .layer-rest();}
+header {position: fixed; .fixed-fix(); z-index: 14; width: 100%; height: @header_adjusted; margin: 0 0 0 0; padding: @header_pad_top 0 0 0; background: @theme_black_bg;}
 header.under {z-index: 10;}
 header {
 	a.logo {position: absolute; display: block; width: 60rem; height: 28rem; margin: 3rem 0 0 0;}

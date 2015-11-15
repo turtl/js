@@ -64,6 +64,7 @@ var turtl = {
 	controllers: {
 		pages: null,
 		header: null,
+		nav: null,
 		sidebar: null,
 		loading: null
 	},
@@ -198,6 +199,7 @@ var turtl = {
 				.then(function() {
 					setTimeout(turtl.show_loading_screen.bind(null, false), 200);
 					turtl.controllers.pages.release_sub();
+					turtl.controllers.nav = new NavController();
 					var initial_route = options.initial_route || default_route;
 					if(initial_route.match(/^\/users\//)) initial_route = default_route;
 					if(initial_route.match(/index.html/)) initial_route = default_route;
@@ -264,6 +266,7 @@ var turtl = {
 			turtl.sync.stop();
 
 			turtl.controllers.pages.release_sub();
+			turtl.controllers.nav.release();
 			turtl.keyboard.unbind('shift+l');
 			turtl.show_loading_screen(false);
 			turtl.user.unbind('change', 'user:write_changes_to_cookie');
