@@ -224,8 +224,18 @@ var Profile = Composer.RelationalModel.extend({
 		var run_dec = function(type)
 		{
 			return Promise.all(this.get(type).map(function(model) {
-				return model.deserialize();
-			}));
+				return model.deserialize().bind(this)
+					.catch(function(err) {
+						if(type == 'personas')
+						{
+							barfr.barf('There was a problem decrypting your persona. You might need to create a new one.');
+							return;
+						}
+						throw err;
+					});
+			}.bind(this))).bind(this)
+				.catch(function(err) {
+				});
 		}.bind(this);
 		return run_dec('keychain')
 			.then(run_dec.bind(this, 'personas'))
