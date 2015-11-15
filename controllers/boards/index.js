@@ -48,7 +48,7 @@ var BoardsController = Composer.Controller.extend({
 		this.html(view.render('boards/index', {
 			show_search: this.collection.size() > 0
 		}));
-		if(this.inp_search) this.inp_search.focus();
+		if(this.inp_search) setTimeout(function() { this.inp_search.focus(); }.bind(this));
 
 		this.track_subcontroller('list', function() {
 			return new BoardsListController({

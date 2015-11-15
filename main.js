@@ -212,6 +212,9 @@ var turtl = {
 					options.initial_route = '/';
 					if(window.port) window.port.send('profile-load-complete');
 					turtl.events.trigger('app:load:profile-loaded');
+
+					turtl.keyboard.bind('n', turtl.route.bind(turtl, '/'), 'shortcut:main:notes');
+					turtl.keyboard.bind('b', turtl.route.bind(turtl, '/boards'), 'shortcut:main:boards');
 				})
 				.catch(function(err) {
 					barfr.barf('There was a problem with the initial load of your profile. Please try again.');
@@ -268,6 +271,8 @@ var turtl = {
 			turtl.controllers.pages.release_sub();
 			turtl.controllers.nav.release();
 			turtl.keyboard.unbind('shift+l');
+			turtl.keyboard.unbind('n', 'shortcut:main:notes');
+			turtl.keyboard.unbind('b', 'shortcut:main:boards');
 			turtl.show_loading_screen(false);
 			turtl.user.unbind('change', 'user:write_changes_to_cookie');
 			turtl.api.clear_auth();
