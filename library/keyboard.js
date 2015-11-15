@@ -1,8 +1,18 @@
 var TurtlKeyboard = Composer.Event.extend({
 	_key_listener: null,
 
-	initialize: function()
+	options: {
+		ignore_input_elements: true
+	},
+
+	initialize: function(options)
 	{
+		options || (options = {});
+
+		Object.keys(options).forEach(function(key) {
+			this.options[key] = options[key];
+		}.bind(this));
+
 		if(!this._key_listener)
 		{
 			this._key_listener = this.keydown.bind(this);
@@ -23,6 +33,12 @@ var TurtlKeyboard = Composer.Event.extend({
 
 	keydown: function(e)
 	{
+		if(this.options.ignore_input_elements)
+		{
+			var is_input = Composer.match(e.target, 'input,select,textarea');
+			if(is_input) return;
+		}
+
 		this.trigger('raw', {
 			key: e.key,
 			code: e.code,
