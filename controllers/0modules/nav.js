@@ -13,6 +13,7 @@ var NavController = Composer.Controller.extend({
 		this.render();
 		this.with_bind(turtl.router, 'route', this.update_nav.bind(this));
 		this.bind('release', function() { $('nav').removeClass('show'); });
+		this.setup_scroll();
 	},
 
 	render: function()
@@ -46,6 +47,87 @@ var NavController = Composer.Controller.extend({
 				if(!li || !atag) return;
 				li.addClass('sel');
 			}
+		}.bind(this));
+	},
+
+	setup_scroll: function(e)
+	{
+		var attach = $('wrap');
+		var nav = $('nav');
+
+		var state = 'fixed';
+		var last = 0;
+		var coords = nav.getCoordinates();
+		var original_top = coords.top;
+		var nav_height = coords.height;
+		var transition_top = 0;
+
+		var update_state = function(scroll)
+		{
+			var top;
+			switch(state)
+			{
+			case 'transition-out':
+				top = (original_top + transition_top) - scroll;
+				break;
+			case 'transition-in':
+				top = (transition_top) - scroll;
+				break;
+			case 'fixed':
+				top = '';
+				break;
+			case 'hide':
+				top = 0;
+				break;
+			}
+			if(top && top > original_top)
+			{
+				state = 'fixed';
+				top = '';
+			}
+			if(top && top < original_top && scroll < original_top && state == 'transition-in')
+			{
+				state = 'fixed';
+				top = '';
+			}
+			nav.setStyles({top: top});
+		}.bind(this);
+		update_state();
+
+		var scrollbind = function(e)
+		{
+			var scroll = attach.scrollTop;
+			var navtop = parseInt(nav.getStyle('top'));
+			if(scroll > last && state =='fixed')
+			{
+				state = 'transition-out';
+				transition_top = last;
+			}
+			if(scroll < last && state == 'hide')
+			{
+				state = 'transition-in';
+				transition_top = scroll;
+			}
+			if(scroll > (transition_top + original_top) && state == 'transition-out')
+			{
+				state = 'hide';
+			}
+			if(scroll < (transition_top - original_top) && state.match(/^transition/))
+			{
+				state = 'fixed';
+			}
+			if(scroll <= 0)
+			{
+				state = 'fixed';
+			}
+
+			update_state(scroll);
+			last = scroll;
+		};
+
+		attach.addEventListener('scroll', scrollbind);
+		this.bind('release', function() {
+			attach.removeEventListener('scroll', scrollbind);
 		}.bind(this));
 	}
 });
