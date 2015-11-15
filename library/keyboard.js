@@ -39,14 +39,20 @@ var TurtlKeyboard = Composer.Event.extend({
 			if(is_input) return;
 		}
 
+		var do_stop = false;
+		stopfn = function() { do_stop = true; };
+
 		this.trigger('raw', {
 			key: e.key,
 			code: e.code,
 			shift: e.shift,
 			meta: e.meta,
 			control: e.control,
-			alt: e.alt
+			alt: e.alt,
+			stop: stopfn
 		});
+
+		if(do_stop) return;
 
 		var key = e.key;
 		var mods = [
