@@ -86,12 +86,16 @@ var NotesIndexController = Composer.Controller.extend({
 		this.track_subcontroller('actions', function() {
 			var actions = new ActionController();
 			actions.set_actions([
-				{title: 'Text note', name: 'text', icon: 'write'},
-				{title: 'Bookmark', name: 'link', icon: 'bookmark'},
-				{title: 'Image', name: 'image', icon: 'image'},
-				{title: 'File', name: 'file', icon: 'file'}
+				{title: 'Text note', name: 'text', icon: 'write', shortcut: 't'},
+				{title: 'Bookmark', name: 'link', icon: 'bookmark', shortcut: 'b'},
+				{title: 'Image', name: 'image', icon: 'image', shortcut: 'i'},
+				{title: 'File', name: 'file', icon: 'file', shortcut: 'f'}
 			]);
 			this.with_bind(actions, 'actions:fire', this.open_add.bind(this));
+			this.with_bind(turtl.keyboard, 'a', function() {
+				if(actions.is_open) return;
+				actions.open();
+			});
 			return actions;
 		}.bind(this));
 

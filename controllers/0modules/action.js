@@ -13,6 +13,7 @@ var ActionController = Composer.Controller.extend({
 	},
 
 	actions: [],
+	shortcut_idx: {},
 
 	is_open: false,
 
@@ -27,6 +28,14 @@ var ActionController = Composer.Controller.extend({
 		}.bind(this);
 		document.body.addEvent('click', click_outside);
 		this.bind('release', function() { document.body.removeEvent('click', click_outside); });
+		this.with_bind(turtl.keyboard, 'esc', this.close.bind(this));
+		this.with_bind(turtl.keyboard, 'raw', function(obj) {
+			var key = !obj.shift && !obj.alt && !obj.meta && !obj.control && obj.key;
+			var action = this.shortcut_idx[key];
+			if(!action || !this.is_open) return;
+			obj.stop();
+			this.trigger('actions:fire', action.name);
+		}.bind(this));
 	},
 
 	render: function()
@@ -52,6 +61,12 @@ var ActionController = Composer.Controller.extend({
 	set_actions: function(actions)
 	{
 		this.actions = actions;
+		var key_idx = {};
+		actions.forEach(function(action) {
+			if(!action.shortcut) return;
+			key_idx[action.shortcut] = action;
+		});
+		this.shortcut_idx = key_idx;
 		this.render();
 	},
 
