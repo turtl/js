@@ -13,7 +13,8 @@ var NotesSearchController = Composer.Controller.extend({
 		'click a[rel=all]': 'show_all_tags',
 		'input input[name=text]': 'text_search',
 		'click ul.tags li': 'toggle_tag',
-		'click ul.colors li': 'toggle_color'
+		'click ul.colors li': 'toggle_color',
+		'submit form': 'submit'
 	},
 
 	modal: null,
@@ -67,6 +68,10 @@ var NotesSearchController = Composer.Controller.extend({
 		var timer = new Timer(500);
 		this.with_bind(timer, 'fired', this.trigger.bind(this, 'do-search'));
 		this.bind('search-text', timer.reset.bind(timer));
+		this.bind('release', function() {
+			console.log('timer: ', timer.timeout);
+			if(timer.timeout) this.trigger('do-search');
+		});
 
 		var last_tags = null;
 		this.bind('update-available-tags', function(tags) {
@@ -144,12 +149,8 @@ var NotesSearchController = Composer.Controller.extend({
 	reset_search: function(e)
 	{
 		if(e) e.stop();
-		this.search.sort = NOTE_DEFAULT_SORT;
-		this.search.text = '';
-		this.search.tags = [];
-		this.search.colors = [];
-		this.trigger('do-search');
 		this.trigger('search-reset');
+		this.trigger('do-search');
 		this.render();
 	},
 
@@ -241,6 +242,12 @@ var NotesSearchController = Composer.Controller.extend({
 
 		this.trigger('do-search');
 		this.trigger('search-mod');
+	},
+
+	submit: function(e)
+	{
+		if(e) e.stop();
+		this.trigger('close');
 	}
 });
 

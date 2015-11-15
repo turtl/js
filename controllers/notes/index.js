@@ -77,6 +77,8 @@ var NotesIndexController = Composer.Controller.extend({
 			}
 		}.bind(this));
 		this.with_bind(turtl.events, 'search:toggle', this.toggle_search.bind(this));
+		this.with_bind(turtl.keyboard, '/', this.open_search.bind(this));
+		this.with_bind(turtl.keyboard, 'x', this.clear_search.bind(this));
 
 		this.render();
 
@@ -95,6 +97,23 @@ var NotesIndexController = Composer.Controller.extend({
 
 		this.with_bind(turtl.search, 'search-tags', function(tags) {
 			this.saved_tags = tags;
+		}.bind(this));
+
+		this.bind('search-reset', function() {
+			this.search.sort = NOTE_DEFAULT_SORT;
+			this.search.text = '';
+			this.search.tags = [];
+			this.search.colors = [];
+			this.trigger('run-search');
+			var search_btn = $E('header li[rel=search]');
+			search_btn.removeClass('mod');
+		}.bind(this));
+		this.bind('search-mod', function() {
+			var search_btn = $E('header li[rel=search]');
+			search_btn.addClass('mod');
+		}.bind(this));
+		this.bind('run-search', function() {
+			this.get_subcontroller('list').trigger('search');
 		}.bind(this));
 	},
 
@@ -142,25 +161,20 @@ var NotesIndexController = Composer.Controller.extend({
 		}.bind(this));
 		var search = this.get_subcontroller('search');
 
-		search.bind('do-search', function() {
-			this.get_subcontroller('list').trigger('search');
-		}.bind(this))
-		// kind of hacky to apply a class by reaching outside of the controller
-		// but it works great (and abstracting it into a variable makes it a
-		// single-place hack)
-		var search_btn = $E('header li[rel=search]');
-		search.bind('search-mod', function() {
-			search_btn.addClass('mod');
-		}.bind(this));
-		search.bind('search-reset', function() {
-			search_btn.removeClass('mod');
-		}.bind(this));
+		search.bind('do-search', this.trigger.bind(this, 'run-search'));
+		search.bind('search-reset', this.trigger.bind(this, 'search-reset'));
+		search.bind('search-mod', this.trigger.bind(this, 'search-mod'));
 
 		// if we have save tags, hand them to the search controller
 		if(this.saved_tags)
 		{
 			search.trigger('update-available-tags', this.saved_tags);
 		}
+	},
+
+	clear_search: function(e)
+	{
+		this.trigger('search-reset');
 	}
 });
 
