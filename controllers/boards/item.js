@@ -41,6 +41,7 @@ var BoardsItemController = Composer.Controller.extend({
 				var shared_by_me = !shared_with_me && (has_invites || has_shares);
 				var shared_with_me_directly = shared_with_me &&
 					!!(this.model.get('privs') || {})[my_persona_id];
+				var num_shared_with = Object.keys(this.model.get('privs') || {}).length;
 				var data = this.model.toJSON();
 				data.title = data.title.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 				if(this.search.filter)
@@ -55,6 +56,7 @@ var BoardsItemController = Composer.Controller.extend({
 					num_notes: num_notes,
 					shared: shared_with_me_directly || shared_by_me,
 					shared_by_me: shared_by_me,
+					num_shared_with: num_shared_with + (num_shared_with == 1 ? ' person' : ' people'),
 					shared_with_me: shared_with_me,
 					shared_with_me_directly: shared_with_me_directly
 				}));
