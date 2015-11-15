@@ -80,6 +80,9 @@ var NotesViewController = NoteBaseController.extend({
 		}.bind(this));
 
 		this.parent();
+
+		this.with_bind(turtl.keyboard, 'delete', this.open_delete.bind(this));
+		this.with_bind(turtl.keyboard, 'e', this.open_edit.bind(this));
 	},
 
 	render: function()
