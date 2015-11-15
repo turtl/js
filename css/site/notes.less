@@ -66,6 +66,7 @@
 
 @file_height: 34rem;
 @content_pad: 6rem;
+@content_pad_desktop: 16rem;
 .note {
 	p.empty {padding: 10rem 0; font-size: 13rem; color: @theme_gray; text-align: center;}
 
@@ -77,6 +78,9 @@
 	&.file,
 	&.link {
 		.note-gutter {padding: @content_pad;}
+		@media @desktop {
+			.note-gutter {padding: @content_pad_desktop;}
+		}
 	}
 	&.image {
 		.backing {position: relative; z-index: 10; width: 100%; min-height: @header_height; background: @theme_black_bg;}
@@ -104,6 +108,9 @@
 			.file {display: none;}
 		}
 		.note-gutter .content .body {padding: @content_pad;}
+		@media @desktop {
+			.note-gutter .content .body {padding: @content_pad_desktop;}
+		}
 	}
 	&.item.file.no-text.no-title {
 		.note-gutter {padding: 0;}
