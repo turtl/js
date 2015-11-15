@@ -51,8 +51,7 @@ var PagesController = Composer.Controller.extend({
 		var main = document.getElement(main_sel);
 
 		document.body.addClass('page-slide');
-		var maintop = parseInt(main.getStyle('top'));
-		var newtop = maintop - scroll;
+		var newtop = -scroll;
 		var tmp = new Element('div#tmp-slide')
 			.setStyles({top: newtop})
 			.set('html', content);
