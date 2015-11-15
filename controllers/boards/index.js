@@ -9,6 +9,7 @@ var BoardsController = Composer.Controller.extend({
 
 	events: {
 		'input .search input[name=search]': 'board_filter',
+		'keydown .search input[name=search]': 'special_key',
 		'click .search icon.close': 'clear_filter',
 		'submit form': 'open_board'
 	},
@@ -77,6 +78,13 @@ var BoardsController = Composer.Controller.extend({
 		{
 			this.icon_close.removeClass('active');
 		}
+	},
+
+	special_key: function(e)
+	{
+		if(!e) return;
+		if(e.key != 'esc') return;
+		this.clear_filter(e);
 	},
 
 	clear_filter: function(e)
