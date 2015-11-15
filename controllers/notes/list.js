@@ -88,7 +88,7 @@ var NotesListController = Composer.ListController.extend({
 					else { delete renderopts.no_results; }
 
 					// always go back to the top after a search
-					window.scrollTo(0, 0);
+					$E('#wrap').scrollTo(0, 0);
 
 					// ok, all the notes we found are deserialized and loaded
 					// into mem, so we trigger a reset and the tracker will pick
