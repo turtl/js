@@ -31,12 +31,16 @@ function all_css() {
 	done
 }
 
-function all_js() {
+function vendor_js() {
 	echo "${SEARCH_PATH}library/mootools-core-1.5.2.js"
 	echo "${SEARCH_PATH}library/mootools-more-1.5.1.js"
 	echo "${SEARCH_PATH}library/composer.js"
 	echo "${SEARCH_PATH}library/bluebird.js"
 	echo "${SEARCH_PATH}library/handlebars.runtime-v2.0.0.js"
+}
+
+function all_js() {
+	vendor_js
 	
 	path_to_js "${SEARCH_PATH}config/config.js"
 	find ${SEARCH_PATH}config -name '*.js' \
