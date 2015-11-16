@@ -41,6 +41,8 @@ var BoardsController = Composer.Controller.extend({
 			}.bind(this));
 			return actions;
 		}.bind(this));
+
+		this.with_bind(turtl.keyboard, 'a', this.open_add.bind(this));
 	},
 
 	render: function()
