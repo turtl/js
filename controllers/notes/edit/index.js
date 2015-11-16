@@ -415,7 +415,10 @@ var NotesEditController = FormController.extend({
 	{
 		var data = this.grab_form_data();
 		var preview = this.clone.clone().set(data);
-		new NotesEditPreviewController({model: preview});
+		new NotesEditPreviewController({
+			model: preview,
+			modal_opts: this.modal_opts
+		});
 	}
 });
 

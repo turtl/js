@@ -39,11 +39,11 @@ var NotesViewController = NoteBaseController.extend({
 				{name: 'menu', actions: [/*{name: 'Edit'},*/ {name: 'Delete'}]}
 			];
 		}
-		this.modal = new TurtlModal({
+		this.modal = new TurtlModal(Object.merge({
 			show_header: true,
 			title: this.title,
 			actions: actions
-		});
+		}, this.modal_opts && this.modal_opts() || {}));
 		this.render();
 
 		var close = this.modal.close.bind(this.modal);
