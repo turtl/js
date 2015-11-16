@@ -242,6 +242,40 @@ var Profile = Composer.RelationalModel.extend({
 			.then(run_dec.bind(this, 'boards'));
 	},
 
+	backup: function(options)
+	{
+		options || (options = {});
+		var data = {
+			keychain: this.get('keychain').toJSON(),
+			personas: this.get('personas').toJSON(),
+			boards: this.get('boards').toJSON(),
+			notes: []
+		};
+
+		return turtl.db.notes.query().all().execute().bind(this)
+			.then(function(notes) {
+				return Promise.all(notes.map(function(notedata) {
+					var note = new Note(notedata);
+					return note.deserialize()
+						.then(function() {
+							return note;
+						});
+				}));
+			})
+			.then(function(notes) {
+				data.notes = notes.map(function(n) { return n.toJSON(); });
+				Object.keys(data).forEach(function(key) {
+					data[key].forEach(function(item) { delete item.body; });
+				});
+				return data;
+			});
+	},
+
+	restore: function(data, options)
+	{
+		options || (options = {});
+	},
+
 	calculate_size: function(options)
 	{
 		if(!turtl.db) return false;
