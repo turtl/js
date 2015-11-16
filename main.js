@@ -269,7 +269,7 @@ var turtl = {
 			turtl.sync.stop();
 
 			turtl.controllers.pages.release_sub();
-			turtl.controllers.nav.release();
+			if(turtl.controllers.nav) turtl.controllers.nav.release();
 			turtl.keyboard.unbind('shift+l');
 			turtl.keyboard.unbind('n', 'shortcut:main:notes');
 			turtl.keyboard.unbind('b', 'shortcut:main:boards');
