@@ -75,7 +75,10 @@ var NotesEditController = FormController.extend({
 		this.modal = new TurtlModal(Object.merge({
 			show_header: true,
 			title: title,
-			closefn: conf
+			closefn: conf,
+			actions: [
+				{name: 'preview', icon: 'preview'}
+			]
 		}, this.modal_opts && this.modal_opts() || {}));
 
 		this.render();
@@ -89,6 +92,12 @@ var NotesEditController = FormController.extend({
 
 		this.modal.open(this.el);
 		this.with_bind(this.modal, 'close', this.release.bind(this));
+		this.with_bind(this.modal, 'header:fire-action', function(action) {
+			switch(action)
+			{
+			case 'preview': this.open_preview(); break;
+			}
+		});
 		this.bind(['cancel', 'close'], close);
 
 		this.bind('release', function() {
@@ -214,12 +223,8 @@ var NotesEditController = FormController.extend({
 		}
 	},
 
-	submit: function(e)
+	grab_form_data: function()
 	{
-		if(e) e.stop();
-
-		var errors = [];
-
 		var title = this.inp_title.get('value');
 		var url = this.inp_url && this.inp_url.get('value');
 		var text = this.inp_text.get('value');
@@ -234,6 +239,16 @@ var NotesEditController = FormController.extend({
 		{
 			data.user_id = turtl.user.id();
 		}
+		return data;
+	},
+
+	submit: function(e)
+	{
+		if(e) e.stop();
+
+		var errors = [];
+
+		var data = this.grab_form_data();
 
 		var clone = this.clone;
 		var keypromise = clone.update_keys({silent: true});
@@ -394,6 +409,13 @@ var NotesEditController = FormController.extend({
 	{
 		if(e) e.stop();
 		new MarkdownFormattingHelpController();
+	},
+
+	open_preview: function()
+	{
+		var data = this.grab_form_data();
+		var preview = this.clone.clone().set(data);
+		new NotesEditPreviewController({model: preview});
 	}
 });
 

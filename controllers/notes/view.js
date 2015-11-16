@@ -22,6 +22,9 @@ var NotesViewController = NoteBaseController.extend({
 
 	_last_scroll: null,
 
+	hide_actions: false,
+	title: false,
+
 	init: function()
 	{
 		if(!this.model)
@@ -29,11 +32,17 @@ var NotesViewController = NoteBaseController.extend({
 			this.release();
 			throw new Error('notes: view: no model passed');
 		}
+		var actions = [];
+		if(!this.hide_actions)
+		{
+			actions = [
+				{name: 'menu', actions: [/*{name: 'Edit'},*/ {name: 'Delete'}]}
+			];
+		}
 		this.modal = new TurtlModal({
 			show_header: true,
-			actions: [
-				{name: 'menu', actions: [/*{name: 'Edit'},*/ {name: 'Delete'}]}
-			]
+			title: this.title,
+			actions: actions
 		});
 		this.render();
 
@@ -72,12 +81,15 @@ var NotesViewController = NoteBaseController.extend({
 		this.bind('release', function() { document.body.removeEvent('click', click_outside); });
 
 		// set up the action button
-		this.track_subcontroller('actions', function() {
-			var actions = new ActionController({inject: this.modal.el});
-			actions.set_actions([{title: 'Edit note', name: 'edit', icon: 'edit'}]);
-			this.with_bind(actions, 'actions:fire', this.open_edit.bind(this, null));
-			return actions;
-		}.bind(this));
+		if(!this.hide_actions)
+		{
+			this.track_subcontroller('actions', function() {
+				var actions = new ActionController({inject: this.modal.el});
+				actions.set_actions([{title: 'Edit note', name: 'edit', icon: 'edit'}]);
+				this.with_bind(actions, 'actions:fire', this.open_edit.bind(this, null));
+				return actions;
+			}.bind(this));
+		}
 
 		this.parent();
 
