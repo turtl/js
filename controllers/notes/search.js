@@ -69,7 +69,6 @@ var NotesSearchController = Composer.Controller.extend({
 		this.with_bind(timer, 'fired', this.trigger.bind(this, 'do-search'));
 		this.bind('search-text', timer.reset.bind(timer));
 		this.bind('release', function() {
-			console.log('timer: ', timer.timeout);
 			if(timer.timeout) this.trigger('do-search');
 		});
 
