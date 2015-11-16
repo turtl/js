@@ -247,6 +247,7 @@ function icon(name)
 		note: 'e804',
 		notes: 'e809',
 		persona: 'e800',
+		preview: 'e83f',
 		protected: 'e821',
 		remove: 'e81d',
 		search: 'e83a',
