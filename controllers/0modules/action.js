@@ -35,6 +35,7 @@ var ActionController = Composer.Controller.extend({
 			if(!action || !this.is_open) return;
 			obj.stop();
 			this.trigger('actions:fire', action.name);
+			this.close();
 		}.bind(this));
 	},
 
