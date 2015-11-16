@@ -4,7 +4,7 @@ var SidebarController = Composer.Controller.extend({
 	elements: {
 		'> .overlay': 'overlay',
 		'li[rel=share]': 'el_share',
-		'.inner > .connection': 'el_connection'
+		'.inner .connection': 'el_connection'
 	},
 
 	events: {
