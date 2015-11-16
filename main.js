@@ -182,6 +182,8 @@ var turtl = {
 			turtl.show_loading_screen(true);
 			turtl.update_loading_screen('Initializing Turtl');
 
+			$E('body').removeClass('loggedout');
+
 			// sets up local storage
 			turtl.setup_local_db().bind({})
 				.then(function() {
@@ -267,6 +269,8 @@ var turtl = {
 			// stop syncing
 			turtl.files.stop_syncing();
 			turtl.sync.stop();
+
+			$E('body').addClass('loggedout');
 
 			turtl.controllers.pages.release_sub();
 			if(turtl.controllers.nav) turtl.controllers.nav.release();
