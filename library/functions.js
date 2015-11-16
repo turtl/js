@@ -68,6 +68,32 @@ var select_text = function(inp, from, to)
 	return s;
 };
 
+var download_blob = function(blob, options)
+{
+	options || (options = {});
+
+	var url;
+	return new Promise(function(resolve, reject) {
+		url = URL.createObjectURL(blob);
+		var name = options.name || 'download';
+		var download = new Element('a')
+			.setStyles({visibility: 'hidden'})
+			.set('html', 'Download '+ name.safe())
+			.addClass('attachment')
+			.setProperties({
+				href: url,
+				download: name,
+				target: '_blank'
+			});
+		download.inject(document.body);
+		fire_click(download);
+		(function() { download.destroy(); }).delay(5000, this);
+		resolve();
+	}).finally(function() {
+		if(url) URL.revokeObjectURL(url);
+	});
+};
+
 /**
  * given a turtl front-end generated ID, return the timestamp it encapsulates
  */

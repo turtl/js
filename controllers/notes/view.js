@@ -174,26 +174,8 @@ var NotesViewController = NoteBaseController.extend({
 		var url;
 		return this.model.get('file').to_blob({force: true}).bind(this)
 			.then(function(blob) {
-				url = URL.createObjectURL(blob);
-				return url;
-			})
-			.then(function(blob_url) {
 				var name = this.model.get('file').get('name');
-				var download = new Element('a')
-					.setStyles({visibility: 'hidden'})
-					.set('html', 'Download '+ name.safe())
-					.addClass('attachment')
-					.setProperties({
-						href: url,
-						download: name,
-						target: '_blank'
-					});
-
-				download.inject(document.body);
-				fire_click(download);
-				(function() {
-					download.destroy();
-				}).delay(5000, this);
+				return download_blob(blob, {name: name});
 			})
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', 'There was a problem opening that file', err);
