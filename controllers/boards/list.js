@@ -51,7 +51,7 @@ var BoardsListController = Composer.ListController.extend({
 	{
 		options || (options = {});
 		this.html(view.render('boards/list', {
-			empty: options.empty && !this.search.filter,
+			empty: options.empty && (this.child || !this.search.filter),
 			show_search: !this.child,
 			child: this.child
 		}));

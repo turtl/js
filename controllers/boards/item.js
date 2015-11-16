@@ -96,7 +96,6 @@ var BoardsItemController = Composer.Controller.extend({
 						search: this.search
 					});
 				}.bind(this))
-
 			});
 	},
 
