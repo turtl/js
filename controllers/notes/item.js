@@ -105,7 +105,6 @@ var NotesItemController = NoteBaseController.extend({
 
 	note_click: function(e)
 	{
-		console.log('e: ', e);
 		var atag = Composer.find_parent('li.note a', e.target);
 		if(atag && (e.control || e.shift)) return;
 		if(e) e.stop();
