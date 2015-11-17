@@ -102,7 +102,7 @@ var NotesSearchController = Composer.Controller.extend({
 
 		this.render_tags(options);
 
-		setTimeout(function() { this.inp_text.focus(); }.bind(this), 300);
+		setTimeout(function() { this.inp_text.select(); }.bind(this), 50);
 	},
 
 	render_tags: function(options)
