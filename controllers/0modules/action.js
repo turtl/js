@@ -30,6 +30,7 @@ var ActionController = Composer.Controller.extend({
 		this.bind('release', function() { document.body.removeEvent('click', click_outside); });
 		this.with_bind(turtl.keyboard, 'esc', this.close.bind(this));
 		this.with_bind(turtl.keyboard, 'raw', function(obj) {
+			if(obj.is_input) return;
 			var key = !obj.shift && !obj.alt && !obj.meta && !obj.control && obj.key;
 			var action = this.shortcut_idx[key];
 			if(!action || !this.is_open) return;
