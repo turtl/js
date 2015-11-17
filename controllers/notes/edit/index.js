@@ -81,6 +81,35 @@ var NotesEditController = FormController.extend({
 			]
 		}, this.modal_opts && this.modal_opts() || {}));
 
+		// URL check setup, needs to happen before render
+		if(this.model.is_new())
+		{
+			this.url_timer = new Timer(500);
+			this.url_timer.bind('fired', function() {
+				var url_search = this.inp_url.get('value');
+				if(!url_search) return;
+				turtl.search.search({url: url_search}).bind(this)
+					.spread(function(ids) {
+						ids = ids.erase(this.model.id());
+						if(!ids || !ids.length)
+						{
+							this.el_existing.slide('out');
+							return;
+						}
+
+						var msg = '<em>!</em>';
+						msg += 'This URL is already bookmarked in ';
+						if(ids.length == 1) msg += 'another note';
+						else msg += ids.length +' notes';
+
+						this.el_existing.set('html', msg);
+						this.el_existing.slide('in');
+					});
+			}.bind(this));
+			this.bind('check-url', this.url_timer.reset.bind(this.url_timer));
+			this.bind('release', this.url_timer.unbind.bind(this.url_timer));
+		}
+
 		this.render();
 
 		// track unsaved changes to the model
@@ -136,36 +165,6 @@ var NotesEditController = FormController.extend({
 		}.bind(this);
 		this.with_bind(this.clone.get('tags'), ['add', 'remove'], footer_desc);
 		footer_desc();
-
-		if(this.model.is_new())
-		{
-			this.url_timer = new Timer(500);
-			this.url_timer.bind('fired', function() {
-				turtl.search.search({url: this.inp_url.get('value')}).bind(this)
-					.spread(function(ids) {
-						ids = ids.erase(this.model.id());
-						if(!ids || !ids.length)
-						{
-							this.el_existing.slide('out');
-							return;
-						}
-
-						var msg = '<em>!</em>';
-						if(ids.length == 1)
-						{
-							msg += 'This URL is already bookmarked in a note';
-						}
-						else
-						{
-							msg += 'This URL is already bookmarked in '+ ids.length +' notes';
-						}
-						this.el_existing.set('html', msg);
-						this.el_existing.slide('in');
-					});
-			}.bind(this));
-			this.bind('check-url', this.url_timer.reset.bind(this.url_timer));
-			this.bind('release', this.url_timer.unbind.bind(this.url_timer));
-		}
 	},
 
 	render: function()
