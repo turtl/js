@@ -443,6 +443,12 @@ var Sync = Composer.Model.extend({
 				delete item.board_id;
 			}
 			if(!Array.isArray(item.boards)) item.boards = [];
+
+			// move hashes to IDs
+			if(item.file && (!item.file.id && item.file.hash))
+			{
+				item.file.id = item.file.hash;
+			}
 		}
 
 		if(type == 'file' && item.file)
