@@ -75,7 +75,7 @@ var UserLoginController = FormController.extend({
 				turtl.user.login(data, {old: meta.old});
 				if(meta.old)
 				{
-					barfr.barf('Your master key was generated using an older method. To upgrade it, please go to "Change password" section of your account settings under the Turtl menu.');
+					barfr.barf('Your master key was generated using an older method. To upgrade it, please go to the "Change password" section of your account settings under the Turtl menu.');
 				}
 			})
 			.catch(function(err) {
