@@ -91,11 +91,11 @@
 		@img_header_height: 30rem;
 		@img_header_top_pad: 4rem;
 		@img_header_margin_bottom: 3rem;	// aligns the text as if header weren't there
-		.content h1 {position: relative; z-index: 11; display: block; height: @img_header_height; margin: -(@img_header_height + @img_header_top_pad) 0 @img_header_margin_bottom 0; padding: @img_header_top_pad 0 0 6%; line-height: @img_header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim(bottom, .45);}
+		.content h1.main-title {position: relative; z-index: 11; display: block; height: @img_header_height; margin: -(@img_header_height + @img_header_top_pad) 0 @img_header_margin_bottom 0; padding: @img_header_top_pad 0 0 6%; line-height: @img_header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim(bottom, .45);}
 		@media @desktop {
-			.content h1 {padding-left: 24rem;}
+			.content h1.main-title {padding-left: 24rem;}
 		}
-		&.view .file + .note-gutter .content h1 {top: -@file_height;}
+		&.view .file + .note-gutter .content h1.main-title {top: -@file_height;}
 		&.preview:not(.view) {
 			.file {display: none;}
 		}
