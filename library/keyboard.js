@@ -1,3 +1,8 @@
+/**
+ * This is a composer/mootools library for to handle global keyboard bindings in
+ * a sane way, using moo's event handling and composer's event binding and
+ * triggering.
+ */
 var TurtlKeyboard = Composer.Event.extend({
 	_key_listener: null,
 
@@ -33,14 +38,10 @@ var TurtlKeyboard = Composer.Event.extend({
 
 	keydown: function(e)
 	{
-		if(this.options.ignore_input_elements)
-		{
-			var is_input = Composer.match(e.target, 'input,select,textarea');
-			if(is_input) return;
-		}
-
 		var do_stop = false;
 		stopfn = function() { do_stop = true; };
+
+		var is_input = Composer.match(e.target, 'input,select,textarea');
 
 		this.trigger('raw', {
 			key: e.key,
@@ -49,8 +50,11 @@ var TurtlKeyboard = Composer.Event.extend({
 			meta: e.meta,
 			control: e.control,
 			alt: e.alt,
-			stop: stopfn
+			stop: stopfn,
+			is_input: is_input
 		});
+
+		if(this.options.ignore_input_elements && is_input) return
 
 		if(do_stop) return;
 
