@@ -12,6 +12,7 @@ var NotesSearchController = Composer.Controller.extend({
 		'click .filter-sort a': 'sort',
 		'click a[rel=all]': 'show_all_tags',
 		'input input[name=text]': 'text_search',
+		'keydown input[name=text]': 'special_key',
 		'click ul.tags li': 'toggle_tag',
 		'click ul.colors li': 'toggle_color',
 		'submit form': 'submit'
@@ -189,6 +190,13 @@ var NotesSearchController = Composer.Controller.extend({
 		this.search.text = text;
 		this.trigger('search-text');
 		this.trigger('search-mod');
+	},
+
+	special_key: function(e)
+	{
+		if(!e || e.key != 'esc') return;
+		e.stop();
+		this.trigger('close');
 	},
 
 	toggle_tag: function(e)
