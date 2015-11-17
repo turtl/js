@@ -15,11 +15,12 @@ var NotesItemController = NoteBaseController.extend({
 		this.render();
 		var renchange = function()
 		{
+			var last = this._last_height;
 			this.render();
 			setTimeout(function() {
 				if(!this.el) return;
 				var height = this.el.getCoordinates().height;
-				if(height == this._last_height) return;
+				if(height == last) return;
 				this._last_height = height;
 				this.trigger('update');
 			}.bind(this));
