@@ -3,10 +3,12 @@ var TurtlOverlay = Composer.Controller.extend({
 	class_name: 'turtl-overlay',
 
 	events: {
-		'click': 'pop_action'
+		'click': 'click'
 	},
 
 	actions: [],
+
+	unclickable: false,
 
 	init: function()
 	{
@@ -19,18 +21,19 @@ var TurtlOverlay = Composer.Controller.extend({
 	render: function()
 	{
 		this.html('');
+		if(this.unclickable) this.el.addClass('unclickable');
 	},
 
-	open: function(action, zindex)
+	open: function(action, options)
 	{
+		options || (options = {});
 		this.actions.push(action);
 		if(!this.el.hasClass('active'))
 		{
 			this.el.addClass('active');
-			this.el.set('title', 'Click to close');
-			if(zindex !== undefined)
+			if(!this.unclickable)
 			{
-				this.setStyle('z-index', parseInt(zindex));
+				this.el.set('title', 'Click to close');
 			}
 		}
 	},
@@ -43,6 +46,12 @@ var TurtlOverlay = Composer.Controller.extend({
 			this.el.removeClass('closing');
 		}.bind(this), 350);
 		this.actions = [];
+	},
+
+	click: function(e)
+	{
+		if(this.unclickable) return;
+		this.pop_action();
 	},
 
 	pop_action: function()
