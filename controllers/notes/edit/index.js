@@ -287,6 +287,7 @@ var NotesEditController = FormController.extend({
 
 				// add the note to our main note list
 				turtl.profile.get('notes').upsert(this.model);
+				this.trigger('saved');
 				this.trigger('close');
 			})
 			.then(function() {
@@ -342,9 +343,6 @@ var NotesEditController = FormController.extend({
 						turtl.events.trigger('ui-error', 'There was a problem saving the attachment', err);
 						log.error('note: edit: file: ', this.model.id(), derr(err));
 					});
-			})
-			.then(function() {
-				this.trigger('saved');
 			})
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', 'There was a problem updating that note', err);
