@@ -15,6 +15,7 @@ var TurtlModal = Composer.Controller.extend({
 
 	is_open: false,
 	skip_overlay: false,
+	skip_close_on_pageload: false,
 
 	show_header: false,
 	show_back: true,
@@ -40,7 +41,11 @@ var TurtlModal = Composer.Controller.extend({
 			if(this.el) this.el.removeEvent('scroll', scroller);
 		}.bind(this));
 		this.with_bind(turtl.user, 'logout', this.close.bind(this));
-		this.with_bind(turtl.controllers.pages, 'load', this.close.bind(this));
+
+		if(!this.skip_close_on_pageload)
+		{
+			this.with_bind(turtl.controllers.pages, 'load', this.close.bind(this));
+		}
 
 		this.with_bind(turtl.keyboard, 'esc', this.close.bind(this));
 	},
