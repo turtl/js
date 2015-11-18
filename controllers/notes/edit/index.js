@@ -233,11 +233,6 @@ var NotesEditController = FormController.extend({
 			url: url,
 			text: text
 		};
-
-		if(this.model.is_new())
-		{
-			data.user_id = turtl.user.id();
-		}
 		return data;
 	},
 
@@ -248,6 +243,11 @@ var NotesEditController = FormController.extend({
 		var errors = [];
 
 		var data = this.grab_form_data();
+
+		if(this.model.is_new())
+		{
+			data.user_id = turtl.user.id();
+		}
 
 		var clone = this.clone;
 		var keypromise = clone.update_keys({silent: true});
