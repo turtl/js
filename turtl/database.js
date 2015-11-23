@@ -9,11 +9,13 @@ var database = {
 	setup: function()
 	{
 		// initialize our backing local storage.
+		var db_name = dbname(config.api_url, turtl.user.id());
+		log.debug('turtl: db: open: ', db_name);
 		return db.open({
 			// DB has server/user id in it...client might have multiple users
-			server: dbname(config.api_url, turtl.user.id()),
-			version: 11,
-			schema: function() { log.info('db.js: create schema'); return {
+			server: db_name,
+			version: 12,
+			schema: function() { log.info('turtl: db: create schema'); return {
 				// -------------------------------------------------------------
 				// k/v tables - always has "key" field as primary key
 				// -------------------------------------------------------------
