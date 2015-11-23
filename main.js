@@ -309,15 +309,21 @@ var turtl = {
 				turtl.events.trigger('db-init');
 			})
 			.then(function() {
+				log.debug('turtl: hustle: create');
+				var db_name = 'hustle:'+dbname(config.api_url, turtl.user.id());
 				var hustle = new Hustle({
 					tubes: ['files:download', 'files:upload'],
-					db_name: 'turtl.hustle.server:'+ config.api_url +',user:'+turtl.user.id(),
+					db_name: db_name,
 					db_version: 4,
 					maintenance_delay: 5000
 				});
 				hustle.promisify();
+				log.debug('turtl: hustle: open');
 				return hustle.open()
-					.then(function() { turtl.hustle = hustle; });
+					.then(function() {
+						log.debug('turtl: hustle: opened');
+						turtl.hustle = hustle;
+					});
 			})
 	},
 
@@ -334,7 +340,14 @@ var turtl = {
 		turtl.sync.stop();
 		if(turtl.db) turtl.db.close();
 		window.indexedDB.deleteDatabase(dbname(config.api_url, turtl.user.id()));
-		turtl.hustle.wipe();
+		if(turtl.hustle)
+		{
+			turtl.hustle.wipe();
+		}
+		else
+		{
+			window.indexedDB.deleteDatabase('hustle:'+dbname(config.api_url, turtl.user.id()));
+		}
 		turtl.db = null;
 		turtl.hustle = null;
 		if(options.restart)
