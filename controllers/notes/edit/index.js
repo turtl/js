@@ -165,6 +165,12 @@ var NotesEditController = FormController.extend({
 		}.bind(this);
 		this.with_bind(this.clone.get('tags'), ['add', 'remove'], footer_desc);
 		footer_desc();
+
+		var special_key_bound = this.special_key.bind(this);
+		document.body.addEvent('keydown', special_key_bound);
+		this.bind('release', function() {
+			document.body.removeEvent('keydown', special_key_bound);
+		});
 	},
 
 	render: function()
@@ -416,6 +422,21 @@ var NotesEditController = FormController.extend({
 			model: preview,
 			modal_opts: this.modal_opts
 		});
+	},
+
+	special_key: function(e)
+	{
+		if(e.key == 'esc')
+		{
+			this.trigger('close');
+		}
+		else if(e.key == 'enter' || e.key == 'return')
+		{
+			if(!Composer.match(e.target, 'textarea, input'))
+			{
+				this.submit(e);
+			}
+		}
 	}
 });
 
