@@ -6,6 +6,10 @@ This is the heart of Turtl!
 It's the javascript core that runs the app whether on desktop or mobile. It
 contains Turtl's interfaces, logic, crypto, etc.
 
+## Documentation
+
+If you're interested in how Turtl works, [check out the docs](https://turtl.it/docs).
+
 ## Building
 
 Turtl uses a makefile to generate itself. Here's a fw commands to get you started
