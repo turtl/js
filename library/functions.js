@@ -68,6 +68,22 @@ var select_text = function(inp, from, to)
 	return s;
 };
 
+var create_and_click = function(url, name)
+{
+	var download = new Element('a')
+		.setStyles({visibility: 'hidden'})
+		.set('html', 'Download '+ name.safe())
+		.addClass('attachment')
+		.setProperties({
+			href: url,
+			download: name,
+			target: '_blank'
+		});
+	download.inject(document.body);
+	fire_click(download);
+	(function() { download.destroy(); }).delay(5000, this);
+};
+
 var download_blob = function(blob, options)
 {
 	options || (options = {});
@@ -76,18 +92,7 @@ var download_blob = function(blob, options)
 	return new Promise(function(resolve, reject) {
 		url = URL.createObjectURL(blob);
 		var name = options.name || 'download';
-		var download = new Element('a')
-			.setStyles({visibility: 'hidden'})
-			.set('html', 'Download '+ name.safe())
-			.addClass('attachment')
-			.setProperties({
-				href: url,
-				download: name,
-				target: '_blank'
-			});
-		download.inject(document.body);
-		fire_click(download);
-		(function() { download.destroy(); }).delay(5000, this);
+		create_and_click(url, name);
 		resolve();
 	}).finally(function() {
 		if(url) URL.revokeObjectURL(url);
@@ -444,5 +449,25 @@ var view = {
 	{
 		return marked(body);
 	}
+};
+
+var test_click = function()
+{
+	var blob = new Blob(['get a job'], {type: 'text/plain'});
+	var url = URL.createObjectURL(blob);
+	var name = 'test-download.txt';
+	var atag = new Element('a')
+		.set('html', 'Download '+ name.safe())
+		.addClass('attachment')
+		.setProperties({
+			href: url,
+			download: name,
+			target: '_blank'
+		})
+		.setStyles({
+			'font-size': '40px',
+			'color': 'blue'
+		});
+	atag.inject($E('#main'), 'top');
 };
 
