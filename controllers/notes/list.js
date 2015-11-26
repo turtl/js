@@ -62,19 +62,24 @@ var NotesListController = Composer.ListController.extend({
 					this.trigger('search');
 				}.bind(this))
 				this.track(turtl.search, function(model, options) {
+					options || (options = {});
+					var fragment = options.fragment;
 					// since the search model only deals with IDs, here we pull
 					// out the actual note model from the profile (which was
 					// pre-loaded and decrypted)
 					var note = notes.get(model.id());
 					var con = new NotesItemController({
-						inject: this.note_list,
+						inject: fragment ? fragment : this.note_list,
 						model: note
 					});
 					// if the note re-renders, it possibly changed height and we
 					// need to adjust the masonry
 					con.bind('update', this.masonry_timer.reset.bind(this.masonry_timer));
 					return con;
-				}.bind(this), {bind_reset: true});
+				}.bind(this), {
+					bind_reset: true,
+					fragment_on_reset: function() { return this.note_list }.bind(this)
+				});
 
 				this.with_bind(turtl.search, ['reset', 'add', 'remove'], this.update_view.bind(this));
 				this.bind('search-done', function(ids) {

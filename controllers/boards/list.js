@@ -39,12 +39,17 @@ var BoardsListController = Composer.ListController.extend({
 		}.bind(this));
 
 		this.track(filter, function(model, options) {
+			options || (options = {});
+			var fragment = options.fragment;
 			return new BoardsItemController({
-				inject: this.board_list,
+				inject: fragment ? fragment : this.board_list,
 				model: model,
 				search: this.search
 			});
-		}.bind(this), {bind_reset: true});
+		}.bind(this), {
+			bind_reset: true,
+			fragment_on_reset: function() { return this.board_list; }.bind(this)
+		});
 	},
 
 	render: function(options)
