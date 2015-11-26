@@ -107,7 +107,7 @@ var NotesItemController = NoteBaseController.extend({
 	note_click: function(e)
 	{
 		var event = e.event || {};
-		var atag = Composer.find_parent('li.note a', e.target);
+		var atag = Composer.find_parent('li.note a', e.target, this.el);
 		// middle click
 		if(atag && (event.button == 4 || event.which == 2)) return;
 		// shift/ctrl+click
