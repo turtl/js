@@ -23,7 +23,7 @@
 
 	var global = this;
 	if(!global.Composer) global.Composer = {
-		version: '1.1.15',
+		version: '1.1.16',
 
 		// note: this used to be "export" but IE is a whiny little bitch, so now
 		// we're sup3r 1337 h4x0r5
@@ -2016,9 +2016,10 @@
 		};
 	})();
 
-	var find_parent = function(selector, element)
+	var find_parent = function(selector, element, stop)
 	{
 		if(!element) return false;
+		if(element == stop) return false;
 		if(match(element, selector)) return element;
 		var par = element.parentNode;
 		return find_parent(selector, par);
