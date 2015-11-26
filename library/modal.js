@@ -100,7 +100,7 @@ var TurtlModal = Composer.Controller.extend({
 			turtl.back.push(this.close.bind(this), this.cid());
 		}.bind(this);
 		if(options.immediate) do_open();
-		else setTimeout(do_open);
+		else setTimeout(do_open, 5);
 
 		if(!this.skip_overlay)
 		{
