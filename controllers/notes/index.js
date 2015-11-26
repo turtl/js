@@ -117,7 +117,8 @@ var NotesIndexController = Composer.Controller.extend({
 			search_btn.addClass('mod');
 		}.bind(this));
 		this.bind('run-search', function() {
-			this.get_subcontroller('list').trigger('search');
+			var list = this.get_subcontroller('list');
+			if(list) list.trigger('search');
 		}.bind(this));
 	},
 
