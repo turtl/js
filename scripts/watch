@@ -1,9 +1,19 @@
 #!/bin/bash
 
-while true; do
+function do_make () {
 	make \
 		| grep -v 'Nothing to be done' \
 		| grep -v '\(Entering\|Leaving\) directory'
-	sleep 1
+}
+
+function changes () {
+	inotifywait.exe -r --exclude='(\.git|node_modules)' -q .
+}
+
+do_make
+echo "- Watching..."
+while changes; do
+	do_make
+	echo "- Make done, watching"
 done
 
