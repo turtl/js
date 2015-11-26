@@ -3,18 +3,18 @@
 #nav {display: none; position: absolute; z-index: 6; flex-direction: column; justify-content: flex-end; top: (@header_height - 1); width: 100%; height: (@nav_height + 1); background: @theme_black_bg; .layer-rest();}
 #nav.show {display: flex;}
 #nav {
-	ul {width: 100%; margin: 0; padding: 0; list-style: none; text-align: center;}
+	ul {width: 100%; margin: 0; padding: 0; list-style: none; text-align: center; .fixed-fix();}
 	ul {
 		li {display: inline-block; width: (94% / 3); max-width: 130rem;}
 		li {
-			a {display: block; margin: 0 0; padding: 0 0 6rem 0; border-bottom: 4rem solid @theme_black_bg; opacity: 0.7; .transition(border 0.3s, opacity 0.3s;);}
+			a {display: block; margin: 0 0; padding: 0 0 6rem 0; border-bottom: 4rem solid rgba(red(@theme_accent), green(@theme_accent), blue(@theme_accent), 0); opacity: 0.7; .transition(border-color 0.3s, opacity 0.3s;);}
 			a, icon {font-size: 14rem; color: #fff;}
 			a.notify {opacity: 1; border-color: @theme_warn;}
 			a:before {content: " "; position: fixed; z-index: 4; opacity: 0; width: 8rem; height: 8rem; margin: 4rem 0 0 -12rem; background: @theme_warn; border-radius: 4rem; .transition(opacity 0.3s);}
 			a.notify:before {opacity: 1;}
 			icon {margin: 0 6rem 0 0;}
 		}
-		li.sel a {opacity: 1; border-color: @theme_accent;}
+		li.sel a {opacity: 1; border-color: rgba(red(@theme_accent), green(@theme_accent), blue(@theme_accent), 1);}
 	}
 }
 
