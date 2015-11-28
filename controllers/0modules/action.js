@@ -91,12 +91,29 @@ var ActionController = Composer.Controller.extend({
 	{
 		var duration = 350;
 		var ease = [10, 3];
-		var bottom = parseInt(this.el.getElement('a.abutton').getParent().getStyle('bottom'));
-		var botfn = function(i)
+
+		var offset = 6;
+		var bottom_pos = function(i)
 		{
-			return method == 'open' ? ((i + 1) * 54) : 0;
+			return method == 'open' ? offset + ((i + 1) * 54) : 0;
 		};
 		var rotate = method == 'open' ? '135deg' : '';
+
+		var rad = 3.141592654 / 180;
+		var radius = 100;
+		var start = 270;
+		var end = 360;
+		var total = this.el.getElements('ul li').length;
+		var circle_pos = function(idx, radius)
+		{
+			var diff = end - start;
+			var step = diff / (total - 1);
+			var deg = start + (idx * step);
+			var rads = deg * rad;
+			var x = Math.sin(rads);
+			var y = Math.cos(rads);
+			return [x, y].map(function(num) { return num * radius; }).concat([deg]);
+		};
 
 		this.el.getElements('ul li').each(function(el, i) {
 			if(method == 'close')
@@ -104,11 +121,14 @@ var ActionController = Composer.Controller.extend({
 				el.setStyles({opacity: 0});
 				return;
 			}
-			Velocity(el, {bottom: (botfn(i)) + 'rem'}, {
+			Velocity(el, {bottom: bottom_pos(i)+'rem'}, {
 				duration: duration,
 				easing: ease
 			});
-			if(method == 'open') el.setStyles({opacity: 1});
+			if(method == 'open')
+			{
+				el.setStyles({ opacity: 1 });
+			}
 		});
 		return Velocity(this.el.getElement('.abutton icon'), {rotateZ: rotate}, {
 			duration: duration,
