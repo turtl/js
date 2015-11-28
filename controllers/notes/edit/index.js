@@ -204,9 +204,9 @@ var NotesEditController = FormController.extend({
 			if(focus_el) setTimeout(focus_el.focus.bind(focus_el), 300);
 		}
 
-		if(get_platform() != 'mobile')
+		if(this.inp_text && get_platform() != 'mobile')
 		{
-			if(this.inp_text) setTimeout(function() { autosize(this.inp_text); }.bind(this), 10);
+			setTimeout(function() { autosize(this.inp_text); }.bind(this), 10);
 		}
 
 		this.track_subcontroller('boards', function() {
