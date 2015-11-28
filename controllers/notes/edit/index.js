@@ -204,7 +204,10 @@ var NotesEditController = FormController.extend({
 			if(focus_el) setTimeout(focus_el.focus.bind(focus_el), 300);
 		}
 
-		if(this.inp_text) setTimeout(function() { autosize(this.inp_text); }.bind(this), 10);
+		if(get_platform() != 'mobile')
+		{
+			if(this.inp_text) setTimeout(function() { autosize(this.inp_text); }.bind(this), 10);
+		}
 
 		this.track_subcontroller('boards', function() {
 			return new NotesEditBoardsListController({
@@ -411,7 +414,9 @@ var NotesEditController = FormController.extend({
 	show_formatting_help: function(e)
 	{
 		if(e) e.stop();
-		new MarkdownFormattingHelpController();
+		new MarkdownFormattingHelpController({
+			modal_opts: this.modal_opts
+		});
 	},
 
 	open_preview: function()

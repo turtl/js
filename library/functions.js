@@ -52,6 +52,13 @@ var make_index = function(collection, idx_field)
 	return idx;
 };
 
+var get_platform = function()
+{
+	if(config.client == 'desktop') return 'desktop';
+	if(config.client.match(/mobile/)) return 'mobile';
+	return 'core';
+};
+
 var escape_regex = function(s)
 {
 	return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
