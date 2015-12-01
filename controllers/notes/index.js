@@ -118,7 +118,7 @@ var NotesIndexController = Composer.Controller.extend({
 		}.bind(this));
 		this.bind('run-search', function() {
 			var list = this.get_subcontroller('list');
-			if(list) list.trigger('search');
+			if(list) list.trigger('search', {reset_pages: true, scroll_to_top: true});
 		}.bind(this));
 	},
 

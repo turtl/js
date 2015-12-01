@@ -53,9 +53,11 @@ var NotesListController = Composer.ListController.extend({
 				this._last_search = JSON.stringify(ids);
 
 				this.tags = tags;
-				this.bind('search', function() {
-					this.do_search({notify: true});
-				});
+				this.bind('search', function(options) {
+					options || (options = {});
+					if(options.reset_pages) this.search.page = 1;
+					this.do_search(Object.merge({notify: true}, options));
+				}.bind(this));
 
 				var notes = turtl.profile.get('notes');
 				this.with_bind(notes, ['add', 'change', 'remove', 'reset', 'destroy'], function() {
@@ -82,7 +84,9 @@ var NotesListController = Composer.ListController.extend({
 				});
 
 				this.with_bind(turtl.search, ['reset', 'add', 'remove'], this.update_view.bind(this));
-				this.bind('search-done', function(ids) {
+				this.bind('search-done', function(ids, _tags, _total, options) {
+					options || (options = {});
+
 					// curtail rendering duplicate result sets
 					var string_ids = JSON.stringify(ids);
 					if(string_ids == this._last_search) return;
@@ -93,7 +97,10 @@ var NotesListController = Composer.ListController.extend({
 					else { delete renderopts.no_results; }
 
 					// always go back to the top after a search
-					$E('#wrap').scrollTo(0, 0);
+					if(options.scroll_to_top)
+					{
+						$E('#wrap').scrollTo(0, 0);
+					}
 
 					// ok, all the notes we found are deserialized and loaded
 					// into mem, so we trigger a reset and the tracker will pick
@@ -134,7 +141,7 @@ var NotesListController = Composer.ListController.extend({
 				return turtl.profile.get('notes').load_and_deserialize(res[0], {silent: true});
 			})
 			.tap(function(res) {
-				if(options.notify) this.trigger.apply(this, ['search-done'].concat(res));
+				if(options.notify) this.trigger.apply(this, ['search-done'].concat(res).concat([options]));
 			});
 	},
 
@@ -233,7 +240,7 @@ var NotesListController = Composer.ListController.extend({
 		}
 		if(this.search.page == orig) return;
 
-		return this.do_search({notify: true});
+		return this.do_search({notify: true, scroll_to_top: true});
 	}
 
 	/*
