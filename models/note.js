@@ -30,8 +30,17 @@ var Note = Protected.extend({
 	// lets us disable monitoring of file events
 	disable_file_monitoring: false,
 
-	init: function()
+	init: function(options)
 	{
+		options || (options = {});
+
+		// we want the ability to create a new note without having it listen to
+		// data changes and reindex itself or delete files or any of that
+		// nonsense. this is usually because we're going to use one of it's
+		// internal functions (such as clearing files) manually and need to
+		// control the process by hand.
+		if(options.bare) return;
+
 		// if the note is destroyed or edited, update the index
 		this.bind('destroy', turtl.search.unindex_note.bind(turtl.search));
 		this.bind('change', function() {
@@ -62,7 +71,7 @@ var Note = Protected.extend({
 			{
 				var ts = parseInt(id.substr(0, 12), 16) / 1000;
 			}
-			this.set({created: ts});
+			this.set({created: ts}); //, {silent: true};
 		}.bind(this));
 		this.trigger('change:id');
 	},

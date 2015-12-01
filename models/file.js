@@ -366,7 +366,7 @@ var FileData = Protected.extend({
 				};
 
 				// clear out extra files
-				var note = new Note({id: note_id});
+				var note = new Note({id: note_id}, {bare: true});
 				return note.clear_files({ exclude: [id] }).bind(this)
 					.then(function() {
 						// save the file data into the db
