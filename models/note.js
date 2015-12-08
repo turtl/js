@@ -22,6 +22,8 @@ var Note = Protected.extend({
 		'title',
 		'tags',
 		'url',
+		'username',
+		'password',
 		'text',
 		'embed',
 		'color',

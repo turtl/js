@@ -6,7 +6,9 @@ var NotesViewController = NoteBaseController.extend({
 		'.file': 'el_file',
 		'.info-container': 'el_info',
 		'.info-container .info': 'el_info_sub',
-		'.info-container .info form input': 'inp_link'
+		'.info-container .info form input': 'inp_link',
+		'.main-title.password': 'el_title_pass',
+		'.show-password input[name=password]': 'el_password'
 	},
 
 	events: {
@@ -14,7 +16,11 @@ var NotesViewController = NoteBaseController.extend({
 		'click .backing a[rel=download]': 'open_image',
 		'click .note-gutter .content > h1': 'open_image',
 		'click .info-container .preview form input': 'copy',
-		'click .info-container .preview > ul': 'toggle_info'
+		'click .info-container .preview > ul': 'toggle_info',
+		'click h1.main-title.password': 'show_password',
+		'click .show-password input[name=password]': 'show_password',
+		'focus .show-password input': 'select_password_field',
+		'click .show-password input': 'select_password_field'
 	},
 
 	modal: null,
@@ -275,6 +281,35 @@ var NotesViewController = NoteBaseController.extend({
 				this.el_info.removeClass('scrolled');
 			}.bind(this));
 		}
+	},
+
+	show_password: function(e)
+	{
+		if(e) e.stop();
+		if(this.el_password.get('type') == 'password')
+		{
+			this.el_title_pass.addClass('active');
+			var pass = this.model.get('password');
+			this.el_password
+				.set('type', 'text')
+				.set('value', pass);
+			this.el_password.focus();
+		}
+		else
+		{
+			this.el_title_pass.removeClass('active');
+			this.el_password
+				.set('type', 'password')
+				.set('value', '********');
+		}
+	},
+
+	select_password_field: function(e)
+	{
+		var inp = Composer.find_parent('input', e.target);
+		if(!inp) return;
+		if(inp.get('type') == 'password') return;
+		inp.select();
 	}
 });
 

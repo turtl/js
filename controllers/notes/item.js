@@ -56,11 +56,12 @@ var NotesItemController = NoteBaseController.extend({
 		}));
 		this.el.className = 'note item';
 		this.el.addClass(type);
+		var is_password = this.model.get('type') == 'password';
 		if(!this.model.get('text'))
 		{
 			this.el.addClass('no-text');
 		}
-		if(!this.model.get('title'))
+		if(!this.model.get('title') && !is_password)
 		{
 			this.el.addClass('no-title');
 		}

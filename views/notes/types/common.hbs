@@ -28,11 +28,34 @@
 		<p class="empty">(empty note)</p>
 	{{else}}
 		<div class="content text">
-			{{#if note.title}}
-				<h1 class="main-title">{{{note.title}}}</h1>
-			{{/if}}
-			{{#if note.text}}
-				<div class="body">{{{markdown note.text}}}</div>
+			{{#equal note.type 'password'}}
+				<h1 class="main-title password">
+					<a href="#">
+					{{icon 'lock'}}
+					{{#if note.title}}
+						{{{note.title}}}
+					{{else}}
+						Password
+					{{/if}}
+					</a>
+				</h1>
+				<div class="show-password">
+					<form class="standard-form">
+						{{#if note.username}}
+							<input type="text" name="username" value="{{note.username}}" readonly>
+						{{/if}}
+						<input type="password" name="password" value="********" readonly>
+					</form>
+				</div>
+			{{else}}
+				{{#if note.title}}
+					<h1 class="main-title">{{{note.title}}}</h1>
+				{{/if}}
+			{{/equal}}
+			{{#if has_body}}
+				<div class="body">
+					{{{markdown note.text}}}
+				</div>
 			{{/if}}
 		</div>
 	{{/if}}

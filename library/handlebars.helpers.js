@@ -68,6 +68,9 @@ Handlebars.registerHelper('note', function(note, options) {
 		case 'link':
 			empty = empty && !note.url;
 			break;
+		case 'password':
+			empty = empty && !note.username && !note.password;
+			break;
 	}
 	var colors = NOTE_COLORS;
 
@@ -93,10 +96,12 @@ Handlebars.registerHelper('note', function(note, options) {
 	// NOTE: this will probably bite me sometime in the future
 	if(empty) content = '';
 
+	var has_body = note.text;
 	var has_file = note.file && note.file.id;
 	var rendered = view.render('notes/types/common', {
 		note: note,
 		has_file: has_file,
+		has_body: has_body,
 		show_info: show_info,
 		have_boards: have_boards,
 		boards: boards,

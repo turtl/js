@@ -10,7 +10,15 @@
 {{/equal-or}}
 
 <input type="text" name="title" value="{{note.title}}" tabindex="2" placeholder="Title">
-<textarea name="text" rows="1" cols="80" tabindex="3" placeholder="Note text">{{note.text}}</textarea>
+{{#equal type 'password'}}
+	<input type="text" name="username" value="{{note.username}}" tabindex="3" placeholder="Username">
+	<div class="password">
+		<a class="preview" href="#preview">{{icon 'preview'}}</a>
+		<input type="password" name="password" value="{{note.password}}" tabindex="4" placeholder="Password">
+	</div>
+{{/equal}}
+
+<textarea name="text" rows="1" cols="80" tabindex="5" placeholder="Note text">{{note.text}}</textarea>
 <div class="formatting clear">
 	<a href="#formatting" rel="formatting">Formatting help</a>
 </div>

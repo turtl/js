@@ -3,7 +3,10 @@ var NotesEditController = FormController.extend({
 		'form': 'el_form',
 		'input[name=title]': 'inp_title',
 		'input[name=url]': 'inp_url',
+		'input[name=username]': 'inp_username',
+		'input[name=password]': 'inp_password',
 		'textarea[name=text]': 'inp_text',
+		'.password': 'el_password',
 		'.boards-container': 'el_boards',
 		'.file-container': 'el_file',
 		'.existing': 'el_existing'
@@ -17,7 +20,8 @@ var NotesEditController = FormController.extend({
 		'change form': 'detect_change',
 		'input form': 'detect_change',
 		'input input[name=url]': 'check_url',
-		'click .formatting a[rel=formatting]': 'show_formatting_help'
+		'click .formatting a[rel=formatting]': 'show_formatting_help',
+		'click .password a.preview': 'toggle_preview_password'
 	},
 
 	modal: null,
@@ -195,6 +199,7 @@ var NotesEditController = FormController.extend({
 				case 'text': focus_el = this.inp_text; break;
 				case 'link': focus_el = this.inp_url; break;
 				case 'image': focus_el = this.inp_url; break;
+				case 'password': focus_el = this.inp_password; break;
 			}
 			// NOTE: the delay here is same as CSS transition
 			//
@@ -235,11 +240,15 @@ var NotesEditController = FormController.extend({
 	{
 		var title = this.inp_title.get('value');
 		var url = this.inp_url && this.inp_url.get('value');
+		var username = this.inp_username && this.inp_username.get('value');
+		var password = this.inp_password && this.inp_password.get('value');
 		var text = this.inp_text.get('value');
 
 		var data = {
 			title: title,
 			url: url,
+			username: username,
+			password: password,
 			text: text
 		};
 		return data;
@@ -441,6 +450,23 @@ var NotesEditController = FormController.extend({
 			{
 				this.submit(e);
 			}
+		}
+	},
+
+	toggle_preview_password: function(e)
+	{
+		if(e) e.stop();
+		if(!this.inp_password) return;
+		if(this.inp_password.get('type') == 'password')
+		{
+			this.el_password.addClass('preview');
+			this.inp_password.set('type', 'text');
+			this.inp_password.focus();
+		}
+		else
+		{
+			this.el_password.removeClass('preview');
+			this.inp_password.set('type', 'password');
 		}
 	}
 });

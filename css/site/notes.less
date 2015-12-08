@@ -68,7 +68,8 @@
 
 	&.text,
 	&.file,
-	&.link {
+	&.link,
+	&.password {
 		.note-gutter {padding: @content_pad;}
 		@media @desktop {
 			.note-gutter {padding: @content_pad_desktop;}
@@ -127,9 +128,21 @@
 			}
 		}
 	}
+
 	.content {
 		h1:first-child {word-wrap: break-word;}
 		h1:last-child {margin-bottom: 0; padding-bottom: 0;}
+		.main-title.password {
+			& icon {color: @theme_primary;}
+			&.active icon {color: @theme_warn;}
+		}
+		.show-password {padding: 0 0 16rem 0;}
+		.show-password {
+			form {.uncard(); padding: 0;}
+			form {
+				input {margin-bottom: 0; border-bottom: 0;}
+			}
+		}
 		.body {
 			*:last-child {margin-bottom: 0; padding-bottom: 0;}
 		}
@@ -272,6 +285,13 @@
 			p.remove {
 				a icon {margin-right: 0;}
 			}
+		}
+		.password {
+			&.preview {
+				a.preview icon {color: @theme_primary;}
+			}
+			a.preview {position: absolute; right: 20rem; margin: 12rem 0 0 0;}
+			a.preview icon {font-size: 16rem; color: @theme_black; .transition(color 0.3s);}
 		}
 		.boards-container {cursor: pointer;}
 	}
