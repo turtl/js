@@ -64,18 +64,11 @@ var BoardsEditController = FormController.extend({
 			return;
 		}
 
-		var keypromise = Promise.resolve();
-		if(this.model.is_new())
-		{
-			keypromise = this.model.update_keys({silent: true})
-		}
-
+		this.model.create_or_ensure_key(null, {silent: true});
 		var clone = this.model.clone();
 		clone.set({title: title});
-		keypromise.bind(this)
-			.then(function() {
-				return clone.save();
-			})
+		clone.save()
+			.bind(this)
 			.then(function() {
 				this.model.set(clone.toJSON());
 
