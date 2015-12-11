@@ -63,6 +63,29 @@ var Protected = Composer.RelationalModel.extend({
 	},
 
 	/**
+	 * Generate a random key for this model.
+	 */
+	generate_key: function(options)
+	{
+		options || (options = {});
+
+		if(this.key) return this.key;
+		this.key = tcrypt.random_key();
+		return this.key;
+	},
+
+	/**
+	 * If this model is new, create a new key, otherwise ensure/grab it.
+	 */
+	create_or_ensure_key: function(keydata, options)
+	{
+		options || (options = {});
+
+		if(this.is_new()) this.generate_key();
+		else this.ensure_key_exists(keydata);
+	},
+
+	/**
 	 * copy Composer.model.clone, but set the key as well
 	 */
 	clone: function()
@@ -366,18 +389,6 @@ var Protected = Composer.RelationalModel.extend({
 		}
 
 		return key || false;
-	},
-
-	/**
-	 * Generate a random key for this model.
-	 */
-	generate_key: function(options)
-	{
-		options || (options = {});
-
-		if(this.key) return this.key;
-		this.key = tcrypt.random_key();
-		return this.key;
 	},
 
 	/**
