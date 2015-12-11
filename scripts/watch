@@ -4,16 +4,27 @@ function do_make () {
 	make \
 		| grep -v 'Nothing to be done' \
 		| grep -v '\(Entering\|Leaving\) directory'
+	echo "- Make done, watching"
 }
 
 function changes () {
-	inotifywait.exe -r --exclude='(\.git|node_modules)' -q .
+	fswatch \
+		--one-event \
+		--allow-overflow \
+		-e '\.git' \
+		-e 'node_modules' \
+		-r \
+		.
 }
 
 do_make
-echo "- Watching..."
+NOTIFY="`which fswatch 2>/dev/null`"
+if [ "$NOTIFY" == "" ]; then
+	echo "Please install fswatch. Alternatively, you can run 'watch make' instead"
+	exit 1
+fi
 while changes; do
 	do_make
-	echo "- Make done, watching"
 done
+
 
