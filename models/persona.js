@@ -73,15 +73,9 @@ var Persona = Protected.extend({
 		}
 	},
 
-	update_keys: function(options)
+	create_or_ensure_key: function()
 	{
-		options || (options = {});
-
-		// we just use the current user's key. simple.
-		this.set({user_id: turtl.user.id()}, options);
 		this.key = turtl.user.key;
-		keypromise = Promise.resolve();
-		return keypromise;
 	},
 
 	destroy_persona: function(options)
