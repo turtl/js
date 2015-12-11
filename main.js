@@ -52,10 +52,6 @@ var turtl = {
 	loaded: false,
 	router: false,
 
-	// whether or not to sync data w/ server
-	sync_to_api: true,
-	poll_api_for_changes: true,
-
 	// holds the title breadcrumbs
 	titles: [],
 

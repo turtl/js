@@ -252,35 +252,6 @@ var FileData = Protected.extend({
 			});
 	},
 
-	destroy: function(options)
-	{
-		options || (options = {});
-
-		if(options.api_save)
-		{
-			var parent_fn = get_parent(this);
-			return turtl.db.notes.get(this.get('note_id')).bind(this)
-				.then(function(note_data) {
-					if(!note_data) note_data = {};
-					var persona_id = false;
-					if(!options.args) options.args = {};
-					if(note_data.meta && note_data.meta.persona)
-					{
-						options.args.persona = note_data.meta.persona;
-					}
-
-					var _url = this.url;
-					this.url = '/notes/'+this.get('note_id')+'/file';
-					parent_fn.call(this, options);
-					this.url = _url;
-				});
-		}
-		else
-		{
-			return this.parent.call(this, options);
-		}
-	},
-
 	/**
 	 * wrapper around calling of download API to make some tricky things easier
 	 * (properly handling redirects in various buggy browsers, mainly).
@@ -456,7 +427,7 @@ var Files = SyncCollection.extend({
 			tube: 'files:upload',
 			delay: turtl.sync.hustle_poll_delay,
 			enable_fn: function() {
-				return turtl.user.logged_in && turtl.sync_to_api && turtl.sync.connected
+				return turtl.user.logged_in && config.sync_to_api && turtl.sync.connected
 			}
 		});
 	},
@@ -500,7 +471,7 @@ var Files = SyncCollection.extend({
 			tube: 'files:download',
 			delay: turtl.sync.hustle_poll_delay,
 			enable_fn: function() {
-				return turtl.user.logged_in && turtl.sync_to_api && turtl.sync.connected
+				return turtl.user.logged_in && config.sync_to_api && turtl.sync.connected
 			}
 		});
 	},
