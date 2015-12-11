@@ -2,6 +2,7 @@ var FeedbackController = FormController.extend({
 	class_name: 'feedback',
 
 	elements: {
+		'input[name=email]': 'inp_email',
 		'textarea': 'inp_text',
 		'input[type=submit]': 'btn_submit'
 	},
@@ -29,7 +30,12 @@ var FeedbackController = FormController.extend({
 		Autosize.destroy(this.inp_text);
 
 		if(!turtl.sync.connected) return this.html(view.render('feedback/noconnection'));
-		this.html(view.render('feedback/index'));
+
+		var persona = turtl.profile.get('personas').first();
+		if(persona) var email = persona.get('email');
+		this.html(view.render('feedback/index', {
+			show_email: !email
+		}));
 
 		if(this.inp_text)
 		{
@@ -46,6 +52,7 @@ var FeedbackController = FormController.extend({
 	submit: function(e)
 	{
 		if(e) e.stop();
+		var email = this.inp_email && this.inp_email.get('value').trim();
 		var body = this.inp_text.get('value').trim();
 
 		var errors = [];
@@ -57,9 +64,11 @@ var FeedbackController = FormController.extend({
 			body: body
 		};
 		var persona = turtl.profile.get('personas').first();
-		if(persona) data.email = persona.get('email');
+		var persona_email = persona && persona.get('email');
+		if(persona_email) data.email = persona_email;
+		else if(email) data.email = email;
 
-		var feedback = new Feedback({body: body});
+		var feedback = new Feedback(data);
 
 		this.btn_submit.set('disabled', true).addClass('disabled');
 		this.disable(true);
@@ -69,7 +78,7 @@ var FeedbackController = FormController.extend({
 			})
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', 'There was a problem sending that invite', err);
-				log.error('board: share: ', this.model.id(), derr(err));
+				log.error('feedback: send: ', derr(err));
 				this.btn_submit.set('disabled', false).removeClass('disabled');
 				this.disable(false);
 			});
