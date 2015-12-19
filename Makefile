@@ -14,6 +14,7 @@ allcss = $(shell find css/ -name "*.css" \
 alljs = $(shell echo "main.js" \
 			&& find {config,controllers,handlers,library,models,turtl} -name "*.js" \
 			| grep -v '(ignore|\.thread\.)')
+testsjs = $(shell find tests/{data,tests} -name "*.js")
 
 all: $(cssfiles) library/templates.js .build/postcss index.html
 
@@ -34,6 +35,10 @@ library/templates.js: $(handlebars)
 index.html: $(allcss) $(alljs) $(cssfiles) library/templates.js views/layouts/default.html .build/postcss scripts/include.sh scripts/gen-index
 	@echo "- index.html: " $?
 	@./scripts/gen-index
+
+tests/index.html: $(testsjs) index.html tests/scripts/gen-index
+	@echo "- tests/index.html: " $?
+	@./tests/scripts/gen-index
 
 clean:
 	rm $(allcss)
