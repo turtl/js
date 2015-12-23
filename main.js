@@ -600,30 +600,43 @@ var _turtl_init = function()
 
 	// set up workers for openpgp.js (if native crypto ain't available)
 	openpgp.initWorker(asset('/library/openpgp/openpgp.worker.js'));
+
+	setup_global_error_catching();
 };
 
 window.addEvent('domready', function() {
 	setTimeout(_turtl_init, 100);
 });
 
-// set up a global error handler that XHRs shit to the API so we know when bugs
-// are cropping up
-if(config.catch_global_errors)
+function setup_global_error_catching()
 {
-	var enable_errlog = true;
-	window.onerror = function(msg, url, line)
+	// set up a global error handler that XHRs shit to the API so we know when bugs
+	// are cropping up
+	if(config.catch_global_errors)
 	{
-		if(!turtl.api || !enable_errlog) return;
-		log.error('remote error log: ', arguments);
-		// remove filesystem info
-		url = url.replace(/^.*\/data\/app/, '/data/app');
-		turtl.api.post('/log/error', {data: {client: config.client, version: config.version, msg: msg, url: url, line: line}})
-			.catch(function(err) {
-				log.error('error catcher: error posting (how ironic): ', derr(err));
-				// error posting, disable log for 30s
-				enable_errlog = false;
-				(function() { enable_errlog = true; }).delay(30000);
-			});
-	};
+		var enable_errlog = true;
+		var handler = function(msg, url, line)
+		{
+			if(!turtl.api || !enable_errlog) return;
+			log.error('remote error log: ', arguments);
+			// remove filesystem info
+			url = url.replace(/^.*\/data\/app/, '/data/app');
+			turtl.api.post('/log/error', {data: {client: config.client, version: config.version, msg: msg, url: url, line: line}})
+				.catch(function(err) {
+					log.error('error catcher: error posting (how ironic): ', derr(err));
+					// error posting, disable log for 30s
+					enable_errlog = false;
+					(function() { enable_errlog = true; }).delay(30000);
+				});
+		};
+		Promise.onPossiblyUnhandledRejection(function(err) {
+			var msg = err.message;
+			var parts = err.stack.split(/\n/g)[1].split(/:/, 2);
+			var file = parts[0].replace(/at/, '').trim();
+			var line = parts[1];
+			handler(msg, file, line);
+		});
+		window.onerror = handler;
+	}
 }
 
