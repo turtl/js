@@ -25,7 +25,7 @@ all: $(cssfiles) library/templates.js .build/postcss index.html
 library/templates.js: $(handlebars)
 	@echo "- Handlebars: " $?
 	@$(HANDLEBARS) -r views -e "hbs" -n "TurtlTemplates" -f $@ $^
-	@echo 'var Templates = {};' > .build/templates.js
+	@echo 'var TurtlTemplates = {};' > .build/templates.js
 	@cat $@ >> .build/templates.js
 	@mv .build/templates.js $@
 
