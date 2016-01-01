@@ -593,6 +593,8 @@ var _turtl_init = function()
 		smartLists: true
 	});
 
+	view.fix_template_paths();
+
 	var clid = localStorage.client_id;
 	if(!clid) clid = localStorage.client_id = tcrypt.random_hash();
 	turtl.client_id = clid;

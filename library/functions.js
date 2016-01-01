@@ -422,6 +422,16 @@ var view = {
 		return TurtlTemplates[tpl](data);
 	},
 
+	fix_template_paths: function()
+	{
+		// handlebars CLI is different on linux vs mac wrt how it treats slashes
+		// in the recursive view directory soo we have to run a fix here
+		Object.keys(TurtlTemplates).forEach(function(key) {
+			var path = key.replace(/^\//, '');
+			TurtlTemplates[path] = TurtlTemplates[key];
+		});
+	},
+
 	escape: function(str)
 	{
 		return str;
