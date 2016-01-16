@@ -19,7 +19,7 @@ var extend_error = function(extend, errname)
 	};
 	err.prototype = Object.create(extend.prototype, { constructor: { value: err } });
 	return err;
-}
+};
 
 /**
  * a promisified delay function.

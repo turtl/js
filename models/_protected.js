@@ -263,8 +263,8 @@ var Protected = Composer.RelationalModel.extend({
 					cqueue.push(msg, function(err, res) {
 						if(err || res.error)
 						{
-							log.error('protected: deserialize: ', this.id(), this.base_url, (err || res.error));
-							return reject(err || res.error);
+							log.error('protected: deserialize: ', this.id(), this.base_url, (err || res.error.res));
+							return reject(err || res.error.res);
 						}
 						this.set(res.success, options);
 						return resolve(res.success);
@@ -458,6 +458,14 @@ var Protected = Composer.RelationalModel.extend({
 		var encrypted = tcrypt.encrypt(key, key_to_encrypt);
 		encrypted = tcrypt.to_base64(encrypted);
 		return encrypted;
+	},
+
+	is_crypto_error: function(err)
+	{
+		var crypto_error =
+			(err.data && err.data.match(/Authentication error/i)) ||
+			err instanceof TcryptError;
+		return crypto_error;
 	}
 });
 

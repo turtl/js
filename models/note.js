@@ -316,7 +316,19 @@ var Notes = SyncCollection.extend({
 			.map(function(notedata) {
 				if(notedata === true) return true;
 				var note = new Note(notedata);
-				return note.deserialize().then(function() { return note; });
+				return note.deserialize()
+					.then(function() { return note; })
+					.catch(function(err) {
+						if(note.is_crypto_error(err))
+						{
+							note.set({type: 'text', crypto_error: true});
+							return note;
+						}
+						else
+						{
+							throw err;
+						}
+					});
 			}).map(function(note) {
 				if(!(note instanceof Composer.Model)) return;
 				this.upsert(note, options);

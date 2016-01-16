@@ -69,6 +69,10 @@ var NotesItemController = NoteBaseController.extend({
 		{
 			this.el.addClass('preview');
 		}
+		if(this.model.get('crypto_error'))
+		{
+			this.el.addClass('crypto-error');
+		}
 		this.el.set('rel', this.model.id());
 
 		// trigger masonry update if we have an image that loaded

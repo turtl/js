@@ -96,16 +96,31 @@ Handlebars.registerHelper('note', function(note, options) {
 	// NOTE: this will probably bite me sometime in the future
 	if(empty) content = '';
 
+	var crypto_error = note.crypto_error;
+	if(crypto_error)
+	{
+		var key = turtl.profile.get('keychain').find_key(note.id);
+		if(key) key = tcrypt.to_base64(key);
+		var error_data = {
+			boards: turtl.profile.get('boards')
+				.filter(function(b) { return note.boards.indexOf(b.id()) >= 0; })
+				.map(function(b) { return b.get('title'); }),
+			key: key
+		}
+	}
+
 	var has_body = note.text;
 	var has_file = note.file && note.file.id;
 	var rendered = view.render('notes/types/common', {
 		note: note,
+		crypto_error: crypto_error,
+		error_data: error_data,
 		has_file: has_file,
 		has_body: has_body,
 		show_info: show_info,
 		have_boards: have_boards,
 		boards: boards,
-		empty: empty,
+		empty: empty && !crypto_error,
 		content: content
 	});
 	return new Handlebars.SafeString(rendered);
