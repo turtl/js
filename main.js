@@ -542,7 +542,6 @@ var _turtl_init = function()
 	window.port = window.port || false;
 	window._base_url = config.base_url || '';
 	turtl.site_url = config.site_url || '';
-	turtl.base_window_title = document.title.replace(/.*\|\s*/, '');
 	turtl.api = new Api(
 		config.api_url,
 		'',
