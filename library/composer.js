@@ -23,7 +23,7 @@
 
 	var global = this;
 	if(!global.Composer) global.Composer = {
-		version: '1.1.17',
+		version: '1.1.18',
 
 		// note: this used to be "export" but IE is a whiny little bitch, so now
 		// we're sup3r 1337 h4x0r5
@@ -2632,7 +2632,8 @@
 			suppress_initial_route: false,
 			enable_cb: function(url) { return true; },
 			process_querystring: false,
-			base: false
+			base: false,
+			default_title: ''
 		},
 
 		/**
@@ -2740,6 +2741,7 @@
 			if(!options.raw) newpath = decodeURIComponent(newpath);
 			var href = base + '/' + newpath;
 			var old = base + this.cur_path();
+			var title = options.title || (this.options.default_title || '');
 			if(old == href)
 			{
 				this.trigger('statechange', href, true);
@@ -2758,11 +2760,11 @@
 			{
 				if(options.replace_state)
 				{
-					History.replaceState(options.state, '', href);
+					History.replaceState(options.state, title, href);
 				}
 				else
 				{
-					History.pushState(options.state, '', href);
+					History.pushState(options.state, title, href);
 				}
 			}
 		},
