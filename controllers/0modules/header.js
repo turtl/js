@@ -52,7 +52,6 @@ var HeaderController = Composer.Controller.extend({
 	{
 		options || (options = {});
 
-		document.title = 'Turtl';
 		var html = title || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 		if(backurl)
 		{

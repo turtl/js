@@ -420,6 +420,7 @@ var turtl = {
 			base: config.route_base || '',
 			// we'll do our own first route
 			suppress_initial_route: true,
+			default_title: 'Turtl',
 			enable_cb: function(url) {
 				var enabled = true;
 
