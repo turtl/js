@@ -15,11 +15,12 @@ var NotesItemController = NoteBaseController.extend({
 		this.render();
 		var renchange = function()
 		{
+			var last = this._last_height;
 			this.render();
 			setTimeout(function() {
 				if(!this.el) return;
 				var height = this.el.getCoordinates().height;
-				if(height == this._last_height) return;
+				if(height == last) return;
 				this._last_height = height;
 				this.trigger('update');
 			}.bind(this));
@@ -55,17 +56,22 @@ var NotesItemController = NoteBaseController.extend({
 		}));
 		this.el.className = 'note item';
 		this.el.addClass(type);
+		var is_password = this.model.get('type') == 'password';
 		if(!this.model.get('text'))
 		{
 			this.el.addClass('no-text');
 		}
-		if(!this.model.get('title'))
+		if(!this.model.get('title') && !is_password)
 		{
 			this.el.addClass('no-title');
 		}
 		if(type == 'image' && !this.model.get('url'))
 		{
 			this.el.addClass('preview');
+		}
+		if(this.model.get('crypto_error'))
+		{
+			this.el.addClass('crypto-error');
 		}
 		this.el.set('rel', this.model.id());
 
@@ -105,8 +111,14 @@ var NotesItemController = NoteBaseController.extend({
 
 	note_click: function(e)
 	{
-		var atag = Composer.find_parent('li.note a', e.target);
+		var event = e.event || {};
+		var atag = Composer.find_parent('li.note a', e.target, this.el);
+		// middle click
+		if(atag && (event.button == 4 || event.which == 2)) return;
+		// shift/ctrl+click
 		if(atag && (e.control || e.shift)) return;
+
+		// nvm lolol open the note
 		if(e) e.stop();
 		this.open_note();
 	},

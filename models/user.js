@@ -196,6 +196,7 @@ var User = Protected.extend({
 			return Promise.reject(new Error('there is already a password change in process'));
 		}
 
+		var syncval = config.sync_to_api;
 		return this.get_auth().bind(this)
 			.then(function(_old_auth) {
 				old_auth = _old_auth;
@@ -212,7 +213,7 @@ var User = Protected.extend({
 				return turtl.api.put('/users/'+this.id(), data, {auth: old_auth})
 			})
 			.then(function(userdata) {
-				turtl.sync_to_api = false;
+				config.sync_to_api = false;
 				var keychain_actions = turtl.profile.get('keychain').map(function(kentry) {
 					kentry.key = key;
 					return kentry.save();
@@ -247,7 +248,7 @@ var User = Protected.extend({
 				throw err;
 			})
 			.finally(function() {
-				turtl.sync_to_api = true;
+				config.sync_to_api = syncval;
 				this.changing_password = false;
 				turtl.events.trigger('user:change-password:finish');
 			});

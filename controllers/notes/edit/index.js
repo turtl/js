@@ -3,7 +3,10 @@ var NotesEditController = FormController.extend({
 		'form': 'el_form',
 		'input[name=title]': 'inp_title',
 		'input[name=url]': 'inp_url',
+		'input[name=username]': 'inp_username',
+		'input[name=password]': 'inp_password',
 		'textarea[name=text]': 'inp_text',
+		'.password': 'el_password',
 		'.boards-container': 'el_boards',
 		'.file-container': 'el_file',
 		'.existing': 'el_existing'
@@ -17,7 +20,8 @@ var NotesEditController = FormController.extend({
 		'change form': 'detect_change',
 		'input form': 'detect_change',
 		'input input[name=url]': 'check_url',
-		'click .formatting a[rel=formatting]': 'show_formatting_help'
+		'click .formatting a[rel=formatting]': 'show_formatting_help',
+		'click .password a.preview': 'toggle_preview_password'
 	},
 
 	modal: null,
@@ -75,8 +79,40 @@ var NotesEditController = FormController.extend({
 		this.modal = new TurtlModal(Object.merge({
 			show_header: true,
 			title: title,
-			closefn: conf
+			closefn: conf,
+			actions: [
+				{name: 'preview', icon: 'preview'}
+			]
 		}, this.modal_opts && this.modal_opts() || {}));
+
+		// URL check setup, needs to happen before render
+		if(this.model.is_new())
+		{
+			this.url_timer = new Timer(500);
+			this.url_timer.bind('fired', function() {
+				var url_search = this.inp_url.get('value');
+				if(!url_search) return;
+				turtl.search.search({url: url_search}).bind(this)
+					.spread(function(ids) {
+						ids = ids.erase(this.model.id());
+						if(!ids || !ids.length)
+						{
+							this.el_existing.slide('out');
+							return;
+						}
+
+						var msg = '<em>!</em>';
+						msg += 'This URL is already bookmarked in ';
+						if(ids.length == 1) msg += 'another note';
+						else msg += ids.length +' notes';
+
+						this.el_existing.set('html', msg);
+						this.el_existing.slide('in');
+					});
+			}.bind(this));
+			this.bind('check-url', this.url_timer.reset.bind(this.url_timer));
+			this.bind('release', this.url_timer.unbind.bind(this.url_timer));
+		}
 
 		this.render();
 
@@ -89,6 +125,12 @@ var NotesEditController = FormController.extend({
 
 		this.modal.open(this.el);
 		this.with_bind(this.modal, 'close', this.release.bind(this));
+		this.with_bind(this.modal, 'header:fire-action', function(action) {
+			switch(action)
+			{
+			case 'preview': this.open_preview(); break;
+			}
+		});
 		this.bind(['cancel', 'close'], close);
 
 		this.bind('release', function() {
@@ -128,35 +170,11 @@ var NotesEditController = FormController.extend({
 		this.with_bind(this.clone.get('tags'), ['add', 'remove'], footer_desc);
 		footer_desc();
 
-		if(this.model.is_new())
-		{
-			this.url_timer = new Timer(500);
-			this.url_timer.bind('fired', function() {
-				turtl.search.search({url: this.inp_url.get('value')}).bind(this)
-					.spread(function(ids) {
-						ids = ids.erase(this.model.id());
-						if(!ids || !ids.length)
-						{
-							this.el_existing.slide('out');
-							return;
-						}
-
-						var msg = '<em>!</em>';
-						if(ids.length == 1)
-						{
-							msg += 'This URL is already bookmarked in a note';
-						}
-						else
-						{
-							msg += 'This URL is already bookmarked in '+ ids.length +' notes';
-						}
-						this.el_existing.set('html', msg);
-						this.el_existing.slide('in');
-					});
-			}.bind(this));
-			this.bind('check-url', this.url_timer.reset.bind(this.url_timer));
-			this.bind('release', this.url_timer.unbind.bind(this.url_timer));
-		}
+		var special_key_bound = this.special_key.bind(this);
+		document.body.addEvent('keydown', special_key_bound);
+		this.bind('release', function() {
+			document.body.removeEvent('keydown', special_key_bound);
+		});
 	},
 
 	render: function()
@@ -181,6 +199,7 @@ var NotesEditController = FormController.extend({
 				case 'text': focus_el = this.inp_text; break;
 				case 'link': focus_el = this.inp_url; break;
 				case 'image': focus_el = this.inp_url; break;
+				case 'password': focus_el = this.inp_password; break;
 			}
 			// NOTE: the delay here is same as CSS transition
 			//
@@ -190,7 +209,10 @@ var NotesEditController = FormController.extend({
 			if(focus_el) setTimeout(focus_el.focus.bind(focus_el), 300);
 		}
 
-		if(this.inp_text) setTimeout(function() { autosize(this.inp_text); }.bind(this), 10);
+		if(this.inp_text && get_platform() != 'mobile')
+		{
+			setTimeout(function() { autosize(this.inp_text); }.bind(this), 10);
+		}
 
 		this.track_subcontroller('boards', function() {
 			return new NotesEditBoardsListController({
@@ -214,21 +236,31 @@ var NotesEditController = FormController.extend({
 		}
 	},
 
+	grab_form_data: function()
+	{
+		var title = this.inp_title.get('value');
+		var url = this.inp_url && this.inp_url.get('value');
+		var username = this.inp_username && this.inp_username.get('value');
+		var password = this.inp_password && this.inp_password.get('value');
+		var text = this.inp_text.get('value');
+
+		var data = {
+			title: title,
+			url: url,
+			username: username,
+			password: password,
+			text: text
+		};
+		return data;
+	},
+
 	submit: function(e)
 	{
 		if(e) e.stop();
 
 		var errors = [];
 
-		var title = this.inp_title.get('value');
-		var url = this.inp_url && this.inp_url.get('value');
-		var text = this.inp_text.get('value');
-
-		var data = {
-			title: title,
-			url: url,
-			text: text
-		};
+		var data = this.grab_form_data();
 
 		if(this.model.is_new())
 		{
@@ -236,9 +268,9 @@ var NotesEditController = FormController.extend({
 		}
 
 		var clone = this.clone;
-		var keypromise = clone.update_keys({silent: true});
 		clone.key = this.model.key;
-		clone.get('file').key = this.model.key;
+		clone.get('file').key = clone.key;
+		clone.create_or_ensure_key(null, {silent: true});
 		clone.set(data);
 
 		// grab the file binary, and clear it out from the model
@@ -250,14 +282,13 @@ var NotesEditController = FormController.extend({
 			clone.get('file').unset('data');
 		}
 
-		keypromise.bind(this)
-			.then(function() {
-				if(file_set || this.model.get('file').id(true))
-				{
-					clone.get('file').set({id: file_id, no_preview: true}, {silent: true});
-				}
-				return clone.save();
-			})
+		if(file_set || this.model.get('file').id(true))
+		{
+			clone.get('file').set({id: file_id, no_preview: true}, {silent: true});
+		}
+
+		return clone.save()
+			.bind(this)
 			.then(function() {
 				if(!this.model.key) this.model.key = clone.key;
 				this.model.set(clone.toJSON({get_file: true}));
@@ -273,6 +304,7 @@ var NotesEditController = FormController.extend({
 
 				// add the note to our main note list
 				turtl.profile.get('notes').upsert(this.model);
+				this.trigger('saved');
 				this.trigger('close');
 			})
 			.then(function() {
@@ -328,9 +360,6 @@ var NotesEditController = FormController.extend({
 						turtl.events.trigger('ui-error', 'There was a problem saving the attachment', err);
 						log.error('note: edit: file: ', this.model.id(), derr(err));
 					});
-			})
-			.then(function() {
-				this.trigger('saved');
 			})
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', 'There was a problem updating that note', err);
@@ -393,7 +422,51 @@ var NotesEditController = FormController.extend({
 	show_formatting_help: function(e)
 	{
 		if(e) e.stop();
-		new MarkdownFormattingHelpController();
+		new MarkdownFormattingHelpController({
+			modal_opts: this.modal_opts
+		});
+	},
+
+	open_preview: function()
+	{
+		var data = this.grab_form_data();
+		var preview = this.clone.clone().set(data);
+		new NotesEditPreviewController({
+			model: preview,
+			modal_opts: this.modal_opts
+		});
+	},
+
+	special_key: function(e)
+	{
+		if(e.key == 'esc')
+		{
+			this.trigger('close');
+		}
+		else if(e.key == 'enter' || e.key == 'return')
+		{
+			if(!Composer.match(e.target, 'textarea, input'))
+			{
+				this.submit(e);
+			}
+		}
+	},
+
+	toggle_preview_password: function(e)
+	{
+		if(e) e.stop();
+		if(!this.inp_password) return;
+		if(this.inp_password.get('type') == 'password')
+		{
+			this.el_password.addClass('preview');
+			this.inp_password.set('type', 'text');
+			this.inp_password.focus();
+		}
+		else
+		{
+			this.el_password.removeClass('preview');
+			this.inp_password.set('type', 'password');
+		}
 	}
 });
 

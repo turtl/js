@@ -1,9 +1,6 @@
 var $E = function(selector, filter) {return ($(filter) || document).getElement(selector);};
 var $ES = function(selector, filter) {return ($(filter) || document).getElements(selector);};
 
-// we need CBC for backwards compat
-sjcl.beware['CBC mode is dangerous because it doesn\'t protect message integrity.']();
-
 // make our client IDs such that they are always sorted *after* real,
 // server-generated IDs ('z.') and they are chronologically sortable from each
 // other. Also, append in the original cid() at the end for easier debugging.
@@ -51,10 +48,6 @@ var turtl = {
 
 	loaded: false,
 	router: false,
-
-	// whether or not to sync data w/ server
-	sync_to_api: true,
-	poll_api_for_changes: true,
 
 	// holds the title breadcrumbs
 	titles: [],
@@ -140,6 +133,7 @@ var turtl = {
 		}
 
 		this.loaded = true;
+		turtl.events.trigger('loaded');
 		if(window.port) window.port.send('loaded');
 		this.route(initial_route);
 
@@ -147,12 +141,12 @@ var turtl = {
 		turtl.events.bind('api:connect', function() {
 			log.info('API: connect');
 			if(connect_barf_id) barfr.close_barf(connect_barf_id);
-			connect_barf_id = barfr.barf('Connected to the Turtl service! Disengaging offline mode. Syncing your profile.', {persist: true});
+			connect_barf_id = barfr.barf('Connected to the Turtl service! Disengaging offline mode. Syncing your profile.');
 		});
 		turtl.events.bind('api:disconnect', function() {
 			log.info('API: disconnect');
 			if(connect_barf_id) barfr.close_barf(connect_barf_id);
-			connect_barf_id = barfr.barf('Disconnected from the Turtl service. Engaging offline mode. Your changes will be saved and synced once back online!', {persist: true});
+			connect_barf_id = barfr.barf('Disconnected from the Turtl service. Engaging offline mode. Your changes will be saved and synced once back online!');
 		});
 
 		turtl.keyboard.bind('?', function() {
@@ -181,6 +175,8 @@ var turtl = {
 
 			turtl.show_loading_screen(true);
 			turtl.update_loading_screen('Initializing Turtl');
+
+			$E('body').removeClass('loggedout');
 
 			// sets up local storage
 			turtl.setup_local_db().bind({})
@@ -268,8 +264,10 @@ var turtl = {
 			turtl.files.stop_syncing();
 			turtl.sync.stop();
 
+			$E('body').addClass('loggedout');
+
 			turtl.controllers.pages.release_sub();
-			turtl.controllers.nav.release();
+			if(turtl.controllers.nav) turtl.controllers.nav.release();
 			turtl.keyboard.unbind('shift+l');
 			turtl.keyboard.unbind('n', 'shortcut:main:notes');
 			turtl.keyboard.unbind('b', 'shortcut:main:boards');
@@ -305,15 +303,21 @@ var turtl = {
 				turtl.events.trigger('db-init');
 			})
 			.then(function() {
+				log.debug('turtl: hustle: create');
+				var db_name = 'hustle:'+dbname(config.api_url, turtl.user.id());
 				var hustle = new Hustle({
 					tubes: ['files:download', 'files:upload'],
-					db_name: 'turtl.hustle.server:'+ config.api_url +',user:'+turtl.user.id(),
+					db_name: db_name,
 					db_version: 4,
 					maintenance_delay: 5000
 				});
 				hustle.promisify();
+				log.debug('turtl: hustle: open');
 				return hustle.open()
-					.then(function() { turtl.hustle = hustle; });
+					.then(function() {
+						log.debug('turtl: hustle: opened');
+						turtl.hustle = hustle;
+					});
 			})
 	},
 
@@ -330,7 +334,14 @@ var turtl = {
 		turtl.sync.stop();
 		if(turtl.db) turtl.db.close();
 		window.indexedDB.deleteDatabase(dbname(config.api_url, turtl.user.id()));
-		turtl.hustle.wipe();
+		if(turtl.hustle)
+		{
+			turtl.hustle.wipe();
+		}
+		else
+		{
+			window.indexedDB.deleteDatabase('hustle:'+dbname(config.api_url, turtl.user.id()));
+		}
 		turtl.db = null;
 		turtl.hustle = null;
 		if(options.restart)
@@ -409,11 +420,9 @@ var turtl = {
 			base: config.route_base || '',
 			// we'll do our own first route
 			suppress_initial_route: true,
+			default_title: 'Turtl',
 			enable_cb: function(url) {
 				var enabled = true;
-				if(turtl.user.logged_in)
-				{
-				}
 
 				if(turtl.user.logged_in && (!turtl.profile || !turtl.profile.profile_data))
 				{
@@ -534,7 +543,6 @@ var _turtl_init = function()
 	window.port = window.port || false;
 	window._base_url = config.base_url || '';
 	turtl.site_url = config.site_url || '';
-	turtl.base_window_title = document.title.replace(/.*\|\s*/, '');
 	turtl.api = new Api(
 		config.api_url,
 		'',
@@ -585,6 +593,8 @@ var _turtl_init = function()
 		smartLists: true
 	});
 
+	view.fix_template_paths();
+
 	var clid = localStorage.client_id;
 	if(!clid) clid = localStorage.client_id = tcrypt.random_hash();
 	turtl.client_id = clid;
@@ -592,30 +602,43 @@ var _turtl_init = function()
 
 	// set up workers for openpgp.js (if native crypto ain't available)
 	openpgp.initWorker(asset('/library/openpgp/openpgp.worker.js'));
+
+	setup_global_error_catching();
 };
 
 window.addEvent('domready', function() {
 	setTimeout(_turtl_init, 100);
 });
 
-// set up a global error handler that XHRs shit to the API so we know when bugs
-// are cropping up
-if(config.catch_global_errors)
+function setup_global_error_catching()
 {
-	var enable_errlog = true;
-	window.onerror = function(msg, url, line)
+	// set up a global error handler that XHRs shit to the API so we know when bugs
+	// are cropping up
+	if(config.catch_global_errors)
 	{
-		if(!turtl.api || !enable_errlog) return;
-		log.error('remote error log: ', arguments);
-		// remove filesystem info
-		url = url.replace(/^.*\/data\/app/, '/data/app');
-		turtl.api.post('/log/error', {data: {client: config.client, version: config.version, msg: msg, url: url, line: line}})
-			.catch(function(err) {
-				log.error('error catcher: error posting (how ironic): ', derr(err));
-				// error posting, disable log for 30s
-				enable_errlog = false;
-				(function() { enable_errlog = true; }).delay(30000);
-			});
-	};
+		var enable_errlog = true;
+		var handler = function(msg, url, line)
+		{
+			if(!turtl.api || !enable_errlog) return;
+			log.error('remote error log: ', arguments);
+			// remove filesystem info
+			url = url.replace(/^.*\/data\/app/, '/data/app');
+			turtl.api.post('/log/error', {data: {client: config.client, version: config.version, msg: msg, url: url, line: line}})
+				.catch(function(err) {
+					log.error('error catcher: error posting (how ironic): ', derr(err));
+					// error posting, disable log for 30s
+					enable_errlog = false;
+					(function() { enable_errlog = true; }).delay(30000);
+				});
+		};
+		Promise.onPossiblyUnhandledRejection(function(err) {
+			var msg = err.message;
+			var parts = err.stack.split(/\n/g)[1].split(/:/, 2);
+			var file = parts[0].replace(/at/, '').trim();
+			var line = parts[1];
+			handler(msg, file, line);
+		});
+		window.onerror = handler;
+	}
 }
 

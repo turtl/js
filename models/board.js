@@ -42,32 +42,49 @@ var Board = Protected.extend({
 		this.bind('destroy', function(_1, _2, options) {
 			options || (options = {});
 
-			turtl.profile.get('keychain').remove_key(this.id(), options);
-			this.get('boards').each(function(board) {
-				board.destroy(options);
-			});
-
-			var boards = turtl.profile.get('boards');
 			// NOTE: if we're skipping remote sync, this is coming from a sync
 			// item (almost assuredly) and we don't want to edit/remove the
 			// notes
+			var note_promise = Promise.resolve();
 			if(!options.skip_remote_sync)
 			{
+				// whether we delete the notes or not, we loop over them all and
+				// wait on the promise for them to finish. we have to do this
+				// before the keychain entry is deleted below or else there's a
+				// chance if the note is old and doesn't have its own keychain
+				// entry it will not be able to sfind its own key when it tries
+				// to create that entry
 				if(options.delete_notes)
 				{
-					this.each_note(function(note) { note.destroy(options); });
+					note_promise = this.each_note(function(note) {
+						return note.destroy(options);
+					});
 				}
 				else
 				{
 					var board_id = this.id();
-					this.each_note(function(note) {
+					note_promise = this.each_note(function(note, opts) {
+						var existing = (opts || {}).existing;
 						var boards = note.get('boards').slice(0);
 						boards = boards.erase(board_id);
 						note.set({boards: boards}, options);
-						note.save(options);
-					}.bind(this));
+						return note.save(options);
+					}.bind(this), {decrypt: true});
 				}
 			}
+
+			// remove the keychain entry only after the notes have been saved or
+			// destroyed
+			note_promise.bind(this)
+				.then(function() {
+					// kill the keychain entry
+					turtl.profile.get('keychain').remove_key(this.id(), options);
+
+					// remove child boards, if any
+					this.get('boards').each(function(board) {
+						board.destroy(options);
+					});
+				});
 		}.bind(this));
 	},
 
@@ -78,15 +95,38 @@ var Board = Protected.extend({
 		var parent_id = this.get('parent_id');
 		var parent = turtl.profile.get('boards').find_by_id(parent_id);
 		this.set({user_id: turtl.user.id()}, options);
-		this.generate_key();
-		keypromise = turtl.profile.get('keychain').add_key(this.id(), 'board', this.key);
 		if(parent)
 		{
 			// if we have a parent board, make sure the child can decrypt
 			// its key via the parent's
 			this.generate_subkeys([{b: parent.id(), k: parent.key}]);
 		}
-		return keypromise;
+
+		var keychain = turtl.profile.get('keychain');
+		var existing = keychain.find_key(this.id());
+		if(!existing)
+		{
+			// key doesn't exist, add it
+			return keychain.add_key(this.id(), 'board', this.key);
+		}
+		else if(this.key && JSON.stringify(existing) != JSON.stringify(this.key))
+		{
+			// key exists, but is out of date. remove/re-add it
+			return keychain.remove_key(this.id()).bind(this)
+				.then(function() {
+					return keychain.add_key(this.id(), 'board', this.key);
+				});
+		}
+		return Promise.resolve();
+	},
+
+	save: function(options)
+	{
+		var parentfn = this.$get_parent();
+		return this.update_keys(options).bind(this)
+			.then(function() {
+				return parentfn.call(this, options);
+			});
 	},
 
 	find_key: function(keys, search, options)
@@ -97,19 +137,29 @@ var Board = Protected.extend({
 
 		var parent_id = this.get('parent_id');
 		var parent = turtl.profile.get('boards').find_by_id(parent_id);
-		if(parent)
+		if(parent && parent.key)
 		{
-			search.b.push({id: parent.id(), k: parent.key});
+			search.b.push({id: parent_id, k: parent.key});
+		}
+		else
+		{
+			// didn't find our parent, so search for him/her in the keychain
+			var parent_key = turtl.profile.get('keychain').find_key(parent_id);
+			if(parent_key)
+			{
+				search.b.push({id: parent_id, k: parent_key});
+			}
 		}
 		return this.parent(keys, search, options);
 	},
 
-	each_note: function(callback)
+	each_note: function(callback, options)
 	{
+		options || (options = {});
 		var cnotes = turtl.profile.get('notes');
-		turtl.db.notes.query('boards').only(this.id()).execute()
+		return turtl.db.notes.query('boards').only(this.id()).execute()
 			.then(function(notes) {
-				(notes || []).forEach(function(note) {
+				var promises = (notes || []).map(function(note) {
 					var existing = true;
 					// if we have an existing note in-memory, use it.
 					// this will also apply our changes in any listening
@@ -121,9 +171,21 @@ var Board = Protected.extend({
 						// create one and then apply our changes to it
 						cnote = new Note(note);
 						existing = false;
+						if(options.decrypt)
+						{
+							return cnote.deserialize()
+								.then(function() {
+									return callback(cnote, {existing: true});
+								})
+								.catch(function(err) {
+									log.error('board.each_note(): deserialize: ', err, note);
+									throw err;
+								});
+						}
 					}
-					callback(cnote, {existing: existing});
+					return callback(cnote, {existing: existing});
 				});
+				return Promise.all(promises);
 			});
 	},
 

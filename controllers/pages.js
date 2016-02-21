@@ -32,15 +32,17 @@ var PagesController = Composer.Controller.extend({
 			sub_parent.adopt(sub.el);
 		}
 
-		var scroll = $('wrap').scrollTop;
-		this.trigger('prerelease', options);
-		var controller = this.track_subcontroller('sub', function() {
-			if(!params.inject) params.inject = main_sel;
-			return new controller_class(params);
-		});
-		this.trigger('load', controller, options);
+		setTimeout(function() {
+			var scroll = $('wrap').scrollTop;
+			this.trigger('prerelease', options);
+			var controller = this.track_subcontroller('sub', function() {
+				if(!params.inject) params.inject = main_sel;
+				return new controller_class(params);
+			});
+			this.trigger('load', controller, options);
 
-		if(options.slide) this.slide_content(content, options.slide, scroll);
+			if(options.slide) this.slide_content(content, options.slide, scroll);
+		}.bind(this), 5);
 	},
 
 	slide_content: function(content, slide, scroll)

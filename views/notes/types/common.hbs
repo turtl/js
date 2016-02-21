@@ -24,18 +24,66 @@
 {{/if}}
 
 <div class="note-gutter">
-	{{#if empty}}
+	{{#if crypto_error}}
+		<div class="content text">
+			<div class="body">
+				<h1>Crypto error</h1>
+				<p>
+					There was a problem decrypting this note. Please contact
+					<a href="mailto:info@turtl.it">info@turtl.it</a> for
+					assistance.
+				</p>
+				{{#if error_data.boards.length}}
+					<p>
+						This note belongs to these boards:
+					</p>
+					<ul>
+						{{#each error_data.boards}}
+							<li>{{this}}</li>
+						{{/each}}
+					</ul>
+				{{else}}
+					This note is not in any boards.
+				{{/if}}
+				<h2>Debug info</h2>
+				<code>ID:&nbsp;{{note.id}}<br>Key:&nbsp;{{#if error_data.key}}{{error_data.key}}{{else}}No key found{{/if}}</code>
+			</div>
+		</div>
+	{{else}}{{#if empty}}
 		<p class="empty">(empty note)</p>
 	{{else}}
 		<div class="content text">
-			{{#if note.title}}
-				<h1>{{{note.title}}}</h1>
-			{{/if}}
-			{{#if note.text}}
-				<div class="body">{{{markdown note.text}}}</div>
+			{{#equal note.type 'password'}}
+				<h1 class="main-title password">
+					<a href="#">
+					{{icon 'lock'}}
+					{{#if note.title}}
+						{{{note.title}}}
+					{{else}}
+						Password
+					{{/if}}
+					</a>
+				</h1>
+				<div class="show-password">
+					<form class="standard-form">
+						{{#if note.username}}
+							<input type="text" name="username" value="{{note.username}}" readonly>
+						{{/if}}
+						<input type="password" name="password" value="********" readonly>
+					</form>
+				</div>
+			{{else}}
+				{{#if note.title}}
+					<h1 class="main-title">{{{note.title}}}</h1>
+				{{/if}}
+			{{/equal}}
+			{{#if has_body}}
+				<div class="body">
+					{{{markdown note.text}}}
+				</div>
 			{{/if}}
 		</div>
-	{{/if}}
+		{{/if}}{{/if}}
 </div>
 
 {{! {{#if show_info}}

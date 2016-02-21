@@ -24,7 +24,12 @@ var SettingsController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 
-		turtl.db.sync_outgoing.query().all().execute().bind(this)
+		var promise = Promise.resolve([]);
+		if(turtl.db && turtl.db.sync_outgoing)
+		{
+			var promise = turtl.db.sync_outgoing.query().all().execute().bind(this)
+		}
+		promise
 			.then(function(res) {
 				var outgoing_msg = '';
 				if(res.length > 0)

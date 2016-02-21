@@ -12,6 +12,7 @@ var NotesSearchController = Composer.Controller.extend({
 		'click .filter-sort a': 'sort',
 		'click a[rel=all]': 'show_all_tags',
 		'input input[name=text]': 'text_search',
+		'keydown input[name=text]': 'special_key',
 		'click ul.tags li': 'toggle_tag',
 		'click ul.colors li': 'toggle_color',
 		'submit form': 'submit'
@@ -38,7 +39,7 @@ var NotesSearchController = Composer.Controller.extend({
 			show_header: true,
 			title: titlefn(turtl.search.total),
 			actions: [
-				{name: 'reset', icon: 'clear'}
+				{name: 'reset', icon: 'everything', title: 'Reset search'}
 			]
 		});
 		this.render();
@@ -102,7 +103,7 @@ var NotesSearchController = Composer.Controller.extend({
 
 		this.render_tags(options);
 
-		setTimeout(function() { this.inp_text.focus(); }.bind(this), 300);
+		setTimeout(function() { this.inp_text.select(); }.bind(this), 50);
 	},
 
 	render_tags: function(options)
@@ -189,6 +190,13 @@ var NotesSearchController = Composer.Controller.extend({
 		this.search.text = text;
 		this.trigger('search-text');
 		this.trigger('search-mod');
+	},
+
+	special_key: function(e)
+	{
+		if(!e || e.key != 'esc') return;
+		e.stop();
+		this.trigger('close');
 	},
 
 	toggle_tag: function(e)

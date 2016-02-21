@@ -1,12 +1,13 @@
 var MarkdownFormattingHelpController = Composer.Controller.extend({
 	modal: null,
+	modal_opts: null,
 
 	init: function()
 	{
-		this.modal = new TurtlModal({
+		this.modal = new TurtlModal(Object.merge({
 			show_header: true,
 			title: 'Editing in markdown'
-		});
+		}, this.modal_opts && this.modal_opts() || {}));
 
 		this.render();
 

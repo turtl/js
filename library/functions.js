@@ -19,7 +19,7 @@ var extend_error = function(extend, errname)
 	};
 	err.prototype = Object.create(extend.prototype, { constructor: { value: err } });
 	return err;
-}
+};
 
 /**
  * a promisified delay function.
@@ -52,6 +52,13 @@ var make_index = function(collection, idx_field)
 	return idx;
 };
 
+var get_platform = function()
+{
+	if(config.client == 'desktop') return 'desktop';
+	if(config.client.match(/mobile/)) return 'mobile';
+	return 'core';
+};
+
 var escape_regex = function(s)
 {
 	return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -68,6 +75,22 @@ var select_text = function(inp, from, to)
 	return s;
 };
 
+var create_and_click = function(url, name)
+{
+	var download = new Element('a')
+		.setStyles({visibility: 'hidden'})
+		.set('html', 'Download '+ name.safe())
+		.addClass('attachment')
+		.setProperties({
+			href: url,
+			download: name,
+			target: '_blank'
+		});
+	download.inject(document.body);
+	fire_click(download);
+	(function() { download.destroy(); }).delay(5000, this);
+};
+
 var download_blob = function(blob, options)
 {
 	options || (options = {});
@@ -76,18 +99,7 @@ var download_blob = function(blob, options)
 	return new Promise(function(resolve, reject) {
 		url = URL.createObjectURL(blob);
 		var name = options.name || 'download';
-		var download = new Element('a')
-			.setStyles({visibility: 'hidden'})
-			.set('html', 'Download '+ name.safe())
-			.addClass('attachment')
-			.setProperties({
-				href: url,
-				download: name,
-				target: '_blank'
-			});
-		download.inject(document.body);
-		fire_click(download);
-		(function() { download.destroy(); }).delay(5000, this);
+		create_and_click(url, name);
 		resolve();
 	}).finally(function() {
 		if(url) URL.revokeObjectURL(url);
@@ -231,10 +243,10 @@ function icon(name)
 		board: 'e803',
 		boards: 'e803',
 		bookmark: 'e814',
-		clear: 'e81a',
 		close: 'e819',
 		connection: 'e839',
 		edit: 'e815',
+		everything: 'e81a',
 		feedback: 'e83e',
 		file: 'e837',
 		image: 'e80e',
@@ -246,7 +258,9 @@ function icon(name)
 		next: 'e80b',
 		note: 'e804',
 		notes: 'e809',
+		password: 'e808',
 		persona: 'e800',
+		preview: 'e83f',
 		protected: 'e821',
 		remove: 'e81d',
 		search: 'e83a',
@@ -408,6 +422,16 @@ var view = {
 		return TurtlTemplates[tpl](data);
 	},
 
+	fix_template_paths: function()
+	{
+		// handlebars CLI is different on linux vs mac wrt how it treats slashes
+		// in the recursive view directory soo we have to run a fix here
+		Object.keys(TurtlTemplates).forEach(function(key) {
+			var path = key.replace(/^\//, '');
+			TurtlTemplates[path] = TurtlTemplates[key];
+		});
+	},
+
 	escape: function(str)
 	{
 		return str;
@@ -443,5 +467,25 @@ var view = {
 	{
 		return marked(body);
 	}
+};
+
+var test_click = function()
+{
+	var blob = new Blob(['get a job'], {type: 'text/plain'});
+	var url = URL.createObjectURL(blob);
+	var name = 'test-download.txt';
+	var atag = new Element('a')
+		.set('html', 'Download '+ name.safe())
+		.addClass('attachment')
+		.setProperties({
+			href: url,
+			download: name,
+			target: '_blank'
+		})
+		.setStyles({
+			'font-size': '40px',
+			'color': 'blue'
+		});
+	atag.inject($E('#main'), 'top');
 };
 

@@ -1,9 +1,30 @@
 #!/bin/bash
 
-while true; do
+function do_make () {
 	make \
 		| grep -v 'Nothing to be done' \
 		| grep -v '\(Entering\|Leaving\) directory'
-	sleep 1
+	echo "- Make done, watching"
+}
+
+function changes () {
+	fswatch \
+		--one-event \
+		--allow-overflow \
+		-e '\.git' \
+		-e 'node_modules' \
+		-r \
+		.
+}
+
+do_make
+NOTIFY="`which fswatch 2>/dev/null`"
+if [ "$NOTIFY" == "" ]; then
+	echo "Please install fswatch. Alternatively, you can run 'watch make' instead"
+	exit 1
+fi
+while changes; do
+	do_make
 done
+
 

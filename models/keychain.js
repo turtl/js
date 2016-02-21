@@ -51,8 +51,8 @@ var Keychain = SyncCollection.extend({
 				k: key
 			});
 		}
-		this.add(entry);
-		return entry.save()
+		this.upsert(entry);
+		return entry.save(options)
 			.catch(function(err) {
 				barfr.barf('Error saving key for item: '+ err);
 				log.error('keychain: error saving: ', arguments);

@@ -50,6 +50,16 @@ var Search = Composer.Collection.extend({
 				var note = new Note(note);
 				return note.deserialize()
 					.then(function() { return note; })
+					.catch(function(err) {
+						if(note.is_crypto_error(err))
+						{
+							note.set({type: 'text', crypto_error: true});
+						}
+						else
+						{
+							throw err;
+						}
+					});
 			})
 			.then(function(notes) {
 				var batch = 20;

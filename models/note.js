@@ -22,6 +22,8 @@ var Note = Protected.extend({
 		'title',
 		'tags',
 		'url',
+		'username',
+		'password',
 		'text',
 		'embed',
 		'color',
@@ -30,8 +32,17 @@ var Note = Protected.extend({
 	// lets us disable monitoring of file events
 	disable_file_monitoring: false,
 
-	init: function()
+	init: function(options)
 	{
+		options || (options = {});
+
+		// we want the ability to create a new note without having it listen to
+		// data changes and reindex itself or delete files or any of that
+		// nonsense. this is usually because we're going to use one of it's
+		// internal functions (such as clearing files) manually and need to
+		// control the process by hand.
+		if(options.bare) return;
+
 		// if the note is destroyed or edited, update the index
 		this.bind('destroy', turtl.search.unindex_note.bind(turtl.search));
 		this.bind('change', function() {
@@ -62,7 +73,7 @@ var Note = Protected.extend({
 			{
 				var ts = parseInt(id.substr(0, 12), 16) / 1000;
 			}
-			this.set({created: ts});
+			this.set({created: ts}); //, {silent: true};
 		}.bind(this));
 		this.trigger('change:id');
 	},
@@ -70,9 +81,6 @@ var Note = Protected.extend({
 	update_keys: function(options)
 	{
 		options || (options = {});
-
-		if(this.is_new()) this.generate_key();
-		else this.ensure_key_exists();
 
 		var boards = this.get('boards') || [];
 		var subkeys = [];
@@ -86,10 +94,23 @@ var Note = Protected.extend({
 			subkeys.push({b: parent.id(), k: parent.key});
 		}.bind(this));
 
+		// make sure we do this BEFORE generate_subkeys(). the reason is that
+		// many times, update_keys() gets called from s ave() from a board being
+		// deleted. by the time we get here, the note no longer has the board in
+		// note.boards[] however the note.keys[] collection still has the board
+		// key entry in it. we use that entry to find the board if needed when
+		// finding the note's key.
+		//
+		// see Note.find_key() for more details
+		var key = this.ensure_key_exists();
+		if(!key) Promise.reject(new Error('note: missing key: '+ this.id()));
+
+		// ok, we have a key, we can update our subkeys now
 		this.generate_subkeys(subkeys);
 
 		var keychain = turtl.profile.get('keychain');
 		var existing = keychain.find_key(this.id());
+
 		if(!existing)
 		{
 			// key doesn't exist, add it
@@ -97,7 +118,7 @@ var Note = Protected.extend({
 		}
 		else if(this.key && JSON.stringify(existing) != JSON.stringify(this.key))
 		{
-			// key exists, but is out of date. remove/readd it
+			// key exists, but is out of date. remove/re-add it
 			return keychain.remove_key(this.id()).bind(this)
 				.then(function() {
 					return keychain.add_key(this.id(), 'note', this.key);
@@ -176,21 +197,12 @@ var Note = Protected.extend({
 	{
 		options || (options = {});
 
-		var args = {};
-		if(options.api_save)
-		{
-			var meta = this.get('meta');
-			if(meta && meta.persona)
-			{
-				args.persona = meta.persona;
-			}
-			options.args = args;
-		}
-		else
-		{
-			options.table = 'notes';
-		}
-		return this.parent.call(this, options);
+		var parentfn = this.$get_parent();
+		return this.update_keys(options).bind(this)
+			.then(function() {
+				options.table = 'notes';
+				return parentfn.call(this, options);
+			});
 	},
 
 	destroy: function(options)
@@ -236,8 +248,24 @@ var Note = Protected.extend({
 		search.b || (search.b = []);
 
 		var board_ids = this.get('boards') || [];
+
+		// also look in keys for board ids. they really shouldn't be in here if
+		// not in note.boards, but it's much better to find a key and be wrong
+		// than to have a note you cannot decrypt and be right.
+		this.get('keys').each(function(key) {
+			var board_id = key.get('b');
+			if(board_id && board_ids.indexOf(board_id) < 0)
+			{
+				board_ids.push(board_id);
+			}
+		});
+
+		var keychain = turtl.profile.get('keychain');
 		board_ids.forEach(function(board_id) {
 			var board_key = turtl.profile.get('boards').get(board_id).key;
+			// not in memory? search the keychain. another unorthadox method,
+			// but better to find a key and be wrong etc etc etc
+			if(!board_key) board_key = keychain.find_key(board_id);
 			if(board_key) search.b.push({id: board_id, k: board_key});
 		}.bind(this));
 		return this.parent(keys, search, options);
@@ -288,7 +316,19 @@ var Notes = SyncCollection.extend({
 			.map(function(notedata) {
 				if(notedata === true) return true;
 				var note = new Note(notedata);
-				return note.deserialize().then(function() { return note; });
+				return note.deserialize()
+					.then(function() { return note; })
+					.catch(function(err) {
+						if(note.is_crypto_error(err))
+						{
+							note.set({type: 'text', crypto_error: true});
+							return note;
+						}
+						else
+						{
+							throw err;
+						}
+					});
 			}).map(function(note) {
 				if(!(note instanceof Composer.Model)) return;
 				this.upsert(note, options);

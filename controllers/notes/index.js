@@ -89,7 +89,8 @@ var NotesIndexController = Composer.Controller.extend({
 				{title: 'Text note', name: 'text', icon: 'write', shortcut: 't'},
 				{title: 'Bookmark', name: 'link', icon: 'bookmark', shortcut: 'b'},
 				{title: 'Image', name: 'image', icon: 'image', shortcut: 'i'},
-				{title: 'File', name: 'file', icon: 'file', shortcut: 'f'}
+				{title: 'File', name: 'file', icon: 'file', shortcut: 'f'},
+				{title: 'Password', name: 'password', icon: 'password', shortcut: 'p'}
 			]);
 			this.with_bind(actions, 'actions:fire', this.open_add.bind(this));
 			this.with_bind(turtl.keyboard, 'a', function() {
@@ -117,7 +118,8 @@ var NotesIndexController = Composer.Controller.extend({
 			search_btn.addClass('mod');
 		}.bind(this));
 		this.bind('run-search', function() {
-			this.get_subcontroller('list').trigger('search');
+			var list = this.get_subcontroller('list');
+			if(list) list.trigger('search', {reset_pages: true, scroll_to_top: true});
 		}.bind(this));
 	},
 

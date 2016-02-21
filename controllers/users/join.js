@@ -176,10 +176,8 @@ var UserJoinController = FormController.extend({
 			var board = new Board({title: name});
 			if(parent_id) board.set({parent_id: parent_id});
 
-			return board.update_keys()
-				.then(function() {
-					return board.save();
-				})
+			board.create_or_ensure_key(null, {silent: true});
+			return board.save()
 				.then(function() {
 					turtl.profile.get('boards').upsert(board);
 					return board;

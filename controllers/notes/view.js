@@ -6,7 +6,9 @@ var NotesViewController = NoteBaseController.extend({
 		'.file': 'el_file',
 		'.info-container': 'el_info',
 		'.info-container .info': 'el_info_sub',
-		'.info-container .info form input': 'inp_link'
+		'.info-container .info form input': 'inp_link',
+		'.main-title.password': 'el_title_pass',
+		'.show-password input[name=password]': 'el_password'
 	},
 
 	events: {
@@ -14,13 +16,20 @@ var NotesViewController = NoteBaseController.extend({
 		'click .backing a[rel=download]': 'open_image',
 		'click .note-gutter .content > h1': 'open_image',
 		'click .info-container .preview form input': 'copy',
-		'click .info-container .preview > ul': 'toggle_info'
+		'click .info-container .preview > ul': 'toggle_info',
+		'click h1.main-title.password': 'show_password',
+		'click .show-password input[name=password]': 'show_password',
+		'focus .show-password input': 'select_password_field',
+		'click .show-password input': 'select_password_field'
 	},
 
 	modal: null,
 	model: null,
 
 	_last_scroll: null,
+
+	hide_actions: false,
+	title: false,
 
 	init: function()
 	{
@@ -29,12 +38,18 @@ var NotesViewController = NoteBaseController.extend({
 			this.release();
 			throw new Error('notes: view: no model passed');
 		}
-		this.modal = new TurtlModal({
-			show_header: true,
-			actions: [
+		var actions = [];
+		if(!this.hide_actions)
+		{
+			actions = [
 				{name: 'menu', actions: [/*{name: 'Edit'},*/ {name: 'Delete'}]}
-			]
-		});
+			];
+		}
+		this.modal = new TurtlModal(Object.merge({
+			show_header: true,
+			title: this.title,
+			actions: actions
+		}, this.modal_opts && this.modal_opts() || {}));
 		this.render();
 
 		var close = this.modal.close.bind(this.modal);
@@ -72,12 +87,15 @@ var NotesViewController = NoteBaseController.extend({
 		this.bind('release', function() { document.body.removeEvent('click', click_outside); });
 
 		// set up the action button
-		this.track_subcontroller('actions', function() {
-			var actions = new ActionController({inject: this.modal.el});
-			actions.set_actions([{title: 'Edit note', name: 'edit', icon: 'edit'}]);
-			this.with_bind(actions, 'actions:fire', this.open_edit.bind(this, null));
-			return actions;
-		}.bind(this));
+		if(!this.hide_actions)
+		{
+			this.track_subcontroller('actions', function() {
+				var actions = new ActionController({inject: this.modal.el});
+				actions.set_actions([{title: 'Edit note', name: 'edit', icon: 'edit'}]);
+				this.with_bind(actions, 'actions:fire', this.open_edit.bind(this, null));
+				return actions;
+			}.bind(this));
+		}
 
 		this.parent();
 
@@ -263,6 +281,35 @@ var NotesViewController = NoteBaseController.extend({
 				this.el_info.removeClass('scrolled');
 			}.bind(this));
 		}
+	},
+
+	show_password: function(e)
+	{
+		if(e) e.stop();
+		if(this.el_password.get('type') == 'password')
+		{
+			this.el_title_pass.addClass('active');
+			var pass = this.model.get('password');
+			this.el_password
+				.set('type', 'text')
+				.set('value', pass);
+			this.el_password.focus();
+		}
+		else
+		{
+			this.el_title_pass.removeClass('active');
+			this.el_password
+				.set('type', 'password')
+				.set('value', '********');
+		}
+	},
+
+	select_password_field: function(e)
+	{
+		var inp = Composer.find_parent('input', e.target);
+		if(!inp) return;
+		if(inp.get('type') == 'password') return;
+		inp.select();
 	}
 });
 

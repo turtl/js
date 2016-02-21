@@ -26,6 +26,10 @@ var config = {
 	// if true, any uncaught errors will be logged to the API for processing
 	catch_global_errors: false,
 
+	// whether or not to sync data w/ server
+	sync_to_api: true,
+	poll_api_for_changes: true,
+
 	// enable things like INVITE TO GET MOAR STORAGE
 	enable_promo: false,
 

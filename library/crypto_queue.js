@@ -17,6 +17,8 @@
 			var data = task.data;
 			var private_fields = task.private_fields;
 			var rawdata = task.rawdata;
+			var iv = task.iv;
+			var utf8_random = task.utf8_random;
 
 			// generate a random seed for sjcl
 			var seed = new Uint32Array(32);
@@ -24,6 +26,9 @@
 
 			switch(action)
 			{
+			case 'ping':
+				return done(null, {pong: task.name});
+				break;
 			case 'encrypt+hash':
 			case 'encrypt':
 				// if we only have 1 (one) private field, forgo JSON serialization and
@@ -44,8 +49,8 @@
 						enc_data,
 						{
 							// can't use window.crypto (for random IV), so generate IV here
-							iv: tcrypt.iv(),
-							utf8_random: tcrypt.random_number()
+							iv: iv || tcrypt.iv(),
+							utf8_random: utf8_random || tcrypt.random_number()
 						}
 					],
 					seed: seed

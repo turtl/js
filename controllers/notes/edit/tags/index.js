@@ -1,12 +1,12 @@
 var NotesEditTagsController = FormController.extend({
 	elements: {
 		'.tags-container': 'tags_container',
-		'div.editable': 'inp_tags',
+		'input[name=tags]': 'inp_tags',
 		'span.placeholder': 'placeholder'
 	},
 
 	events: {
-		'keydown div.editable': 'update_tags',
+		'keydown input[name=tags]': 'update_tags',
 		'click': 'hide_placeholder'
 	},
 
@@ -38,6 +38,10 @@ var NotesEditTagsController = FormController.extend({
 		this.with_bind(this.modal, 'close', this.release.bind(this));
 		this.bind(['cancel', 'close'], close);
 
+		this.bind('have-suggestions', function(suggested) {
+			var tags = suggested.map(function(t) { return t.name; });
+			new Autocomplete(this.inp_tags, tags, {});
+		}.bind(this));
 		this.load_suggested_tags();
 	},
 
@@ -53,8 +57,7 @@ var NotesEditTagsController = FormController.extend({
 			});
 		}.bind(this));
 
-		// same as .focus() LOL
-		this.select.bind(this, 0, 0).delay(100);
+		setTimeout(function() { this.inp_tags.focus(); }.bind(this));
 	},
 
 	load_suggested_tags: function()
@@ -70,14 +73,11 @@ var NotesEditTagsController = FormController.extend({
 					})
 					.sort(function(a, b) {
 						var sort = b.count - a.count;
-						if(sort == 0)
-						{
-							sort = a.name.localeCompare(b.name);
-						}
+						if(sort == 0) sort = a.name.localeCompare(b.name);
 						return sort;
-					})
-					.slice(0, 24);
-				this.collection.reset(mtags.toJSON().concat(suggested_tags));
+					});
+				this.collection.reset(mtags.toJSON().concat(suggested_tags.slice(0, 24)));
+				this.trigger('have-suggestions', suggested_tags);
 			});
 	},
 
@@ -102,20 +102,19 @@ var NotesEditTagsController = FormController.extend({
 
 		if(['enter', ','].indexOf(e.key) < 0) return;
 
+		var inner = this.inp_tags.get('value')
+
+		// submit form on empty value
+		if(inner == '') return;
+
 		e.stop();
-		var inner = this.inp_tags.get('html');
 		var tags = inner.split(',')
 			.map(function(t) { return t.clean().replace(/&nbsp;/g, ''); })
 			.filter(function(t) { return !!t; });
-		this.inp_tags.set('html', '');
 		this.clone.get('tags').upsert(tags);
 		this.collection.upsert(tags);
-		this.select(0, 0);
-	},
-
-	select: function(from, to)
-	{
-		select_text(this.inp_tags, from, to);
+		this.inp_tags.set('value', '');
+		this.inp_tags.focus();
 	}
 });
 

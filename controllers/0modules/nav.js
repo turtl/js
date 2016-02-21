@@ -6,6 +6,10 @@ var NavController = Composer.Controller.extend({
 		'a[href=/sharing]': 'el_share'
 	},
 
+	events: {
+		'click li': 'activate_nav'
+	},
+
 	nav: [
 		{url: '/', name: 'All notes', icon: 'notes'},
 		{url: '/boards', name: 'Boards', icon: 'boards'},
@@ -15,7 +19,7 @@ var NavController = Composer.Controller.extend({
 	init: function()
 	{
 		this.render();
-		this.with_bind(turtl.router, 'route', this.update_nav.bind(this));
+		this.with_bind(turtl.controllers.pages, 'start', this.update_nav.bind(this));
 		this.bind('release', function() { $('nav').removeClass('show'); });
 		this.setup_scroll();
 
@@ -149,6 +153,14 @@ var NavController = Composer.Controller.extend({
 		this.bind('release', function() {
 			attach.removeEventListener('scroll', scrollbind);
 		}.bind(this));
+	},
+
+	activate_nav: function(e)
+	{
+		var li = Composer.find_parent('li', e.target, this.el);
+		if(!li) return;
+		this.el.getElements('li').each(function(el) { el.removeClass('sel'); });
+		li.addClass('sel');
 	}
 });
 

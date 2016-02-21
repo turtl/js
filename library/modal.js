@@ -15,6 +15,8 @@ var TurtlModal = Composer.Controller.extend({
 
 	is_open: false,
 	skip_overlay: false,
+	skip_close_on_pageload: false,
+	skip_body_class: false,
 
 	show_header: false,
 	show_back: true,
@@ -40,7 +42,11 @@ var TurtlModal = Composer.Controller.extend({
 			if(this.el) this.el.removeEvent('scroll', scroller);
 		}.bind(this));
 		this.with_bind(turtl.user, 'logout', this.close.bind(this));
-		this.with_bind(turtl.controllers.pages, 'load', this.close.bind(this));
+
+		if(!this.skip_close_on_pageload)
+		{
+			this.with_bind(turtl.controllers.pages, 'load', this.close.bind(this));
+		}
 
 		this.with_bind(turtl.keyboard, 'esc', this.close.bind(this));
 	},
@@ -87,11 +93,14 @@ var TurtlModal = Composer.Controller.extend({
 				this.gutter.removeClass('opening');
 			}).delay(300, this);
 			this.trigger('open');
-			document.body.className += ' modal';
+			if(!this.skip_body_class)
+			{
+				document.body.className += ' modal';
+			}
 			turtl.back.push(this.close.bind(this), this.cid());
 		}.bind(this);
 		if(options.immediate) do_open();
-		else setTimeout(do_open);
+		else setTimeout(do_open, 5);
 
 		if(!this.skip_overlay)
 		{
@@ -116,7 +125,10 @@ var TurtlModal = Composer.Controller.extend({
 		(function() {
 			this.gutter.set('html', '').removeClass('closing');
 			if(this.release_on_close) this.release();
-			document.body.className = document.body.className.replace(/ modal/, '')
+			if(!this.skip_body_class)
+			{
+				document.body.className = document.body.className.replace(/ modal/, '')
+			}
 		}).delay(500, this);
 
 		if(!options.from_overlay && !this.skip_overlay)
