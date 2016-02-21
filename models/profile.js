@@ -260,7 +260,6 @@ var Profile = Composer.RelationalModel.extend({
 		};
 
 		var data = {
-			version: schema_version,
 			keychain: export_collection_with_keys(this.get('keychain')),
 			personas: export_collection_with_keys(this.get('personas')),
 			boards: export_collection_with_keys(this.get('boards')),
@@ -312,6 +311,7 @@ var Profile = Composer.RelationalModel.extend({
 				Object.keys(data).forEach(function(key) {
 					data[key].forEach(function(item) { delete item.body; });
 				});
+				data.version = schema_version;
 				return data;
 			});
 	},
