@@ -27,6 +27,10 @@ var Note = Protected.extend({
 		'text',
 		'embed',
 		'color',
+		// not really used yet, but good for evernote import
+		'longitude',
+		'latitude',
+		'altitude'
 	],
 
 	// lets us disable monitoring of file events
