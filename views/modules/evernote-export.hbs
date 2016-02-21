@@ -3,8 +3,8 @@
 <en-export export-date="{{export_date}}" application="Evernote/Windows" version="5.x">
 {{#each notes}}
 	<note>
-		<title>{{title}}</title>
-		<content><![CDATA[{{text}}]]></content>
+		<title>{{#if title}}{{title}}{{else}}(untitled){{/if}}</title>
+		<content><![CDATA[<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd"><en-note style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;">{{{markdown text}}}</en-note>]]></content>
 		<created>{{_created}}</created>
 		<updated>{{_updated}}</updated>
 		{{#if note.tags.length}}
