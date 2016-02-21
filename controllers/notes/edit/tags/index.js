@@ -93,7 +93,7 @@ var NotesEditTagsController = FormController.extend({
 	{
 		if(this.placeholder) this.placeholder.remove();
 		if(!e) return;
-		this.select(0, 0);
+		//this.select(0, 0);
 	},
 
 	update_tags: function(e)
