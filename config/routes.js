@@ -12,6 +12,7 @@ config.routes = {
 	'/settings/password': ['settings', 'password'],
 	'/settings/delete-account': ['settings', 'delete_account'],
 	'/settings/export': ['settings', 'export'],
+	'/settings/import': ['settings', 'import'],
 
 	'/personas': ['personas', 'index'],
 	'/personas/join': ['personas', 'join'],

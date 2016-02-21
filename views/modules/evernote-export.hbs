@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE en-export SYSTEM "http://xml.evernote.com/pub/evernote-export2.dtd">
+<en-export export-date="{{export_date}}" application="Evernote/Windows" version="5.x">
+{{#each notes}}
+	<note>
+		<title>{{title}}</title>
+		<content><![CDATA[{{text}}]]></content>
+		<created>{{_created}}</created>
+		<updated>{{_updated}}</updated>
+		{{#if note.tags.length}}
+			{{#each note.tags}}
+				<tag>{{this}}</tag>
+			{{/each}}
+		{{/if}}
+		{{#if _has_file}}
+			<resource>
+				<data encoding="base64">{{file._base64}}</data>
+				<mime>{{file.type}}</mime>
+				<resource-attributes>
+					<timestamp>{{_created}}</timestamp>
+					<file-name>{{file.name}}</file-name>
+				</resource-attributes>
+			</resource>
+		{{/if}}
+	</note>
+{{/each}}
+</en-export>

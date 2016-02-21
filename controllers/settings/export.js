@@ -2,16 +2,16 @@ var ExportController = Composer.Controller.extend({
 	class_name: 'export',
 
 	elements: {
+		'input[name=enex]': 'inp_enex'
 	},
 
 	events: {
 		'click section.export .button': 'run_export',
-		'submit section.import form': 'run_import'
 	},
 
 	init: function()
 	{
-		turtl.push_title('Backup/restore profile', '/settings');
+		turtl.push_title('Export', '/settings');
 
 		this.render();
 	},
@@ -24,22 +24,26 @@ var ExportController = Composer.Controller.extend({
 	run_export: function(e)
 	{
 		if(e) e.stop();
+		var enex = this.inp_enex.matches(':checked');
 		turtl.profile.backup().bind(this)
 			.then(function(data) {
-				var backup = JSON.stringify(data, null, 2);
+				var errors = data.errors;
+				delete data.errors;
+				if(enex)
+				{
+					var backup = EvernoteExport.profile_to_evernote(data);
+				}
+				else
+				{
+					var backup = JSON.stringify(data, null, 2);
+				}
 				var blob = new Blob([backup], {type: 'application/json'});
-				return download_blob(blob, {name: 'backup.json'});
+				return download_blob(blob, {name: 'backup.'+(enex ? 'enex' : 'json')});
 			})
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', 'There was a problem backing up your profile', err);
 				log.error('profile: export: ', derr(err));
 			});
-	},
-
-	run_import: function(e)
-	{
-		if(e) e.stop();
-		console.log('import');
 	}
 });
 

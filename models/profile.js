@@ -245,11 +245,27 @@ var Profile = Composer.RelationalModel.extend({
 	backup: function(options)
 	{
 		options || (options = {});
+
+		var schema_version = '1.0';
+
+		var export_model_with_key = function(model)
+		{
+			var mdata = model.toJSON();
+			mdata._key = tcrypt.to_base64(model.key);
+			return mdata;
+		};
+		var export_collection_with_keys = function(collection)
+		{
+			return collection.map(export_model_with_key);
+		};
+
 		var data = {
-			keychain: this.get('keychain').toJSON(),
-			personas: this.get('personas').toJSON(),
-			boards: this.get('boards').toJSON(),
-			notes: []
+			version: schema_version,
+			keychain: export_collection_with_keys(this.get('keychain')),
+			personas: export_collection_with_keys(this.get('personas')),
+			boards: export_collection_with_keys(this.get('boards')),
+			notes: [],
+			errors: []
 		};
 
 		return turtl.db.notes.query().all().execute().bind(this)
@@ -263,7 +279,36 @@ var Profile = Composer.RelationalModel.extend({
 				}));
 			})
 			.then(function(notes) {
-				data.notes = notes.map(function(n) { return n.toJSON(); });
+				data.notes = notes.map(export_model_with_key);
+				return Promise.each(data.notes, function(note) {
+					if(!note.file || !note.file.id) return;
+
+					var file = new NoteFile(note.file);
+					file.key = tcrypt.from_base64(note._key);
+					return file.to_blob({force: true})
+						.then(function(blob) { 
+							return new Promise(function(resolve, reject) {
+								var reader = new window.FileReader();
+								reader.readAsDataURL(blob);
+								reader.onloadend = function()
+								{
+									resolve(reader.result);
+								};
+								reader.onerror = reject;
+							});
+						})
+						.then(function(base64) {
+							note.file._base64 = base64.substr(base64.indexOf(';base64,')+8);
+							delete note.file.body;
+						})
+						.catch(function(err) {
+							log.error('profile: export: file: '+note.id+': '+err);
+							data.errors.push(err);
+							delete note.file;
+						});
+				});
+			})
+			.then(function() {
 				Object.keys(data).forEach(function(key) {
 					data[key].forEach(function(item) { delete item.body; });
 				});

@@ -187,3 +187,9 @@ Handlebars.registerHelper('ago-time', function(timestamp) {
 	};
 	return str;
 });
+
+Handlebars.registerHelper('char-wrap', function(data, wrappage) {
+	var wrapped = data.replace(new RegExp('.{'+wrappage+'}', 'g'), '$&\n');
+	return new Handlebars.SafeString(wrapped);
+});
+

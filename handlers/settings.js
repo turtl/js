@@ -2,7 +2,7 @@ var settings = {
 	index: function()
 	{
 		var slide = false;
-		if(turtl.controllers.pages.is([ChangePasswordController, DeleteAccountController, PersonasController, ExportController]))
+		if(turtl.controllers.pages.is([ChangePasswordController, DeleteAccountController, PersonasController, ExportController, ImportController]))
 		{
 			slide = 'right';
 		}
@@ -47,6 +47,19 @@ var settings = {
 		}
 		turtl.back.push(turtl.route.bind(turtl, '/settings'));
 		turtl.controllers.pages.load(ExportController, {}, {
+			slide: slide
+		});
+	},
+
+	import: function()
+	{
+		var slide = false;
+		if(turtl.controllers.pages.is(SettingsController))
+		{
+			slide = 'left';
+		}
+		turtl.back.push(turtl.route.bind(turtl, '/settings'));
+		turtl.controllers.pages.load(ImportController, {}, {
 			slide: slide
 		});
 	}
