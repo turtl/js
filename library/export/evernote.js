@@ -28,5 +28,8 @@ var EvernoteExport = {
 
 	evernote_to_profile: function(str)
 	{
+		var parser = new DOMParser();
+		var dom = parser.parseFromString(str, 'text/xml');
+		// ^ this is a dom element now w/ childNodes and stuff
 	}
 };
