@@ -78,7 +78,7 @@ var PersonasEditController = FormController.extend({
 		if(errors.length)
 		{
 			barfr.barf(errors.join('<br>'));
-			return;
+			return Promise.reject();
 		}
 
 		var is_new = this.model.is_new();
@@ -141,7 +141,7 @@ var PersonasEditController = FormController.extend({
 				this.disable(true);
 			})
 			.catch(function(err) {
-				if(err.xhr.status == 404)
+				if(err.xhr && err.xhr.status == 404)
 				{
 					this.disable(false);
 					this.inp_email.removeClass('error');
