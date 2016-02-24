@@ -44,7 +44,7 @@ var Note = Protected.extend({
 		if(options.bare) return;
 
 		// if the note is destroyed or edited, update the index
-		this.bind('destroy', turtl.search.unindex_note.bind(turtl.search));
+		this.bind('destroy', turtl.search.unindex_note.bind(turtl.search, this));
 		this.bind('change', function() {
 			if(!this.id(true)) return;
 			turtl.search.reindex_note(this);
