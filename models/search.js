@@ -333,6 +333,7 @@ var Search = Composer.Collection.extend({
 	 */
 	index_note: function(note)
 	{
+		if(!note) return false;
 		var json = note.toJSON({get_file: true});
 		// replace "words" longer than 2048 chars
 		if(json.text) json.text = json.text.replace(/[^ ]{2048,}/, '');
@@ -379,6 +380,7 @@ var Search = Composer.Collection.extend({
 	 */
 	unindex_note: function(note)
 	{
+		if(!note) return false;
 		var id = note.id();
 		var json = this.index_json.notes[id];
 		if(!json) return false;
