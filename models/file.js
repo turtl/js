@@ -397,7 +397,7 @@ var Files = SyncCollection.extend({
 			var progressfn = function()
 			{
 				progress_counter = (progress_counter + 1) % 10;
-				if(progress_counter == 0)
+				if(progress_counter == 0 && turtl.hustle)
 				{
 					turtl.hustle.Queue.touch(job.id);
 				}
