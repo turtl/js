@@ -30,6 +30,22 @@ var EvernoteExport = {
 	{
 		var parser = new DOMParser();
 		var dom = parser.parseFromString(str, 'text/xml');
-		// ^ this is a dom element now w/ childNodes and stuff
+		var en_export = null;
+		for(var i = 0; i < dom.childNodes.length; i++)
+		{
+			if(dom.childNodes[i].tagName != 'en-export') continue;
+			en_export = dom.childNodes[i];
+			break;
+		}
+		if(!en_export) throw new Error('invalid Evernote export');
+
+		var keychain = [];
+		var notes = [];
+		en_export.childNodes.forEach(function(xml_note) {
+		});
+		return {
+			keychain: keychain,
+			notes: notes
+		};
 	}
 };
