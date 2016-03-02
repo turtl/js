@@ -23,7 +23,7 @@
 
 	var global = this;
 	if(!global.Composer) global.Composer = {
-		version: '1.1.18',
+		version: '1.2.0',
 
 		// note: this used to be "export" but IE is a whiny little bitch, so now
 		// we're sup3r 1337 h4x0r5
@@ -263,6 +263,7 @@
 		['fetch', 'save', 'destroy'].forEach(create_converter('Model'));
 		['fetch'].forEach(convert_collection_fn);
 		convert_collection_fn('reset_async', {options_idx: 1, names: ['complete']});
+		(create_converter('Controller'))('html', {options_idx: 1, names: ['complete']});
 	};
 
 	this.Composer.exp0rt({
@@ -1871,81 +1872,77 @@
 	var has_sizzle = !!global.Sizzle;
 	var has_jquery = !!global.jQuery;
 	var has_slick = !!global.Slick;
-	var has_moo = !!global.MooTools;
 
-	var find = (function() {
-		if(has_slick)
+	var which_adapter = function(types)
+	{
+		var wrap = function(fn)
 		{
 			return function(context, selector) {
 				context || (context = document);
-				return Slick.find(context, selector);
+				if(types.native && context instanceof window.DocumentFragment)
+				{
+					return types.native(context, selector);
+				}
+				else
+				{
+					return fn(context, selector);
+				}
 			};
-		}
-		else if(has_sizzle)
+		};
+		if(has_slick && types.slick) return wrap(types.slick);
+		if(has_sizzle && types.sizzle) return wrap(types.sizzle);
+		if(has_jquery && types.jquery) return wrap(types.jquery);
+		if('querySelector' in document && types.native) return wrap(types.native);
+		throw new Error('No selector engine present. Include Sizzle/jQuery or Slick/Mootools before loading composer (or use a modern browser with document.querySelector).');
+	};
+
+	var find = which_adapter({
+		slick: function(context, selector)
 		{
-			return function(context, selector) {
-				context || (context = document);
-				return Sizzle.select(selector, context)[0];
-			};
-		}
-		else if(has_jquery)
+			return Slick.find(context, selector);
+		},
+		sizzle: function(context, selector)
 		{
-			return function(context, selector) {
-				context || (context = document);
-				return jQuery(context).find(selector)[0];
-			};
-		}
-		else if('querySelector' in document)
+			return Sizzle.select(selector, context)[0];
+		},
+		jquery: function(context, selector)
 		{
+			return jQuery(context).find(selector)[0];
+		},
+		native: (function() {
 			var scope = false;
 			try { document.querySelector(':scope > h1'); scope = true; }
 			catch(e) {}
 
 			return function(context, selector) {
-				context || (context = document);
-				if(scope) selector = ':scope '+selector;
+				if(scope && !(context instanceof window.DocumentFragment)) selector = ':scope '+selector;
 				return context.querySelector(selector);
 			};
-		}
-		throw new Error('No selector engine present. Include Sizzle/jQuery or Slick/Mootools before loading composer (or use a modern browser with document.querySelector).');
-	})();
+		})()
+	});
 
-	var match = (function() {
-		if(has_slick)
+	var match = which_adapter({
+		slick: function(context, selector)
 		{
-			return function(element, selector) {
-				element || (element = document);
-				return Slick.match(element, selector);
-			};
-		}
-		else if(has_sizzle)
+			return Slick.match(context, selector);
+		},
+		sizzle: function(context, selector)
 		{
-			return function(element, selector) {
-				element || (element = document);
-				return Sizzle.matchesSelector(element, selector);
-			};
-		}
-		else if(has_jquery)
+			return Sizzle.matchesSelector(context, selector);
+		},
+		jquery: function(context, selector)
 		{
-			return function(element, selector) {
-				element || (element = document);
-				return jQuery(element).is(selector);
-			};
-		}
-		else if('querySelector' in document)
+			return jQuery(context).is(selector);
+		},
+		native: function(context, selector)
 		{
-			return function(element, selector) {
-				element || (element = document);
-				if('matches' in element) var domatch = element.matches;
-				if('msMatchesSelector' in element) var domatch = element.msMatchesSelector;
-				if('mozMatchesSelector' in element) var domatch = element.mozMatchesSelector;
-				if('webkitMatchesSelector' in element) var domatch = element.webkitMatchesSelector;
-				return domatch.call(element, selector);
-			};
+			if('matches' in context) var domatch = context.matches;
+			if('msMatchesSelector' in context) var domatch = context.msMatchesSelector;
+			if('mozMatchesSelector' in context) var domatch = context.mozMatchesSelector;
+			if('webkitMatchesSelector' in context) var domatch = context.webkitMatchesSelector;
+			return domatch.call(context, selector);
 		}
-		throw new Error('No selector engine present. Include Sizzle/jQuery or Slick/Mootools before loading composer.');
-	})();
-
+	});
 
 	var captured_events = {
 		'focus': true,
@@ -2025,13 +2022,91 @@
 		return find_parent(selector, par);
 	};
 
+	var frame = function(cb) { global.requestAnimationFrame(cb); };
+
+	/**
+	 * our xdom system! provides hooks for diffing/patching the DOM, and also
+	 * allows parts of itself to be replaced by different implementations.
+	 */
+	var xdom = {
+		/**
+		 * diff two DOM elements. in the default case, we use morphdom which
+		 * does the diffing/patching in one call so we don't really need to do
+		 * anything here, but other DOM patching libs may have discrete steps so
+		 * we want to have a hook for it.
+		 */
+		diff: function(from, to)
+		{
+			return [from, to];
+		},
+
+		/**
+		 * patch the DOM! uses morphdom by default. takes a root DOM node to
+		 * patch and a patch to apply to it.
+		 */
+		patch: function(root, diff, options)
+		{
+			options || (options = {});
+
+			if(!root || !diff[1]) return;
+			return morphdom(root, diff[1], {
+				// this callback preserves form input values (text, checkboxes,
+				// radios, textarea, selects)
+				onBeforeMorphEl: function(from, to) {
+					if(options.reset_inputs) return true;
+
+					var tag = from.tagName.toLowerCase();
+					switch(tag)
+					{
+					case 'input':
+					case 'textarea':
+						var type = from.getAttribute('type');
+						switch(type)
+						{
+						case 'checkbox':
+						case 'radio':
+							to.checked = from.checked;
+							break;
+						default:
+							if(from.value && !to.value)
+							{
+								to.value = from.value;
+							}
+							break;
+						}
+						break;
+					case 'select':
+						to.value = from.value;
+						break;
+					}
+					return true;
+				}
+			});
+		},
+
+		/**
+		 * allows hooking in your own DOM diffing/patching library
+		 */
+		hooks: function(options)
+		{
+			options || (options = {});
+			var diff = options.diff;
+			var patch = options.patch;
+
+			if(diff) xdom.diff = diff;
+			if(patch) xdom.patch = patch;
+		}
+	};
+
 	this.Composer.exp0rt({
 		find: find,
 		match: match,
 		add_event: add_event,
 		fire_event: fire_event,
 		remove_event: remove_event,
-		find_parent: find_parent
+		find_parent: find_parent,
+		frame: frame,
+		xdom: xdom
 	});
 }).apply((typeof exports != 'undefined') ? exports : this);
 
@@ -2056,6 +2131,34 @@
 (function() {
 	"use strict";
 
+	var xdom = false;
+
+	var schedule_render = (function() {
+		var diffs = [];
+		var scheduled = false;
+		return function(from, to, options, callback)
+		{
+			options || (options = {});
+
+			diffs.push([from, Composer.xdom.diff(from, to), options, callback]);
+			if(scheduled) return;
+			scheduled = true;
+			Composer.frame(function() {
+				scheduled = false;
+				var diff_clone = diffs.slice(0);
+				diffs = [];
+				diff_clone.forEach(function(entry) {
+					var from = entry[0];
+					var diff = entry[1];
+					var options = entry[2];
+					var cb = entry[3];
+					Composer.xdom.patch(from, diff, options);
+					if(cb) cb();
+				});
+			});
+		};
+	})();
+
 	/**
 	 * The controller class sits between views and your models/collections.
 	 * Controllers bind events to your data objects and update views when the data
@@ -2075,6 +2178,9 @@
 
 		// tracks sub-controllers
 		_subcontrollers: {},
+
+		// if true, enables XDOM just for this controller
+		xdom: false,
 
 		// the DOM element to tie this controller to (a container element)
 		el: false,
@@ -2149,20 +2255,37 @@
 		 * replace this.el's html with the given test, also refresh the controllers
 		 * elements.
 		 */
-		html: function(obj)
+		html: function(obj, options)
 		{
+			options || (options = {});
+
 			if(!this.el) this._ensure_el();
+
+			var el = this.el;
+			if(xdom || this.xdom) el = el.cloneNode();
 
 			if(obj.appendChild)
 			{
-				this.el.innerHTML = '';
-				this.el.appendChild(obj);
+				el.innerHTML = '';
+				el.appendChild(obj);
 			}
 			else
 			{
-				this.el.innerHTML = obj;
+				el.innerHTML = obj;
 			}
-			this.refresh_elements();
+
+			if(xdom || this.xdom)
+			{
+				var cb = options.complete;
+				schedule_render(this.el, el, options, function() {
+					this.refresh_elements();
+					if(cb) cb();
+				}.bind(this));
+			}
+			else
+			{
+				this.refresh_elements();
+			}
 		},
 
 		/**
@@ -2222,21 +2345,14 @@
 		 */
 		track_subcontroller: function(name, create_fn)
 		{
-			var remove_subcontroller = function(name, skip_release)
-			{
-				if(!this._subcontrollers[name]) return
-				if(!skip_release) this._subcontrollers[name].release();
-				delete this._subcontrollers[name];
-			}.bind(this);
-
 			// if we have an existing controller with the same name, release and
 			// remove it.
-			remove_subcontroller(name);
+			this.remove_subcontroller(name);
 
 			// create the new controller, track it, and make sure if it's
 			// released we untrack it
 			var instance = create_fn();
-			instance.bind('release', function() { remove_subcontroller(name, true); });
+			instance.bind('release', this.remove_subcontroller.bind(this, name, {skip_release: true}));
 			this._subcontrollers[name] = instance;
 			return instance;
 		},
@@ -2247,6 +2363,17 @@
 		get_subcontroller: function(name)
 		{
 			return this._subcontrollers[name] || false;
+		},
+
+		/**
+		 * remove a subcontroller from tracking and (by default) release it
+		 */
+		remove_subcontroller: function(name, options)
+		{
+			options || (options = {});
+			if(!this._subcontrollers[name]) return
+			if(!options.skip_release) this._subcontrollers[name].release();
+			delete this._subcontrollers[name];
 		},
 
 		/**
@@ -2361,6 +2488,8 @@
 		}
 	});
 
+	Controller.xdomify = function() { xdom = true; };
+
 	this.Composer.merge_extend(Controller, ['events', 'elements']);
 
 	this.Composer.exp0rt({ Controller: Controller });
@@ -2437,10 +2566,10 @@
 				this.clear_subcontrollers();
 			}.bind(this));
 			this.with_bind(collection, 'add', function(model, _, options) {
-				this.add_subcontroller(model, create_fn, options);
+				this._add_subcontroller(model, create_fn, options);
 			}.bind(this));
 			this.with_bind(collection, 'remove', function(model) {
-				this.remove_subcontroller(model);
+				this._remove_subcontroller(model);
 			}.bind(this));
 			if(options.bind_reset)
 			{
@@ -2454,7 +2583,13 @@
 
 		release: function()
 		{
-			this.clear_subcontrollers();
+			// move the el to a fragment, which keeps a bunch of reflows from
+			// happening on release
+			var fragment = document.createDocumentFragment();
+			fragment.appendChild(this.el);
+
+			// do an async wipe of the subcontrollers
+			this.clear_subcontrollers({async: true});
 			return this.parent.apply(this, arguments);
 		},
 
@@ -2492,11 +2627,43 @@
 		/**
 		 * Untrack all subcontrollers, releasing each one
 		 */
-		clear_subcontrollers: function()
+		clear_subcontrollers: function(options)
 		{
-			this._subcontroller_list.forEach(function(con) {
-				con.release();
-			});
+			options || (options = {});
+
+			// we allow an async option here, which clears out subcontrollers
+			// in batches. this is more favorable than doing it sync because we
+			// don't have to block the interface while removing all our subs.
+			if(options.async)
+			{
+				// clone the subcon list in case someone else makes mods to it
+				// while we're clearing.
+				var subs = this._subcontroller_list.slice(0);
+				var batch = 10;
+				var idx = 0;
+				var next = function()
+				{
+					for(var i = 0; i < batch; i++)
+					{
+						var con = subs[idx];
+						if(!con) return;
+						idx++;
+						try
+						{
+							con.release();
+						}
+						catch(e) {}
+					}
+					setTimeout(next);
+				}.bind(this);
+				setTimeout(next);
+			}
+			else
+			{
+				this._subcontroller_list.forEach(function(con) {
+					con.release();
+				});
+			}
 			this._subcontroller_list = [];
 			this._subcontroller_idx = {};
 		},
@@ -2514,13 +2681,13 @@
 			var reset_fragment = this.options.fragment_on_reset;
 			if(reset_fragment)
 			{
-				var fragment = new DocumentFragment();
+				var fragment = document.createDocumentFragment();
 				options = Composer.object.clone(options);
 				options.fragment = fragment;
 			}
 
 			this._collection.each(function(model) {
-				this.add_subcontroller(model, create_fn, options);
+				this._add_subcontroller(model, create_fn, options);
 			}, this);
 
 			if(reset_fragment && fragment.children && fragment.children.length > 0)
@@ -2537,7 +2704,7 @@
 		 * subcontroller at the correct spot in the DOM (based on the model's
 		 * sort order).
 		 */
-		add_subcontroller: function(model, create_fn, options)
+		_add_subcontroller: function(model, create_fn, options)
 		{
 			var con = create_fn(model, options);
 			this.index_controller(model, con);
@@ -2573,7 +2740,7 @@
 		 * Given a model, lookup the subcontroller that wraps it and release it,
 		 * also untracking that subcontroller.
 		 */
-		remove_subcontroller: function(model)
+		_remove_subcontroller: function(model)
 		{
 			var con = this.lookup_controller(model);
 			if(!con) return false;
