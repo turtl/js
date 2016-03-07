@@ -374,8 +374,9 @@ var User = Protected.extend({
 			// create a salt based off hashed username
 			var salt = tcrypt.hash(username);
 			var key = tcrypt.key_native(password, salt, {key_size: 32, iterations: iter, hasher: 'SHA-256'})
+			var catcher = function(err) { return (err instanceof DOMException) || (err instanceof TcryptError); };
 			var promise = Promise.resolve(key)
-				.catch(DOMException, function(err) {
+				.catch(catcher, function(err) {
 					// probably some idiotic "safe origin" policy crap. revert to sync/SJCL method
 					if(!(err instanceof DOMException))
 					{
