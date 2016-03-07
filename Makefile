@@ -16,7 +16,7 @@ alljs = $(shell echo "main.js" \
 			| grep -v '(ignore|\.thread\.)')
 testsjs = $(shell find tests/{data,tests} -name "*.js")
 
-all: $(cssfiles) library/templates.js .build/postcss index.html
+all: $(cssfiles) library/templates.js library/svg-icons.js .build/postcss index.html
 
 %.css: %.less
 	@echo "- LESS:" $< "->" $@
@@ -28,6 +28,9 @@ library/templates.js: $(handlebars)
 	@echo 'var TurtlTemplates = {};' > .build/templates.js
 	@cat $@ >> .build/templates.js
 	@mv .build/templates.js $@
+
+library/svg-icons.js:
+	@./scripts/index-icons
 
 .build/postcss: $(allcss) $(cssfiles)
 	@echo "- postcss:" $?
@@ -43,10 +46,11 @@ tests/index.html: $(testsjs) index.html tests/scripts/gen-index
 	@./tests/scripts/gen-index
 
 clean:
-	rm $(allcss)
-	rm library/templates.js
+	rm -f $(allcss)
+	rm -f library/templates.js
+	rm -f library/svg-icons.js
 	rm -f .build/*
-	rm index.html
+	rm -f index.html
 
 watch:
 	@./scripts/watch
