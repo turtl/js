@@ -30,9 +30,10 @@ var Keychain = SyncCollection.extend({
 	local_table: 'keychain',
 
 	/**
-	 * Add a key to the keychain.
+	 * Upsert a key to the keychain (add if it doesn't exist, otherwise update
+	 * the existing). It uses item_id as the primary key (ignores type).
 	 */
-	add_key: function(item_id, item_type, key, options)
+	upsert_key: function(item_id, item_type, key, options)
 	{
 		options || (options = {});
 		var entry = this.find_key(item_id, {disable_migrate: true, return_model: true});
@@ -60,6 +61,11 @@ var Keychain = SyncCollection.extend({
 				throw err;
 			});
 	},
+
+	// DEPRECATED
+	//
+	// this was a terribly named function and has been superseded by upsert_key
+	add_key: function() { return this.upsert_key.apply(this, arguments); },
 
 	/**
 	 * Find a key in the keychain. By default returns the key, but can return
@@ -93,7 +99,7 @@ var Keychain = SyncCollection.extend({
 		var user_keys = turtl.user.get('settings').get_by_key('keys').value();
 		if(!user_keys || !user_keys[item_id]) return false;
 		var key = tcrypt.key_to_bin(user_keys[item_id]);
-		var model = this.add_key(item_id, 'board', key, {force_add: true})
+		var model = this.upsert_key(item_id, 'board', key, {force_add: true})
 		if(options.return_model) return model;
 		return tcrypt.key_to_bin(model.get('k'));
 	},
