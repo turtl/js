@@ -22,7 +22,6 @@ var Board = Protected.extend({
 		'parent_id',
 		'keys',
 		'privs',
-		'personas',
 		'meta',
 		'shared'
 	],
