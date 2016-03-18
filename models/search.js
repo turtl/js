@@ -54,6 +54,7 @@ var Search = Composer.Collection.extend({
 						if(note.is_crypto_error(err))
 						{
 							note.set({type: 'text', crypto_error: true});
+							return note;
 						}
 						else
 						{
