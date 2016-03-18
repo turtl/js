@@ -5,7 +5,7 @@
 			<ul>
 				{{#each boards}}
 					<li>
-						{{name}}
+						{{#if name}}{{name}}{{else}}(untitled board){{/if}}
 					</li>
 				{{/each}}
 			</ul>

@@ -42,7 +42,7 @@ var BoardsItemController = Composer.Controller.extend({
 			!!(this.model.get('privs') || {})[my_persona_id];
 		var num_shared_with = Object.keys(this.model.get('privs') || {}).length;
 		var data = this.model.toJSON();
-		data.title = (data.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		data.title = (data.title || '(untitled board)').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 		if(this.search.filter)
 		{
 			var regex = new RegExp(escape_regex(this.search.filter), 'gi');

@@ -226,13 +226,17 @@ var Boards = SyncCollection.extend({
 
 	toJSON_hierarchical: function()
 	{
-		var boards = this.toJSON().sort(function(a, b) { return a.title.localeCompare(b.title); });
+		var boards = this.toJSON().sort(function(a, b) { return (a.title || '').localeCompare(b.title || ''); });
 		var parents = boards.filter(function(b) { return !b.parent_id; });
 		var children = boards.filter(function(b) { return !!b.parent_id; });
 
 		// index the parents for easy lookup
 		var idx = {};
-		parents.forEach(function(b) { idx[b.id] = b; });
+		parents.forEach(function(b) {
+			idx[b.id] = b;
+			// fix any bad titles while we're looping
+			if(!b.title) b.title = '(untitled board)';
+		});
 
 		children.forEach(function(b) {
 			var parent = idx[b.parent_id];
@@ -250,7 +254,7 @@ var Boards = SyncCollection.extend({
 			.map(function(bid) {
 				var board = this.find_by_id(bid);
 				if(!board) return false;
-				var name = board.get('title');
+				var name = board.get('title') || '(untitled board)';
 				var parent_id = board.get('parent_id');
 				if(parent_id)
 				{
@@ -259,6 +263,7 @@ var Boards = SyncCollection.extend({
 				}
 				var json = board.toJSON();
 				json.name = name;
+				if(!json.title) json.title = '(untitled board)';
 				return json;
 			}.bind(this))
 			.filter(function(board) { return !!board; });

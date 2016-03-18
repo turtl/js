@@ -1,6 +1,6 @@
 <div class="share-actions"></div>
 <h2>
-	{{board.title}}
+	{{#if board.title}}{{board.title}}{{else}}(untitled board){{/if}}
 </h2>
 <p>
 	{{permissions}} permissions
