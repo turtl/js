@@ -104,7 +104,10 @@ var Protected = Composer.RelationalModel.extend({
 	serialize: function(options)
 	{
 		options || (options = {});
-		if(!this.ensure_key_exists()) return Promise.reject(new ProtectedNoKeyFoundError('no key found for '+ this.id()));
+		if(!this.ensure_key_exists())
+		{
+			return Promise.reject(new ProtectedNoKeyFoundError('no key found for '+ this.base_url + ': ' + this.id()));
+		}
 
 		var json = this.toJSON();
 		var data = {};
@@ -199,7 +202,7 @@ var Protected = Composer.RelationalModel.extend({
 		options || (options = {});
 		if(!this.ensure_key_exists())
 		{
-			return Promise.reject(new Error('no key found for '+ this.base_url + ': ' + this.id()));
+			return Promise.reject(new ProtectedNoKeyFoundError('no key found for '+ this.base_url + ': ' + this.id()));
 		}
 
 		try
