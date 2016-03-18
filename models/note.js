@@ -95,7 +95,7 @@ var Note = Protected.extend({
 		}.bind(this));
 
 		// make sure we do this BEFORE generate_subkeys(). the reason is that
-		// many times, update_keys() gets called from s ave() from a board being
+		// many times, update_keys() gets called from save() from a board being
 		// deleted. by the time we get here, the note no longer has the board in
 		// note.boards[] however the note.keys[] collection still has the board
 		// key entry in it. we use that entry to find the board if needed when
@@ -110,19 +110,10 @@ var Note = Protected.extend({
 
 		var keychain = turtl.profile.get('keychain');
 		var existing = keychain.find_key(this.id());
-
-		if(!existing)
+		if(!existing || (this.key && JSON.stringify(existing) != JSON.stringify(this.key)))
 		{
-			// key doesn't exist, add it
-			return keychain.add_key(this.id(), 'note', this.key);
-		}
-		else if(this.key && JSON.stringify(existing) != JSON.stringify(this.key))
-		{
-			// key exists, but is out of date. remove/re-add it
-			return keychain.remove_key(this.id()).bind(this)
-				.then(function() {
-					return keychain.add_key(this.id(), 'note', this.key);
-				});
+			// key needs an add/update
+			return keychain.upsert_key(this.id(), 'note', this.key);
 		}
 		return Promise.resolve();
 	},
