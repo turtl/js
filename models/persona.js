@@ -110,7 +110,7 @@ var Persona = Protected.extend({
 		{
 			args.require_key = 1;
 		}
-		return turtl.api.get('/personas/email/'+email, args, options).bind(this)
+		return turtl.api.get('/personas/email/'+encodeURIComponent(email), args, options).bind(this)
 			.then(function(data) {
 				if(!this.key_is_pgp(data.pubkey))
 				{
