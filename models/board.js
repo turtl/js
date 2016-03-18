@@ -103,18 +103,10 @@ var Board = Protected.extend({
 
 		var keychain = turtl.profile.get('keychain');
 		var existing = keychain.find_key(this.id());
-		if(!existing)
+		if(!existing || (this.key && JSON.stringify(existing) != JSON.stringify(this.key)))
 		{
-			// key doesn't exist, add it
-			return keychain.add_key(this.id(), 'board', this.key);
-		}
-		else if(this.key && JSON.stringify(existing) != JSON.stringify(this.key))
-		{
-			// key exists, but is out of date. remove/re-add it
-			return keychain.remove_key(this.id()).bind(this)
-				.then(function() {
-					return keychain.add_key(this.id(), 'board', this.key);
-				});
+			// key needs an add/update
+			return keychain.upsert_key(this.id(), 'board', this.key);
 		}
 		return Promise.resolve();
 	},

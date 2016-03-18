@@ -166,6 +166,7 @@ var Sync = Composer.Model.extend({
 			default: throw new Error('sync: queue outgoing change: bad action given: '+ action); break;
 		}
 		var sync = {
+			id: Composer.cid(),
 			type: this.table_to_type(table),
 			action: sync_action,
 			data: data
@@ -203,19 +204,27 @@ var Sync = Composer.Model.extend({
 				this._outgoing_sync_running = true;
 				log.debug('sync: outgoing: ', items);
 				var file_syncs = [];
-				items = items.filter(function(item) {
+				items = items
+					// probably not strictly necessary, but our CIDs are
+					// guaranteed to be sequential and unique (or we have much
+					// bigger problems than sync record ordering) so here we
+					// make absolutely SURE IndexedDB isn't screwing us on
+					// ordering, which can have severe ramifications if not done
+					// properly
+					.sort(function(a, b) { return a.id.toString().localeCompare(b.id.toString()); })
 					// we grab newly created files and upload them by hand. file
 					// deletes are allowed to pass as normal sync items
-					if(item.type == 'file' && item.action == 'add')
-					{
-						file_syncs.push(item);
-						return false;
-					}
-					else
-					{
-						return true;
-					}
-				});
+					.filter(function(item) {
+						if(item.type == 'file' && item.action == 'add')
+						{
+							file_syncs.push(item);
+							return false;
+						}
+						else
+						{
+							return true;
+						}
+					});
 
 				// this little bit of logic keeps us from bugging the API
 				// needlessly if the only thing we're syncing is file record(s)
