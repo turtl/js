@@ -12,6 +12,7 @@ var cqueue = new CryptoQueue({
 var ProtectedError = extend_error(Error, 'ProtectedError');
 var ProtectedEmptyError = extend_error(ProtectedError, 'ProtectedEmptyError');
 var ProtectedMissingBodyError = extend_error(ProtectedError, 'ProtectedMissingBodyError');
+var ProtectedNoKeyFoundError = extend_error(ProtectedError, 'ProtectedNoKeyFoundError');
 
 var Protected = Composer.RelationalModel.extend({
 	relations: {
@@ -103,7 +104,7 @@ var Protected = Composer.RelationalModel.extend({
 	serialize: function(options)
 	{
 		options || (options = {});
-		if(!this.ensure_key_exists()) return Promise.reject(new Error('no key found for '+ this.id()));
+		if(!this.ensure_key_exists()) return Promise.reject(new ProtectedNoKeyFoundError('no key found for '+ this.id()));
 
 		var json = this.toJSON();
 		var data = {};
@@ -464,6 +465,8 @@ var Protected = Composer.RelationalModel.extend({
 	{
 		var crypto_error =
 			(err.data && err.data.match(/Authentication error/i)) ||
+			(err.message && err.message.match(/no key found for/i)) ||
+			err instanceof ProtectedNoKeyFoundError ||
 			err instanceof TcryptError;
 		return crypto_error;
 	}
