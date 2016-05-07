@@ -1,4 +1,7 @@
 var Search = Composer.Collection.extend({
+	// stores whether or not our data is done indexing
+	indexed: false,
+
 	// stores JSON objects for each indexed object. this allows us to unindex an
 	// object easily (for instance if we're re-indexing it, we need to unindex
 	// the old version and index the new version...the old version is stored
@@ -35,6 +38,8 @@ var Search = Composer.Collection.extend({
 
 	reindex: function()
 	{
+		this.trigger('indexing-start');
+		this.indexed = false;
 		this.ft = lunr(function() {
 			this.ref('id');
 			this.field('title', {boost: 5});
@@ -45,7 +50,8 @@ var Search = Composer.Collection.extend({
 		});
 
 		turtl.profile.get('boards').each(this.index_board.bind(this));
-		return turtl.db.notes.query().all().execute().bind(this)
+		return turtl.db.notes.query().all().execute()
+			.bind(this)
 			.map(function(note) {
 				var note = new Note(note);
 				return note.deserialize()
@@ -63,15 +69,28 @@ var Search = Composer.Collection.extend({
 					});
 			})
 			.then(function(notes) {
-				var batch = 20;
-				var next = function()
-				{
-					var slice = notes.splice(0, batch);
-					if(slice.length == 0) return;
-					slice.forEach(this.reindex_note.bind(this));
-					setTimeout(next);
-				}.bind(this);
-				next();
+				return new Promise(function(resolve, reject) {
+					var batch = 20;
+					var next = function()
+					{
+						try
+						{
+							var slice = notes.splice(0, batch);
+							if(slice.length == 0) return resolve();
+							slice.forEach(this.reindex_note.bind(this));
+							setTimeout(next);
+						}
+						catch(err)
+						{
+							return reject(err);
+						}
+					}.bind(this);
+					next();
+				}.bind(this));
+			})
+			.then(function() {
+				this.indexed = true;
+				this.trigger('indexing-complete');
 			});
 	},
 
