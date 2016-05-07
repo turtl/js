@@ -214,7 +214,7 @@ var turtl = {
 				})
 				.catch(function(err) {
 					barfr.barf('There was a problem with the initial load of your profile. Please try again.');
-					log.error(derr(err));
+					log.error('turtl: load: ', derr(err));
 					var what_next = new Element('div.choice');
 					var retry = new Element('a')
 						.set('href', '#retry')
