@@ -1,7 +1,6 @@
 <input type="text" name="username" placeholder="Username (or email address)" tabindex="4" autocorrect="off" autocapitalize="none">
 <input type="password" name="password" placeholder="Passphrase" tabindex="5">
 <input type="password" name="confirm" placeholder="Confirm passphrase" tabindex="6">
-
 <div class="strength">
 	<div class="progress-bar">
 		<div class="inner">&nbsp;</div>
@@ -19,6 +18,15 @@
 	</div>
 {{/if}}
 -->
+
+{{#if show_autologin}}
+	<div class="autologin">
+		<label>
+			<input type="checkbox" name="autologin" value="1" {{#if autologin}}checked{{/if}}>
+			Stay logged in
+		</label>
+	</div>
+{{/if}}
 
 <div class="buttons">
 	<div class="button join">

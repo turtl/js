@@ -1,4 +1,4 @@
-var UserLoginController = FormController.extend({
+var UserLoginController = UserBaseController.extend({
 	elements: {
 		'input[name=username]': 'inp_username',
 		'input[name=password]': 'inp_password',
@@ -19,6 +19,7 @@ var UserLoginController = FormController.extend({
 	init: function()
 	{
 		this.parent();
+
 		turtl.push_title('Login');
 		this.bind('release', turtl.pop_title.bind(null, false));
 		this.render();
@@ -27,7 +28,9 @@ var UserLoginController = FormController.extend({
 	render: function()
 	{
 		var content = view.render('users/login', {
-			server: config.api_url
+			server: config.api_url,
+			autologin: this.autologin(),
+			show_autologin: config.has_autologin
 		});
 		this.html(content);
 		(function() { this.inp_username.focus(); }).delay(10, this);
@@ -72,7 +75,8 @@ var UserLoginController = FormController.extend({
 					username: user.get('username'),
 					password: user.get('password')
 				});
-				turtl.user.login(data, {old: meta.old});
+				turtl.user.login(data, {old: meta.old})
+					.then(this.save_login.bind(this));
 				if(meta.old)
 				{
 					barfr.barf('Your master key was generated using an older method. To upgrade it, please go to the "Change password" section of your account settings under the Turtl menu.');
