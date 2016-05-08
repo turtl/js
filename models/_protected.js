@@ -252,7 +252,7 @@ var Protected = Composer.RelationalModel.extend({
 					return do_deserialize(model);
 				}));
 			}
-			return promise;
+			return null;
 		}.bind(this))).bind(this)
 			.then(function() {
 				// now decrypt the main object
