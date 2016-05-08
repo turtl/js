@@ -23,7 +23,7 @@
 
 	var global = this;
 	if(!global.Composer) global.Composer = {
-		version: '1.2.3',
+		version: '1.2.4',
 
 		// note: this used to be "export" but IE is a whiny little bitch, so now
 		// we're sup3r 1337 h4x0r5
@@ -3203,7 +3203,7 @@
 				//  nerd/city
 				var href = a.href
 					.replace(/^file:\/\/(\/)?([a-z]:)?\//i, '')
-					.replace(/^[a-z]+:\/\/.*?\//i, '')
+					.replace(/^[a-z-]+:\/\/.*?\//i, '')
 					.replace(/^[#!\/]+/, '');
 				if(options.filter_trailing_slash) href = href.replace(/\/$/, '');
 				href = '/'+href;
