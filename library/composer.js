@@ -23,7 +23,7 @@
 
 	var global = this;
 	if(!global.Composer) global.Composer = {
-		version: '1.2.2',
+		version: '1.2.3',
 
 		// note: this used to be "export" but IE is a whiny little bitch, so now
 		// we're sup3r 1337 h4x0r5
@@ -228,16 +228,14 @@
 	{
 		poptions || (poptions = {});
 
-		var create_converter = function(type)
+		var convert = function(type, asyncs)
 		{
-			return function(key)
-			{
-				var options = arguments[1] || {};
-				var options_idx = options.options_idx || 0;
-				var names = options.names || ['success', 'error'];
-
+			Object.keys(asyncs).forEach(function(key) {
+				var spec = asyncs[key];
+				var options_idx = spec.options_idx || 0;
+				var names = spec.names || ['success', 'error'];
 				var _old = Composer[type].prototype[key];
-				global.Composer[type].prototype[key] = function()
+				Composer[type].prototype[key] = function()
 				{
 					var args = Array.prototype.slice.call(arguments, 0);
 					if(args.length < options_idx)
@@ -261,13 +259,29 @@
 						_old.apply(_self, args);
 					});
 				};
-			};
-		}
-		var convert_collection_fn = create_converter('Collection');
-		['fetch', 'save', 'destroy'].forEach(create_converter('Model'));
-		['fetch'].forEach(convert_collection_fn);
-		convert_collection_fn('reset_async', {options_idx: 1, names: ['complete']});
-		(create_converter('Controller'))('html', {options_idx: 1, names: ['complete']});
+			});
+		};
+		convert('Model', {
+			fetch: {},
+			save: {},
+			destroy: {}
+		});
+		convert('Collection', {
+			fetch: {},
+			reset_async: {options_idx: 1, names: ['complete']}
+		});
+		convert('Controller', {
+			html: {options_idx: 1, names: ['complete']}
+		});
+		// NOTE: you'd think that because ListController.html() calls the parent
+		// Controller.html() (which is promisified) but because the
+		// ListController is defined *before* we call promisify, it's html()
+		// parent function is the un-promisified Controller.html(). we don't
+		// have a way to "reach into" the parent chain and replace it, so we
+		// hack it by promisifying ListController.html()
+		convert('ListController', {
+			html: {options_idx: 1, names: ['complete']}
+		});
 	};
 
 	this.Composer.exp0rt({
