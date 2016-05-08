@@ -291,6 +291,7 @@ var turtl = {
 
 			turtl.route('/');
 
+			turtl.events.trigger('user:logout');
 			if(window.port) window.port.send('logout');
 		}.bind(turtl));
 	},
