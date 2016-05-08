@@ -16,7 +16,7 @@ var SettingsController = Composer.Controller.extend({
 	render: function()
 	{
 		this.html(view.render('settings/index', {
-			user: turtl.user.toJSON()
+			version: config.client + '-' + config.version
 		}));
 	},
 
