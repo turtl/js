@@ -30,11 +30,12 @@ var NotesEditController = FormController.extend({
 
 	model: null,
 	clone: null,
+	action: 'Save',
+	show_cancel: false,
 	formclass: 'notes-edit',
 	button_tabindex: 9,
 	footer_actions: [ {name: 'tag', icon: 'tag'} ],
 
-	action: 'Save',
 	type: 'text',
 	board_id: null,
 
@@ -69,7 +70,7 @@ var NotesEditController = FormController.extend({
 			case 'link': title = 'bookmark'; break;
 			default: title = this.clone.get('type');
 		}
-		title = this.action + ' ' + title;
+		title = 'Editing ' + title;
 
 		var conf = function()
 		{
@@ -427,10 +428,11 @@ var NotesEditController = FormController.extend({
 	{
 		var data = this.grab_form_data();
 		var preview = this.clone.clone().set(data);
-		new NotesEditPreviewController({
+		var con = new NotesEditPreviewController({
 			model: preview,
 			modal_opts: this.modal_opts
 		});
+		this.with_bind(con, 'save', this.submit.bind(this));
 	},
 
 	special_key: function(e)

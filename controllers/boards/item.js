@@ -1,4 +1,5 @@
 var BoardsItemController = Composer.Controller.extend({
+	xdom: true,
 	tag: 'li',
 
 	elements: {
@@ -57,49 +58,51 @@ var BoardsItemController = Composer.Controller.extend({
 			num_shared_with: num_shared_with + (num_shared_with == 1 ? ' person' : ' people'),
 			shared_with_me: shared_with_me,
 			shared_with_me_directly: shared_with_me_directly
-		}));
-		this.el.set('rel', this.model.id());
+		})).bind(this)
+			.then(function() {
+				this.el.set('rel', this.model.id());
 
-		if(shared_with_me) this.el.addClass('shared-with-me');
+				if(shared_with_me) this.el.addClass('shared-with-me');
 
-		var actions = [];
-		if(shared_with_me)
-		{
-			if(shared_with_me_directly)
-			{
+				var actions = [];
+				if(shared_with_me)
+				{
+					if(shared_with_me_directly)
+					{
 
-				actions.push([{name: 'Leave this board'}]);
-			}
-		}
-		else
-		{
-			actions.push([{name: 'Edit'}, {name: 'Delete'}]);
-			actions.push([{name: 'Share this board', href: '/boards/share/'+this.model.id()}]);
-			if(!parent_id) actions.push([{name: 'Create nested board'}]);
-		}
-		if(actions.length)
-		{
-			this.track_subcontroller('actions', function() {
-				return new ItemActionsController({
-					inject: this.actions,
-					actions: actions
-				});
-			}.bind(this));
-		}
-		this.track_subcontroller('children', function() {
-			return new BoardsListController({
-				inject: this.children,
-				collection: this.model.get('boards'),
-				child: true,
-				search: this.search
-			});
-		}.bind(this))
+						actions.push([{name: 'Leave this board'}]);
+					}
+				}
+				else
+				{
+					actions.push([{name: 'Edit'}, {name: 'Delete'}]);
+					actions.push([{name: 'Share this board', href: '/boards/share/'+this.model.id()}]);
+					if(!parent_id) actions.push([{name: 'Create nested board'}]);
+				}
+				if(actions.length)
+				{
+					this.track_subcontroller('actions', function() {
+						return new ItemActionsController({
+							inject: this.actions,
+							actions: actions
+						});
+					}.bind(this));
+				}
+				this.track_subcontroller('children', function() {
+					return new BoardsListController({
+						inject: this.children,
+						collection: this.model.get('boards'),
+						child: true,
+						search: this.search
+					});
+				}.bind(this))
 
-		// grab the note count (async)
-		this.model.note_count().bind(this)
-			.then(function(num_notes) {
-				if(!this.el_note_count) return;
-				this.el_note_count.set('html', num_notes);
+				// grab the note count (async)
+				this.model.note_count().bind(this)
+					.then(function(num_notes) {
+						if(!this.el_note_count) return;
+						this.el_note_count.set('html', num_notes);
+					});
 			});
 	},
 

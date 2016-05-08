@@ -128,36 +128,38 @@ var NotesViewController = NoteBaseController.extend({
 		this.html(view.render('notes/view', {
 			note: note,
 			content: type_content
-		}));
-		this.el.className = 'note view';
-		this.el.addClass(type);
-		if(!this.model.get('text'))
-		{
-			this.el.addClass('no-text');
-		}
-		if(!this.model.get('title'))
-		{
-			this.el.addClass('no-title');
-		}
-		if(type == 'image' && !this.model.get('url'))
-		{
-			this.el.addClass('preview');
-		}
-		this.el.set('rel', this.model.id());
+		})).bind(this)
+			.then(function() {
+				this.el.className = 'note view';
+				this.el.addClass(type);
+				if(!this.model.get('text'))
+				{
+					this.el.addClass('no-text');
+				}
+				if(!this.model.get('title'))
+				{
+					this.el.addClass('no-title');
+				}
+				if(type == 'image' && !this.model.get('url'))
+				{
+					this.el.addClass('preview');
+				}
+				this.el.set('rel', this.model.id());
 
-		// let the app know that we're displaying a note of this type
-		var remove_class = function()
-		{
-			this.modal.el.className = this.modal.el.className.replace(/note-view note-[a-z0-9]+/, '');
-		}.bind(this);
-		var body_class = 'note-view note-'+type;
-		remove_class();
-		this.modal.el.addClass(body_class);
+				// let the app know that we're displaying a note of this type
+				var remove_class = function()
+				{
+					this.modal.el.className = this.modal.el.className.replace(/note-view note-[a-z0-9]+/, '');
+				}.bind(this);
+				var body_class = 'note-view note-'+type;
+				remove_class();
+				this.modal.el.addClass(body_class);
 
-		(function() {
-			if(!this.el_img_header) return;
-			this.el_img_header.removeClass('hide');
-		}).delay(10, this);
+				(function() {
+					if(!this.el_img_header) return;
+					this.el_img_header.removeClass('hide');
+				}).delay(10, this);
+			});
 	},
 
 	open_edit: function(e)

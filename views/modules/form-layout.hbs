@@ -16,9 +16,11 @@
 				{{/if}}
 				<div class="desc"></div>
 
-				<div class="button flat cancel">
-					<span>Cancel</span>
-				</div>
+				{{#if show_cancel}}
+					<div class="button flat cancel">
+						<span>Cancel</span>
+					</div>
+				{{/if}}
 				<div class="button flat submit">
 					<input type="submit" {{#if tabindex}}tabindex="{{tabindex}}"{{/if}} value="{{action}}">
 				</div>
