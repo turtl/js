@@ -145,10 +145,10 @@ var UserJoinController = UserBaseController.extend({
 				var data = user.toJSON();
 				data.id = userdata.id;
 				turtl.events.bind_once('app:load:profile-loaded', this.create_initial_boards.bind(this));
-				return turtl.user.login(data);
+				return turtl.user.login(data)
+					.then(this.save_login.bind(this));
 			})
 			.then(function() {
-				this.save_login();
 				turtl.events.bind_once('app:load:profile-loaded', function() {
 					turtl.route('/personas/join');
 				});

@@ -25,6 +25,7 @@ var UserBaseController = FormController.extend({
 	toggle_autologin: function(e)
 	{
 		var checked = this.inp_autologin.getProperty('checked');
+		localStorage['user:autologin'] = JSON.stringify(checked);
 		if(checked)
 		{
 			turtl.events.trigger('auth:add-auto-login');
@@ -33,7 +34,6 @@ var UserBaseController = FormController.extend({
 		{
 			turtl.events.trigger('auth:remove-auto-login');
 		}
-		localStorage['user:autologin'] = JSON.stringify(checked);
 	},
 
 	save_login: function()
