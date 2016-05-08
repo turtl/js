@@ -9,7 +9,8 @@ var NotesEditController = FormController.extend({
 		'.password': 'el_password',
 		'.boards-container': 'el_boards',
 		'.file-container': 'el_file',
-		'.existing': 'el_existing'
+		'.existing': 'el_existing',
+		'.button-row': 'el_buttons'
 	},
 
 	events: {
@@ -33,6 +34,7 @@ var NotesEditController = FormController.extend({
 	button_tabindex: 9,
 	footer_actions: [ {name: 'tag', icon: 'tag'} ],
 
+	action: 'Save',
 	type: 'text',
 	board_id: null,
 
@@ -58,7 +60,6 @@ var NotesEditController = FormController.extend({
 		this.clone = this.model.clone();
 		this.clone.get('file').unset('set');
 
-		this.action = this.model.is_new() ? 'Add' : 'Edit';
 		this.parent();
 
 		var title = '';
@@ -133,10 +134,6 @@ var NotesEditController = FormController.extend({
 		});
 		this.bind(['cancel', 'close'], close);
 
-		this.bind('release', function() {
-			Autosize.destroy(this.inp_text);
-		}.bind(this));
-
 		// handle our "you have unsaved changes" state stuff
 		var unsaved = function()
 		{
@@ -175,6 +172,10 @@ var NotesEditController = FormController.extend({
 		this.bind('release', function() {
 			document.body.removeEvent('keydown', special_key_bound);
 		});
+
+		var resizer = this.resize_text.bind(this);
+		window.addEvent('resize', resizer);
+		this.bind('release', window.removeEvent.bind(window, 'resize', resizer));
 	},
 
 	render: function()
@@ -183,13 +184,13 @@ var NotesEditController = FormController.extend({
 		var colors = NOTE_COLORS;
 		var data = this.model.toJSON();
 		if(!data.color) delete data.color;
-		Autosize.destroy(this.inp_text);
 
 		this.html(view.render('notes/edit/index', {
 			note: data,
 			type: this.model.get('type') || this.type,
 			colors: colors
 		}));
+		setTimeout(this.resize_text.bind(this), 10);
 
 		if(this.model.is_new())
 		{
@@ -207,11 +208,6 @@ var NotesEditController = FormController.extend({
 			// sliding in, making the transition look really ugly and stupid.
 			// beware!
 			if(focus_el) setTimeout(focus_el.focus.bind(focus_el), 300);
-		}
-
-		if(this.inp_text && get_platform() != 'mobile')
-		{
-			setTimeout(function() { autosize(this.inp_text); }.bind(this), 10);
 		}
 
 		this.track_subcontroller('boards', function() {
@@ -467,6 +463,19 @@ var NotesEditController = FormController.extend({
 			this.el_password.removeClass('preview');
 			this.inp_password.set('type', 'password');
 		}
+	},
+
+	resize_text: function()
+	{
+		var txt_bottom = this.inp_text.getCoordinates().bottom;
+		var form_bottom = this.el_form.getCoordinates().bottom;
+		var btn_top = this.el_buttons.getCoordinates().top;
+		var height = (btn_top - form_bottom) + (form_bottom - txt_bottom);
+		if(height < 80) height = 80;
+		console.log('size: ', height, form_bottom, btn_top, form_bottom - txt_bottom);
+		this.inp_text.setStyles({
+			height: height+'px'
+		});
 	}
 });
 
