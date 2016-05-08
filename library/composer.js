@@ -23,7 +23,7 @@
 
 	var global = this;
 	if(!global.Composer) global.Composer = {
-		version: '1.2.1',
+		version: '1.2.2',
 
 		// note: this used to be "export" but IE is a whiny little bitch, so now
 		// we're sup3r 1337 h4x0r5
@@ -1463,7 +1463,7 @@
 		{
 			options || (options = {});
 
-			if(data == undefined) return;
+			if(data == undefined) return options.complete && options.complete();
 			if(!Composer.array.is(data)) data = [data];
 
 			data = data.slice(0);
@@ -2646,6 +2646,7 @@
 		 */
 		html: function(obj, options)
 		{
+			options || (options = {});
 			var container = this.options.container;
 			if(container instanceof Function) container = container();
 			if(container)
