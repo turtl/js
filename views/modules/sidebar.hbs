@@ -1,4 +1,4 @@
-<div class="overlay"></div>
+<div class="overlay {{#if open}}show{{/if}}"></div>
 <div class="inner">
 	<div class="gutter">
 		<ul>
@@ -43,11 +43,19 @@
 		</ul>
 	</div>
 	<div class="footer">
-		<div class="connection {{#if connected}}connected{{/if}}">
+		<div class="connection {{#if connected}}connected{{else}}disconnected{{/if}}">
 			{{icon 'connection'}}
 			<span class="connected">Connected to the Turtl service</span>
 			<span class="disconnected">Offline mode</span>
 		</div>
+		{{#if connected}}
+			<div class="sync">
+				{{#if last_sync}}<p>Last sync: {{ago-time last_sync}}</p>{{/if}}
+				<div class="button sync">
+					<input type="button" class="button" value="Sync now">
+				</div>
+			</div>
+		{{/if}}
 	</div>
 </div>
 

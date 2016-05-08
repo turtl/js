@@ -21,6 +21,9 @@ var Sync = Composer.Model.extend({
 	// used to track local syncs
 	local_sync_id: 0,
 
+	// track the current poll number
+	poll_id: 0,
+
 	type_table_map: {
 		user: 'user',
 		keychain: 'keychain',
@@ -80,12 +83,20 @@ var Sync = Composer.Model.extend({
 	stop: function()
 	{
 		this.enabled = false;
+		this.trigger('cancel-syncs');
 
 		if(this.outgoing_timer) this.outgoing_timer.unbind();
+		this.outgoing_timer.unbind();
 		this.outgoing_timer = null;
 		this.unbind('mem->db', 'sync:model:mem->db');
 		turtl.events.unbind('api:connect', 'sync:connect:run-outgoing');
 		clearInterval(this.outgoing_interval);
+	},
+
+	jumpstart: function()
+	{
+		this.stop();
+		this.start();
 	},
 
 	/**
@@ -329,6 +340,7 @@ var Sync = Composer.Model.extend({
 	{
 		options || (options = {});
 
+		var poll_id = this.poll_id++;
 		var enabled = function()
 		{
 			if(!this.enabled) return false;
@@ -336,6 +348,11 @@ var Sync = Composer.Model.extend({
 			if(!config.poll_api_for_changes) return false;
 			return true;
 		}.bind(this);
+
+		this.bind_once('cancel-syncs', function() {
+			enabled = function() { return false; };
+			this._polling = false;
+		}.bind(this), 'cancel:'+poll_id);
 
 		if(!options.force)
 		{
@@ -355,13 +372,15 @@ var Sync = Composer.Model.extend({
 		}
 
 		this._polling = true;
-		this.trigger('poll:start');
+		this.trigger('poll:start', poll_id);
 		var failed = false;
 		var sync_id = this.get('sync_id');
 		var sync_url = '/sync?sync_id='+sync_id+'&client_id='+turtl.client_id+'&immediate='+(options.immediate ? 1 : 0);
-		return turtl.api.get(sync_url, null, {timeout: 60000}).bind(this)
+		return turtl.api.get(sync_url, null, {timeout: 60000})
+			.bind(this)
 			.then(function(sync) {
 				if(!enabled()) return false;
+				this.last_sync = new Date().getTime();
 
 				var orig = this.connected;
 				this.connected = true;
@@ -369,10 +388,10 @@ var Sync = Composer.Model.extend({
 				if(!options.force && (this._outgoing_sync_running || turtl.user.changing_password))
 				{
 					this._polling = false;
-					this.trigger('poll:finished');
+					this.trigger('poll:finished', poll_id);
 					// well, we got a response back during an outgoing sync or a
 					// password change, both plausible. so what we're going to
-					// do is throw out the sync results ew got back and poll
+					// do is throw out the sync results we got back and poll
 					// again in a second
 					return new Promise(function(resolve) { setTimeout(resolve, 1000); });
 				}
@@ -398,7 +417,8 @@ var Sync = Composer.Model.extend({
 			})
 			.finally(function() {
 				this._polling = false;
-				this.trigger('poll:finished');
+				this.trigger('poll:finished', poll_id);
+				this.unbind('cancel-syncs', 'cancel:'+poll_id);
 
 				if(!enabled()) return false;
 				if(!options.force)

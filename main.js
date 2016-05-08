@@ -172,6 +172,7 @@ var turtl = {
 			turtl.search = new Search();
 			turtl.files = new Files();
 			turtl.user.get_auth().then(turtl.api.set_auth.bind(turtl.api))
+			turtl.events.trigger('app:objects-loaded');
 
 			turtl.show_loading_screen(true);
 			turtl.update_loading_screen('Initializing Turtl');

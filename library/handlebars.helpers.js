@@ -167,7 +167,7 @@ Handlebars.registerHelper('ago-time', function(timestamp) {
 	var diff = new Date().getTime() - timestamp;
 	var diffsec = Math.round(diff / 1000);
 	var muls = [
-		[60, 'Just now'],
+		[60, '{n} seconds ago'],
 		[60, '{n} minutes ago'],
 		[24, '{n} hours ago'],
 		[Number.POSITIVE_INFINITY, '{n} days ago']
