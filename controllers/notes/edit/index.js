@@ -430,7 +430,13 @@ var NotesEditController = FormController.extend({
 		var preview = this.clone.clone().set(data);
 		var con = new NotesEditPreviewController({
 			model: preview,
-			modal_opts: this.modal_opts
+			modal_opts: function() {
+				var opts = (this.modal_opts && this.modal_opts()) || {};
+				var actions = opts.actions || [];
+				actions.push({name: 'edit', icon: 'edit'});
+				opts.actions = actions;
+				return opts;
+			}.bind(this)
 		});
 		this.with_bind(con, 'save', this.submit.bind(this));
 	},

@@ -67,6 +67,16 @@ var NotesViewController = NoteBaseController.extend({
 				case 'delete': this.open_delete(); break;
 			}
 		}.bind(this));
+
+		// if we have an edit icon, it's because we're in preview mode and we
+		// want the edit icon to take us back to the editor
+		this.with_bind(this.modal, 'header:fire-action', function(action) {
+			switch(action)
+			{
+			case 'edit': close(); break;
+			}
+		});
+
 		this.with_bind(this.modal, 'scroll', function(scroll) {
 			this.adjust_image_header(scroll);
 			this.hide_info(scroll);
