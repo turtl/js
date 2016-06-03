@@ -366,7 +366,7 @@ var Sync = Composer.Model.extend({
 				// (this is mainly a problem with adding since it's not
 				// idempotent, an most likely wouldn't ever happen, but i'd
 				// rather rit just not be an issue at all)
-				setTimeout(this.poll_api_for_changes, 1000);
+				setTimeout(this.poll_api_for_changes.bind(this), 1000);
 				return;
 			}
 		}
