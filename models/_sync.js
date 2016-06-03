@@ -86,7 +86,6 @@ var Sync = Composer.Model.extend({
 		this.trigger('cancel-syncs');
 
 		if(this.outgoing_timer) this.outgoing_timer.unbind();
-		this.outgoing_timer.unbind();
 		this.outgoing_timer = null;
 		this.unbind('mem->db', 'sync:model:mem->db');
 		turtl.events.unbind('api:connect', 'sync:connect:run-outgoing');
