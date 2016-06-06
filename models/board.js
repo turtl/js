@@ -186,8 +186,8 @@ var Board = Protected.extend({
 		var boards = [this.id()].concat(child_board_ids);
 		return turtl.search.search({boards: boards}).bind(this)
 			.spread(function(notes) {
-			    var uniqueNotes  = notes.filter(function(v,i) { return i==notes.lastIndexOf(v); });
-			    return uniqueNotes.length;
+				var unique_notes  = notes.filter(function(note, i) { return i == notes.lastIndexOf(note); });
+				return unique_notes.length;
 			});
 	},
 
