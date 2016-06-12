@@ -1,4 +1,4 @@
-# Contributing to Turtl
+# [Contributing to Turtl](https://turtl.it/contributing/)
 
 Thanks for wanting to help make the Turtl project better!
 
