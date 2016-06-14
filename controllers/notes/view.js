@@ -20,7 +20,8 @@ var NotesViewController = NoteBaseController.extend({
 		'click h1.main-title.password': 'show_password',
 		'click .show-password input[name=password]': 'show_password',
 		'focus .show-password input': 'select_password_field',
-		'click .show-password input': 'select_password_field'
+		'click .show-password input': 'select_password_field',
+		'click a[href^="#"]': 'anchor_click'
 	},
 
 	modal: null,
@@ -322,6 +323,20 @@ var NotesViewController = NoteBaseController.extend({
 		if(!inp) return;
 		if(inp.get('type') == 'password') return;
 		inp.select();
+	},
+
+	anchor_click: function(e)
+	{
+		if(e) e.stop();
+		if(!e.target) return;
+		var id = e.target.href.replace(/.*#/, '');
+		if(!id) return;
+
+		var el = this.el.getElement('a[name='+id+']');
+		if(!el) el = this.el.getElement('#'+id);
+		if(!el) return;
+
+		this.modal.scroll_to(el);
 	}
 });
 

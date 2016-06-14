@@ -436,7 +436,18 @@ var turtl = {
 			}
 		}, options);
 		turtl.router = new Composer.Router(config.routes, options);
-		turtl.router.bind_links({ filter_trailing_slash: true });
+		turtl.router.bind_links({
+			filter_trailing_slash: true,
+			selector: 'a:not([href^=#])'
+		});
+
+		// catch ALL #hash links and stop them in their tracks. this fixes a bug
+		// in NWJS v0.15.x where setting the window location to a hash crashes
+		// the app (at least in windows)
+		Composer.add_event(document.body, 'click', function(e) {
+			if(e) e.stop();
+		}, 'a[href^="#"]');
+
 		turtl.router.bind('route', turtl.controllers.pages.trigger.bind(turtl.controllers.pages, 'route'));
 		turtl.router.bind('preroute', turtl.controllers.pages.trigger.bind(turtl.controllers.pages, 'preroute'));
 		turtl.router.bind('fail', function(obj) {

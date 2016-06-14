@@ -154,6 +154,14 @@ var TurtlModal = Composer.Controller.extend({
 	click_header: function(e)
 	{
 		this.trigger('click-header', e);
+	},
+
+	scroll_to: function(el)
+	{
+		if(!el) return;
+		var y = el.getCoordinates().top;
+		y -= this.header.getCoordinates().height;
+		(new Fx.Scroll(this.el, {duration: 300})).start(0, y);
 	}
 });
 
