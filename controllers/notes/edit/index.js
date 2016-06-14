@@ -41,6 +41,7 @@ var NotesEditController = FormController.extend({
 
 	confirm_unsaved: null,
 	have_unsaved: false,
+	skip_resize_text: false,
 	form_data: null,
 
 	url_timer: null,
@@ -174,9 +175,12 @@ var NotesEditController = FormController.extend({
 			document.body.removeEvent('keydown', special_key_bound);
 		});
 
-		var resizer = this.resize_text.bind(this);
-		window.addEvent('resize', resizer);
-		this.bind('release', window.removeEvent.bind(window, 'resize', resizer));
+		if(!this.skip_resize_text)
+		{
+			var resizer = this.resize_text.bind(this);
+			window.addEvent('resize', resizer);
+			this.bind('release', window.removeEvent.bind(window, 'resize', resizer));
+		}
 	},
 
 	render: function()
@@ -475,15 +479,13 @@ var NotesEditController = FormController.extend({
 
 	resize_text: function()
 	{
-		var txt_bottom = this.inp_text.getCoordinates().bottom;
 		var form_bottom = this.el_form.getCoordinates().bottom;
 		var btn_top = this.el_buttons.getCoordinates().top;
-		var height = (btn_top - form_bottom) + (form_bottom - txt_bottom);
+		var diff = btn_top - form_bottom;
+		var txt_height = this.inp_text.getCoordinates().height;
+		var height = txt_height + diff;
 		if(height < 80) height = 80;
-		console.log('size: ', height, form_bottom, btn_top, form_bottom - txt_bottom);
-		this.inp_text.setStyles({
-			height: height+'px'
-		});
+		this.inp_text.setStyles({ height: height+'px' });
 	}
 });
 
