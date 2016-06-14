@@ -117,7 +117,6 @@ var NotesListController = Composer.ListController.extend({
 	render: function(options)
 	{
 		options || (options = {});
-		console.trace('render: ', options);
 		return this.html(view.render('notes/list', {
 			initial: options.initial,
 			empty: options.no_results ? false : options.empty,
@@ -126,14 +125,13 @@ var NotesListController = Composer.ListController.extend({
 			show_prev: this.search.page > 1,
 			show_next: ((this.search.page * this.search.per_page) < turtl.search.total),
 		})).bind(this)
-			.then(this.set_masonry);
+			.then(this.update_view);
 	},
 
 	do_search: function(options)
 	{
 		options || (options = {});
 
-		console.log('do search: ', this.search);
 		return turtl.search.search(this.search, {do_reset: true, upsert: options.upsert, silent: true})
 			.bind(this)
 			.tap(function(res) {
@@ -144,7 +142,7 @@ var NotesListController = Composer.ListController.extend({
 			});
 	},
 
-	set_masonry: function()
+	update_view: function()
 	{
 		switch(this.view_mode)
 		{
