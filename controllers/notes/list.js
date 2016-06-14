@@ -84,7 +84,7 @@ var NotesListController = Composer.ListController.extend({
 						container: function() { return this.note_list }.bind(this)
 					});
 
-					this.with_bind(turtl.search, ['reset', 'add', 'remove'], this.update_view.bind(this));
+					this.with_bind(turtl.search, ['reset'], this.render.bind(this, {}));
 					this.bind('search-done', function(ids, _tags, _total, options) {
 						options || (options = {});
 
@@ -108,8 +108,7 @@ var NotesListController = Composer.ListController.extend({
 						// up on it and re-display the notes
 						turtl.search.trigger('reset');
 					});
-					this.bind('search-done', this.update_pagination.bind(this));
-					this.update_pagination();
+					this.render();
 				});
 		}.bind(this));
 		this.render({initial: true});
@@ -118,17 +117,23 @@ var NotesListController = Composer.ListController.extend({
 	render: function(options)
 	{
 		options || (options = {});
-		this.html(view.render('notes/list', {
+		console.trace('render: ', options);
+		return this.html(view.render('notes/list', {
 			initial: options.initial,
 			empty: options.no_results ? false : options.empty,
-			no_results: options.no_results
-		})).then(this.update_view.bind(this));
+			no_results: options.no_results,
+			view_mode: this.view_mode,
+			show_prev: this.search.page > 1,
+			show_next: ((this.search.page * this.search.per_page) < turtl.search.total),
+		})).bind(this)
+			.then(this.set_masonry);
 	},
 
 	do_search: function(options)
 	{
 		options || (options = {});
 
+		console.log('do search: ', this.search);
 		return turtl.search.search(this.search, {do_reset: true, upsert: options.upsert, silent: true})
 			.bind(this)
 			.tap(function(res) {
@@ -139,14 +144,8 @@ var NotesListController = Composer.ListController.extend({
 			});
 	},
 
-	update_view: function()
+	set_masonry: function()
 	{
-		this.note_list
-			.removeClass('masonry')
-			.removeClass('column')
-			.removeClass('list')
-			.addClass(this.view_mode);
-
 		switch(this.view_mode)
 		{
 			case 'masonry':
@@ -172,41 +171,6 @@ var NotesListController = Composer.ListController.extend({
 			resizeable: true,
 			itemSelector: '> li.note'
 		});
-	},
-
-	update_pagination: function()
-	{
-		this.pagination.set('html', '');
-		if(this.search.page > 1)
-		{
-			/*
-			var first = new Element('a')
-				.set('href', '#first')
-				.set('rel', 'first')
-				.set('html', '&laquo;First')
-				.inject(this.pagination);
-			*/
-			var prev = new Element('a')
-				.set('href', '#prev')
-				.set('rel', 'prev')
-				.set('html', '&lt; Prev')
-				.inject(this.pagination);
-		}
-		if((this.search.page * this.search.per_page) < turtl.search.total)
-		{
-			var next = new Element('a')
-				.set('href', '#next')
-				.set('rel', 'next')
-				.set('html', 'Next &gt;')
-				.inject(this.pagination);
-			/*
-			var last = new Element('a')
-				.set('href', '#last')
-				.set('rel', 'last')
-				.set('html', 'Last&raquo;')
-				.inject(this.pagination);
-			*/
-		}
 	},
 
 	paginate: function(e)

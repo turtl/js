@@ -38,6 +38,17 @@ Handlebars.registerHelper('equal-or', function(_) {
 	}
 });
 
+Handlebars.registerHelper('gt', function(x, y, options) {
+	if(x > y)
+	{
+		return options.fn(this);
+	}
+	else
+	{
+		return options.inverse(this);
+	}
+});
+
 Handlebars.registerHelper('asset', function(url) {
 	return asset(url);
 });
@@ -187,3 +198,4 @@ Handlebars.registerHelper('ago-time', function(timestamp) {
 	};
 	return str;
 });
+

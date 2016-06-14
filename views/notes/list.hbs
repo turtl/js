@@ -11,7 +11,14 @@
 		<small>Tap <em>+</em> to start</small>
 	</p>
 {{/if}}
-<ul class="note-list clear"></ul>
+<ul class="note-list clear {{view_mode}}"></ul>
 
-<p class="paginate"></p>
+<p class="paginate">
+	{{#if show_prev}}
+		<a href="#prev" rel="prev">&lt; Prev</a>
+	{{/if}}
+	{{#if show_next}}
+		<a href="#next" rel="next">Next &gt;</a>
+	{{/if}}
+</p>
 
