@@ -55,13 +55,13 @@
 		<div class="content text">
 			{{#equal note.type 'password'}}
 				<h1 class="main-title password">
-					<a href="#">
-					{{icon 'lock'}}
-					{{#if note.title}}
-						{{{note.title}}}
-					{{else}}
-						Password
-					{{/if}}
+					<a href="#" rel="password">
+						{{icon 'lock'}}
+						{{#if note.title}}
+							{{{note.title}}}
+						{{else}}
+							Password
+						{{/if}}
 					</a>
 				</h1>
 				<div class="show-password">

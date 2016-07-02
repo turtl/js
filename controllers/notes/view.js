@@ -21,7 +21,7 @@ var NotesViewController = NoteBaseController.extend({
 		'click .show-password input[name=password]': 'show_password',
 		'focus .show-password input': 'select_password_field',
 		'click .show-password input': 'select_password_field',
-		'click a[href^="#"]': 'anchor_click'
+		'click a[href^="#"]:not([rel=download]):not([rel=password])': 'anchor_click'
 	},
 
 	modal: null,
@@ -329,7 +329,9 @@ var NotesViewController = NoteBaseController.extend({
 	{
 		if(e) e.stop();
 		if(!e.target) return;
-		var id = e.target.href.replace(/.*#/, '');
+		var atag = Composer.find_parent('a', e.target);
+		if(!atag || !atag.href) return;
+		var id = atag.href.replace(/.*#/, '');
 		if(!id) return;
 
 		var el = this.el.getElement('a[name='+id+']');
