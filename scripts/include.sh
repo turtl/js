@@ -13,7 +13,7 @@ function print_js() {
 
 function path_to_js() {
 	path=$1
-	find $path -name '*.js' | sort | sed 's| |___|g'
+	find $path -name '*.js' | LC_ALL=C sort | sed 's| |___|g'
 }
 
 function all_css() {
@@ -21,7 +21,7 @@ function all_css() {
 	echo "${SEARCH_PATH}css/template.css"
 	echo "${SEARCH_PATH}css/general.css"
 	cssfiles="`find ${SEARCH_PATH}css -name '*.css' \
-		| sort \
+		| LC_ALL=C sort \
 		| grep -v 'template.css' \
 		| grep -v 'general.css' \
 		| grep -v 'variables.css' \
@@ -44,10 +44,10 @@ function all_js() {
 	
 	path_to_js "${SEARCH_PATH}config/config.js"
 	find ${SEARCH_PATH}config -name '*.js' \
-		| sort \
+		| LC_ALL=C sort \
 		| grep -v 'config\.js'
 	find ${SEARCH_PATH}library -name '*.js' \
-		| sort \
+		| LC_ALL=C sort \
 		| grep -v 'ignore' \
 		| grep -v 'mootools-' \
 		| grep -v 'composer' \
