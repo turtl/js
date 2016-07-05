@@ -65,10 +65,10 @@ function all_js() {
 	find ${SEARCH_PATH}controllers/0modules -name '*.js' \
 		| LC_ALL=C sort \
 		| grep -v 'nav\.js'
-	path_to_js "${SEARCH_PATH}locales"
 	path_to_js "${SEARCH_PATH}controllers"
 	path_to_js "${SEARCH_PATH}models"
 	path_to_js "${SEARCH_PATH}handlers"
+	path_to_js "${SEARCH_PATH}locales"
 	path_to_js "${SEARCH_PATH}turtl"
 	echo "${SEARCH_PATH}library/templates.js"
 	echo "${SEARCH_PATH}main.js"
