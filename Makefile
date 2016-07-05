@@ -55,3 +55,9 @@ clean:
 watch:
 	@./scripts/watch
 
+min.index.html: $(allcss) $(alljs) $(cssfiles) library/templates.js views/layouts/default.html .build/postcss scripts/include.sh scripts/gen-minified-index
+	@echo "- index.html: " $?
+	@./scripts/gen-minified-index
+
+
+minify: $(cssfiles) library/templates.js library/svg-icons.js .build/postcss min.index.html
