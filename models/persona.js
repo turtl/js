@@ -63,7 +63,7 @@ var Persona = Protected.extend({
 								return persona.save();
 							})
 							.catch(function(err) {
-								turtl.events.trigger('ui-error', 'There was a problem upgrading your persona key. Please go to your persona settings and generate a key.', err);
+								turtl.events.trigger('ui-error', i18next.t('There was a problem upgrading your persona key. Please go to your persona settings and generate a key.'), err);
 								log.error('persona: edit: ', persona.id(), derr(err));
 							});
 					}

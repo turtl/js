@@ -18,11 +18,11 @@
 
 				{{#if show_cancel}}
 					<div class="button flat cancel">
-						<span>Cancel</span>
+						<span>{{t 'Cancel'}}</span>
 					</div>
 				{{/if}}
 				<div class="button flat submit">
-					<input type="submit" {{#if tabindex}}tabindex="{{tabindex}}"{{/if}} value="{{action}}">
+					<input type="submit" {{#if tabindex}}tabindex="{{tabindex}}"{{/if}} value="{{t action}}">
 				</div>
 			</div>
 		{{/if}}

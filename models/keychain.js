@@ -55,7 +55,7 @@ var Keychain = SyncCollection.extend({
 		this.upsert(entry);
 		return entry.save(options)
 			.catch(function(err) {
-				barfr.barf('Error saving key for item: '+ err);
+				barfr.barf(i18next.t('Error saving key for item: {{err}}', {err: err}));
 				log.error('keychain: error saving: ', arguments);
 				this.remove(entry);
 				throw err;
@@ -115,7 +115,7 @@ var Keychain = SyncCollection.extend({
 		if(!model) return false;
 		return model.destroy(options)
 			.catch(function(err) {
-				barfr.barf('Error removing key for item: '+ err);
+				barfr.barf(i18next.t('Error removing key for item: {{err}}', {err: err}));
 				throw err;
 			});
 	}

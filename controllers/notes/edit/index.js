@@ -30,7 +30,7 @@ var NotesEditController = FormController.extend({
 
 	model: null,
 	clone: null,
-	action: 'Save',
+	action: i18next.t('Save'),
 	show_cancel: false,
 	formclass: 'notes-edit',
 	button_tabindex: 9,
@@ -67,15 +67,15 @@ var NotesEditController = FormController.extend({
 		var title = '';
 		switch(this.clone.get('type'))
 		{
-			case 'text': title = 'text note'; break;
-			case 'link': title = 'bookmark'; break;
+			case 'text': title = i18next.t('text note'); break;
+			case 'link': title = i18next.t('bookmark'); break;
 			default: title = this.clone.get('type');
 		}
-		title = 'Editing ' + title;
+		title = i18next.t('Editing {{title}}', {title: title});
 
 		var conf = function()
 		{
-			if(this.confirm_unsaved && this.have_unsaved && !confirm('This note has unsaved changes. Really leave?')) return false;
+			if(this.confirm_unsaved && this.have_unsaved && !confirm(i18next.t('This note has unsaved changes. Really leave?'))) return false;
 			return true;
 		}.bind(this);
 
@@ -105,9 +105,8 @@ var NotesEditController = FormController.extend({
 						}
 
 						var msg = '<em>!</em>';
-						msg += 'This URL is already bookmarked in ';
-						if(ids.length == 1) msg += 'another note';
-						else msg += ids.length +' notes';
+						if(ids.length == 1) msg += i18next.t('This URL is already bookmarked in another note');
+						else msg += i18next.t('This URL is already bookmarked in {{ids_length}} notes', {ids_length: ids.length});
 
 						this.el_existing.set('html', msg);
 						this.el_existing.slide('in');
@@ -319,7 +318,7 @@ var NotesEditController = FormController.extend({
 							return this.model.save();
 						})
 						.catch(function(err) {
-							turtl.events.trigger('ui-error', 'There was a problem removing the attachement', err);
+							turtl.events.trigger('ui-error', i18next.t('There was a problem removing the attachement'), err);
 							log.error('note: edit: file: ', this.model.id(), derr(err));
 						});
 				}
@@ -358,12 +357,12 @@ var NotesEditController = FormController.extend({
 						file.unset('no_preview').unset('set');
 					})
 					.catch(function(err) {
-						turtl.events.trigger('ui-error', 'There was a problem saving the attachment', err);
+						turtl.events.trigger('ui-error', i18next.t('There was a problem saving the attachment'), err);
 						log.error('note: edit: file: ', this.model.id(), derr(err));
 					});
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', 'There was a problem updating that note', err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem updating that note'), err);
 				log.error('note: edit: ', this.model.id(), derr(err));
 			});
 	},

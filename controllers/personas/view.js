@@ -25,7 +25,7 @@ var PersonasViewController = Composer.Controller.extend({
 		// set up the action button
 		this.track_subcontroller('actions', function() {
 			var actions = new ActionController();
-			actions.set_actions([{title: 'Edit persona', name: 'edit', icon: 'edit'}]);
+			actions.set_actions([{title: i18next.t('Edit persona'), name: 'edit', icon: 'edit'}]);
 			this.with_bind(actions, 'actions:fire', function(action) {
 				switch(action)
 				{
@@ -46,7 +46,7 @@ var PersonasViewController = Composer.Controller.extend({
 		var data = this.model.toJSON();
 		data.settings || (data.settings = {});
 		var settings = [
-			{name: 'notify_invite', default: 1, desc: 'Email me when someone shares with me'}
+			{name: 'notify_invite', default: 1, desc: i18next.t('Email me when someone shares with me')}
 		];
 		settings.forEach(function(setting) {
 			if(typeof(data.settings[setting.name]) == 'undefined')
@@ -70,10 +70,10 @@ var PersonasViewController = Composer.Controller.extend({
 
 	delete_persona: function()
 	{
-		if(!confirm('Really delete this persona? All shares to and from it will be deleted as well.')) return false;
+		if(!confirm(i18next.t('Really delete this persona? All shares to and from it will be deleted as well.'))) return false;
 		this.model.destroy()
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', 'There was a problem deleting your persona', err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem deleting your persona'), err);
 				log.error('persona: delete: ', this.model.id(), derr(err));
 			});
 	},
@@ -86,7 +86,7 @@ var PersonasViewController = Composer.Controller.extend({
 				return this.model.save();
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', 'There was a problem generating a key for your persona', err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem generating a key for your persona'), err);
 				log.error('persona: view: keygen: ', this.model.id(), derr(err));
 			});
 	},
@@ -108,10 +108,10 @@ var PersonasViewController = Composer.Controller.extend({
 		this.model.set({settings: settings});
 		this.model.save()
 			.then(function() {
-				barfr.barf('Persona settings updated.');
+				barfr.barf(i18next.t('Persona settings updated.'));
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', 'There was a problem saving your settings', err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem saving your settings'), err);
 				log.error('persona: view: settings: ', this.model.id(), derr(err));
 			});
 	}

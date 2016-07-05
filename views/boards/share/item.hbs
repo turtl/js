@@ -12,11 +12,11 @@
 </h2>
 {{#if pending}}
 	<p>
-		Invite pending. Sent {{ago-time timestamp_created}}
+		{{t 'Invite pending. Sent {{ago}}' ago=(ago-time timestamp_created)}}
 	</p>
 {{else}}
 	<p>
-		{{permissions}} permissions
+		{{t '{{permissions}} permissions' permissions=permissions}}
 	</p>
 {{/if}}
 

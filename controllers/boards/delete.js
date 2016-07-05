@@ -63,7 +63,7 @@ var BoardsDeleteController = FormController.extend({
 		this.model.destroy({delete_notes: delete_notes})
 			.catch(function(err) {
 				log.error('board: delete: ', derr(err));
-				barfr.barf('There was a problem deleting your board: '+ err.message);
+				barfr.barf(i18next.t('There was a problem deleting your board: {{message}}', {message: err.message}));
 			});
 	}
 });

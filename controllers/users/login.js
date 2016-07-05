@@ -20,7 +20,7 @@ var UserLoginController = UserBaseController.extend({
 	{
 		this.parent();
 
-		turtl.push_title('Login');
+		turtl.push_title(i18next.t('Login'));
 		this.bind('release', turtl.pop_title.bind(null, false));
 		this.render();
 	},
@@ -79,17 +79,17 @@ var UserLoginController = UserBaseController.extend({
 					.then(this.save_login.bind(this));
 				if(meta.old)
 				{
-					barfr.barf('Your master key was generated using an older method. To upgrade it, please go to the "Change password" section of your account settings under the Turtl menu.');
+					barfr.barf(i18next.t('Your master key was generated using an older method. To upgrade it, please go to the "Change password" section of your account settings under the Turtl menu.'));
 				}
 			})
 			.catch(function(err) {
 				this.inp_submit.set('disabled', '');
 				if(err && err.xhr && err.xhr.status === 0)
 				{
-					barfr.barf('Couldn\'t connect to the server');
+					barfr.barf(i18next.t('Couldn\'t connect to the server'));
 					return;
 				}
-				barfr.barf('Login failed.');
+				barfr.barf(i18next.t('Login failed.'));
 				log.error('login error: ', derr(err));
 			})
 			.finally(function() {

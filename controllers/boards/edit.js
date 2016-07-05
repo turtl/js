@@ -56,7 +56,7 @@ var BoardsEditController = FormController.extend({
 		var title = this.inp_title.get('value').toString().trim();
 
 		var errors = [];
-		if(!title) errors.push('Please give your board a title');
+		if(!title) errors.push(i18next.t('Please give your board a title'));
 
 		if(errors.length)
 		{
@@ -78,7 +78,7 @@ var BoardsEditController = FormController.extend({
 				this.trigger('close');
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', 'There was a problem updating that board', err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem updating that board'), err);
 				log.error('board: edit: ', this.model.id(), derr(err));
 			});
 	}

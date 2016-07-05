@@ -8,15 +8,15 @@
 
 	<div class="key">
 		{{#if persona.generating}}
-			<p>{{svg 'load'}} Generating PGP key in background</p>
+			<p>{{svg 'load'}} {{t 'Generating PGP key in background'}}</p>
 		{{else}}
 			{{#if persona.pubkey}}
 				<code class="pkey">
-					{{icon 'lock' class='lock'}} {{keylen}} bit PGP key
+					{{icon 'lock' class='lock'}} {{t '{{keylen}} bit PGP key' keylen=keylen}}
 					{{!--{{icon 'arrow' class='more'}}--}}
 				</code>
 			{{else}}
-				<p>This persona doesn't have a key.</p>
+				<p>{{t 'This persona doesn\'t have a key.'}}</p>
 				<div class="button generate">
 					<input type="button" class="button" value="Generate key">
 				</div>

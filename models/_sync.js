@@ -254,7 +254,7 @@ var Sync = Composer.Model.extend({
 						if(synced.error)
 						{
 							log.error('sync: outgoing: api error: ', synced.error);
-							barfr.barf('There was a problem syncing to the server (we\'ll try again soon): '+ synced.error);
+							barfr.barf(i18next.t('There was a problem syncing to the server (we\'ll try again soon): {{err}}', {err: synced.error}));
 						}
 						if(!synced.success) return;
 
@@ -313,7 +313,7 @@ var Sync = Composer.Model.extend({
 			})
 			.catch(function(err) {
 				log.error('sync: outgoing: problem syncing items: ', err);
-				barfr.barf('There was a problem syncing to the server. Trying again soon.');
+				barfr.barf(i18next.t('There was a problem syncing to the server. Trying again soon.'));
 			})
 			.finally(function() {
 				this._outgoing_sync_running = false;

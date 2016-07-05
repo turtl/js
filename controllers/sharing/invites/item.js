@@ -33,8 +33,9 @@ var SharingInviteItemController = Composer.Controller.extend({
 			timestamp_created: timestamp
 		}));
 		var actions = [[
-			{name: (this.model.get('has_passphrase') ? 'Unlock' : 'Accept')},
-			{name: 'Reject'}
+			{name: (this.model.get('has_passphrase') ? 'Unlock' : 'Accept'),
+			title: (this.model.get('has_passphrase') ? i18next.t('Unlock') : i18next.t('Accept'))},
+			{name: 'Reject', title: i18next.t('Title')}
 		]];
 		this.track_subcontroller('actions', function() {
 			return new ItemActionsController({
@@ -78,7 +79,7 @@ var SharingInviteItemController = Composer.Controller.extend({
 			})
 			.catch(function(err) {
 				log.error('invite: unlock: ', err);
-				barfr.barf('There was a problem unlocking the invite. Do you have the right passphrase?');
+				barfr.barf(i18next.t('There was a problem unlocking the invite. Do you have the right passphrase?'));
 			})
 			.finally(function() {
 				this.inp_unlock_submit.set('disabled', false);
@@ -91,26 +92,26 @@ var SharingInviteItemController = Composer.Controller.extend({
 		var persona = turtl.profile.get('personas').first();
 		if(!persona)
 		{
-			barfr.barf('Accepting invites requires a persona.');
+			barfr.barf(i18next.t('Accepting invites requires a persona.'));
 			return;
 		}
 		this.model.accept()
 			.then(function() {
-				barfr.barf('Invite accepted!');
+				barfr.barf(i18next.t('Invite accepted!'));
 			})
 			.catch(function(err) {
 				log.error('invite: accept: ', err);
-				barfr.barf('There was a problem accepting that invite. Please try again.');
+				barfr.barf(i18next.t('There was a problem accepting that invite. Please try again.'));
 			});
 	},
 
 	open_reject: function(e)
 	{
 		if(e) e.stop();
-		if(!confirm('Really reject this invite?')) return;
+		if(!confirm(i18next.t('Really reject this invite?'))) return;
 		this.model.reject()
 			.catch(function(err) {
-				barfr.barf('There was a problem rejecting that invite. Please try again.');
+				barfr.barf(i18next.t('There was a problem rejecting that invite. Please try again.'));
 				log.error('invite: reject: ', err);
 			})
 	}

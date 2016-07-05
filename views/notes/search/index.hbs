@@ -1,17 +1,17 @@
 <div class="filter-sort">
 	<ul>
 		<li class="{{#equal sort 'created'}}sel{{/equal}} {{#equal dir 'desc'}}desc{{/equal}}">
-			<a href="#created" rel="created">{{icon 'sort'}}Create date</a>
+			<a href="#created" rel="created">{{icon 'sort'}}{{t 'Create date'}}</a>
 		</li>
 		<li class="{{#equal sort 'mod'}}sel{{/equal}} {{#equal dir 'desc'}}desc{{/equal}}">
-			<a href="#modified" rel="mod">{{icon 'sort'}}Last edited</a>
+			<a href="#modified" rel="mod">{{icon 'sort'}}{{t 'Last edited'}}</a>
 		</li>
 	</ul>
 </div>
 
 <div class="filter-text">
 	<form class="standard-form">
-		<input type="text" name="text" value="{{text}}" placeholder="Text search">
+		<input type="text" name="text" value="{{text}}" placeholder="{{t 'Text search'}}">
 	</form>
 </div>
 

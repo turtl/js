@@ -24,7 +24,7 @@ var BoardsShareController = Composer.Controller.extend({
 		}
 		if(!this.model) throw new Error('boards: share: bad model');
 
-		turtl.push_title('Sharing: '+ this.model.get('title'), '/boards');
+		turtl.push_title(i18next.t('Sharing: {{title}}', {title: this.model.get('title')}), '/boards');
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		var has_persona = turtl.profile.get('personas').size() > 0;

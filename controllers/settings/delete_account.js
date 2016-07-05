@@ -8,7 +8,7 @@ var DeleteAccountController = FormController.extend({
 
 	init: function()
 	{
-		turtl.push_title('Delete account', '/settings');
+		turtl.push_title(i18next.t('Delete account'), '/settings');
 
 		this.parent();
 		this.render();
@@ -22,14 +22,14 @@ var DeleteAccountController = FormController.extend({
 	do_it: function(e)
 	{
 		if(e) e.stop();
-		if(!confirm('Just making sure...do you really want to delete your account?')) return;
+		if(!confirm(i18next.t('Just making sure...do you really want to delete your account?'))) return;
 
 		turtl.user.delete_account()
 			.then(function() {
-				barfr.barf('Your account has been deleted.');
+				barfr.barf(i18next.t('Your account has been deleted.'));
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', 'There was a problem deleting your account. Please try again.', err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem deleting your account. Please try again.'), err);
 				log.error('account: delete: ', turtl.user.id(), derr(err));
 			});
 	}

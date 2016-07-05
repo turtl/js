@@ -31,7 +31,7 @@ var UserJoinController = UserBaseController.extend({
 	{
 		this.parent();
 
-		turtl.push_title('Join', '/users/login');
+		turtl.push_title(i18next.t('Join'), '/users/login');
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		// check for promo codes
@@ -82,24 +82,24 @@ var UserJoinController = UserBaseController.extend({
 		var errors = [];
 		if(username.length < 3)
 		{
-			errors.push([inp_username, 'Please enter a username 3 characters or longer.']);
+			errors.push([inp_username, i18next.t('Please enter a username 3 characters or longer.')]);
 		}
 
 		if(password.length == 0)
 		{
-			errors.push([inp_password, 'Please enter a passphrase. Hint: Sentences are much better than single words.']);
+			errors.push([inp_password, i18next.t('Please enter a passphrase. Hint: Sentences are much better than single words.')]);
 		}
 		else if(password.length < 4)
 		{
-			errors.push([inp_password, 'We don\'t mean to tell you your business, but a passphrase less than four characters won\'t cut it. Try again.']);
+			errors.push([inp_password, i18next.t('We don\'t mean to tell you your business, but a passphrase less than four characters won\'t cut it. Try again.')]);
 		}
 		else if(password != pconfirm)
 		{
-			errors.push([inp_pconfirm, 'Your passphrase does not match the confirmation.']);
+			errors.push([inp_pconfirm, i18next.t('Your passphrase does not match the confirmation.')]);
 		}
 		else if(password.toLowerCase() == 'password')
 		{
-			errors.push([inp_password, 'That passphrase is making me cringe.']);
+			errors.push([inp_password, i18next.t('That passphrase is making me cringe.')]);
 		}
 		return errors;
 	},
@@ -157,10 +157,10 @@ var UserJoinController = UserBaseController.extend({
 				this.inp_submit.disabled = false;
 				if(err.disconnected)
 				{
-					barfr.barf('Couldn\'t connect to the server');
+					barfr.barf(i18next.t('Couldn\'t connect to the server'));
 					return;
 				}
-				turtl.events.trigger('ui-error', 'There was a problem saving that account', err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem saving that account'), err);
 				log.error('users: join: ', derr(err));
 				this.inp_submit.set('disabled', '');
 			})
@@ -186,24 +186,24 @@ var UserJoinController = UserBaseController.extend({
 					return board;
 				});
 		};
-		return add_board('Bookmarks')
+		return add_board(i18next.t('Bookmarks'))
 			.then(function(board) {
 				var id = board.id();
 				return Promise.all([
-					add_board('Save for later', id),
+					add_board(i18next.t('Save for later'), id),
 				]);
 			})
 			.then(function() {
-				return add_board('Photos')
+				return add_board(i18next.t('Photos'))
 			})
 			.then(function() {
-				return add_board('Passwords');
+				return add_board(i18next.t('Passwords'));
 			})
 			.then(function() {
-				return add_board('Ideas');
+				return add_board(i18next.t('Ideas'));
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', 'There was a problem creating your initial boards', err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem creating your initial boards'), err);
 				log.error('users: join: initial boards: ', derr(err));
 			});
 	},
@@ -214,27 +214,27 @@ var UserJoinController = UserBaseController.extend({
 		var status = ' - ';
 		if(passphrase.length >= 32)
 		{
-			status = 'excellent';
+			status = i18next.t('excellent');
 		}
 		else if(passphrase.length >= 24)
 		{
-			status = 'great';
+			status = i18next.t('great');
 		}
 		else if(passphrase.length >= 16)
 		{
-			status = 'good';
+			status = i18next.t('good');
 		}
 		else if(passphrase.length >= 10)
 		{
-			status = 'ok';
+			status = i18next.t('ok');
 		}
 		else if(passphrase.length > 4)
 		{
-			status = 'weak';
+			status = i18next.t('weak');
 		}
 		else if(passphrase.length > 0)
 		{
-			status = 'too short';
+			status = i18next.t('too short');
 		}
 
 		var width = Math.min(passphrase.length / 32, 1) * 100;

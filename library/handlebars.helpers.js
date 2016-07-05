@@ -199,3 +199,7 @@ Handlebars.registerHelper('ago-time', function(timestamp) {
 	return str;
 });
 
+Handlebars.registerHelper('t', function(key, options) {
+	var result = i18next.t(key, options.hash);
+	return new Handlebars.SafeString(result);
+});

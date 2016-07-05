@@ -1,26 +1,26 @@
 {{#equal-or type 'file' 'image'}}
 	<div class="file-container"></div>
 	{{#equal type 'image'}}
-		<span class="url-or-file">- OR -</span>
+		<span class="url-or-file">- {{t 'OR'}} -</span>
 	{{/equal}}
 {{/equal-or}}
 {{#equal-or type 'image' 'link'}}
-	<input type="text" name="url" value="{{note.url}}" tabindex="1" placeholder="{{#equal note.type "image"}}Image {{/equal}}URL">
+	<input type="text" name="url" value="{{note.url}}" tabindex="1" placeholder="{{#equal note.type "image"}}{{t 'Image URL'}}{{else}}{{t 'URL'}}{{/equal}}">
 	<div class="existing"></div>
 {{/equal-or}}
 
-<input type="text" name="title" value="{{note.title}}" tabindex="2" placeholder="Title">
+<input type="text" name="title" value="{{note.title}}" tabindex="2" placeholder="{{t 'Title'}}">
 {{#equal type 'password'}}
-	<input type="text" name="username" value="{{note.username}}" tabindex="3" placeholder="Username">
+	<input type="text" name="username" value="{{note.username}}" tabindex="3" placeholder="{{t 'Username'}}">
 	<div class="password">
 		<a class="preview" href="#preview">{{icon 'preview'}}</a>
-		<input type="password" name="password" value="{{note.password}}" tabindex="4" placeholder="Password">
+		<input type="password" name="password" value="{{note.password}}" tabindex="4" placeholder="{{t 'Password'}}">
 	</div>
 {{/equal}}
 
-<textarea name="text" rows="1" cols="80" tabindex="5" placeholder="Note text">{{note.text}}</textarea>
+<textarea name="text" rows="1" cols="80" tabindex="5" placeholder="{{t 'Note text'}}">{{note.text}}</textarea>
 <div class="formatting clear">
-	<a href="#formatting" rel="formatting">Formatting help</a>
+	<a href="#formatting" rel="formatting">{{t 'Formatting help'}}</a>
 </div>
 
 <div class="boards-container"></div>

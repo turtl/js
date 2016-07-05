@@ -28,9 +28,9 @@ var SharingBoardsItemController = Composer.Controller.extend({
 		var privs = this.model.get('privs') || {};
 		switch((privs[persona_id] || {}).perms)
 		{
-		case 1: perms = 'Read'; break;
-		case 2: perms = 'Write'; break;
-		case 3: perms = 'Admin'; break;
+		case 1: perms = i18next.t('Read'); break;
+		case 2: perms = i18next.t('Write'); break;
+		case 3: perms = i18next.t('Admin'); break;
 		}
 
 		this.html(view.render('sharing/boards/item', {
@@ -38,7 +38,7 @@ var SharingBoardsItemController = Composer.Controller.extend({
 			permissions: perms
 		}));
 		var actions = [[
-			{name: 'Leave this board'}
+			{name: i18next.t('Leave this board')}
 		]];
 		this.track_subcontroller('actions', function() {
 			return new ItemActionsController({
@@ -63,7 +63,7 @@ var SharingBoardsItemController = Composer.Controller.extend({
 	leave_board: function(e)
 	{
 		if(e) e.stop();
-		if(!confirm('Really leave this board?')) return;
+		if(!confirm(i18next.t('Really leave this board?'))) return;
 		var persona = turtl.profile.get('personas').first();
 		this.model.remove_persona(persona);
 	}
