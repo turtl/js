@@ -29,9 +29,9 @@ var BoardsShareItemController = Composer.Controller.extend({
 		var privs = this.board.get('privs') || {};
 		switch((privs[persona.id] || {}).perms)
 		{
-		case 1: perms = 'Read'; break;
-		case 2: perms = 'Write'; break;
-		case 3: perms = 'Admin'; break;
+		case 1: perms = i18next.t('Read'); break;
+		case 2: perms = i18next.t('Write'); break;
+		case 3: perms = i18next.t('Admin'); break;
 		}
 
 		this.html(view.render('boards/share/item', {

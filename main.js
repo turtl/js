@@ -220,17 +220,17 @@ var turtl = {
 					var retry = new Element('a')
 						.set('href', '#retry')
 						.addClass('button')
-						.set('html', 'Retry')
+						.set('html', i18next.t('Retry'))
 						.inject(what_next);
 					var logout = new Element('a')
 						.set('href', '#logout')
 						.addClass('button')
-						.set('html', 'Logout')
+						.set('html', i18next.t('Logout'))
 						.inject(what_next);
 					var wipe = new Element('a')
 						.set('href', '#wipe')
 						.addClass('button')
-						.set('html', 'Clear local data')
+						.set('html', i18next.t('Clear local data'))
 						.inject(what_next);
 					turtl.events.trigger('loading:stop');
 					turtl.update_loading_screen(false);

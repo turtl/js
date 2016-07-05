@@ -55,7 +55,7 @@ var BoardsItemController = Composer.Controller.extend({
 			board: data,
 			shared: shared_with_me_directly || shared_by_me,
 			shared_by_me: shared_by_me,
-			num_shared_with: num_shared_with + (num_shared_with == 1 ? ' person' : ' people'),
+			num_shared_with: (num_shared_with == 1 ? i18next.t('{{num_shared_with}} person', {num_shared_with: num_shared_with}) : i18next.t('{{num_shared_with}} people', {num_shared_with: num_shared_with})),
 			shared_with_me: shared_with_me,
 			shared_with_me_directly: shared_with_me_directly
 		})).bind(this)
