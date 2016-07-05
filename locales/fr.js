@@ -1,4 +1,5 @@
-{
+if(!window.locales) window.locales = {};
+locales.fr = {
     "Accept": "Accepter",
     "Add": "Ajouter",
     "Add a new note": "Ajouter une nouvelle note",
@@ -300,4 +301,5 @@
     "Your persona": "Votre persona",
     "Your public persona has been created!": "Votre persona public a été créé !",
     "Your settings": "Vos paramètres"
-}
+};
+

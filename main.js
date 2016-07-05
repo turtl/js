@@ -623,6 +623,8 @@ window.addEvent('domready', function() {
 	setTimeout(_turtl_init, 100);
 });
 
+init_localization();
+
 function setup_global_error_catching()
 {
 	// set up a global error handler that XHRs shit to the API so we know when bugs

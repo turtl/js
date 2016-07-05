@@ -37,9 +37,7 @@ function vendor_js() {
 	echo "${SEARCH_PATH}library/composer.js"
 	echo "${SEARCH_PATH}library/bluebird.js"
 	echo "${SEARCH_PATH}library/handlebars.runtime-v2.0.0.js"
-	echo "${SEARCH_PATH}library/i18next.min.js"
-	echo "${SEARCH_PATH}library/i18nextXHRBackend.min.js"
-	echo "${SEARCH_PATH}library/i18next-init.js"
+	echo "${SEARCH_PATH}library/i18next.js"
 }
 
 function all_js() {
@@ -67,21 +65,13 @@ function all_js() {
 	find ${SEARCH_PATH}controllers/0modules -name '*.js' \
 		| LC_ALL=C sort \
 		| grep -v 'nav\.js'
-	path_to_js "${SEARCH_PATH}controllers/boards"
-	path_to_js "${SEARCH_PATH}controllers/feedback"
-	path_to_js "${SEARCH_PATH}controllers/help"
-	find ${SEARCH_PATH}controllers/notes -name '*.js' \
-		| LC_ALL=C sort \
-		| grep -v 'edit/index.js'
-	path_to_js "${SEARCH_PATH}controllers/pages.js"
-	path_to_js "${SEARCH_PATH}controllers/personas"
-	path_to_js "${SEARCH_PATH}controllers/settings"
-	path_to_js "${SEARCH_PATH}controllers/sharing"
-	path_to_js "${SEARCH_PATH}controllers/sync"
-	path_to_js "${SEARCH_PATH}controllers/users"
+	path_to_js "${SEARCH_PATH}locales"
+	path_to_js "${SEARCH_PATH}controllers"
 	path_to_js "${SEARCH_PATH}models"
 	path_to_js "${SEARCH_PATH}handlers"
 	path_to_js "${SEARCH_PATH}turtl"
+	echo "${SEARCH_PATH}library/templates.js"
+	echo "${SEARCH_PATH}main.js"
 }
 
 function do_replace() {

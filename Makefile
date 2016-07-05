@@ -12,7 +12,7 @@ handlebars := $(shell find views/ -name "*.hbs")
 allcss = $(shell find css/ -name "*.css" \
 			| grep -v 'reset.css')
 alljs = $(shell echo "main.js" \
-			&& find {config,controllers,handlers,i18n,library,models,turtl} -name "*.js" \
+			&& find {config,controllers,handlers,locales,library,models,turtl} -name "*.js" \
 			| grep -v '(ignore|\.thread\.)')
 testsjs = $(shell find tests/{data,tests} -name "*.js")
 
