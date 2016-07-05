@@ -1615,7 +1615,7 @@ sjcl.beware["CBC mode is dangerous because it doesn't protect message integrity.
 
 	  // AL - add option for AsciiX923 padding
 	  var padded = w.concat(plaintext,[bl,bl,bl,bl]).slice(i,i+4);
-	  if(options.ascii)
+	  if((options || {}).ascii)
 	  {
 		  // convert PKCS padding to AsciiX923
 		  var bytes = sjcl.codec.bytes.fromBits(padded);
