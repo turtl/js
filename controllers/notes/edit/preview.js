@@ -14,7 +14,7 @@ var NotesEditPreviewController = Composer.Controller.extend({
 			return new NotesViewController({
 				model: this.model,
 				modal_opts: this.modal_opts,
-				title: 'Note preview',
+				title: i18next.t('Note preview'),
 				hide_actions: true
 			});
 		}.bind(this));

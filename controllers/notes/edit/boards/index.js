@@ -13,7 +13,7 @@ var NotesEditBoardsController = FormController.extend({
 	clone: null,
 	formclass: 'notes-edit-boards',
 	button_tabindex: 3,
-	action: 'Done',
+	action: i18next.t('Done'),
 
 	collection: null,
 
@@ -24,7 +24,7 @@ var NotesEditBoardsController = FormController.extend({
 
 		this.modal = new TurtlModal(Object.merge({
 			show_header: true,
-			title: 'Select note boards'
+			title: i18next.t('Select note boards')
 		}, this.modal_opts && this.modal_opts() || {}));
 
 		this.parent();

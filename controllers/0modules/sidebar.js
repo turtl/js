@@ -45,7 +45,7 @@ var SidebarController = Composer.Controller.extend({
 	{
 		this.is_open = true;
 		document.body.addClass('settings');
-		turtl.push_title('Turtl places', false);
+		turtl.push_title(i18next.t('Turtl places'), false);
 		setTimeout(this.render.bind(this), 10);
 		turtl.events.trigger('sidebar:open');
 	},

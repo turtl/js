@@ -11,9 +11,9 @@ var NavController = Composer.Controller.extend({
 	},
 
 	nav: [
-		{url: '/', name: 'All notes', icon: 'notes'},
-		{url: '/boards', name: 'Boards', icon: 'boards'},
-		{url: '/sharing', name: 'Sharing', icon: 'share'},
+		{url: '/', name: i18next.t("All notes"), icon: 'notes'},
+		{url: '/boards', name: i18next.t('Boards'), icon: 'boards'},
+		{url: '/sharing', name: i18next.t('Sharing'), icon: 'share'},
 	],
 
 	init: function()

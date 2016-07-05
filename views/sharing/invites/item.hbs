@@ -8,7 +8,7 @@
 	{{invite.title}}
 </h2>
 <p>
-	From
+	{{t 'From'}}
 	{{#if invite.from_persona.name}}
 		{{invite.from_persona.name}}
 	{{else}}
@@ -19,10 +19,10 @@
 <div class="clearMe"></div>
 <div class="unlocker">
 	<form class="standard-form">
-		<input type="text" name="passphrase" value="" placeholder="Passphrase">
+		<input type="text" name="passphrase" value="" placeholder="{{t 'Passphrase'}}">
 		<div class="submit">
 			<div class="button">
-				<input type="submit" value="Unlock and accept">
+				<input type="submit" value="{{t 'Unlock and accept'}}">
 			</div>
 		</div>
 	</form>

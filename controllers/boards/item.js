@@ -43,7 +43,7 @@ var BoardsItemController = Composer.Controller.extend({
 			!!(this.model.get('privs') || {})[my_persona_id];
 		var num_shared_with = Object.keys(this.model.get('privs') || {}).length;
 		var data = this.model.toJSON();
-		data.title = (data.title || '(untitled board)').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		data.title = (data.title || i18next.t('(untitled board)')).replace(/</g, '&lt;').replace(/>/g, '&gt;');
 		if(this.search.filter)
 		{
 			var regex = new RegExp(escape_regex(this.search.filter), 'gi');
@@ -146,17 +146,17 @@ var BoardsItemController = Composer.Controller.extend({
 		var persona = turtl.profile.get('personas').first();
 		if(!persona)
 		{
-			barfr.barf('A strange error occurred. Please log out and try again.');
+			barfr.barf(i18next.t('A strange error occurred. Please log out and try again.'));
 			return;
 		}
-		if(!confirm('Really leave this board?')) return;
+		if(!confirm(i18next.t('Really leave this board?'))) return;
 		var title = this.model.get('title');
 		this.model.remove_persona(persona)
 			.then(function() {
-				barfr.barf('You left the board "'+ title +'"');
+				barfr.barf(i18next.t('You left the board "{{title}}"', {title: title}));
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', 'There was a problem leaving that board', err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem leaving that board'), err);
 				log.error('board: leave: ', derr(err));
 			});
 	}

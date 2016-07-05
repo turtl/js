@@ -227,7 +227,7 @@ var Boards = SyncCollection.extend({
 		parents.forEach(function(b) {
 			idx[b.id] = b;
 			// fix any bad titles while we're looping
-			if(!b.title) b.title = '(untitled board)';
+			if(!b.title) b.title = i18next.t('(untitled board)');
 		});
 
 		children.forEach(function(b) {
@@ -246,7 +246,7 @@ var Boards = SyncCollection.extend({
 			.map(function(bid) {
 				var board = this.find_by_id(bid);
 				if(!board) return false;
-				var name = board.get('title') || '(untitled board)';
+				var name = board.get('title') || i18next.t('(untitled board)');
 				var parent_id = board.get('parent_id');
 				if(parent_id)
 				{
@@ -255,7 +255,7 @@ var Boards = SyncCollection.extend({
 				}
 				var json = board.toJSON();
 				json.name = name;
-				if(!json.title) json.title = '(untitled board)';
+				if(!json.title) json.title = i18next.t('(untitled board)');
 				return json;
 			}.bind(this))
 			.filter(function(board) { return !!board; });

@@ -242,7 +242,7 @@ var User = Protected.extend({
 			.catch(function(err) {
 				this.rollback_change_password(new_auth)
 					.catch(function(err) {
-						turtl.events.trigger('ui-error', 'Sorry, we couldn\'t undo the password change operation. You really should try changing your password again, or your profile may be stuck in limbo.', err);
+						turtl.events.trigger('ui-error', i18next.t('Sorry, we couldn\'t undo the password change operation. You really should try changing your password again, or your profile may be stuck in limbo.'), err);
 						log.error('user: pw rollback: ', err);
 					});
 				throw err;

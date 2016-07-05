@@ -44,7 +44,7 @@ var BoardsShareInviteController = FormController.extend({
 		//this.action = 'Invite';
 		this.modal = new TurtlModal({
 			show_header: true,
-			title: 'New invite'
+			title: i18next.t('New invite')
 		});
 		this.parent();
 		this.render();
@@ -54,7 +54,7 @@ var BoardsShareInviteController = FormController.extend({
 		this.with_bind(this.modal, 'close', this.release.bind(this));
 		this.bind(['cancel', 'close'], close);
 
-		this.requires_connection({msg: 'Sharing a board requires a connection to the Turtl server.'});
+		this.requires_connection({msg: i18next.t('Sharing a board requires a connection to the Turtl server.')});
 
 		this.email_timer = new Timer(500);
 		this.email_timer.bind('fired', this.query_email.bind(this));
@@ -99,8 +99,8 @@ var BoardsShareInviteController = FormController.extend({
 		//var challenge = this.inp_challenge.get('value');
 		//var response = this.inp_response.get('value');
 		var errors = [];
-		if(!title) errors.push([this.inp_title, 'Please give this invite a title']);
-		if(!email) errors.push([this.inp_email, 'Please enter a valid email']);
+		if(!title) errors.push([this.inp_title, i18next.t('Please give this invite a title')]);
+		if(!email) errors.push([this.inp_email, i18next.t('Please enter a valid email')]);
 
 		var invite_data = {
 			object_id: this.model.id(),
@@ -114,7 +114,7 @@ var BoardsShareInviteController = FormController.extend({
 
 		if(set_challenge)
 		{
-			if(!passphrase) errors.push([this.inp_passphrase, 'Please enter a passphrase to protect the invite']);
+			if(!passphrase) errors.push([this.inp_passphrase, i18next.t('Please enter a passphrase to protect the invite')]);
 			invite_data.passphrase = passphrase;
 
 			//if(!challenge) errors.push([this.inp_challenge, 'Please enter a question only the recipient will know the answer to']);
@@ -129,11 +129,11 @@ var BoardsShareInviteController = FormController.extend({
 		this.disable(true);
 		return invite.create().bind(this)
 			.then(function() {
-				barfr.barf('Invite sent');
+				barfr.barf(i18next.t('Invite sent'));
 				this.trigger('close');
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', 'There was a problem sending that invite', err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem sending that invite'), err);
 				log.error('board: share: ', this.model.id(), derr(err));
 				this.disable(false);
 			});

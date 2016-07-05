@@ -1,30 +1,30 @@
-<input type="text" name="username" placeholder="Username" tabindex="1" autocomplete="off" autocorrect="off" autocapitalize="none">
-<input type="password" name="password" placeholder="Passphrase" autocomplete="off" tabindex="2">
+<input type="text" name="username" placeholder="{{t 'Username'}}" tabindex="1" autocomplete="off" autocorrect="off" autocapitalize="none">
+<input type="password" name="password" placeholder="{{t 'Passphrase'}}" autocomplete="off" tabindex="2">
 {{#if show_autologin}}
 	<div class="autologin">
 		<label>
 			<input type="checkbox" name="autologin" value="1" {{#if autologin}}checked{{/if}}>
-			Stay logged in
+			{{t 'Stay logged in'}}
 		</label>
 	</div>
 {{/if}}
 
 <div class="buttons">
 	<div class="button login">
-		<input type="submit" class="button" value="Login">
+		<input type="submit" class="button" value="{{t 'Login'}}">
 	</div>
 	<p class="load">
 		{{svg 'loading'}}
 	</p>
 	<p>
-		<a href="/users/welcome">Create an account</a>
+		<a href="/users/welcome">{{t 'Create an account'}}</a>
 	</p>
 </div>
 
-<a class="open-settings" href="#settings">Advanced settings {{icon 'more'}}</a>
+<a class="open-settings" href="#settings">{{t 'Advanced settings'}} {{icon 'more'}}</a>
 <p class="settings">
 	<label for="inp_server">
-		Turtl server
+		{{t 'Turtl server'}}
 		<input type="text" name="server" value="{{server}}" placeholder="https://api.turtl.it/api">
 	</label>
 </p>

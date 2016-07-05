@@ -9,12 +9,12 @@
 	{{{board.title}}}
 </h2>
 <p>
-	<span class="count">{{num_notes}}</span> notes
+	{{t '<span class="count">{{num_notes}}</span> notes' num_notes=num_notes}}
 	{{#if shared_with_me_directly}}
-		<small>- Shared with me</small>
+		<small>- {{t 'Shared with me'}}</small>
 	{{/if}}
 	{{#if shared_by_me}}
-		<small>- Sharing with {{num_shared_with}}
+		<small>- {{t 'Sharing with {{num_shared_with}}' num_shared_with=num_shared_with}}
 	{{/if}}
 </p>
 

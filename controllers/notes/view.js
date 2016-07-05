@@ -102,7 +102,7 @@ var NotesViewController = NoteBaseController.extend({
 		{
 			this.track_subcontroller('actions', function() {
 				var actions = new ActionController({inject: this.modal.el});
-				actions.set_actions([{title: 'Edit note', name: 'edit', icon: 'edit'}]);
+				actions.set_actions([{title: i18next.t('Edit note'), name: 'edit', icon: 'edit'}]);
 				this.with_bind(actions, 'actions:fire', this.open_edit.bind(this, null));
 				return actions;
 			}.bind(this));
@@ -184,11 +184,11 @@ var NotesViewController = NoteBaseController.extend({
 	open_delete: function(e)
 	{
 		if(e) e.stop();
-		if(!confirm('Really delete this note?')) return false;
+		if(!confirm(i18next.t('Really delete this note?'))) return false;
 		this.model.destroy()
 			.catch(function(err) {
 				log.error('note: delete: ', derr(err));
-				barfr.barf('There was a problem deleting your note: '+ err.message);
+				barfr.barf(i18next.t('There was a problem deleting your note: {{err}}', {err: err.message}));
 			});
 	},
 
@@ -209,7 +209,7 @@ var NotesViewController = NoteBaseController.extend({
 				return download_blob(blob, {name: name});
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', 'There was a problem opening that file', err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem opening that file'), err);
 				log.error('note: file: open: ', this.model.id(), derr(err));
 			})
 			.finally(function() {

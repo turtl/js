@@ -6,7 +6,7 @@ var SharingController = Composer.Controller.extend({
 
 	init: function()
 	{
-		turtl.push_title('Sharing');
+		turtl.push_title(i18next.t('Sharing'));
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		turtl.events.trigger('notification:clear', 'share');
