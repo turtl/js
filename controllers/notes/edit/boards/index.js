@@ -13,7 +13,7 @@ var NotesEditBoardsController = FormController.extend({
 	clone: null,
 	formclass: 'notes-edit-boards',
 	button_tabindex: 3,
-	action: i18next.t('Done'),
+	action: 'Done',
 
 	collection: null,
 
