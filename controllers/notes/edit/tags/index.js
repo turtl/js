@@ -16,7 +16,7 @@ var NotesEditTagsController = FormController.extend({
 	clone: null,
 	formclass: 'notes-edit-tags',
 	button_tabindex: 3,
-	action: i18next.t('Done'),
+	action: 'Done',
 
 	collection: null,
 
