@@ -12,7 +12,7 @@ var NotesViewController = NoteBaseController.extend({
 	},
 
 	events: {
-		'click .file a': 'open_file',
+		'click .file.download a': 'open_file',
 		'click .backing a[rel=download]': 'open_image',
 		'click .note-gutter .content > h1': 'open_image',
 		'click .info-container .preview form input': 'copy',
@@ -195,6 +195,7 @@ var NotesViewController = NoteBaseController.extend({
 	open_file: function(e)
 	{
 		if(e) e.stop();
+		if(!this.el_file) return;
 		if(this.el_file.hasClass('decrypting')) return false;
 		var atag = Composer.find_parent('a', e.target);
 		if(!atag) return false;
