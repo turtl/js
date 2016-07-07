@@ -242,7 +242,7 @@ var User = Protected.extend({
 			.catch(function(err) {
 				this.rollback_change_password(new_auth)
 					.catch(function(err) {
-						turtl.events.trigger('ui-error', 'Sorry, we couldn\'t undo the password change operation. You really should try changing your password again, or your profile may be stuck in limbo.', err);
+						turtl.events.trigger('ui-error', i18next.t('Sorry, we couldn\'t undo the password change operation. You really should try changing your password again, or your profile may be stuck in limbo.'), err);
 						log.error('user: pw rollback: ', err);
 					});
 				throw err;
@@ -374,8 +374,9 @@ var User = Protected.extend({
 			// create a salt based off hashed username
 			var salt = tcrypt.hash(username);
 			var key = tcrypt.key_native(password, salt, {key_size: 32, iterations: iter, hasher: 'SHA-256'})
+			var catcher = function(err) { return (err instanceof DOMException) || (err instanceof TcryptError); };
 			var promise = Promise.resolve(key)
-				.catch(DOMException, function(err) {
+				.catch(catcher, function(err) {
 					// probably some idiotic "safe origin" policy crap. revert to sync/SJCL method
 					if(!(err instanceof DOMException))
 					{

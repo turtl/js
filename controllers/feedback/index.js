@@ -11,12 +11,12 @@ var FeedbackController = FormController.extend({
 
 	init: function()
 	{
-		turtl.push_title('Give us feedback');
+		turtl.push_title(i18next.t('Give us feedback'));
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		this.with_bind(turtl.events, 'api:connect', this.render.bind(this));
 		this.with_bind(turtl.events, 'api:disconnect', this.render.bind(this));
-		this.requires_connection({msg: 'Sending feedback requires a connection to the Turtl server.'});
+		this.requires_connection({msg: i18next.t('Sending feedback requires a connection to the Turtl server.')});
 
 		this.render();
 
@@ -56,7 +56,7 @@ var FeedbackController = FormController.extend({
 		var body = this.inp_text.get('value').trim();
 
 		var errors = [];
-		if(!body) errors.push([this.inp_text, 'Please enter some feedback']);
+		if(!body) errors.push([this.inp_text, i18next.t('Please enter some feedback')]);
 		if(!this.check_errors(errors)) return;
 
 		var data = {
@@ -77,7 +77,7 @@ var FeedbackController = FormController.extend({
 				this.render_thanks();
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', 'There was a problem sending that invite', err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem sending that invite'), err);
 				log.error('feedback: send: ', derr(err));
 				this.btn_submit.set('disabled', false).removeClass('disabled');
 				this.disable(false);

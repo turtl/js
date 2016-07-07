@@ -24,7 +24,7 @@ var NotesSearchController = Composer.Controller.extend({
 
 	init: function()
 	{
-		var titlefn = function(num) { return 'Search notes ('+ num +')'; };
+		var titlefn = function(num) { return i18next.t('Search notes ({{num}})', {num: num}); };
 
 		this.tags = clone(this.tags);
 		this.tags.sort(function(a, b) {
@@ -39,7 +39,7 @@ var NotesSearchController = Composer.Controller.extend({
 			show_header: true,
 			title: titlefn(turtl.search.total),
 			actions: [
-				{name: 'reset', icon: 'everything', title: 'Reset search'}
+				{name: 'reset', icon: 'everything', title: i18next.t('Reset search')}
 			]
 		});
 		this.render();

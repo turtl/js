@@ -9,7 +9,8 @@ var NotesEditController = FormController.extend({
 		'.password': 'el_password',
 		'.boards-container': 'el_boards',
 		'.file-container': 'el_file',
-		'.existing': 'el_existing'
+		'.existing': 'el_existing',
+		'.button-row': 'el_buttons'
 	},
 
 	events: {
@@ -29,6 +30,8 @@ var NotesEditController = FormController.extend({
 
 	model: null,
 	clone: null,
+	action: i18next.t('Save'),
+	show_cancel: false,
 	formclass: 'notes-edit',
 	button_tabindex: 9,
 	footer_actions: [ {name: 'tag', icon: 'tag'} ],
@@ -38,6 +41,7 @@ var NotesEditController = FormController.extend({
 
 	confirm_unsaved: null,
 	have_unsaved: false,
+	skip_resize_text: false,
 	form_data: null,
 
 	url_timer: null,
@@ -58,21 +62,20 @@ var NotesEditController = FormController.extend({
 		this.clone = this.model.clone();
 		this.clone.get('file').unset('set');
 
-		this.action = this.model.is_new() ? 'Add' : 'Edit';
 		this.parent();
 
 		var title = '';
 		switch(this.clone.get('type'))
 		{
-			case 'text': title = 'text note'; break;
-			case 'link': title = 'bookmark'; break;
+			case 'text': title = i18next.t('text note'); break;
+			case 'link': title = i18next.t('bookmark'); break;
 			default: title = this.clone.get('type');
 		}
-		title = this.action + ' ' + title;
+		title = i18next.t('Editing {{title}}', {title: title});
 
 		var conf = function()
 		{
-			if(this.confirm_unsaved && this.have_unsaved && !confirm('This note has unsaved changes. Really leave?')) return false;
+			if(this.confirm_unsaved && this.have_unsaved && !confirm(i18next.t('This note has unsaved changes. Really leave?'))) return false;
 			return true;
 		}.bind(this);
 
@@ -102,9 +105,8 @@ var NotesEditController = FormController.extend({
 						}
 
 						var msg = '<em>!</em>';
-						msg += 'This URL is already bookmarked in ';
-						if(ids.length == 1) msg += 'another note';
-						else msg += ids.length +' notes';
+						if(ids.length == 1) msg += i18next.t('This URL is already bookmarked in another note');
+						else msg += i18next.t('This URL is already bookmarked in {{ids_length}} notes', {ids_length: ids.length});
 
 						this.el_existing.set('html', msg);
 						this.el_existing.slide('in');
@@ -132,10 +134,6 @@ var NotesEditController = FormController.extend({
 			}
 		});
 		this.bind(['cancel', 'close'], close);
-
-		this.bind('release', function() {
-			Autosize.destroy(this.inp_text);
-		}.bind(this));
 
 		// handle our "you have unsaved changes" state stuff
 		var unsaved = function()
@@ -175,6 +173,13 @@ var NotesEditController = FormController.extend({
 		this.bind('release', function() {
 			document.body.removeEvent('keydown', special_key_bound);
 		});
+
+		if(!this.skip_resize_text)
+		{
+			var resizer = this.resize_text.bind(this);
+			window.addEvent('resize', resizer);
+			this.bind('release', window.removeEvent.bind(window, 'resize', resizer));
+		}
 	},
 
 	render: function()
@@ -183,13 +188,13 @@ var NotesEditController = FormController.extend({
 		var colors = NOTE_COLORS;
 		var data = this.model.toJSON();
 		if(!data.color) delete data.color;
-		Autosize.destroy(this.inp_text);
 
 		this.html(view.render('notes/edit/index', {
 			note: data,
 			type: this.model.get('type') || this.type,
 			colors: colors
 		}));
+		setTimeout(this.resize_text.bind(this), 10);
 
 		if(this.model.is_new())
 		{
@@ -207,11 +212,6 @@ var NotesEditController = FormController.extend({
 			// sliding in, making the transition look really ugly and stupid.
 			// beware!
 			if(focus_el) setTimeout(focus_el.focus.bind(focus_el), 300);
-		}
-
-		if(this.inp_text && get_platform() != 'mobile')
-		{
-			setTimeout(function() { autosize(this.inp_text); }.bind(this), 10);
 		}
 
 		this.track_subcontroller('boards', function() {
@@ -318,7 +318,7 @@ var NotesEditController = FormController.extend({
 							return this.model.save();
 						})
 						.catch(function(err) {
-							turtl.events.trigger('ui-error', 'There was a problem removing the attachement', err);
+							turtl.events.trigger('ui-error', i18next.t('There was a problem removing the attachement'), err);
 							log.error('note: edit: file: ', this.model.id(), derr(err));
 						});
 				}
@@ -357,12 +357,12 @@ var NotesEditController = FormController.extend({
 						file.unset('no_preview').unset('set');
 					})
 					.catch(function(err) {
-						turtl.events.trigger('ui-error', 'There was a problem saving the attachment', err);
+						turtl.events.trigger('ui-error', i18next.t('There was a problem saving the attachment'), err);
 						log.error('note: edit: file: ', this.model.id(), derr(err));
 					});
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', 'There was a problem updating that note', err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem updating that note'), err);
 				log.error('note: edit: ', this.model.id(), derr(err));
 			});
 	},
@@ -431,10 +431,17 @@ var NotesEditController = FormController.extend({
 	{
 		var data = this.grab_form_data();
 		var preview = this.clone.clone().set(data);
-		new NotesEditPreviewController({
+		var con = new NotesEditPreviewController({
 			model: preview,
-			modal_opts: this.modal_opts
+			modal_opts: function() {
+				var opts = (this.modal_opts && this.modal_opts()) || {};
+				var actions = opts.actions || [];
+				actions.push({name: 'edit', icon: 'edit'});
+				opts.actions = actions;
+				return opts;
+			}.bind(this)
 		});
+		this.with_bind(con, 'save', this.submit.bind(this));
 	},
 
 	special_key: function(e)
@@ -467,6 +474,17 @@ var NotesEditController = FormController.extend({
 			this.el_password.removeClass('preview');
 			this.inp_password.set('type', 'password');
 		}
+	},
+
+	resize_text: function()
+	{
+		var form_bottom = this.el_form.getCoordinates().bottom;
+		var btn_top = this.el_buttons.getCoordinates().top;
+		var diff = btn_top - form_bottom;
+		var txt_height = this.inp_text.getCoordinates().height;
+		var height = txt_height + diff;
+		if(height < 80) height = 80;
+		this.inp_text.setStyles({ height: height+'px' });
 	}
 });
 

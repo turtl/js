@@ -29,9 +29,9 @@ var BoardsShareItemController = Composer.Controller.extend({
 		var privs = this.board.get('privs') || {};
 		switch((privs[persona.id] || {}).perms)
 		{
-		case 1: perms = 'Read'; break;
-		case 2: perms = 'Write'; break;
-		case 3: perms = 'Admin'; break;
+		case 1: perms = i18next.t('Read'); break;
+		case 2: perms = i18next.t('Write'); break;
+		case 3: perms = i18next.t('Admin'); break;
 		}
 
 		this.html(view.render('boards/share/item', {
@@ -56,13 +56,20 @@ var BoardsShareItemController = Composer.Controller.extend({
 	open_delete: function(e)
 	{
 		if(e) e.stop();
-		if(!confirm('Really '+ (this.pending ? 'remove this invite' : 'remove this user from the board') +'?')) return;
+		if(this.pending)
+		{
+			if(!confirm(i18next.t('Really remove this invite?'))) return;
+		}
+		else
+		{
+			if(!confirm(i18next.t('Really remove this user from the board?'))) return;
+		}
 
 		if(this.pending)
 		{
 			this.model.reject()
 				.catch(function(err) {
-					barfr.barf('Error removing invite.');
+					barfr.barf(i18next.t('Error removing invite.'));
 					log.error('board: share: remove invite: ', err);
 				});
 		}
@@ -70,7 +77,7 @@ var BoardsShareItemController = Composer.Controller.extend({
 		{
 			this.board.remove_persona(this.model)
 				.catch(function(err) {
-					barfr.barf('Error removing share.');
+					barfr.barf(i18next.t('Error removing share.'));
 					log.error('board: share: remove share: ', err);
 				});
 		}

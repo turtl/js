@@ -1,9 +1,9 @@
 <p class="head">
 	{{#if outdated_key}}
-		<em>{{email}}</em> needs to upgrade their persona.
+		<em>{{t '{{email}}</em> needs to upgrade their persona.' email=email}}
 	{{else}}
-		<em>{{email}}</em> is not a current Turtl user. 
+		<em>{{t '{{email}}</em> is not a current Turtl user.' email=email}}
 	{{/if}}
-	This share will happen over email. It's recommended you protect the invite.
+	{{t 'This share will happen over email. It\'s recommended you protect the invite.'}}
 </p>
 

@@ -26,7 +26,7 @@ var NotesIndexController = Composer.Controller.extend({
 	{
 		if(this.board_id == 'all')
 		{
-			var title = 'All notes';
+			var title = i18next.t("All notes");
 			var back = undefined;
 		}
 		else
@@ -34,7 +34,7 @@ var NotesIndexController = Composer.Controller.extend({
 			var board = turtl.profile.get('boards').find_by_id(this.board_id);
 			if(!board)
 			{
-				barfr.barf('That board doesn\'t seem to exist');
+				barfr.barf(i18next.t('That board doesn\'t seem to exist'));
 				log.error('notes: index: bad board id: ', this.board_id);
 				window.history.go(-1);
 			}
@@ -86,11 +86,11 @@ var NotesIndexController = Composer.Controller.extend({
 		this.track_subcontroller('actions', function() {
 			var actions = new ActionController();
 			actions.set_actions([
-				{title: 'Text note', name: 'text', icon: 'write', shortcut: 't'},
-				{title: 'Bookmark', name: 'link', icon: 'bookmark', shortcut: 'b'},
-				{title: 'Image', name: 'image', icon: 'image', shortcut: 'i'},
-				{title: 'File', name: 'file', icon: 'file', shortcut: 'f'},
-				{title: 'Password', name: 'password', icon: 'password', shortcut: 'p'}
+				{title: i18next.t('Text note'), name: 'text', icon: 'write', shortcut: 't'},
+				{title: i18next.t('Bookmark'), name: 'link', icon: 'bookmark', shortcut: 'b'},
+				{title: i18next.t('Image'), name: 'image', icon: 'image', shortcut: 'i'},
+				{title: i18next.t('File'), name: 'file', icon: 'file', shortcut: 'f'},
+				{title: i18next.t('Password'), name: 'password', icon: 'password', shortcut: 'p'}
 			]);
 			this.with_bind(actions, 'actions:fire', this.open_add.bind(this));
 			this.with_bind(turtl.keyboard, 'a', function() {

@@ -1,4 +1,5 @@
 var NoteBaseController = Composer.Controller.extend({
+	xdom: true,
 	elements: {
 		'.backing a': 'img_a'
 	},

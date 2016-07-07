@@ -123,6 +123,10 @@ Composer.sync = function(method, model, options)
 					return false;
 				}
 				log.debug('save: '+ table +': '+ method, modeldata);
+			})
+			.catch(function(err) {
+				log.error('sync: ', method, err, table, model.id());
+				throw err;
 			});
 	}.bind(this);
 

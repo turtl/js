@@ -18,7 +18,7 @@ var BoardsController = Composer.Controller.extend({
 
 	init: function()
 	{
-		turtl.push_title('Boards');
+		turtl.push_title(i18next.t('Boards'));
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		this.collection = new BoardsFilter(turtl.profile.get('boards'), {
@@ -32,7 +32,7 @@ var BoardsController = Composer.Controller.extend({
 		// set up the action button
 		this.track_subcontroller('actions', function() {
 			var actions = new ActionController();
-			actions.set_actions([{title: 'Create a board', name: 'add'}]);
+			actions.set_actions([{title: i18next.t('Create a board'), name: 'add'}]);
 			this.with_bind(actions, 'actions:fire', function(action) {
 				switch(action)
 				{

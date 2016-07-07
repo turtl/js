@@ -1,6 +1,6 @@
 <div class="share-actions"></div>
 <h2>
-	{{board.title}}
+	{{#if board.title}}{{board.title}}{{else}}{{t '(untitled board)'}}{{/if}}
 </h2>
 <p>
 	{{permissions}} permissions
@@ -9,10 +9,10 @@
 <div class="clearMe"></div>
 <div class="unlocker">
 	<form class="standard-form">
-		<input type="text" name="passphrase" value="" placeholder="Passphrase">
+		<input type="text" name="passphrase" value="" placeholder="{{t 'Passphrase'}}">
 		<div class="submit">
 			<div class="button">
-				<input type="submit" value="Unlock and accept">
+				<input type="submit" value="{{t 'Unlock and accept'}}">
 			</div>
 		</div>
 	</form>

@@ -1,11 +1,11 @@
 <div class="content">
-	<h1>Have an idea? A problem?</h1>
+	<h1>{{t 'Have an idea? A problem?'}}</h1>
 </div>
 
 {{#if show_email}}
-	<input type="text" name="email" value="" tabindex="1" placeholder="Your email (optional, so we can respond)">
+	<input type="text" name="email" value="" tabindex="1" placeholder="{{t 'Your email (optional, so we can respond)'}}">
 {{/if}}
-<textarea name="text" rows="1" cols="80" tabindex="3" placeholder="Give your feedback"></textarea>
+<textarea name="text" rows="1" cols="80" tabindex="3" placeholder="{{t 'Give your feedback'}}"></textarea>
 <div class="buttons">
 	<div class="button login">
 		<input type="submit" class="button" value="Send">

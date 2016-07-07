@@ -1,17 +1,24 @@
 {{#if initial}}
-	<p class="page-empty">Decrypting notes...</p>
+	<p class="page-empty">{{t 'Decrypting notes...'}}</p>
 {{/if}}
 {{#if no_results}}
-	<p class="page-empty">No notes found.</p>
+	<p class="page-empty">{{t 'No notes found.'}}</p>
 {{/if}}
 {{#if empty}}
 	<p class="page-empty">
 		{{icon 'notes'}}
-		No notes here!<br>
-		<small>Tap <em>+</em> to start</small>
+		{{t 'No notes here!'}}<br>
+		<small>{{t 'Tap <em>+</em> to start'}}</small>
 	</p>
 {{/if}}
-<ul class="note-list clear"></ul>
+<ul class="note-list clear {{view_mode}}"></ul>
 
-<p class="paginate"></p>
+<p class="paginate">
+	{{#if show_prev}}
+		<a href="#prev" rel="prev">&lt; {{t 'Prev'}}</a>
+	{{/if}}
+	{{#if show_next}}
+		<a href="#next" rel="next">{{t 'Next'}} &gt;</a>
+	{{/if}}
+</p>
 

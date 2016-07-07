@@ -1,41 +1,49 @@
-<input type="text" name="username" placeholder="Username (or email address)" tabindex="4" autocorrect="off" autocapitalize="none">
-<input type="password" name="password" placeholder="Passphrase" tabindex="5">
-<input type="password" name="confirm" placeholder="Confirm passphrase" tabindex="6">
-
+<input type="text" name="username" placeholder="{{t 'Username (or email address)'}}" tabindex="4" autocomplete="off" autocorrect="off" autocapitalize="none">
+<input type="password" name="password" placeholder="{{t 'Passphrase'}}" autocomplete="off" tabindex="5">
+<input type="password" name="confirm" placeholder="{{t 'Confirm passphrase'}}" autocomplete="off" tabindex="6">
 <div class="strength">
 	<div class="progress-bar">
 		<div class="inner">&nbsp;</div>
 	</div>
-	<p>Passphrase strength: <span class="status"></span></p>
+	<p>{{t 'Passphrase strength: '}}<span class="status"></span></p>
 </div>
 
 <!--
 {{#if enable_promo}}
 	{{#unless promo}}
-		<a class="open-promo" href="#open-promo">Have a promo code?</a>
+		<a class="open-promo" href="#open-promo">{{t 'Have a promo code?'}}</a>
 	{{/unless}}
 	<div class="promo {{#if promo}}open{{/if}}">
-		Promo code: <input type="text" name="promo" value="{{promo}}" placeholder="Promo code" tabindex="7">
+		{{t 'Promo code: '}}<input type="text" name="promo" value="{{promo}}" placeholder="{{t 'Promo code'}}" tabindex="7">
 	</div>
 {{/if}}
 -->
 
+{{#if show_autologin}}
+	<div class="autologin">
+		<label>
+			<input type="checkbox" name="autologin" value="1" {{#if autologin}}checked{{/if}}>
+			{{t 'Stay logged in'}}
+		</label>
+	</div>
+{{/if}}
+
 <div class="buttons">
 	<div class="button join">
-		<input type="submit" class="button" value="Join">
+		<input type="submit" class="button" value="{{t 'Join'}}">
 	</div>
 	<p class="load">
 		{{svg 'loading'}}
 	</p>
 	<p>
-		<a href="/users/login">Login to an existing account</a>
+		<a href="/users/login">{{t 'Login to an existing account'}}</a>
 	</p>
 </div>
 
-<a class="open-settings" href="#settings">Advanced settings {{icon 'more'}}</a>
+<a class="open-settings" href="#settings">{{t 'Advanced settings'}} {{icon 'more'}}</a>
 <p class="settings">
 	<label for="inp_server">
-		Turtl server
+		{{t 'Turtl server'}}
 		<input type="text" name="server" value="{{server}}" placeholder="https://api.turtl.it/api">
 	</label>
 </p>

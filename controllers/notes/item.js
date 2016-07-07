@@ -53,60 +53,62 @@ var NotesItemController = NoteBaseController.extend({
 		this.html(view.render('notes/item', {
 			content: type_content,
 			note: note
-		}));
-		this.el.className = 'note item';
-		this.el.addClass(type);
-		var is_password = this.model.get('type') == 'password';
-		if(!this.model.get('text'))
-		{
-			this.el.addClass('no-text');
-		}
-		if(!this.model.get('title') && !is_password)
-		{
-			this.el.addClass('no-title');
-		}
-		if(type == 'image' && !this.model.get('url'))
-		{
-			this.el.addClass('preview');
-		}
-		if(this.model.get('crypto_error'))
-		{
-			this.el.addClass('crypto-error');
-		}
-		this.el.set('rel', this.model.id());
-
-		// trigger masonry update if we have an image that loaded
-		var load_img = function(img_tag)
-		{
-			return new Promise(function(resolve, reject) {
-				if(img_tag.complete || (img_tag.naturalWidth && img_tag.naturalWidth > 0))
+		})).bind(this)
+			.then(function() {
+				this.el.className = 'note item';
+				this.el.addClass(type);
+				var is_password = this.model.get('type') == 'password';
+				if(!this.model.get('text'))
 				{
-					return resolve();
+					this.el.addClass('no-text');
 				}
-				img_tag.onload = resolve;
-			});
-		};
-		var set_height = function()
-		{
-			this._last_height = this.el && this.el.getCoordinates().height;
-		}.bind(this);
+				if(!this.model.get('title') && !is_password)
+				{
+					this.el.addClass('no-title');
+				}
+				if(type == 'image' && !this.model.get('url'))
+				{
+					this.el.addClass('preview');
+				}
+				if(this.model.get('crypto_error'))
+				{
+					this.el.addClass('crypto-error');
+				}
+				this.el.set('rel', this.model.id());
 
-		var imgs = this.el.getElements('img');
-		if(imgs.length)
-		{
-			Promise.all(imgs.map(load_img)).bind(this)
-				.then(function() {
-					return delay(1);
-				})
-				.then(function() {
-					setTimeout(this.trigger.bind(this, 'update'));
+				// trigger masonry update if we have an image that loaded
+				var load_img = function(img_tag)
+				{
+					return new Promise(function(resolve, reject) {
+						if(img_tag.complete || (img_tag.naturalWidth && img_tag.naturalWidth > 0))
+						{
+							return resolve();
+						}
+						img_tag.onload = resolve;
+					});
+				};
+				var set_height = function()
+				{
+					this._last_height = this.el && this.el.getCoordinates().height;
+				}.bind(this);
+
+				var imgs = this.el.getElements('img');
+				if(imgs.length)
+				{
+					Promise.all(imgs.map(load_img)).bind(this)
+						.then(function() {
+							return delay(1);
+						})
+						.then(function() {
+							setTimeout(this.trigger.bind(this, 'update'));
+							set_height();
+						});
+				}
+				else
+				{
 					set_height();
-				});
-		}
-		else
-		{
-			set_height();
-		}
+				}
+			});
 	},
 
 	note_click: function(e)

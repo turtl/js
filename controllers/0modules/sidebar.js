@@ -1,4 +1,5 @@
 var SidebarController = Composer.Controller.extend({
+	xdom: true,
 	el: '#sidebar',
 
 	elements: {
@@ -10,35 +11,48 @@ var SidebarController = Composer.Controller.extend({
 	events: {
 		'click > .overlay': 'close',
 		// close when clicking one of the sidebar links
-		'click ul a': 'close'
+		'click ul a': 'close',
+		'click .sync .button.sync': 'sync'
 	},
+
+	is_open: false,
 
 	init: function()
 	{
 		this.render();
 		this.with_bind(turtl.events, 'sidebar:toggle', this.toggle.bind(this));
-		this.with_bind(turtl.events, 'api:connect', this.update_connection_status.bind(this));
-		this.with_bind(turtl.events, 'api:disconnect', this.update_connection_status.bind(this));
+		this.with_bind(turtl.events, 'api:connect', this.render.bind(this));
+		this.with_bind(turtl.events, 'api:disconnect', this.render.bind(this));
 		this.with_bind(turtl.events, 'app:load:profile-loaded', this.render.bind(this));
+
+		var refresh = setInterval(function() {
+			if(this.is_open) this.render();
+		}.bind(this), 5000);
+		this.bind('release', clearInterval.bind(window, refresh));
 	},
 
 	render: function()
 	{
 		this.html(view.render('modules/sidebar', {
-			connected: (turtl.sync || {}).connected
+			connected: (turtl.sync || {}).connected,
+			open: this.is_open,
+			last_sync: (turtl.sync || {}).last_sync,
+			polling: (turtl.sync || {})._polling
 		}));
 	},
 
 	open: function()
 	{
+		this.is_open = true;
 		document.body.addClass('settings');
-		turtl.push_title('Turtl places', false);
-		setTimeout(this.overlay.addClass.bind(this.overlay, 'show'), 10);
+		turtl.push_title(i18next.t('Turtl places'), false);
+		setTimeout(this.render.bind(this), 10);
 		turtl.events.trigger('sidebar:open');
 	},
 
 	close: function()
 	{
+		this.is_open = false;
 		this.overlay.setStyles({position: 'fixed'});
 		this.overlay.removeClass('show');
 		setTimeout(function() {
@@ -62,21 +76,12 @@ var SidebarController = Composer.Controller.extend({
 		}
 	},
 
-	update_connection_status: function()
+	sync: function(e)
 	{
-		var connected = turtl.sync.connected;
-		if(connected)
-		{
-			this.el_connection
-				.removeClass('disconnected')
-				.addClass('connected');
-		}
-		else
-		{
-			this.el_connection
-				.removeClass('connected')
-				.addClass('disconnected');
-		}
+		if(e) e.stop();
+		if(!turtl.sync) return;
+		turtl.sync.jumpstart();
+		setTimeout(this.render.bind(this), 1000);
 	}
 });
 

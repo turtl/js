@@ -5,12 +5,12 @@
 			<ul>
 				{{#each boards}}
 					<li>
-						{{name}}
+						{{#if name}}{{name}}{{else}}{{t '(untitled board)'}}{{/if}}
 					</li>
 				{{/each}}
 			</ul>
 		{{else}}
-			<span>This note is not in any boards &raquo;</span>
+			<span>{{t 'This note is not in any boards'}} &raquo;</span>
 		{{/if}}
 	</div>
 {{/if}}

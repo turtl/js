@@ -12,7 +12,7 @@ var PersonasController = Composer.Controller.extend({
 		var open = turtl.router.get_param(window.location.search, 'open');
 		var back = turtl.router.get_param(window.location.search, 'back');
 		if(!back) back = '/settings';
-		turtl.push_title('Your persona', back);
+		turtl.push_title(i18next.t('Your persona'), back);
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		this.filter = turtl.profile.get('personas');
@@ -46,7 +46,7 @@ var PersonasController = Composer.Controller.extend({
 			// set up the action button
 			this.track_subcontroller('actions', function() {
 				var actions = new ActionController();
-				actions.set_actions([{title: 'New persona', name: 'add'}]);
+				actions.set_actions([{title: i18next.t('New persona'), name: 'add'}]);
 				this.with_bind(actions, 'actions:fire', function(action) {
 					switch(action)
 					{

@@ -1,0 +1,46 @@
+#!/bin/bash
+
+### This script generates index.html, which loads all needed javascript and
+### css for the app.
+
+pwd=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+ASSET_ROOT=""
+SEARCH_PATH=""
+source "$pwd/include.sh"
+
+## -----------------------------------------------------------------------------
+## generate extra
+## -----------------------------------------------------------------------------
+extra='<base href="/">'
+
+## -----------------------------------------------------------------------------
+## generate CSS links
+## -----------------------------------------------------------------------------
+css="$(
+	echo "$(all_css)" \
+		| sed 's|^|<link rel=\"stylesheet\" href=\"/|' \
+		| sed 's|$|">|'
+)"
+
+## -----------------------------------------------------------------------------
+## generate JS includes
+## -----------------------------------------------------------------------------
+js="$(
+	cat $(echo "$(all_js)" \
+		| sed 's|___| |g' \
+	) > turtl.min.js
+	echo '<script src="/turtl.min.js"></script>'
+)"
+
+## -----------------------------------------------------------------------------
+## put it all together
+## -----------------------------------------------------------------------------
+index="$(cat views/layouts/default.html)"
+index="$(do_replace "$index" '{{extra}}' "$extra")"
+index="$(do_replace "$index" '{{gencss}}' "$css")"
+index="$(do_replace "$index" '{{genjs}}' "$js")"
+
+# send our generated data into their restecpive files
+echo -ne "$index" > index.html
+

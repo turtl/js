@@ -1,4 +1,5 @@
 var NotesListController = Composer.ListController.extend({
+	xdom: true,
 	class_name: 'list-container',
 
 	elements: {
@@ -28,7 +29,6 @@ var NotesListController = Composer.ListController.extend({
 		this.masonry_timer = new Timer(10);
 		this.with_bind(this.masonry_timer, 'fired', this.update_masonry.bind(this));
 
-		this.render({initial: true});
 		var renderopts = {empty: true};
 		this.bind('list:empty', this.render.bind(this, renderopts));
 		this.bind('list:notempty', this.render.bind(this));
@@ -46,89 +46,86 @@ var NotesListController = Composer.ListController.extend({
 		});
 		resize_timer.bind('fired', this.update_masonry.bind(this));
 
-		// run an initial search
-		this.do_search().bind(this)
-			.spread(function(ids, tags) {
-				// curtail rendering duplicate result sets
-				this._last_search = JSON.stringify(ids);
-
-				this.tags = tags;
-				this.bind('search', function(options) {
-					options || (options = {});
-					if(options.reset_pages) this.search.page = 1;
-					this.do_search(Object.merge({notify: true}, options));
-				}.bind(this));
-
-				var notes = turtl.profile.get('notes');
-				this.with_bind(notes, ['add', 'change', 'remove', 'reset', 'destroy'], function() {
-					this.trigger('search');
-				}.bind(this))
-				this.track(turtl.search, function(model, options) {
-					options || (options = {});
-					var fragment = options.fragment;
-					// since the search model only deals with IDs, here we pull
-					// out the actual note model from the profile (which was
-					// pre-loaded and decrypted)
-					var note = notes.get(model.id());
-					var con = new NotesItemController({
-						inject: fragment ? fragment : this.note_list,
-						model: note
-					});
-					// if the note re-renders, it possibly changed height and we
-					// need to adjust the masonry
-					con.bind('update', this.masonry_timer.reset.bind(this.masonry_timer));
-					return con;
-				}.bind(this), {
-					bind_reset: true,
-					fragment_on_reset: function() { return this.note_list }.bind(this)
-				});
-
-				this.with_bind(turtl.search, ['reset', 'add', 'remove'], this.update_view.bind(this));
-				this.bind('search-done', function(ids, _tags, _total, options) {
-					options || (options = {});
-
+		this.bind_once('xdom:render', function() {
+			// run an initial search
+			this.do_search().bind(this)
+				.spread(function(ids, tags) {
 					// curtail rendering duplicate result sets
-					var string_ids = JSON.stringify(ids);
-					if(string_ids == this._last_search) return;
-					this._last_search = string_ids;
+					this._last_search = JSON.stringify(ids);
 
-					// let render know what's going on
-					if(ids.length == 0) { renderopts.no_results = true; }
-					else { delete renderopts.no_results; }
+					this.tags = tags;
+					this.bind('search', function(options) {
+						options || (options = {});
+						if(options.reset_pages) this.search.page = 1;
+						this.do_search(Object.merge({notify: true}, options));
+					}.bind(this));
 
-					// always go back to the top after a search
-					if(options.scroll_to_top)
-					{
-						$E('#wrap').scrollTo(0, 0);
-					}
+					var notes = turtl.profile.get('notes');
+					this.with_bind(notes, ['add', 'change', 'remove', 'reset', 'destroy'], function() {
+						this.trigger('search');
+					}.bind(this))
+					this.track(turtl.search, function(model, options) {
+						options || (options = {});
+						var fragment = options.fragment;
+						// since the search model only deals with IDs, here we pull
+						// out the actual note model from the profile (which was
+						// pre-loaded and decrypted)
+						var note = notes.get(model.id());
+						var con = new NotesItemController({
+							inject: options.container,
+							model: note
+						});
+						// if the note re-renders, it possibly changed height and we
+						// need to adjust the masonry
+						con.bind('update', this.masonry_timer.reset.bind(this.masonry_timer));
+						return con;
+					}.bind(this), {
+						bind_reset: true,
+						container: function() { return this.note_list }.bind(this)
+					});
 
-					// ok, all the notes we found are deserialized and loaded
-					// into mem, so we trigger a reset and the tracker will pick
-					// up on it and re-display the notes
-					turtl.search.trigger('reset');
+					this.with_bind(turtl.search, ['reset'], this.render.bind(this, {}));
+					this.bind('search-done', function(ids, _tags, _total, options) {
+						options || (options = {});
+
+						// curtail rendering duplicate result sets
+						var string_ids = JSON.stringify(ids);
+						if(string_ids == this._last_search) return;
+						this._last_search = string_ids;
+
+						// let render know what's going on
+						if(ids.length == 0) { renderopts.no_results = true; }
+						else { delete renderopts.no_results; }
+
+						// always go back to the top after a search
+						if(options.scroll_to_top)
+						{
+							$E('#wrap').scrollTo(0, 0);
+						}
+
+						// ok, all the notes we found are deserialized and loaded
+						// into mem, so we trigger a reset and the tracker will pick
+						// up on it and re-display the notes
+						turtl.search.trigger('reset');
+					});
+					this.render();
 				});
-				this.bind('search-done', this.update_pagination.bind(this));
-				this.update_pagination();
-			});
-
-		/*
-		var scroll_timer = new Timer(500);
-		scroll_timer.bind('fired', this.infinite_scroll.bind(this));
-		this._scroll_catcher = scroll_timer.reset.bind(scroll_timer);
-		window.addEvent('scroll', this._scroll_catcher);
-		this.bind('release', function() { window.removeEvent('scroll', this._scroll_catcher); }.bind(this));
-		*/
+		}.bind(this));
+		this.render({initial: true});
 	},
 
 	render: function(options)
 	{
 		options || (options = {});
-		this.html(view.render('notes/list', {
+		return this.html(view.render('notes/list', {
 			initial: options.initial,
 			empty: options.no_results ? false : options.empty,
-			no_results: options.no_results
-		}));
-		this.update_view();
+			no_results: options.no_results,
+			view_mode: this.view_mode,
+			show_prev: this.search.page > 1,
+			show_next: ((this.search.page * this.search.per_page) < turtl.search.total),
+		})).bind(this)
+			.then(this.update_view);
 	},
 
 	do_search: function(options)
@@ -147,12 +144,6 @@ var NotesListController = Composer.ListController.extend({
 
 	update_view: function()
 	{
-		this.note_list
-			.removeClass('masonry')
-			.removeClass('column')
-			.removeClass('list')
-			.addClass(this.view_mode);
-
 		switch(this.view_mode)
 		{
 			case 'masonry':
@@ -178,41 +169,6 @@ var NotesListController = Composer.ListController.extend({
 			resizeable: true,
 			itemSelector: '> li.note'
 		});
-	},
-
-	update_pagination: function()
-	{
-		this.pagination.set('html', '');
-		if(this.search.page > 1)
-		{
-			/*
-			var first = new Element('a')
-				.set('href', '#first')
-				.set('rel', 'first')
-				.set('html', '&laquo;First')
-				.inject(this.pagination);
-			*/
-			var prev = new Element('a')
-				.set('href', '#prev')
-				.set('rel', 'prev')
-				.set('html', '&lt; Prev')
-				.inject(this.pagination);
-		}
-		if((this.search.page * this.search.per_page) < turtl.search.total)
-		{
-			var next = new Element('a')
-				.set('href', '#next')
-				.set('rel', 'next')
-				.set('html', 'Next &gt;')
-				.inject(this.pagination);
-			/*
-			var last = new Element('a')
-				.set('href', '#last')
-				.set('rel', 'last')
-				.set('html', 'Last&raquo;')
-				.inject(this.pagination);
-			*/
-		}
 	},
 
 	paginate: function(e)
@@ -242,18 +198,5 @@ var NotesListController = Composer.ListController.extend({
 
 		return this.do_search({notify: true, scroll_to_top: true});
 	}
-
-	/*
-	infinite_scroll: function()
-	{
-		var win_bottom = window.scrollY + window.innerHeight;
-		var note_bottom = this.note_list.getCoordinates().bottom;
-		if((win_bottom + 50) >= note_bottom)
-		{
-			this.search.page++;
-			this.do_search({upsert: true, notify: true});
-		}
-	}
-	*/
 });
 

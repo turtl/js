@@ -12,7 +12,7 @@ var NotesViewController = NoteBaseController.extend({
 	},
 
 	events: {
-		'click .file a': 'open_file',
+		'click .file.download a': 'open_file',
 		'click .backing a[rel=download]': 'open_image',
 		'click .note-gutter .content > h1': 'open_image',
 		'click .info-container .preview form input': 'copy',
@@ -20,7 +20,8 @@ var NotesViewController = NoteBaseController.extend({
 		'click h1.main-title.password': 'show_password',
 		'click .show-password input[name=password]': 'show_password',
 		'focus .show-password input': 'select_password_field',
-		'click .show-password input': 'select_password_field'
+		'click .show-password input': 'select_password_field',
+		'click a[href^="#"]:not([rel=download]):not([rel=password])': 'anchor_click'
 	},
 
 	modal: null,
@@ -67,6 +68,16 @@ var NotesViewController = NoteBaseController.extend({
 				case 'delete': this.open_delete(); break;
 			}
 		}.bind(this));
+
+		// if we have an edit icon, it's because we're in preview mode and we
+		// want the edit icon to take us back to the editor
+		this.with_bind(this.modal, 'header:fire-action', function(action) {
+			switch(action)
+			{
+			case 'edit': close(); break;
+			}
+		});
+
 		this.with_bind(this.modal, 'scroll', function(scroll) {
 			this.adjust_image_header(scroll);
 			this.hide_info(scroll);
@@ -91,7 +102,7 @@ var NotesViewController = NoteBaseController.extend({
 		{
 			this.track_subcontroller('actions', function() {
 				var actions = new ActionController({inject: this.modal.el});
-				actions.set_actions([{title: 'Edit note', name: 'edit', icon: 'edit'}]);
+				actions.set_actions([{title: i18next.t('Edit note'), name: 'edit', icon: 'edit'}]);
 				this.with_bind(actions, 'actions:fire', this.open_edit.bind(this, null));
 				return actions;
 			}.bind(this));
@@ -128,36 +139,38 @@ var NotesViewController = NoteBaseController.extend({
 		this.html(view.render('notes/view', {
 			note: note,
 			content: type_content
-		}));
-		this.el.className = 'note view';
-		this.el.addClass(type);
-		if(!this.model.get('text'))
-		{
-			this.el.addClass('no-text');
-		}
-		if(!this.model.get('title'))
-		{
-			this.el.addClass('no-title');
-		}
-		if(type == 'image' && !this.model.get('url'))
-		{
-			this.el.addClass('preview');
-		}
-		this.el.set('rel', this.model.id());
+		})).bind(this)
+			.then(function() {
+				this.el.className = 'note view';
+				this.el.addClass(type);
+				if(!this.model.get('text'))
+				{
+					this.el.addClass('no-text');
+				}
+				if(!this.model.get('title'))
+				{
+					this.el.addClass('no-title');
+				}
+				if(type == 'image' && !this.model.get('url'))
+				{
+					this.el.addClass('preview');
+				}
+				this.el.set('rel', this.model.id());
 
-		// let the app know that we're displaying a note of this type
-		var remove_class = function()
-		{
-			this.modal.el.className = this.modal.el.className.replace(/note-view note-[a-z0-9]+/, '');
-		}.bind(this);
-		var body_class = 'note-view note-'+type;
-		remove_class();
-		this.modal.el.addClass(body_class);
+				// let the app know that we're displaying a note of this type
+				var remove_class = function()
+				{
+					this.modal.el.className = this.modal.el.className.replace(/note-view note-[a-z0-9]+/, '');
+				}.bind(this);
+				var body_class = 'note-view note-'+type;
+				remove_class();
+				this.modal.el.addClass(body_class);
 
-		(function() {
-			if(!this.el_img_header) return;
-			this.el_img_header.removeClass('hide');
-		}).delay(10, this);
+				(function() {
+					if(!this.el_img_header) return;
+					this.el_img_header.removeClass('hide');
+				}).delay(10, this);
+			});
 	},
 
 	open_edit: function(e)
@@ -171,17 +184,18 @@ var NotesViewController = NoteBaseController.extend({
 	open_delete: function(e)
 	{
 		if(e) e.stop();
-		if(!confirm('Really delete this note?')) return false;
+		if(!confirm(i18next.t('Really delete this note?'))) return false;
 		this.model.destroy()
 			.catch(function(err) {
 				log.error('note: delete: ', derr(err));
-				barfr.barf('There was a problem deleting your note: '+ err.message);
+				barfr.barf(i18next.t('There was a problem deleting your note: {{err}}', {err: err.message}));
 			});
 	},
 
 	open_file: function(e)
 	{
 		if(e) e.stop();
+		if(!this.el_file) return;
 		if(this.el_file.hasClass('decrypting')) return false;
 		var atag = Composer.find_parent('a', e.target);
 		if(!atag) return false;
@@ -196,7 +210,7 @@ var NotesViewController = NoteBaseController.extend({
 				return download_blob(blob, {name: name});
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', 'There was a problem opening that file', err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem opening that file'), err);
 				log.error('note: file: open: ', this.model.id(), derr(err));
 			})
 			.finally(function() {
@@ -310,6 +324,22 @@ var NotesViewController = NoteBaseController.extend({
 		if(!inp) return;
 		if(inp.get('type') == 'password') return;
 		inp.select();
+	},
+
+	anchor_click: function(e)
+	{
+		if(e) e.stop();
+		if(!e.target) return;
+		var atag = Composer.find_parent('a', e.target);
+		if(!atag || !atag.href) return;
+		var id = atag.href.replace(/.*#/, '');
+		if(!id) return;
+
+		var el = this.el.getElement('a[name='+id+']');
+		if(!el) el = this.el.getElement('#'+id);
+		if(!el) return;
+
+		this.modal.scroll_to(el);
 	}
 });
 

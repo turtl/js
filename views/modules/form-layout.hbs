@@ -1,5 +1,5 @@
 <div class="{{formclass}} clear interface">
-	<form class="standard-form">
+	<form class="standard-form" autocomplete="off">
 		{{{content}}}
 		{{#if buttons}}
 			<div class="button-row clear">
@@ -16,11 +16,13 @@
 				{{/if}}
 				<div class="desc"></div>
 
-				<div class="button flat cancel">
-					<span>Cancel</span>
-				</div>
+				{{#if show_cancel}}
+					<div class="button flat cancel">
+						<span>{{t 'Cancel'}}</span>
+					</div>
+				{{/if}}
 				<div class="button flat submit">
-					<input type="submit" {{#if tabindex}}tabindex="{{tabindex}}"{{/if}} value="{{action}}">
+					<input type="submit" {{#if tabindex}}tabindex="{{tabindex}}"{{/if}} value="{{t action}}">
 				</div>
 			</div>
 		{{/if}}

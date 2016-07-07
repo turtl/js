@@ -22,7 +22,6 @@ var Board = Protected.extend({
 		'parent_id',
 		'keys',
 		'privs',
-		'personas',
 		'meta',
 		'shared'
 	],
@@ -104,18 +103,10 @@ var Board = Protected.extend({
 
 		var keychain = turtl.profile.get('keychain');
 		var existing = keychain.find_key(this.id());
-		if(!existing)
+		if(!existing || (this.key && JSON.stringify(existing) != JSON.stringify(this.key)))
 		{
-			// key doesn't exist, add it
-			return keychain.add_key(this.id(), 'board', this.key);
-		}
-		else if(this.key && JSON.stringify(existing) != JSON.stringify(this.key))
-		{
-			// key exists, but is out of date. remove/re-add it
-			return keychain.remove_key(this.id()).bind(this)
-				.then(function() {
-					return keychain.add_key(this.id(), 'board', this.key);
-				});
+			// key needs an add/update
+			return keychain.upsert_key(this.id(), 'board', this.key);
 		}
 		return Promise.resolve();
 	},
@@ -195,7 +186,8 @@ var Board = Protected.extend({
 		var boards = [this.id()].concat(child_board_ids);
 		return turtl.search.search({boards: boards}).bind(this)
 			.spread(function(notes) {
-				return notes.length;
+				var unique_notes  = notes.filter(function(note, i) { return i == notes.lastIndexOf(note); });
+				return unique_notes.length;
 			});
 	},
 
@@ -226,13 +218,17 @@ var Boards = SyncCollection.extend({
 
 	toJSON_hierarchical: function()
 	{
-		var boards = this.toJSON().sort(function(a, b) { return a.title.localeCompare(b.title); });
+		var boards = this.toJSON().sort(function(a, b) { return (a.title || '').localeCompare(b.title || ''); });
 		var parents = boards.filter(function(b) { return !b.parent_id; });
 		var children = boards.filter(function(b) { return !!b.parent_id; });
 
 		// index the parents for easy lookup
 		var idx = {};
-		parents.forEach(function(b) { idx[b.id] = b; });
+		parents.forEach(function(b) {
+			idx[b.id] = b;
+			// fix any bad titles while we're looping
+			if(!b.title) b.title = i18next.t('(untitled board)');
+		});
 
 		children.forEach(function(b) {
 			var parent = idx[b.parent_id];
@@ -250,7 +246,7 @@ var Boards = SyncCollection.extend({
 			.map(function(bid) {
 				var board = this.find_by_id(bid);
 				if(!board) return false;
-				var name = board.get('title');
+				var name = board.get('title') || i18next.t('(untitled board)');
 				var parent_id = board.get('parent_id');
 				if(parent_id)
 				{
@@ -259,6 +255,7 @@ var Boards = SyncCollection.extend({
 				}
 				var json = board.toJSON();
 				json.name = name;
+				if(!json.title) json.title = i18next.t('(untitled board)');
 				return json;
 			}.bind(this))
 			.filter(function(board) { return !!board; });

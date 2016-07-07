@@ -7,7 +7,7 @@ var SettingsController = Composer.Controller.extend({
 
 	init: function()
 	{
-		turtl.push_title('Your settings');
+		turtl.push_title(i18next.t('Your settings'));
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		this.render();
@@ -16,7 +16,7 @@ var SettingsController = Composer.Controller.extend({
 	render: function()
 	{
 		this.html(view.render('settings/index', {
-			user: turtl.user.toJSON()
+			version: config.client + '-' + config.version
 		}));
 	},
 
@@ -34,9 +34,9 @@ var SettingsController = Composer.Controller.extend({
 				var outgoing_msg = '';
 				if(res.length > 0)
 				{
-					outgoing_msg = ', however you have '+res.length+' changes waiting to be synced that will be lost if you do this';
+					outgoing_msg = i18next.t(', however you have {{length}} changes waiting to be synced that will be lost if you do this', {length: res.length});
 				}
-				if(!confirm('This will erase all your local data and log you out. Your profile will be downloaded again next time you log in'+ outgoing_msg +'. Continue?'))
+				if(!confirm(i18next.t('This will erase all your local data and log you out. Your profile will be downloaded again next time you log in{{msg}}. Continue?', {msg: outgoing_msg})))
 				{
 					return;
 				}
@@ -44,7 +44,7 @@ var SettingsController = Composer.Controller.extend({
 					.then(function() { return turtl.user.logout(); })
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', 'There was a problem clearing your profile', err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem clearing your profile'), err);
 				log.error('settings: wipe db: ', derr(err));
 			});
 	}

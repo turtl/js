@@ -19,7 +19,7 @@ var BoardsListController = Composer.ListController.extend({
 			{
 				var search = this.search.filter;
 				if(!search) return true;
-				var match = model.get('title').toLowerCase().indexOf(search.toLowerCase()) >= 0;
+				var match = (model.get('title') || '').toLowerCase().indexOf(search.toLowerCase()) >= 0;
 				if(match) return true;
 				if(!model.get('boards').size()) return false;
 

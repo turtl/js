@@ -19,7 +19,7 @@ var ChangePasswordController = FormController.extend({
 
 	init: function()
 	{
-		turtl.push_title('Change password', '/settings');
+		turtl.push_title(i18next.t('Change password'), '/settings');
 
 		this.parent();
 		this.render();
@@ -50,7 +50,7 @@ var ChangePasswordController = FormController.extend({
 			else this.el_loader.removeClass('active');
 		}.bind(this);
 
-		var pending_barf = barfr.barf('Updating your login. Please be patient (and DO NOT close the app)!');
+		var pending_barf = barfr.barf(i18next.t('Updating your login. Please be patient (and DO NOT close the app)!'));
 		loading(true);
 		window._loading=loading;
 		return delay(300).bind(this)
@@ -68,7 +68,7 @@ var ChangePasswordController = FormController.extend({
 				new_key_old = JSON.stringify(new_key_old);
 				if(new_key != cur_key && new_key_old != cur_key)
 				{
-					errors.push([this.inp_cur_username, 'The current username/password you entered do not match the currently logged in user\'s.']);
+					errors.push([this.inp_cur_username, i18next.t('The current username/password you entered do not match the currently logged in user\'s.')]);
 				}
 
 				if(!this.check_errors(errors))
@@ -88,7 +88,7 @@ var ChangePasswordController = FormController.extend({
 
 				return turtl.user.change_password(new_username, new_password)
 					.then(function() {
-						barfr.barf('Your login was changed successfully!');
+						barfr.barf(i18next.t('Your login was changed successfully!'));
 						turtl.route('/settings');
 					})
 					.finally(function() {
@@ -96,7 +96,7 @@ var ChangePasswordController = FormController.extend({
 					});
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', 'There was a problem changing your login. We are undoing the changes. Please try again.', err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem changing your login. We are undoing the changes. Please try again.'), err);
 				log.error('settings: change password: ', derr(err));
 				loading(false);
 			});

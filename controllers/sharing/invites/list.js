@@ -34,7 +34,7 @@ var SharingInvitesListController = Composer.ListController.extend({
 	{
 		options || (options = {});
 		this.html(view.render('sharing/invites/list', {
-			title: 'Invites',
+			title: i18next.t('Invites'),
 			empty: options.empty === true
 		}));
 		this.el_invite_code.set('slide', {duration: 300});
@@ -76,11 +76,11 @@ var SharingInvitesListController = Composer.ListController.extend({
 			.catch(function(err) {
 				if(err && err.xhr && err.xhr.status == 404)
 				{
-					barfr.barf('That invite wasn\'t found.');
+					barfr.barf(i18next.t('That invite wasn\'t found.'));
 				}
 				else
 				{
-					barfr.barf('There was a problem grabbing that invite.');
+					barfr.barf(i18next.t('There was a problem grabbing that invite.'));
 					log.error('sharing: invite code: ', err);
 				}
 			});

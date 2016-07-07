@@ -16,7 +16,7 @@ var NotesEditTagsController = FormController.extend({
 	clone: null,
 	formclass: 'notes-edit-tags',
 	button_tabindex: 3,
-	action: 'Done',
+	action: i18next.t('Done'),
 
 	collection: null,
 
@@ -27,7 +27,7 @@ var NotesEditTagsController = FormController.extend({
 
 		this.modal = new TurtlModal(Object.merge({
 			show_header: true,
-			title: 'Tag note'
+			title: i18next.t('Tag note')
 		}, this.modal_opts && this.modal_opts() || {}));
 
 		this.parent();

@@ -70,6 +70,9 @@ var turtl = {
 	// holds the last successfully routed url
 	last_url: null,
 
+	// whether or not our locale data is loaded
+	localized: false,
+
 	// -------------------------------------------------------------------------
 	// Data section
 	// -------------------------------------------------------------------------
@@ -141,18 +144,22 @@ var turtl = {
 		turtl.events.bind('api:connect', function() {
 			log.info('API: connect');
 			if(connect_barf_id) barfr.close_barf(connect_barf_id);
-			connect_barf_id = barfr.barf('Connected to the Turtl service! Disengaging offline mode. Syncing your profile.');
+			connect_barf_id = barfr.barf(i18next.t('Connected to the Turtl service! Disengaging offline mode. Syncing your profile.'));
 		});
 		turtl.events.bind('api:disconnect', function() {
 			log.info('API: disconnect');
 			if(connect_barf_id) barfr.close_barf(connect_barf_id);
-			connect_barf_id = barfr.barf('Disconnected from the Turtl service. Engaging offline mode. Your changes will be saved and synced once back online!');
+			connect_barf_id = barfr.barf(i18next.t('Disconnected from the Turtl service. Engaging offline mode. Your changes will be saved and synced once back online!'));
 		});
 
 		turtl.keyboard.bind('?', function() {
 			if(!turtl.user.logged_in) return;
 			//new KeyboardShortcutHelpController();
 		});
+
+		turtl.events.bind('app:localized', function() {
+			turtl.localized = true;
+		})
 	},
 
 	setup_user: function(options)
@@ -172,9 +179,10 @@ var turtl = {
 			turtl.search = new Search();
 			turtl.files = new Files();
 			turtl.user.get_auth().then(turtl.api.set_auth.bind(turtl.api))
+			turtl.events.trigger('app:objects-loaded');
 
 			turtl.show_loading_screen(true);
-			turtl.update_loading_screen('Initializing Turtl');
+			turtl.update_loading_screen(i18next.t('Initializing Turtl'));
 
 			$E('body').removeClass('loggedout');
 
@@ -189,7 +197,7 @@ var turtl = {
 				})
 				.then(function() {
 					log.info('profile: loaded in: ', (new Date().getTime()) - this.start);
-					turtl.update_loading_screen('Indexing notes');
+					turtl.update_loading_screen(i18next.t('Indexing notes'));
 					return turtl.search.reindex();
 				})
 				.then(function() {
@@ -213,27 +221,27 @@ var turtl = {
 					turtl.keyboard.bind('b', turtl.route.bind(turtl, '/boards'), 'shortcut:main:boards');
 				})
 				.catch(function(err) {
-					barfr.barf('There was a problem with the initial load of your profile. Please try again.');
-					log.error(derr(err));
+					barfr.barf(i18next.t('There was a problem with the initial load of your profile. Please try again.'));
+					log.error('turtl: load: ', derr(err));
 					var what_next = new Element('div.choice');
 					var retry = new Element('a')
 						.set('href', '#retry')
 						.addClass('button')
-						.set('html', 'Retry')
+						.set('html', i18next.t('Retry'))
 						.inject(what_next);
 					var logout = new Element('a')
 						.set('href', '#logout')
 						.addClass('button')
-						.set('html', 'Logout')
+						.set('html', i18next.t('Logout'))
 						.inject(what_next);
 					var wipe = new Element('a')
 						.set('href', '#wipe')
 						.addClass('button')
-						.set('html', 'Clear local data')
+						.set('html', i18next.t('Clear local data'))
 						.inject(what_next);
 					turtl.events.trigger('loading:stop');
 					turtl.update_loading_screen(false);
-					turtl.update_loading_screen('Error loading profile');
+					turtl.update_loading_screen(i18next.t('Error loading profile'));
 					turtl.update_loading_screen(what_next);
 					retry.addEvent('click', function(e) {
 						if(e) e.stop();
@@ -291,6 +299,7 @@ var turtl = {
 
 			turtl.route('/');
 
+			turtl.events.trigger('user:logout');
 			if(window.port) window.port.send('logout');
 		}.bind(turtl));
 	},
@@ -434,7 +443,18 @@ var turtl = {
 			}
 		}, options);
 		turtl.router = new Composer.Router(config.routes, options);
-		turtl.router.bind_links({ filter_trailing_slash: true });
+		turtl.router.bind_links({
+			filter_trailing_slash: true,
+			selector: 'a:not([href^=#])'
+		});
+
+		// catch ALL #hash links and stop them in their tracks. this fixes a bug
+		// in NWJS v0.15.x where setting the window location to a hash crashes
+		// the app (at least in windows)
+		Composer.add_event(document.body, 'click', function(e) {
+			if(e) e.stop();
+		}, 'a[href^="#"]');
+
 		turtl.router.bind('route', turtl.controllers.pages.trigger.bind(turtl.controllers.pages, 'route'));
 		turtl.router.bind('preroute', turtl.controllers.pages.trigger.bind(turtl.controllers.pages, 'preroute'));
 		turtl.router.bind('fail', function(obj) {
@@ -609,6 +629,8 @@ var _turtl_init = function()
 window.addEvent('domready', function() {
 	setTimeout(_turtl_init, 100);
 });
+
+init_localization();
 
 function setup_global_error_catching()
 {

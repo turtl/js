@@ -5,7 +5,7 @@
 {{/if}}
 
 {{#if has_file}}
-	<div class="file {{#if note.file.encrypting}}encrypting{{/if}}">
+	<div class="file download {{#if note.file.encrypting}}encrypting{{/if}}">
 		{{#if note.file.encrypting}}
 			<strong class="encrypting">
 				{{svg 'loading'}}
@@ -27,15 +27,13 @@
 	{{#if crypto_error}}
 		<div class="content text">
 			<div class="body">
-				<h1>Crypto error</h1>
+				<h1>{{t 'Crypto error'}}</h1>
 				<p>
-					There was a problem decrypting this note. Please contact
-					<a href="mailto:info@turtl.it">info@turtl.it</a> for
-					assistance.
+					{{t 'There was a problem decrypting this note. Please contact <a href="mailto:info@turtl.it">info@turtl.it</a> for assistance.'}}
 				</p>
 				{{#if error_data.boards.length}}
 					<p>
-						This note belongs to these boards:
+						{{t 'This note belongs to these boards:'}}
 					</p>
 					<ul>
 						{{#each error_data.boards}}
@@ -43,25 +41,25 @@
 						{{/each}}
 					</ul>
 				{{else}}
-					This note is not in any boards.
+					{{t 'This note is not in any boards.'}}
 				{{/if}}
-				<h2>Debug info</h2>
+				<h2>{{t 'Debug info'}}</h2>
 				<code>ID:&nbsp;{{note.id}}<br>Key:&nbsp;{{#if error_data.key}}{{error_data.key}}{{else}}No key found{{/if}}</code>
 			</div>
 		</div>
 	{{else}}{{#if empty}}
-		<p class="empty">(empty note)</p>
+		<p class="empty">{{t '(empty note)'}}</p>
 	{{else}}
 		<div class="content text">
 			{{#equal note.type 'password'}}
 				<h1 class="main-title password">
-					<a href="#">
-					{{icon 'lock'}}
-					{{#if note.title}}
-						{{{note.title}}}
-					{{else}}
-						Password
-					{{/if}}
+					<a href="#" rel="password">
+						{{icon 'lock'}}
+						{{#if note.title}}
+							{{{note.title}}}
+						{{else}}
+							Password
+						{{/if}}
 					</a>
 				</h1>
 				<div class="show-password">
@@ -98,7 +96,7 @@
 			<div class="info">
 				{{!-- Note linking!
 				<form class="standard-form">
-					<p>Paste this into another note to link to this one</p>
+					<p>{{t 'Paste this into another note to link to this one'}}</p>
 					<input type="text" readonly value="note::{{note.id}}">
 				</form>
 				--}}

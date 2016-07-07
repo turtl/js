@@ -12,7 +12,7 @@ var PersonasJoinController = PersonasEditController.extend({
 
 	render: function()
 	{
-		turtl.push_title('Add a persona');
+		turtl.push_title(i18next.t('Add a persona'));
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		this.html(view.render('personas/join', {
@@ -27,7 +27,7 @@ var PersonasJoinController = PersonasEditController.extend({
 	{
 		this.parent.apply(this, arguments)
 			.then(function() {
-				barfr.barf('Your public persona has been created!');
+				barfr.barf(i18next.t('Your public persona has been created!'));
 				turtl.route('/');
 			});
 	}

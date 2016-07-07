@@ -23,7 +23,7 @@
 
 	var global = this;
 	if(!global.Composer) global.Composer = {
-		version: '1.1.18',
+		version: '1.2.4',
 
 		// note: this used to be "export" but IE is a whiny little bitch, so now
 		// we're sup3r 1337 h4x0r5
@@ -83,6 +83,10 @@
 				if(!b.hasOwnProperty(i)) return false;
 				if(!eq(a[i], b[i])) return false;
 			}
+		}
+		else if(a instanceof Date && b instanceof Date)
+		{
+			return a.getTime() == b.getTime();
 		}
 		else if(a instanceof Object)
 		{
@@ -224,16 +228,14 @@
 	{
 		poptions || (poptions = {});
 
-		var create_converter = function(type)
+		var convert = function(type, asyncs)
 		{
-			return function(key)
-			{
-				var options = arguments[1] || {};
-				var options_idx = options.options_idx || 0;
-				var names = options.names || ['success', 'error'];
-
+			Object.keys(asyncs).forEach(function(key) {
+				var spec = asyncs[key];
+				var options_idx = spec.options_idx || 0;
+				var names = spec.names || ['success', 'error'];
 				var _old = Composer[type].prototype[key];
-				global.Composer[type].prototype[key] = function()
+				Composer[type].prototype[key] = function()
 				{
 					var args = Array.prototype.slice.call(arguments, 0);
 					if(args.length < options_idx)
@@ -257,12 +259,29 @@
 						_old.apply(_self, args);
 					});
 				};
-			};
-		}
-		var convert_collection_fn = create_converter('Collection');
-		['fetch', 'save', 'destroy'].forEach(create_converter('Model'));
-		['fetch'].forEach(convert_collection_fn);
-		convert_collection_fn('reset_async', {options_idx: 1, names: ['complete']});
+			});
+		};
+		convert('Model', {
+			fetch: {},
+			save: {},
+			destroy: {}
+		});
+		convert('Collection', {
+			fetch: {},
+			reset_async: {options_idx: 1, names: ['complete']}
+		});
+		convert('Controller', {
+			html: {options_idx: 1, names: ['complete']}
+		});
+		// NOTE: you'd think that because ListController.html() calls the parent
+		// Controller.html() (which is promisified) but because the
+		// ListController is defined *before* we call promisify, it's html()
+		// parent function is the un-promisified Controller.html(). we don't
+		// have a way to "reach into" the parent chain and replace it, so we
+		// hack it by promisifying ListController.html()
+		convert('ListController', {
+			html: {options_idx: 1, names: ['complete']}
+		});
 	};
 
 	this.Composer.exp0rt({
@@ -1374,7 +1393,7 @@
 			// if we are passing raw data, create a new model from data
 			var model = data instanceof Composer.Model ? data : new this.model(data, options);
 
-			var existing = this.find_by_id(model.id(), options);
+			var existing = this.get(model.id(), options);
 			if(existing)
 			{
 				// reposition the model if necessary
@@ -1458,7 +1477,7 @@
 		{
 			options || (options = {});
 
-			if(data == undefined) return;
+			if(data == undefined) return options.complete && options.complete();
 			if(!Composer.array.is(data)) data = [data];
 
 			data = data.slice(0);
@@ -1599,7 +1618,7 @@
 		/**
 		 * convenience function to find a model by id
 		 */
-		find_by_id: function(id, options)
+		get: function(id, options)
 		{
 			options || (options = {});
 			var model = this._id_idx[id];
@@ -1633,12 +1652,9 @@
 		},
 
 		/**
-		 * saves typing "find_by_id"
+		 * DEPRECATED. use get()
 		 */
-		get: function(_)
-		{
-			return this.find_by_id.apply(this, arguments);
-		},
+		find_by_id: function(_) { return this.get.apply(this, arguments); },
 
 		/**
 		 * get the index of an item in the list of models. useful for sorting items.
@@ -1871,81 +1887,77 @@
 	var has_sizzle = !!global.Sizzle;
 	var has_jquery = !!global.jQuery;
 	var has_slick = !!global.Slick;
-	var has_moo = !!global.MooTools;
 
-	var find = (function() {
-		if(has_slick)
+	var which_adapter = function(types)
+	{
+		var wrap = function(fn)
 		{
 			return function(context, selector) {
 				context || (context = document);
-				return Slick.find(context, selector);
+				if(types.native && context instanceof window.DocumentFragment)
+				{
+					return types.native(context, selector);
+				}
+				else
+				{
+					return fn(context, selector);
+				}
 			};
-		}
-		else if(has_sizzle)
+		};
+		if(has_slick && types.slick) return wrap(types.slick);
+		if(has_sizzle && types.sizzle) return wrap(types.sizzle);
+		if(has_jquery && types.jquery) return wrap(types.jquery);
+		if('querySelector' in document && types.native) return wrap(types.native);
+		throw new Error('No selector engine present. Include Sizzle/jQuery or Slick/Mootools before loading composer (or use a modern browser with document.querySelector).');
+	};
+
+	var find = which_adapter({
+		slick: function(context, selector)
 		{
-			return function(context, selector) {
-				context || (context = document);
-				return Sizzle.select(selector, context)[0];
-			};
-		}
-		else if(has_jquery)
+			return Slick.find(context, selector);
+		},
+		sizzle: function(context, selector)
 		{
-			return function(context, selector) {
-				context || (context = document);
-				return jQuery(context).find(selector)[0];
-			};
-		}
-		else if('querySelector' in document)
+			return Sizzle.select(selector, context)[0];
+		},
+		jquery: function(context, selector)
 		{
+			return jQuery(context).find(selector)[0];
+		},
+		native: (function() {
 			var scope = false;
 			try { document.querySelector(':scope > h1'); scope = true; }
 			catch(e) {}
 
 			return function(context, selector) {
-				context || (context = document);
-				if(scope) selector = ':scope '+selector;
+				if(scope && !(context instanceof window.DocumentFragment)) selector = ':scope '+selector;
 				return context.querySelector(selector);
 			};
-		}
-		throw new Error('No selector engine present. Include Sizzle/jQuery or Slick/Mootools before loading composer (or use a modern browser with document.querySelector).');
-	})();
+		})()
+	});
 
-	var match = (function() {
-		if(has_slick)
+	var match = which_adapter({
+		slick: function(context, selector)
 		{
-			return function(element, selector) {
-				element || (element = document);
-				return Slick.match(element, selector);
-			};
-		}
-		else if(has_sizzle)
+			return Slick.match(context, selector);
+		},
+		sizzle: function(context, selector)
 		{
-			return function(element, selector) {
-				element || (element = document);
-				return Sizzle.matchesSelector(element, selector);
-			};
-		}
-		else if(has_jquery)
+			return Sizzle.matchesSelector(context, selector);
+		},
+		jquery: function(context, selector)
 		{
-			return function(element, selector) {
-				element || (element = document);
-				return jQuery(element).is(selector);
-			};
-		}
-		else if('querySelector' in document)
+			return jQuery(context).is(selector);
+		},
+		native: function(context, selector)
 		{
-			return function(element, selector) {
-				element || (element = document);
-				if('matches' in element) var domatch = element.matches;
-				if('msMatchesSelector' in element) var domatch = element.msMatchesSelector;
-				if('mozMatchesSelector' in element) var domatch = element.mozMatchesSelector;
-				if('webkitMatchesSelector' in element) var domatch = element.webkitMatchesSelector;
-				return domatch.call(element, selector);
-			};
+			if('matches' in context) var domatch = context.matches;
+			if('msMatchesSelector' in context) var domatch = context.msMatchesSelector;
+			if('mozMatchesSelector' in context) var domatch = context.mozMatchesSelector;
+			if('webkitMatchesSelector' in context) var domatch = context.webkitMatchesSelector;
+			return domatch.call(context, selector);
 		}
-		throw new Error('No selector engine present. Include Sizzle/jQuery or Slick/Mootools before loading composer.');
-	})();
-
+	});
 
 	var captured_events = {
 		'focus': true,
@@ -2025,13 +2037,87 @@
 		return find_parent(selector, par);
 	};
 
+	var frame = function(cb) { global.requestAnimationFrame(cb); };
+
+	/**
+	 * our xdom system! provides hooks for diffing/patching the DOM, and also
+	 * allows parts of itself to be replaced by different implementations.
+	 */
+	var xdom = {
+		/**
+		 * diff two DOM elements. in the default case, we use morphdom which
+		 * does the diffing/patching in one call so we don't really need to do
+		 * anything here, but other DOM patching libs may have discrete steps so
+		 * we want to have a hook for it.
+		 */
+		diff: function(from, to, options)
+		{
+			return [from, to];
+		},
+
+		/**
+		 * patch the DOM! uses morphdom by default. takes a root DOM node to
+		 * patch and a patch to apply to it.
+		 */
+		patch: function(root, diff, options)
+		{
+			options || (options = {});
+
+			if(!root || !diff[1]) return;
+			var ignore_elements = options.ignore_elements || [];
+			var ignore_children = options.ignore_children || [];
+			return morphdom(root, diff[1], {
+				// this callback preserves form input values (text, checkboxes,
+				// radios, textarea, selects)
+				onBeforeMorphEl: function(from, to) {
+					if(options.reset_inputs) return;
+
+					var tag = from.tagName.toLowerCase();
+					switch(tag)
+					{
+					case 'input':
+					case 'textarea':
+						to.checked = from.checked;
+						to.value = from.value;
+						break;
+					case 'select':
+						to.value = from.value;
+						break;
+					}
+				},
+				onBeforeNodeDiscarded: function(node) {
+					if(ignore_elements.indexOf(node) >= 0) return false;
+				},
+				onBeforeMorphElChildren: function(from, to) {
+					if(ignore_children.indexOf(from) >= 0) return false;
+				},
+				childrenOnly: options.children_only
+			});
+		},
+
+		/**
+		 * allows hooking in your own DOM diffing/patching library
+		 */
+		hooks: function(options)
+		{
+			options || (options = {});
+			var diff = options.diff;
+			var patch = options.patch;
+
+			if(diff) xdom.diff = diff;
+			if(patch) xdom.patch = patch;
+		}
+	};
+
 	this.Composer.exp0rt({
 		find: find,
 		match: match,
 		add_event: add_event,
 		fire_event: fire_event,
 		remove_event: remove_event,
-		find_parent: find_parent
+		find_parent: find_parent,
+		frame: frame,
+		xdom: xdom
 	});
 }).apply((typeof exports != 'undefined') ? exports : this);
 
@@ -2056,6 +2142,46 @@
 (function() {
 	"use strict";
 
+	// whether or not to enable xdom rendering
+	var xdom = false;
+
+	/**
+	 * This function is responsible for
+	 *  - diffing elements via our xdom object
+	 *  - scheduling rendering/patching of the DOM
+	 *  - batching patches so they happen on the browser's animation frame
+	 *  - patching the DOM using the diff we got
+	 *  - letting the callers know when the updates happened
+	 */
+	var schedule_render = (function() {
+		var diffs = [];
+		var scheduled = false;
+		return function(from, to, options, callback)
+		{
+			options || (options = {});
+
+			diffs.push([from, Composer.xdom.diff(from, to, options), options, callback]);
+			if(scheduled) return;
+			scheduled = true;
+			Composer.frame(function() {
+				scheduled = false;
+				var diff_clone = diffs.slice(0);
+				diffs = [];
+				var cbs = [];
+				diff_clone.forEach(function(entry) {
+					var from = entry[0];
+					var diff = entry[1];
+					var options = entry[2];
+					var cb = entry[3];
+					Composer.xdom.patch(from, diff, options);
+					if(cb) cbs.push(cb);
+				});
+				// run our callbacks after we run our DOM updates
+				cbs.forEach(function(cb) { cb(); });
+			});
+		};
+	})();
+
 	/**
 	 * The controller class sits between views and your models/collections.
 	 * Controllers bind events to your data objects and update views when the data
@@ -2075,6 +2201,9 @@
 
 		// tracks sub-controllers
 		_subcontrollers: {},
+
+		// if true, enables XDOM just for this controller
+		xdom: false,
 
 		// the DOM element to tie this controller to (a container element)
 		el: false,
@@ -2149,24 +2278,53 @@
 		 * replace this.el's html with the given test, also refresh the controllers
 		 * elements.
 		 */
-		html: function(obj)
+		html: function(obj, options)
 		{
+			options || (options = {});
 			if(!this.el) this._ensure_el();
 
-			if(obj.appendChild)
+			var append = function(el, child)
 			{
-				this.el.innerHTML = '';
-				this.el.appendChild(obj);
+				if(typeof(child) == 'string')
+				{
+					el.innerHTML = child;
+				}
+				else
+				{
+					el.innerHTML = '';
+					el.appendChild(child);
+				}
+			};
+
+			if(xdom || this.xdom)
+			{
+				var el = document.createElement('div');
+				append(el, obj);
+				var cb = options.complete;
+				var ignore_elements = options.ignore_elements || [];
+				var ignore_children = options.ignore_children || [];
+				ignore_elements = ignore_elements.concat(
+					Object.keys(this._subcontrollers)
+						.map(function(name) { return this._subcontrollers[name].el; }.bind(this))
+						.filter(function(el) { return !!el; })
+				);
+				options.ignore_elements = ignore_elements;
+				options.children_only = true;
+				schedule_render(this.el, el, options, function() {
+					this.refresh_elements();
+					if(cb) cb();
+					this.trigger('xdom:render');
+				}.bind(this));
 			}
 			else
 			{
-				this.el.innerHTML = obj;
+				append(this.el, obj);
+				this.refresh_elements();
 			}
-			this.refresh_elements();
 		},
 
 		/**
-		 * injects to controller's element into the DOM.
+		 * injects the controller's element into the DOM.
 		 */
 		attach: function(options)
 		{
@@ -2218,36 +2376,42 @@
 
 		/**
 		 * keep track of a sub controller that will release when this controller
-		 * does
+		 * does. If no creation function given, return the subcontroller under
+		 * the given name.
 		 */
-		track_subcontroller: function(name, create_fn)
+		sub: function(name, create_fn)
 		{
-			var remove_subcontroller = function(name, skip_release)
-			{
-				if(!this._subcontrollers[name]) return
-				if(!skip_release) this._subcontrollers[name].release();
-				delete this._subcontrollers[name];
-			}.bind(this);
+			if(!create_fn) return this._subcontrollers[name] || false;
 
 			// if we have an existing controller with the same name, release and
 			// remove it.
-			remove_subcontroller(name);
+			this.remove(name);
 
 			// create the new controller, track it, and make sure if it's
 			// released we untrack it
 			var instance = create_fn();
-			instance.bind('release', function() { remove_subcontroller(name, true); });
+			instance.bind('release', this.remove.bind(this, name, {skip_release: true}));
 			this._subcontrollers[name] = instance;
 			return instance;
 		},
 
 		/**
-		 * get a tracked subcontroller by name
+		 * remove a subcontroller from tracking and (by default) release it
 		 */
-		get_subcontroller: function(name)
+		remove: function(name, options)
 		{
-			return this._subcontrollers[name] || false;
+			options || (options = {});
+			if(!this._subcontrollers[name]) return
+			if(!options.skip_release) this._subcontrollers[name].release();
+			delete this._subcontrollers[name];
 		},
+
+		/**
+		 * DEPRECATED. use sub()/remove()
+		 */
+		track_subcontroller: function() { return this.sub.apply(this, arguments); },
+		get_subcontroller: function(name) { return this.sub.apply(this, arguments); },
+		remove_subcontroller: function() { return this.remove.apply(this, arguments); },
 
 		/**
 		 * make sure el is defined as an HTML element
@@ -2361,6 +2525,8 @@
 		}
 	});
 
+	Controller.xdomify = function() { xdom = true; };
+
 	this.Composer.merge_extend(Controller, ['events', 'elements']);
 
 	this.Composer.exp0rt({ Controller: Controller });
@@ -2389,9 +2555,9 @@
 	"use strict";
 
 	/**
-	 * The controller class sits between views and your models/collections.
-	 * Controllers bind events to your data objects and update views when the data
-	 * changes. Controllers are also responsible for rendering views.
+	 * The ListController extends the Controller object to provide a way of
+	 * tracking a collection and keeping its models in-sync with a set of
+	 * controllers that are injected into the DOM.
 	 */
 	var ListController = Composer.Controller.extend({
 		/**
@@ -2408,6 +2574,27 @@
 
 		// holds our empty state
 		_empty: true,
+
+		// note that these options are mainly set by track()
+		options: {
+			// bind to the collection's `reset` event (on top of add/remove).
+			// generally this isn't needed but there are certainly cases where
+			// yuu would want a collection.trigger('reset') to re-render the
+			// children completely.
+			bind_reset: false,
+
+			// passed into the collection's sort_index and sort_at functions
+			// when adding items
+			accurate_sort: false,
+
+			// points to the DOM element that all our subcontrollers will be
+			// placed into. this is set by options.container and although it's
+			// not stricly needed for rendering, it's very useful when using
+			// XDOM so the render system knows to ignore the children of the
+			// container (so calling html() on a listcontroller doesn't remove
+			// its children from the DOM).
+			container: null
+		},
 
 		/**
 		 * Set up tracking on the given collection. When models are added or
@@ -2434,34 +2621,61 @@
 			this.trigger('list:'+(this._empty ? 'empty' : 'notempty'));
 
 			this.with_bind(collection, 'clear', function(options) {
-				this.clear_subcontrollers();
+				this._clear_subcontrollers();
 			}.bind(this));
 			this.with_bind(collection, 'add', function(model, _, options) {
-				this.add_subcontroller(model, create_fn, options);
+				this._add_subcontroller(model, create_fn, options);
 			}.bind(this));
 			this.with_bind(collection, 'remove', function(model) {
-				this.remove_subcontroller(model);
+				this._remove_subcontroller(model);
 			}.bind(this));
 			if(options.bind_reset)
 			{
 				this.with_bind(collection, 'reset', function(options) {
-					this.reset_subcontrollers(create_fn, options);
+					this._reset_subcontrollers(create_fn, options);
 				}.bind(this));
 			}
 
-			this.reset_subcontrollers(create_fn);
+			this._reset_subcontrollers(create_fn);
 		},
 
 		release: function()
 		{
-			this.clear_subcontrollers();
+			// move the el to a fragment, which keeps a bunch of reflows from
+			// happening on release
+			var fragment = document.createDocumentFragment();
+			fragment.appendChild(this.el);
+
+			// do an async wipe of the subcontrollers
+			this._clear_subcontrollers({async: true});
+			return this.parent.apply(this, arguments);
+		},
+
+		/**
+		 * extend Controller.html() such that if we're using xdom, pass this
+		 * instances options.container into the XDOM ignore-children list so the
+		 * subcontrollers' DOM elements are preserved on render. this allows us
+		 * to call html() until the cows come home without having to re-init our
+		 * list controller
+		 */
+		html: function(obj, options)
+		{
+			options || (options = {});
+			var container = this.options.container;
+			if(container instanceof Function) container = container();
+			if(container)
+			{
+				var ignore_children = options.ignore_children || [];
+				ignore_children.push(container);
+				options.ignore_children = ignore_children;
+			}
 			return this.parent.apply(this, arguments);
 		},
 
 		/**
 		 * Index a controller so it can be looked up by the model is wraps
 		 */
-		index_controller: function(model, controller)
+		_index_controller: function(model, controller)
 		{
 			if(!model) return false;
 			this._subcontroller_idx[model.cid()] = controller;
@@ -2471,7 +2685,7 @@
 		/**
 		 * Unindex a model -> controller lookup
 		 */
-		unindex_controller: function(model, controller)
+		_unindex_controller: function(model, controller)
 		{
 			if(!model) return false;
 			delete this._subcontroller_idx[model.cid()];
@@ -2483,7 +2697,7 @@
 		/**
 		 * Lookup a controller by its model
 		 */
-		lookup_controller: function(model)
+		_lookup_controller: function(model)
 		{
 			if(!model) return false;
 			return this._subcontroller_idx[model.cid()];
@@ -2492,11 +2706,43 @@
 		/**
 		 * Untrack all subcontrollers, releasing each one
 		 */
-		clear_subcontrollers: function()
+		_clear_subcontrollers: function(options)
 		{
-			this._subcontroller_list.forEach(function(con) {
-				con.release();
-			});
+			options || (options = {});
+
+			// we allow an async option here, which clears out subcontrollers
+			// in batches. this is more favorable than doing it sync because we
+			// don't have to block the interface while removing all our subs.
+			if(options.async)
+			{
+				// clone the subcon list in case someone else makes mods to it
+				// while we're clearing.
+				var subs = this._subcontroller_list.slice(0);
+				var batch = 10;
+				var idx = 0;
+				var next = function()
+				{
+					for(var i = 0; i < batch; i++)
+					{
+						var con = subs[idx];
+						if(!con) return;
+						idx++;
+						try
+						{
+							con.release();
+						}
+						catch(e) {}
+					}
+					setTimeout(next);
+				}.bind(this);
+				setTimeout(next);
+			}
+			else
+			{
+				this._subcontroller_list.forEach(function(con) {
+					con.release();
+				});
+			}
 			this._subcontroller_list = [];
 			this._subcontroller_idx = {};
 		},
@@ -2505,30 +2751,31 @@
 		 * Sync the tracked subcontrollers with the items in the wrapped
 		 * collection
 		 */
-		reset_subcontrollers: function(create_fn, options)
+		_reset_subcontrollers: function(create_fn, options)
 		{
 			options || (options = {});
 
-			this.clear_subcontrollers();
+			this._clear_subcontrollers();
 
-			var reset_fragment = this.options.fragment_on_reset;
+			var reset_fragment = this.options.container;
 			if(reset_fragment)
 			{
-				var fragment = new DocumentFragment();
+				var fragment = document.createDocumentFragment();
 				options = Composer.object.clone(options);
 				options.fragment = fragment;
+				options.container = fragment;
 			}
 
 			this._collection.each(function(model) {
-				this.add_subcontroller(model, create_fn, options);
+				this._add_subcontroller(model, create_fn, options);
 			}, this);
 
 			if(reset_fragment && fragment.children && fragment.children.length > 0)
 			{
-				var inject_to = reset_fragment instanceof Function ?
+				var container = reset_fragment instanceof Function ?
 					reset_fragment() :
 					reset_fragment;
-				inject_to.appendChild(fragment);
+				container.appendChild(fragment);
 			}
 		},
 
@@ -2537,23 +2784,30 @@
 		 * subcontroller at the correct spot in the DOM (based on the model's
 		 * sort order).
 		 */
-		add_subcontroller: function(model, create_fn, options)
+		_add_subcontroller: function(model, create_fn, options)
 		{
+			// add our container into the options (non-destructively)
+			options = Composer.object.clone(options);
+			options.container = this.options.container;
+			if(options.container instanceof Function) options.container = options.container();
+
 			var con = create_fn(model, options);
-			this.index_controller(model, con);
+			this._index_controller(model, con);
 
 			// if the subcontroller releases itself, be sure to remove it from
 			// tracking
 			con.bind('release', function() {
-				this.unindex_controller(model, con);
+				this._unindex_controller(model, con);
 			}.bind(this));
 
 			// inject the controller at the correct position, according to the
 			// collection's sortfn
 			var sort_idx = this._collection.sort_index(model, options);
 			var before_model = this._collection.sort_at(sort_idx - 1, options) || false;
-			var before_con = this.lookup_controller(before_model);
+			var before_con = this._lookup_controller(before_model);
 
+			// place the subcontroller into the right place in the DOM base on
+			// its model's sort order
 			var parent = con.el.parentNode;
 			if(sort_idx == 0)
 			{
@@ -2573,12 +2827,12 @@
 		 * Given a model, lookup the subcontroller that wraps it and release it,
 		 * also untracking that subcontroller.
 		 */
-		remove_subcontroller: function(model)
+		_remove_subcontroller: function(model)
 		{
-			var con = this.lookup_controller(model);
+			var con = this._lookup_controller(model);
 			if(!con) return false;
 			con.release();
-			this.unindex_controller(model, con);
+			this._unindex_controller(model, con);
 		}
 	});
 	this.Composer.exp0rt({ ListController: ListController });
@@ -2949,7 +3203,7 @@
 				//  nerd/city
 				var href = a.href
 					.replace(/^file:\/\/(\/)?([a-z]:)?\//i, '')
-					.replace(/^[a-z]+:\/\/.*?\//i, '')
+					.replace(/^[a-z-]+:\/\/.*?\//i, '')
 					.replace(/^[#!\/]+/, '');
 				if(options.filter_trailing_slash) href = href.replace(/\/$/, '');
 				href = '/'+href;

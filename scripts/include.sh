@@ -13,7 +13,7 @@ function print_js() {
 
 function path_to_js() {
 	path=$1
-	find $path -name '*.js' | sort | sed 's| |___|g'
+	find $path -name '*.js' | LC_ALL=C sort | sed 's| |___|g'
 }
 
 function all_css() {
@@ -21,7 +21,7 @@ function all_css() {
 	echo "${SEARCH_PATH}css/template.css"
 	echo "${SEARCH_PATH}css/general.css"
 	cssfiles="`find ${SEARCH_PATH}css -name '*.css' \
-		| sort \
+		| LC_ALL=C sort \
 		| grep -v 'template.css' \
 		| grep -v 'general.css' \
 		| grep -v 'variables.css' \
@@ -37,6 +37,7 @@ function vendor_js() {
 	echo "${SEARCH_PATH}library/composer.js"
 	echo "${SEARCH_PATH}library/bluebird.js"
 	echo "${SEARCH_PATH}library/handlebars.runtime-v2.0.0.js"
+	echo "${SEARCH_PATH}library/i18next.js"
 }
 
 function all_js() {
@@ -44,10 +45,10 @@ function all_js() {
 	
 	path_to_js "${SEARCH_PATH}config/config.js"
 	find ${SEARCH_PATH}config -name '*.js' \
-		| sort \
+		| LC_ALL=C sort \
 		| grep -v 'config\.js'
 	find ${SEARCH_PATH}library -name '*.js' \
-		| sort \
+		| LC_ALL=C sort \
 		| grep -v 'ignore' \
 		| grep -v 'mootools-' \
 		| grep -v 'composer' \
@@ -57,14 +58,18 @@ function all_js() {
 		| grep -v 'templates\.js' \
 		| grep -v '\.thread\.' \
 		| grep -v 'openpgp\.worker' \
+		| grep -v 'i18n.*\.js' \
 		| sed 's| |___|g'
 	for jsfile in $jsfiles; do print_js $jsfile; done
 
+	find ${SEARCH_PATH}controllers/0modules -name '*.js' \
+		| LC_ALL=C sort \
+		| grep -v 'nav\.js'
 	path_to_js "${SEARCH_PATH}controllers"
 	path_to_js "${SEARCH_PATH}models"
 	path_to_js "${SEARCH_PATH}handlers"
+	path_to_js "${SEARCH_PATH}locales"
 	path_to_js "${SEARCH_PATH}turtl"
-
 	echo "${SEARCH_PATH}library/templates.js"
 	echo "${SEARCH_PATH}main.js"
 }

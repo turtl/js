@@ -397,7 +397,7 @@ var Files = SyncCollection.extend({
 			var progressfn = function()
 			{
 				progress_counter = (progress_counter + 1) % 10;
-				if(progress_counter == 0)
+				if(progress_counter == 0 && turtl.hustle)
 				{
 					turtl.hustle.Queue.touch(job.id);
 				}
@@ -411,7 +411,7 @@ var Files = SyncCollection.extend({
 					log.error('file: upload: ', err);
 					if(job.releases > 2)
 					{
-						turtl.events.trigger('ui-error', 'There was a problem uploading a file. View it in the "Sync" panel in the main menu.', err);
+						turtl.events.trigger('ui-error', i18next.t('There was a problem uploading a file. View it in the "Sync" panel in the main menu.'), err);
 						log.error('file: upload: ', file.id(), derr(err));
 						// bury the item (will be available for inspection in the
 						// sync page)
@@ -442,7 +442,7 @@ var Files = SyncCollection.extend({
 			var progressfn = function()
 			{
 				progress_counter = (progress_counter + 1) % 10;
-				if(progress_counter == 0)
+				if(progress_counter == 0 && turtl.hustle)
 				{
 					turtl.hustle.Queue.touch(job.id);
 				}

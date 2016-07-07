@@ -21,6 +21,9 @@ var Sync = Composer.Model.extend({
 	// used to track local syncs
 	local_sync_id: 0,
 
+	// track the current poll number
+	poll_id: 0,
+
 	type_table_map: {
 		user: 'user',
 		keychain: 'keychain',
@@ -80,12 +83,19 @@ var Sync = Composer.Model.extend({
 	stop: function()
 	{
 		this.enabled = false;
+		this.trigger('cancel-syncs');
 
 		if(this.outgoing_timer) this.outgoing_timer.unbind();
 		this.outgoing_timer = null;
 		this.unbind('mem->db', 'sync:model:mem->db');
 		turtl.events.unbind('api:connect', 'sync:connect:run-outgoing');
 		clearInterval(this.outgoing_interval);
+	},
+
+	jumpstart: function()
+	{
+		this.stop();
+		this.start();
 	},
 
 	/**
@@ -166,6 +176,7 @@ var Sync = Composer.Model.extend({
 			default: throw new Error('sync: queue outgoing change: bad action given: '+ action); break;
 		}
 		var sync = {
+			id: Composer.cid(),
 			type: this.table_to_type(table),
 			action: sync_action,
 			data: data
@@ -191,6 +202,7 @@ var Sync = Composer.Model.extend({
 	{
 		if(!config.sync_to_api) return false;
 		if(!this.connected) return false;
+		if(!turtl.db) return false;
 		return turtl.db.sync_outgoing.query().all().execute().bind(this)
 			.then(function(items) {
 				if(!items || !items.length) return;
@@ -202,19 +214,27 @@ var Sync = Composer.Model.extend({
 				this._outgoing_sync_running = true;
 				log.debug('sync: outgoing: ', items);
 				var file_syncs = [];
-				items = items.filter(function(item) {
+				items = items
+					// probably not strictly necessary, but our CIDs are
+					// guaranteed to be sequential and unique (or we have much
+					// bigger problems than sync record ordering) so here we
+					// make absolutely SURE IndexedDB isn't screwing us on
+					// ordering, which can have severe ramifications if not done
+					// properly
+					.sort(function(a, b) { return a.id.toString().localeCompare(b.id.toString()); })
 					// we grab newly created files and upload them by hand. file
 					// deletes are allowed to pass as normal sync items
-					if(item.type == 'file' && item.action == 'add')
-					{
-						file_syncs.push(item);
-						return false;
-					}
-					else
-					{
-						return true;
-					}
-				});
+					.filter(function(item) {
+						if(item.type == 'file' && item.action == 'add')
+						{
+							file_syncs.push(item);
+							return false;
+						}
+						else
+						{
+							return true;
+						}
+					});
 
 				// this little bit of logic keeps us from bugging the API
 				// needlessly if the only thing we're syncing is file record(s)
@@ -234,7 +254,7 @@ var Sync = Composer.Model.extend({
 						if(synced.error)
 						{
 							log.error('sync: outgoing: api error: ', synced.error);
-							barfr.barf('There was a problem syncing to the server (we\'ll try again soon): '+ synced.error);
+							barfr.barf(i18next.t('There was a problem syncing to the server (we\'ll try again soon): {{err}}', {err: synced.error}));
 						}
 						if(!synced.success) return;
 
@@ -293,7 +313,7 @@ var Sync = Composer.Model.extend({
 			})
 			.catch(function(err) {
 				log.error('sync: outgoing: problem syncing items: ', err);
-				barfr.barf('There was a problem syncing to the server. Trying again soon.');
+				barfr.barf(i18next.t('There was a problem syncing to the server. Trying again soon.'));
 			})
 			.finally(function() {
 				this._outgoing_sync_running = false;
@@ -319,6 +339,7 @@ var Sync = Composer.Model.extend({
 	{
 		options || (options = {});
 
+		var poll_id = this.poll_id++;
 		var enabled = function()
 		{
 			if(!this.enabled) return false;
@@ -326,6 +347,11 @@ var Sync = Composer.Model.extend({
 			if(!config.poll_api_for_changes) return false;
 			return true;
 		}.bind(this);
+
+		this.bind_once('cancel-syncs', function() {
+			enabled = function() { return false; };
+			this._polling = false;
+		}.bind(this), 'cancel:'+poll_id);
 
 		if(!options.force)
 		{
@@ -339,19 +365,21 @@ var Sync = Composer.Model.extend({
 				// (this is mainly a problem with adding since it's not
 				// idempotent, an most likely wouldn't ever happen, but i'd
 				// rather rit just not be an issue at all)
-				setTimeout(this.poll_api_for_changes, 1000);
+				setTimeout(this.poll_api_for_changes.bind(this), 1000);
 				return;
 			}
 		}
 
 		this._polling = true;
-		this.trigger('poll:start');
+		this.trigger('poll:start', poll_id);
 		var failed = false;
 		var sync_id = this.get('sync_id');
 		var sync_url = '/sync?sync_id='+sync_id+'&client_id='+turtl.client_id+'&immediate='+(options.immediate ? 1 : 0);
-		return turtl.api.get(sync_url, null, {timeout: 60000}).bind(this)
+		return turtl.api.get(sync_url, null, {timeout: 60000})
+			.bind(this)
 			.then(function(sync) {
 				if(!enabled()) return false;
+				this.last_sync = new Date().getTime();
 
 				var orig = this.connected;
 				this.connected = true;
@@ -359,10 +387,10 @@ var Sync = Composer.Model.extend({
 				if(!options.force && (this._outgoing_sync_running || turtl.user.changing_password))
 				{
 					this._polling = false;
-					this.trigger('poll:finished');
+					this.trigger('poll:finished', poll_id);
 					// well, we got a response back during an outgoing sync or a
 					// password change, both plausible. so what we're going to
-					// do is throw out the sync results ew got back and poll
+					// do is throw out the sync results we got back and poll
 					// again in a second
 					return new Promise(function(resolve) { setTimeout(resolve, 1000); });
 				}
@@ -388,7 +416,8 @@ var Sync = Composer.Model.extend({
 			})
 			.finally(function() {
 				this._polling = false;
-				this.trigger('poll:finished');
+				this.trigger('poll:finished', poll_id);
+				this.unbind('cancel-syncs', 'cancel:'+poll_id);
 
 				if(!enabled()) return false;
 				if(!options.force)

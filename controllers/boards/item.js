@@ -1,4 +1,5 @@
 var BoardsItemController = Composer.Controller.extend({
+	xdom: true,
 	tag: 'li',
 
 	elements: {
@@ -42,7 +43,7 @@ var BoardsItemController = Composer.Controller.extend({
 			!!(this.model.get('privs') || {})[my_persona_id];
 		var num_shared_with = Object.keys(this.model.get('privs') || {}).length;
 		var data = this.model.toJSON();
-		data.title = (data.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		data.title = (data.title || i18next.t('(untitled board)')).replace(/</g, '&lt;').replace(/>/g, '&gt;');
 		if(this.search.filter)
 		{
 			var regex = new RegExp(escape_regex(this.search.filter), 'gi');
@@ -54,52 +55,54 @@ var BoardsItemController = Composer.Controller.extend({
 			board: data,
 			shared: shared_with_me_directly || shared_by_me,
 			shared_by_me: shared_by_me,
-			num_shared_with: num_shared_with + (num_shared_with == 1 ? ' person' : ' people'),
+			num_shared_with: (num_shared_with == 1 ? i18next.t('{{num_shared_with}} person', {num_shared_with: num_shared_with}) : i18next.t('{{num_shared_with}} people', {num_shared_with: num_shared_with})),
 			shared_with_me: shared_with_me,
 			shared_with_me_directly: shared_with_me_directly
-		}));
-		this.el.set('rel', this.model.id());
+		})).bind(this)
+			.then(function() {
+				this.el.set('rel', this.model.id());
 
-		if(shared_with_me) this.el.addClass('shared-with-me');
+				if(shared_with_me) this.el.addClass('shared-with-me');
 
-		var actions = [];
-		if(shared_with_me)
-		{
-			if(shared_with_me_directly)
-			{
+				var actions = [];
+				if(shared_with_me)
+				{
+					if(shared_with_me_directly)
+					{
 
-				actions.push([{name: 'Leave this board'}]);
-			}
-		}
-		else
-		{
-			actions.push([{name: 'Edit'}, {name: 'Delete'}]);
-			actions.push([{name: 'Share this board', href: '/boards/share/'+this.model.id()}]);
-			if(!parent_id) actions.push([{name: 'Create nested board'}]);
-		}
-		if(actions.length)
-		{
-			this.track_subcontroller('actions', function() {
-				return new ItemActionsController({
-					inject: this.actions,
-					actions: actions
-				});
-			}.bind(this));
-		}
-		this.track_subcontroller('children', function() {
-			return new BoardsListController({
-				inject: this.children,
-				collection: this.model.get('boards'),
-				child: true,
-				search: this.search
-			});
-		}.bind(this))
+						actions.push([{name: 'Leave this board'}]);
+					}
+				}
+				else
+				{
+					actions.push([{name: 'Edit'}, {name: 'Delete'}]);
+					actions.push([{name: 'Share this board', href: '/boards/share/'+this.model.id()}]);
+					if(!parent_id) actions.push([{name: 'Create nested board'}]);
+				}
+				if(actions.length)
+				{
+					this.track_subcontroller('actions', function() {
+						return new ItemActionsController({
+							inject: this.actions,
+							actions: actions
+						});
+					}.bind(this));
+				}
+				this.track_subcontroller('children', function() {
+					return new BoardsListController({
+						inject: this.children,
+						collection: this.model.get('boards'),
+						child: true,
+						search: this.search
+					});
+				}.bind(this))
 
-		// grab the note count (async)
-		this.model.note_count().bind(this)
-			.then(function(num_notes) {
-				if(!this.el_note_count) return;
-				this.el_note_count.set('html', num_notes);
+				// grab the note count (async)
+				this.model.note_count().bind(this)
+					.then(function(num_notes) {
+						if(!this.el_note_count) return;
+						this.el_note_count.set('html', num_notes);
+					});
 			});
 	},
 
@@ -143,17 +146,17 @@ var BoardsItemController = Composer.Controller.extend({
 		var persona = turtl.profile.get('personas').first();
 		if(!persona)
 		{
-			barfr.barf('A strange error occurred. Please log out and try again.');
+			barfr.barf(i18next.t('A strange error occurred. Please log out and try again.'));
 			return;
 		}
-		if(!confirm('Really leave this board?')) return;
+		if(!confirm(i18next.t('Really leave this board?'))) return;
 		var title = this.model.get('title');
 		this.model.remove_persona(persona)
 			.then(function() {
-				barfr.barf('You left the board "'+ title +'"');
+				barfr.barf(i18next.t('You left the board "{{title}}"', {title: title}));
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', 'There was a problem leaving that board', err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem leaving that board'), err);
 				log.error('board: leave: ', derr(err));
 			});
 	}

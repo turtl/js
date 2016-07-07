@@ -16,6 +16,7 @@ var FormController = Composer.Controller.extend({
 	action: 'Create',
 	footer_actions: [],
 	disabled: false,
+	show_cancel: true,
 
 	init: function()
 	{
@@ -32,7 +33,8 @@ var FormController = Composer.Controller.extend({
 			buttons: this.buttons,
 			tabindex: this.button_tabindex,
 			content: content,
-			footer_actions: this.footer_actions
+			footer_actions: this.footer_actions,
+			show_cancel: this.show_cancel
 		}));
 	},
 

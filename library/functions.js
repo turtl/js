@@ -148,6 +148,29 @@ function get_parent(obj)
 	return obj.$get_parent();
 }
 
+function get_lang()
+{
+	return (navigator.language || navigator.languages[0]);
+}
+
+function init_localization()
+{
+	var resources = {};
+	Object.keys(locales).forEach(function(k) { resources[k] = {translation: locales[k]}; });
+	i18next.init({
+		debug: false,
+		lng: get_lang(),
+		fallbackLng: 'en',
+		resources: resources,
+		nsSeparator: false,
+		keySeparator: false
+	});
+
+	i18next.on("initialized", function(options) {
+		turtl.events.trigger('app:localized');
+	});
+};
+
 /**
  * convert a Uint8Array to a binary string
  */

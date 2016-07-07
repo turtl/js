@@ -9,7 +9,7 @@
 		{{/if}}
 	</p>
 	<p class="remove">
-		<a href="#remove" rel="remove">{{icon 'remove'}}Remove attachment</a>
+		<a href="#remove" rel="remove">{{icon 'remove'}}{{t 'Remove attachment'}}</a>
 	</p>
 {{else}}
 	<label for="note_file_{{note_id}}">{{icon 'attach'}}</label>
@@ -18,6 +18,6 @@
 		type="file"
 		{{#if accept}}accept="{{accept}}"{{/if}}
 		name="file"
-		placeholder="Attach a file">
+		placeholder="{{t 'Attach a file'}}">
 {{/if}}
 

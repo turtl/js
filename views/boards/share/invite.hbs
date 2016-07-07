@@ -1,6 +1,6 @@
 <div class="loader">
-	<input type="text" class="req" name="title" value="Invite to &quot;{{board.title}}&quot;" placeholder="Invite title (shared with invitee)">
-	<input type="text" class="req" name="email" value="" placeholder="Invitee's email address">
+	<input type="text" class="req" name="title" value="{{t 'Invite to "{{board_title}}"' board_title=board.title}}" placeholder="{{t 'Invite title (shared with invitee)'}}">
+	<input type="text" class="req" name="email" value="" placeholder="{{t 'Invitee\'s email address'}}">
 	{{svg 'load'}}
 </div>
 
@@ -9,27 +9,24 @@
 <div class="challenge">
 	<label>
 		<input type="checkbox" name="use-challenge" value="1">
-		Protect this invite {{icon 'more'}}
+		{{t 'Protect this invite'}} {{icon 'more'}}
 	</label>
 	<div class="inner">
-		<input type="text" name="passphrase" placeholder="Enter a passphrase">
+		<input type="text" name="passphrase" placeholder="{{t 'Enter a passphrase'}}">
 		<p>
-			This passphrase is used to encrypt the invite. You can communicate
-			it to the invitee via a secure channel (in-person, encrypted email,
-			encrypted chat, etc).
+			{{t 'This passphrase is used to encrypt the invite. You can communicate it to the invitee via a secure channel (in-person, encrypted email, encrypted chat, etc).'}}
 		</p>
 		{{!--
-		<input type="text" name="challenge" placeholder="Ask a question (shared)">
-		<input type="text" name="response" placeholder="Answer the question (private)">
+		<input type="text" name="challenge" placeholder="{{t 'Ask a question (shared)'}}">
+		<input type="text" name="response" placeholder="{{t 'Answer the question (private)'}}">
 		<p>
-			Ask a question only the invitee would know the answer to. The answer
-			encrypts the invite, and must be guessed properly to unlock it.
-			Example:
+			{{t 'Ask a question only the invitee would know the answer to. The answer encrypts the invite, and must be guessed properly to unlock it.'}}
+			{{t 'Example:'}}
 		</p>
 		<ul>
 			<li>
-				<strong>What notebook do you bring to Mr. Weber's class? (three words, lowercase)</strong>
-				outdoor outdoor outdoor
+				<strong>{{t 'What notebook do you bring to Mr. Weber's class? (three words, lowercase)'}}</strong>
+				{{t 'outdoor outdoor outdoor'}}
 			</li>
 		</ul>
 		--}}

@@ -79,7 +79,7 @@ var Profile = Composer.RelationalModel.extend({
 				// API, or do we sync it incrementally?
 				if(!res)
 				{
-					turtl.update_loading_screen('Grabbing profile from server');
+					turtl.update_loading_screen(i18next.t('Grabbing profile from server'));
 					return this.load_profile_from_api();
 				}
 				else
@@ -87,7 +87,7 @@ var Profile = Composer.RelationalModel.extend({
 					// let's run an initial API -> DB sync, we may be behind.
 					// if we load old data against a new password, we're screwed
 					turtl.sync.set({sync_id: res.value});
-					turtl.update_loading_screen('Syncing changes from server');
+					turtl.update_loading_screen(i18next.t('Syncing changes from server'));
 					return turtl.sync.poll_api_for_changes({immediate: true, force: true})
 						.catch(function(err) {
 							// if we have a connection error, continue without
@@ -98,7 +98,7 @@ var Profile = Composer.RelationalModel.extend({
 				}
 			})
 			.then(function() {
-				turtl.update_loading_screen('Loading profile');
+				turtl.update_loading_screen(i18next.t('Loading profile'));
 				return ['keychain', 'personas', 'boards', 'notes', 'invites'];
 			})
 			.map(function(itemname) {
@@ -228,7 +228,7 @@ var Profile = Composer.RelationalModel.extend({
 					.catch(function(err) {
 						if(type == 'personas')
 						{
-							barfr.barf('There was a problem decrypting your persona. You might need to create a new one.');
+							barfr.barf(i18next.t('There was a problem decrypting your persona. You might need to create a new one.'));
 							return;
 						}
 						throw err;

@@ -17,6 +17,7 @@ var extend_error = function(extend, errname)
 }
 var TcryptError = extend_error(Error, 'TcryptError');
 var TcryptAuthFailed = extend_error(TcryptError, 'TcryptAuthFailed');
+var TcryptBadBrowser = extend_error(TcryptError, 'TcryptBadBrowser');
 
 var tcrypt = {
 	// -------------------------------------------------------------------------
@@ -686,6 +687,10 @@ var tcrypt = {
 		passphrase = convert(passphrase);
 		salt = convert(salt);
 
+		if(!window.crypto || !window.crypto.subtle)
+		{
+			return Promise.reject(new TcryptBadBrowser('your browser sucks (hi, safari)'));
+		}
 		return window.crypto.subtle.importKey('raw', passphrase, {name: 'PBKDF2'}, false, ['deriveKey'])
 			.then(function(base) {
 				return window.crypto.subtle.deriveKey({
