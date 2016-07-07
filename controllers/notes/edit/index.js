@@ -30,7 +30,7 @@ var NotesEditController = FormController.extend({
 
 	model: null,
 	clone: null,
-	action: i18next.t('Save'),
+	action: 'Save',
 	show_cancel: false,
 	formclass: 'notes-edit',
 	button_tabindex: 9,
