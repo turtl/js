@@ -172,7 +172,7 @@ locales.fr = {
     "Protect this invite": "Protéger cette invitation",
     "Public persona": "Persona public",
     "Quick help": "Aide rapide",
-    "Quote text with a caret": "Citez du texte avec un ^",
+    "Quote text with a caret": "Citez du texte avec un chevron : >",
     "Read": "lecture",
     "Read more about <a href=\"http://support.mashery.com/docs/customizing_your_portal/Markdown_Cheat_Sheet\" target=\"_blank\">markdown</a>.": "En savoir plus à propos de <a href=\"http://support.mashery.com/docs/customizing_your_portal/Markdown_Cheat_Sheet\" target=\"_blank\">markdown</a>.",
     "Really delete this note?": "Voulez-vous vraiment supprimer cette note ?",
