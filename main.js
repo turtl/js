@@ -70,6 +70,9 @@ var turtl = {
 	// holds the last successfully routed url
 	last_url: null,
 
+	// whether or not our locale data is loaded
+	localized: false,
+
 	// -------------------------------------------------------------------------
 	// Data section
 	// -------------------------------------------------------------------------
@@ -153,6 +156,10 @@ var turtl = {
 			if(!turtl.user.logged_in) return;
 			//new KeyboardShortcutHelpController();
 		});
+
+		turtl.events.bind('app:localized', function() {
+			turtl.localized = true;
+		})
 	},
 
 	setup_user: function(options)
