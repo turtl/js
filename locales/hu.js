@@ -1,5 +1,5 @@
 if(!window.locales) window.locales = {};
-locales.ln = {
+locales.hu = {
     "Accept": "Elfogad",
     "Add": "Hozzáad",
     "Add a new note": "Új jegyzet",
