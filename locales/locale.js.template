@@ -1,5 +1,5 @@
 if(!window.locales) window.locales = {};
-locales.ln = {
+locales.XX = {	// NOTE: change XX to the two-letter language code
     "Accept": "",
     "Add": "",
     "Add a new note": "",
