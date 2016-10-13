@@ -1907,4 +1907,4 @@ lunr.TokenStore.prototype.toJSON = function () {
      */
     return lunr
   }))
-})()
+})();
