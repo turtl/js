@@ -488,7 +488,7 @@ var view = {
 
 	markdown: function(body)
 	{
-		return marked(body);
+		return md.render(body);
 	}
 };
 
