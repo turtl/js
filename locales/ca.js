@@ -1,5 +1,5 @@
 if(!window.locales) window.locales = {};
-locales.ca = {	// NOTE: change XX to the two-letter language code
+locales.ca = {
     "Accept": "Accepta",
     "Add": "Afegeix",
     "Add a new note": "Afegeix una nota nova",
