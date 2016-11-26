@@ -603,13 +603,15 @@ var _turtl_init = function()
 		// prevent backspace from triggering if we're not in a form element
 		e.stop();
 	});
+    
 
 	md = window.markdownit({
 		html: false,
 		breaks: false,
 		linkify: true,
 		typographer: true,
-	}).use(window.markdownitTaskLists);
+	}).use(window.markdownitTaskLists)
+    .use(window.math_plugin )
 
 	view.fix_template_paths();
 
