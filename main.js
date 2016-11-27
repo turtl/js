@@ -604,14 +604,13 @@ var _turtl_init = function()
 		e.stop();
 	});
     
-
 	md = window.markdownit({
-		html: false,
+		html: true,
 		breaks: false,
 		linkify: true,
 		typographer: true,
 	}).use(window.markdownitTaskLists)
-    .use(window.math_plugin )
+    .use(window.markdownitkatex);
 
 	view.fix_template_paths();
 
