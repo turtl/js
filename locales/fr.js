@@ -300,7 +300,7 @@ locales.fr = {
     "You don't have a persona!": "Vous n’avez pas de persona !",
     "You left the board \"{{title}}\"": "Vous avez quitté le tableau « {{title}} »",
     "Your account has been deleted.": "Votre compte a été supprimé.",
-    "Your account username and password together act as the \"key\" that locks and unlocks your data.": "L’identifiant et le mot de passe de votre compte agisse ensemble comme la « clé » qui verrouille et déverrouille vos données.",
+    "Your account username and password together act as the \"key\" that locks and unlocks your data.": "L’identifiant et le mot de passe de votre compte agissent ensemble comme la « clé » qui verrouille et déverrouille vos données.",
     "Your email address (required)": "Votre adresse email (requis)",
     "Your email (optional, so we can respond)": "Votre adresse email (facultatif, pour que nous puissions répondre)",
     "Your login was changed successfully!": "Vos identifiants ont été modifiés avec succès !",
