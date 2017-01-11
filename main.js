@@ -604,14 +604,12 @@ var _turtl_init = function()
 		e.stop();
 	});
 
-	marked.setOptions({
-		renderer: new marked.Renderer(),
-		gfm: true,
-		tables: true,
-		pedantic: false,
-		sanitize: false,
-		smartLists: true
-	});
+	md = window.markdownit({
+		html: false,
+		breaks: false,
+		linkify: true,
+		typographer: true,
+	}).use(window.markdownitTaskLists);
 
 	view.fix_template_paths();
 
