@@ -18,9 +18,6 @@ var Sync = Composer.Model.extend({
 	outgoing_timer: null,
 	outgoing_interval: null,
 
-	// used to track local syncs
-	local_sync_id: 0,
-
 	// track the current poll number
 	poll_id: 0,
 
@@ -259,9 +256,6 @@ var Sync = Composer.Model.extend({
 						if(!synced.success) return;
 
 						var actions = synced.success.map(function(sync) {
-							// these sync items will come through in our next
-							// sync request unless we ignore them
-							(sync.sync_ids || []).map(this.ignore_on_next_sync.bind(this));
 							// remove the successful sync records (it passes
 							// back the IDs we handed it from our DB)
 							return turtl.db.sync_outgoing.remove(sync.id);
@@ -275,9 +269,7 @@ var Sync = Composer.Model.extend({
 									// happened (we don't want to double-apply
 									// changes since they will show up in the
 									// next sync poll)
-									(sync.sync_ids || []).each(function(sync_id) {
-										this.ignore_on_next_sync(sync_id);
-									}.bind(this));
+									(sync.sync_ids || []).map(this.ignore_on_next_sync.bind(this));
 
 									// if we deleted an item, then the delete
 									// already went through before we synced and
