@@ -14,7 +14,7 @@ var database = {
 		return db.open({
 			// DB has server/user id in it...client might have multiple users
 			server: db_name,
-			version: 12,
+			version: 13,
 			schema: function() { log.info('turtl: db: create schema'); return {
 				// -------------------------------------------------------------
 				// k/v tables - always has "key" field as primary key
@@ -41,9 +41,11 @@ var database = {
 						item_id: {}
 					}
 				},
-				personas: {
+				spaces: {
 					key: { keyPath: 'id', autoIncrement: false },
-					indexes: { }
+					indexes: { 
+						user_id: {},
+					}
 				},
 				boards: {
 					key: { keyPath: 'id', autoIncrement: false },

@@ -2,7 +2,7 @@ var settings = {
 	index: function()
 	{
 		var slide = false;
-		if(turtl.controllers.pages.is([ChangePasswordController, DeleteAccountController, PersonasController]))
+		if(turtl.controllers.pages.is([ChangePasswordController, DeleteAccountController]))
 		{
 			slide = 'right';
 		}

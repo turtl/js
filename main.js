@@ -78,10 +78,7 @@ var turtl = {
 	// -------------------------------------------------------------------------
 	user: null,
 
-	// holds messages for all the user's personas
-	messages: null,
-
-	// holds persona/board/note data for the user (ie, the user's profile)
+	// holds space/board/note data for the user (ie, the user's profile)
 	profile: null,
 
 	// holds the search model
@@ -208,7 +205,7 @@ var turtl = {
 					if(initial_route.match(/^\/users\//)) initial_route = default_route;
 					if(initial_route.match(/index.html/)) initial_route = default_route;
 					if(initial_route.match(/background.html/)) initial_route = default_route;
-					var dont_initial_route = ['/users/join', '/personas/join'];
+					var dont_initial_route = ['/users/join'];
 					if(!dont_initial_route.contains(turtl.router.cur_path()))
 					{
 						turtl.route(initial_route);
@@ -378,10 +375,10 @@ var turtl = {
 		// NOTE: order matters here! since the keychain holds keys in its data,
 		// it's important that it runs before everything else, or you may wind
 		// up with data that doesn't get decrypted properly. next is the
-		// personas, followed by boards, and lastly notes.
+		// spaces, then boards, and lastly notes.
 		turtl.sync.register_local_tracker('user', new Users());
 		turtl.sync.register_local_tracker('keychain', turtl.profile.get('keychain'));
-		turtl.sync.register_local_tracker('personas', turtl.profile.get('personas'));
+		turtl.sync.register_local_tracker('spaces', turtl.profile.get('spaces'));
 		turtl.sync.register_local_tracker('boards', turtl.profile.get('boards'));
 		turtl.sync.register_local_tracker('notes', turtl.profile.get('notes'));
 		turtl.sync.register_local_tracker('files', turtl.files);
@@ -617,9 +614,6 @@ var _turtl_init = function()
 	if(!clid) clid = localStorage.client_id = tcrypt.random_hash();
 	turtl.client_id = clid;
 	turtl.init();
-
-	// set up workers for openpgp.js (if native crypto ain't available)
-	openpgp.initWorker(asset('/library/openpgp/openpgp.worker.js'));
 
 	setup_global_error_catching();
 };

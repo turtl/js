@@ -15,12 +15,9 @@ var BoardsEditController = FormController.extend({
 		if(!this.model) this.model = new Board();
 		this.action = this.model.is_new() ? 'Create': 'Edit';
 
-		var child = '';
-		if(this.model.get('parent_id')) child = ' nested';
-
 		this.modal = new TurtlModal({
 			show_header: true,
-			title: this.action + child + ' board'
+			title: this.action + ' board'
 		});
 
 		this.parent();
@@ -34,15 +31,9 @@ var BoardsEditController = FormController.extend({
 
 	render: function()
 	{
-		var parent = null, parent_id = null;
-		if(parent_id = this.model.get('parent_id'))
-		{
-			parent = turtl.profile.get('boards').find_by_id(parent_id).toJSON();
-		}
 		this.html(view.render('boards/edit', {
 			action: this.action,
 			board: this.model.toJSON(),
-			parent: parent
 		}));
 		if(this.model.is_new())
 		{

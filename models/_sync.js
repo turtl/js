@@ -24,7 +24,7 @@ var Sync = Composer.Model.extend({
 	type_table_map: {
 		user: 'user',
 		keychain: 'keychain',
-		persona: 'personas',
+		space: 'spaces',
 		board: 'boards',
 		note: 'notes',
 		file: 'files',

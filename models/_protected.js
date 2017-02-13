@@ -303,7 +303,7 @@ var Protected = Composer.RelationalModel.extend({
 	 * Keys are in the format
 	 *   {b: <id>, k: <encrypted key>}
 	 *   {u: <id>, k: <encrypted key>}
-	 * "b" "u" and "p" correspond to board, user, persona
+	 * "b" "u" and "s" correspond to board, user, space
 	 * restecpfully.
 	 *
 	 * Search is in the format:

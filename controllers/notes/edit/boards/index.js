@@ -44,7 +44,6 @@ var NotesEditBoardsController = FormController.extend({
 		var select = function(board)
 		{
 			if(note_boards.contains(board.id)) board.selected = true;
-			if(board.children) board.children.forEach(select);
 		};
 		var boards = turtl.profile.get('boards').toJSON_hierarchical();
 		boards.forEach(select);

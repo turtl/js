@@ -3,8 +3,8 @@ var Profile = Composer.RelationalModel.extend({
 		keychain: {
 			collection: 'Keychain'
 		},
-		personas: {
-			collection: 'Personas'
+		spaces: {
+			collection: 'Spaces'
 		},
 		boards: {
 			collection: 'Boards'
@@ -99,7 +99,7 @@ var Profile = Composer.RelationalModel.extend({
 			})
 			.then(function() {
 				turtl.update_loading_screen(i18next.t('Loading profile'));
-				return ['keychain', 'personas', 'boards', 'notes', 'invites'];
+				return ['keychain', 'spaces', 'boards', 'notes', 'invites'];
 			})
 			.map(function(itemname) {
 				return turtl.db[itemname].query().all().execute().then(function(res) {
@@ -169,7 +169,7 @@ var Profile = Composer.RelationalModel.extend({
 		return Promise.all([
 			set_key('user', 'user', profile.user),
 			populate('keychain', profile.keychain),
-			populate('personas', profile.personas),
+			populate('spaces', profile.spaces),
 			populate('boards', profile.boards),
 			populate('notes', profile.notes),
 			populate('files', profile.files),
@@ -192,7 +192,7 @@ var Profile = Composer.RelationalModel.extend({
 		options || (options = {});
 
 		var keychain = this.get('keychain');
-		var personas = this.get('personas');
+		var spaces = this.get('spaces');
 		var boards = this.get('boards');
 		var notes = this.get('notes');
 		var invites = this.get('invites');
@@ -202,7 +202,7 @@ var Profile = Composer.RelationalModel.extend({
 		return keychain.reset_async(data.keychain)
 			.bind(this)
 			.then(function() {
-				return personas.reset_async(data.personas);
+				return spaces.reset_async(data.spaces);
 			})
 			.then(function() {
 				return boards.reset_async(data.boards);
@@ -216,7 +216,7 @@ var Profile = Composer.RelationalModel.extend({
 	},
 
 	/**
-	 * Decrypt all the in-memory collections we're tracking (keychain, personas,
+	 * Decrypt all the in-memory collections we're tracking (keychain, spaces,
 	 * boards)
 	 */
 	load_deserialized: function()
@@ -226,11 +226,6 @@ var Profile = Composer.RelationalModel.extend({
 			return Promise.all(this.get(type).map(function(model) {
 				return model.deserialize().bind(this)
 					.catch(function(err) {
-						if(type == 'personas')
-						{
-							barfr.barf(i18next.t('There was a problem decrypting your persona. You might need to create a new one.'));
-							return;
-						}
 						throw err;
 					});
 			}.bind(this))).bind(this)
@@ -238,7 +233,7 @@ var Profile = Composer.RelationalModel.extend({
 				});
 		}.bind(this);
 		return run_dec('keychain')
-			.then(run_dec.bind(this, 'personas'))
+			.then(run_dec.bind(this, 'spaces'))
 			.then(run_dec.bind(this, 'boards'));
 	},
 

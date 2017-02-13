@@ -150,7 +150,7 @@ var UserJoinController = UserBaseController.extend({
 			})
 			.then(function() {
 				turtl.events.bind_once('app:load:profile-loaded', function() {
-					turtl.route('/personas/join');
+					turtl.route('/');
 				});
 			})
 			.catch(function(err) {
@@ -173,12 +173,9 @@ var UserJoinController = UserBaseController.extend({
 	create_initial_boards: function()
 	{
 		// create some initial boardssss
-		var add_board = function(name, parent_id)
+		var add_board = function(name)
 		{
-			parent_id = (parent_id || false);
 			var board = new Board({title: name});
-			if(parent_id) board.set({parent_id: parent_id});
-
 			board.create_or_ensure_key(null, {silent: true});
 			return board.save()
 				.then(function() {
@@ -187,12 +184,6 @@ var UserJoinController = UserBaseController.extend({
 				});
 		};
 		return add_board(i18next.t('Bookmarks'))
-			.then(function(board) {
-				var id = board.id();
-				return Promise.all([
-					add_board(i18next.t('Save for later'), id),
-				]);
-			})
 			.then(function() {
 				return add_board(i18next.t('Photos'))
 			})

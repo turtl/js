@@ -132,7 +132,7 @@ Composer.sync = function(method, model, options)
 
 	// if we're changing the password, delay any fetches/saves until we're
 	// finished. this ensures we don't cross wires when changing keys. we really
-	// only need to do this for personas/keychain but i like to err on the side
+	// only need to do this for keychain but i like to err on the side
 	// of safety when it comes to this stuff.
 	if(turtl.user.changing_password)
 	{

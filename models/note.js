@@ -85,12 +85,8 @@ var Note = Protected.extend({
 		var subkeys = [];
 		boards.forEach(function(bid) {
 			var board = turtl.profile.get('boards').get(bid);
-			var parent_id = board ? board.get('parent_id') : false;
-			var parent = turtl.profile.get('boards').get(parent_id);
 			if(!board) return;
 			subkeys.push({b: board.id(), k: board.key});
-			if(!parent) return;
-			subkeys.push({b: parent.id(), k: parent.key});
 		}.bind(this));
 
 		// make sure we do this BEFORE generate_subkeys(). the reason is that

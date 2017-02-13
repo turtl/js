@@ -218,21 +218,13 @@ var User = Protected.extend({
 					kentry.key = key;
 					return kentry.save();
 				});
-				var persona_actions = turtl.profile.get('personas')
-					.filter(function(persona) {
-						return persona.get('user_id') == this.id();
-					}.bind(this))
-					.map(function(persona) {
-						persona.key = key;
-						return persona.save();
-					});
 				turtl.events.trigger('user:change-password:pre-save');
 				this.changing_password = true;
-				return Promise.all(keychain_actions.concat(persona_actions));
+				return Promise.all(keychain_actions);
 			})
 			.then(function(saved) {
 				turtl.events.trigger('user:change-password:post-save');
-				log.info('keys/personas saved: ', saved.length);
+				log.info('keys saved: ', saved.length);
 				user.clear();
 				this.key = key;
 				this.auth = new_auth;
@@ -317,18 +309,8 @@ var User = Protected.extend({
 		this.logged_in = false;
 		this.clear();
 		delete localStorage[config.user_cookie];
-		this.unbind_relational('personas', ['saved'], 'user:track_personas');
-		this.unbind_relational('personas', ['destroy'], 'user:track_personas:destroy');
-		this.unbind_relational('settings', ['change'], 'user:save_settings');
 
 		// clear user data
-		var personas = this.get('personas');
-		if(personas) personas.each(function(p) {
-			p.unbind();
-			p.destroy({silent: true, skip_remote_sync: true, skip_local_sync: true});
-		});
-		var personas = this.get('personas');
-		if(personas) personas.unbind().clear();
 		this.get('settings').unbind().clear();
 		this.trigger('logout', this);
 	},

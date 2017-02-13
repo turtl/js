@@ -31,8 +31,7 @@ var FeedbackController = FormController.extend({
 
 		if(!turtl.sync.connected) return this.html(view.render('feedback/noconnection'));
 
-		var persona = turtl.profile.get('personas').first();
-		if(persona) var email = persona.get('email');
+		var email = turtl.user.get('username');
 		this.html(view.render('feedback/index', {
 			show_email: !email
 		}));
@@ -61,12 +60,9 @@ var FeedbackController = FormController.extend({
 
 		var data = {
 			user_id: turtl.user.id(),
+			email: turtl.user.get('username'),
 			body: body
 		};
-		var persona = turtl.profile.get('personas').first();
-		var persona_email = persona && persona.get('email');
-		if(persona_email) data.email = persona_email;
-		else if(email) data.email = email;
 
 		var feedback = new Feedback(data);
 
@@ -82,7 +78,6 @@ var FeedbackController = FormController.extend({
 				this.btn_submit.set('disabled', false).removeClass('disabled');
 				this.disable(false);
 			});
-
 	}
 });
 

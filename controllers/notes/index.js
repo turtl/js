@@ -41,13 +41,7 @@ var NotesIndexController = Composer.Controller.extend({
 			this.search.boards.push(this.board_id);
 			this.search.boards = this.search.boards.concat(board.get_child_board_ids());
 
-			var parent_id = board.get('parent_id');
-			var parent = turtl.profile.get('boards').find_by_id(parent_id);
 			var title = board.get('title');
-			if(parent)
-			{
-				title = parent.get('title') + '/' + title;
-			}
 			var back = turtl.router.get_param(window.location.search, 'back');
 			if(!back) back = '/boards';
 		}

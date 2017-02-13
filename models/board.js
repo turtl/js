@@ -1,25 +1,9 @@
 var Board = Protected.extend({
 	base_url: '/boards',
 
-	relations: {
-		boards: {
-			filter_collection: 'BoardsFilter',
-			master: function() { return turtl.profile.get('boards'); },
-			options: {
-				filter: function(model, boardfilter) {
-					return model.get('parent_id') == boardfilter.get_parent().id();
-				}
-			}
-		},
-		personas: {
-			collection: 'BoardPersonas'
-		}
-	},
-
 	public_fields: [
 		'id',
 		'user_id',
-		'parent_id',
 		'keys',
 		'privs',
 		'meta',
@@ -91,15 +75,7 @@ var Board = Protected.extend({
 	{
 		options || (options = {});
 
-		var parent_id = this.get('parent_id');
-		var parent = turtl.profile.get('boards').find_by_id(parent_id);
 		this.set({user_id: turtl.user.id()}, options);
-		if(parent)
-		{
-			// if we have a parent board, make sure the child can decrypt
-			// its key via the parent's
-			this.generate_subkeys([{b: parent.id(), k: parent.key}]);
-		}
 
 		var keychain = turtl.profile.get('keychain');
 		var existing = keychain.find_key(this.id());
@@ -126,21 +102,8 @@ var Board = Protected.extend({
 		search || (search = {});
 		search.b || (search.b = []);
 
-		var parent_id = this.get('parent_id');
-		var parent = turtl.profile.get('boards').find_by_id(parent_id);
-		if(parent && parent.key)
-		{
-			search.b.push({id: parent_id, k: parent.key});
-		}
-		else
-		{
-			// didn't find our parent, so search for him/her in the keychain
-			var parent_key = turtl.profile.get('keychain').find_key(parent_id);
-			if(parent_key)
-			{
-				search.b.push({id: parent_id, k: parent_key});
-			}
-		}
+		// TODO: find space key
+
 		return this.parent(keys, search, options);
 	},
 
@@ -190,27 +153,6 @@ var Board = Protected.extend({
 				return unique_notes.length;
 			});
 	},
-
-	get_child_board_ids: function()
-	{
-		var children = [];
-		turtl.profile.get('boards').each(function(board) {
-			if(board.get('parent_id') == this.id())
-			{
-				children.push(board.id());
-			}
-		}.bind(this));
-		return children;
-	},
-
-	remove_persona: function(persona)
-	{
-		return turtl.api._delete(this.get_url() + '/persona/'+persona.id())
-			.then(function(board) {
-				// do nothing, the sync system will update the board for us,
-				// probably before the sync call even returns
-			});
-	}
 });
 
 var Boards = SyncCollection.extend({
@@ -218,26 +160,9 @@ var Boards = SyncCollection.extend({
 
 	toJSON_hierarchical: function()
 	{
-		var boards = this.toJSON().sort(function(a, b) { return (a.title || '').localeCompare(b.title || ''); });
-		var parents = boards.filter(function(b) { return !b.parent_id; });
-		var children = boards.filter(function(b) { return !!b.parent_id; });
-
-		// index the parents for easy lookup
-		var idx = {};
-		parents.forEach(function(b) {
-			idx[b.id] = b;
-			// fix any bad titles while we're looping
-			if(!b.title) b.title = i18next.t('(untitled board)');
-		});
-
-		children.forEach(function(b) {
-			var parent = idx[b.parent_id];
-			if(!parent) return;
-			if(!parent.children) parent.children = [];
-			parent.children.push(b);
-		});
-
-		return parents;
+		var boards = this.toJSON()
+			.sort(function(a, b) { return (a.title || '').localeCompare(b.title || ''); });
+		return boards;
 	},
 
 	toJSON_named: function(board_ids)
@@ -247,12 +172,6 @@ var Boards = SyncCollection.extend({
 				var board = this.find_by_id(bid);
 				if(!board) return false;
 				var name = board.get('title') || i18next.t('(untitled board)');
-				var parent_id = board.get('parent_id');
-				if(parent_id)
-				{
-					var parent = this.find_by_id(parent_id);
-					if(parent) name = parent.get('title') + '/' + name;
-				}
 				var json = board.toJSON();
 				json.name = name;
 				if(!json.title) json.title = i18next.t('(untitled board)');

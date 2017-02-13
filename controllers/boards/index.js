@@ -21,9 +21,7 @@ var BoardsController = Composer.Controller.extend({
 		turtl.push_title(i18next.t('Boards'));
 		this.bind('release', turtl.pop_title.bind(null, false));
 
-		this.collection = new BoardsFilter(turtl.profile.get('boards'), {
-			filter: function(b) { return !b.get('parent_id'); }
-		});
+		this.collection = new BoardsFilter(turtl.profile.get('boards'));
 
 		this.bind('release', this.collection.detach.bind(this.collection));
 

@@ -4,7 +4,6 @@ var BoardsItemController = Composer.Controller.extend({
 
 	elements: {
 		'.board-actions': 'actions',
-		'.children': 'children',
 		'span.count': 'el_note_count'
 	},
 
@@ -12,8 +11,6 @@ var BoardsItemController = Composer.Controller.extend({
 		'click': 'open_board',
 		'click .menu a[rel=edit]': 'open_edit',
 		'click .menu a[rel=delete]': 'open_delete',
-		'click .menu a[rel=create-nested-board]': 'open_create_child',
-		'click .menu a[rel=leave-this-board]': 'leave_board'
 	},
 
 	model: null,
@@ -29,19 +26,6 @@ var BoardsItemController = Composer.Controller.extend({
 	render: function()
 	{
 		var board_id = this.model.id();
-		var parent_id = this.model.get('parent_id');
-		var my_persona = turtl.profile.get('personas').first();
-		var my_persona_id = my_persona && my_persona.id();
-		var has_invites = turtl.profile.get('invites').filter(function(inv) {
-			var obj = inv.get('object_id')
-			return (obj == board_id) && inv.get('from') == my_persona_id;
-		}.bind(this)).length > 0;
-		var has_shares = Object.keys(this.model.get('privs') || {}).length > 0;
-		var shared_with_me = !!this.model.get('shared');
-		var shared_by_me = !shared_with_me && (has_invites || has_shares);
-		var shared_with_me_directly = shared_with_me &&
-			!!(this.model.get('privs') || {})[my_persona_id];
-		var num_shared_with = Object.keys(this.model.get('privs') || {}).length;
 		var data = this.model.toJSON();
 		data.title = (data.title || i18next.t('(untitled board)')).replace(/</g, '&lt;').replace(/>/g, '&gt;');
 		if(this.search.filter)
@@ -53,32 +37,11 @@ var BoardsItemController = Composer.Controller.extend({
 		}
 		this.html(view.render('boards/item', {
 			board: data,
-			shared: shared_with_me_directly || shared_by_me,
-			shared_by_me: shared_by_me,
-			num_shared_with: (num_shared_with == 1 ? i18next.t('{{num_shared_with}} person', {num_shared_with: num_shared_with}) : i18next.t('{{num_shared_with}} people', {num_shared_with: num_shared_with})),
-			shared_with_me: shared_with_me,
-			shared_with_me_directly: shared_with_me_directly
 		})).bind(this)
 			.then(function() {
 				this.el.set('rel', this.model.id());
 
-				if(shared_with_me) this.el.addClass('shared-with-me');
-
-				var actions = [];
-				if(shared_with_me)
-				{
-					if(shared_with_me_directly)
-					{
-
-						actions.push([{name: 'Leave this board'}]);
-					}
-				}
-				else
-				{
-					actions.push([{name: 'Edit'}, {name: 'Delete'}]);
-					actions.push([{name: 'Share this board', href: '/boards/share/'+this.model.id()}]);
-					if(!parent_id) actions.push([{name: 'Create nested board'}]);
-				}
+				var actions = [{name: 'Edit'}, {name: 'Delete'}];
 				if(actions.length)
 				{
 					this.track_subcontroller('actions', function() {
@@ -88,14 +51,6 @@ var BoardsItemController = Composer.Controller.extend({
 						});
 					}.bind(this));
 				}
-				this.track_subcontroller('children', function() {
-					return new BoardsListController({
-						inject: this.children,
-						collection: this.model.get('boards'),
-						child: true,
-						search: this.search
-					});
-				}.bind(this))
 
 				// grab the note count (async)
 				this.model.note_count().bind(this)
@@ -124,14 +79,6 @@ var BoardsItemController = Composer.Controller.extend({
 		});
 	},
 
-	open_create_child: function(e)
-	{
-		if(e) e.stop();
-		new BoardsEditController({
-			model: new Board({parent_id: this.model.id()})
-		});
-	},
-
 	open_delete: function(e)
 	{
 		if(e) e.stop();
@@ -139,26 +86,5 @@ var BoardsItemController = Composer.Controller.extend({
 			model: this.model
 		});
 	},
-
-	leave_board: function(e)
-	{
-		if(e) e.stop();
-		var persona = turtl.profile.get('personas').first();
-		if(!persona)
-		{
-			barfr.barf(i18next.t('A strange error occurred. Please log out and try again.'));
-			return;
-		}
-		if(!confirm(i18next.t('Really leave this board?'))) return;
-		var title = this.model.get('title');
-		this.model.remove_persona(persona)
-			.then(function() {
-				barfr.barf(i18next.t('You left the board "{{title}}"', {title: title}));
-			})
-			.catch(function(err) {
-				turtl.events.trigger('ui-error', i18next.t('There was a problem leaving that board'), err);
-				log.error('board: leave: ', derr(err));
-			});
-	}
 });
 
