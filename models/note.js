@@ -13,7 +13,6 @@ var Note = Protected.extend({
 		'file',
 		'has_file',
 		'keys',
-		'meta',
 		'mod'
 	],
 

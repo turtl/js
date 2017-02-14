@@ -385,14 +385,23 @@ var Search = Composer.Collection.extend({
 
 		// run full-text indexer
 		var tags = json.tags.join(' ');
-		this.ft.add({
-			id: json.id,
-			url: json.url,
-			title: json.title,
-			body: json.text,
-			tags: tags,
-			file: (json.file || {}).name
-		});
+		try
+		{
+			this.ft.add({
+				id: json.id,
+				url: json.url,
+				title: json.title,
+				body: json.text,
+				tags: tags,
+				file: (json.file || {}).name
+			});
+		}
+		catch(e)
+		{
+			// log the error and continue. lunr can be finnicky.
+			// NOTE: not logging the actual error here, could leak info
+			log.error('search: index_note: problem adding note to FT index: ', note.id());
+		}
 	},
 
 	/**
