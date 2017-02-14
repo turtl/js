@@ -4,6 +4,7 @@
 ### css for the app.
 
 pwd=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+asset_suffix="?v$( date '+%s' )"
 
 ASSET_ROOT=""
 SEARCH_PATH=""
@@ -20,7 +21,7 @@ extra='<base href="/">'
 css="$(
 	echo "$(all_css)" \
 		| sed 's|^|<link rel=\"stylesheet\" href=\"/|' \
-		| sed 's|$|">|'
+		| sed "s|$|${asset_suffix}"'"'">|"
 )"
 
 ## -----------------------------------------------------------------------------
@@ -30,7 +31,7 @@ js="$(
 	echo "$(all_js)" \
 		| sed 's|___| |g' \
 		| sed 's|^|<script src="/|' \
-		| sed 's|$|"></script>|'
+		| sed "s|$|${asset_suffix}"'"'"></script>|"
 )"
 
 ## -----------------------------------------------------------------------------

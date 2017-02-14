@@ -3,11 +3,9 @@ var UserJoinController = UserBaseController.extend({
 		'input[name=username]': 'inp_username',
 		'input[name=password]': 'inp_password',
 		'input[name=confirm]': 'inp_confirm',
-		'input[name=promo]': 'inp_promo',
 		'input[name=server]': 'inp_server',
 		'input[type=submit]': 'inp_submit',
 		'p.load': 'el_loader',
-		'div.promo': 'promo_section',
 		'.strength': 'strength_container',
 		'.strength .inner': 'strength_bar',
 		'.strength .status': 'strength_status',
@@ -16,13 +14,10 @@ var UserJoinController = UserBaseController.extend({
 	},
 
 	events: {
-		'click a[href=#open-promo]': 'open_promo',
 		'click .button.confirm': 'finalize',
 		'input input[name=password]': 'update_meter',
 		'click a.open-settings': 'toggle_settings'
 	},
-
-	promo: null,
 
 	buttons: false,
 	formclass: 'user-join',
@@ -34,20 +29,6 @@ var UserJoinController = UserBaseController.extend({
 		turtl.push_title(i18next.t('Join'), '/users/login');
 		this.bind('release', turtl.pop_title.bind(null, false));
 
-		// check for promo codes
-		var check_promo = function()
-		{
-			var promo = localStorage.promo;
-			if(promo && this.inp_promo.get('value') == '')
-			{
-				this.inp_promo.set('value', promo);
-				var open = this.el.getElement('a.open-promo');
-				if(open) open.click();
-			}
-			check_promo.delay(500, this);
-		}.bind(this);
-		check_promo();
-
 		this.render();
 	},
 
@@ -55,17 +36,10 @@ var UserJoinController = UserBaseController.extend({
 	{
 		var content = view.render('users/join', {
 			server: config.api_url,
-			enable_promo: config.enable_promo,
 			autologin: this.autologin(),
 			show_autologin: config.has_autologin,
-			promo: localStorage.promo
 		});
 		this.html(content);
-		if(this.promo_section && !this.promo_section.hasClass('open'))
-		{
-			this.promo_section.set('slide', {duration: 250, mode: 'horizontal'});
-			this.promo_section.get('slide').hide();
-		}
 		(function() { this.inp_username.focus(); }).delay(100, this);
 		this.update_meter();
 
@@ -125,7 +99,6 @@ var UserJoinController = UserBaseController.extend({
 		var username = this.inp_username.get('value');
 		var password = this.inp_password.get('value');
 		var pconfirm = this.inp_confirm.get('value');
-		var promo = this.inp_promo ? this.inp_promo.get('value') : null;
 
 		var errors = this.check_login(this.inp_username, this.inp_password, this.inp_confirm);
 		if(!this.check_errors(errors)) return;
@@ -140,7 +113,7 @@ var UserJoinController = UserBaseController.extend({
 		this.el_loader.addClass('active');
 		this.inp_submit.set('disabled', 'disabled');
 		turtl.loading(true);
-		user.join({ promo: promo }).bind(this)
+		user.join({}).bind(this)
 			.then(function(userdata) {
 				var data = user.toJSON();
 				data.id = userdata.id;
@@ -236,15 +209,6 @@ var UserJoinController = UserBaseController.extend({
 		this.strength_container.addClass('level-'+sluggify(status));
 	},
 
-	open_promo: function(e)
-	{
-		if(e) e.stop();
-		if(!this.promo_section) return;
-		e.target.dispose();
-		this.promo_section.addClass('open');
-		this.promo_section.get('slide').slideIn();
-	},
-
 	toggle_settings: function(e)
 	{
 		if(e) e.stop();
@@ -261,3 +225,4 @@ var UserJoinController = UserBaseController.extend({
 		}
 	}
 });
+

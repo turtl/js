@@ -12,8 +12,6 @@ config.routes = {
 	'/settings/password': ['settings', 'password'],
 	'/settings/delete-account': ['settings', 'delete_account'],
 
-	'/sharing': ['sharing', 'index'],
-
 	'/sync': ['sync', 'index'],
 
 	'/feedback': ['feedback', 'index'],
