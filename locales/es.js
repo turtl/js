@@ -111,7 +111,7 @@ locales.es = {
     "Invite pending. Sent {{ago}}": "Invitación pendiente. Enviada {{ago}}",
     "Invite sent": "Invitación enviada",
     "Invite title (shared with invitee)": "Título de la invitación (compartido con el invitado)",
-    "Invite to {{board_title}}": "Invitar a {{board_title}}",
+    "Invite to &quot;{{board_title}}&quot;": "Invitar a &quot;{{board_title}}&quot;",
     "It can be helpful to use your email address as your username.": "Puede ser de ayuda usar tu dirección de correo como nombre de usuario.",
     "I will remember my login!": "¡Me acordaré de mi login!",
     "Join": "Unirse",

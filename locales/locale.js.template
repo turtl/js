@@ -111,7 +111,7 @@ locales.XX = {	// NOTE: change XX to the two-letter language code
     "Invite pending. Sent {{ago}}": "",
     "Invite sent": "",
     "Invite title (shared with invitee)": "",
-    "Invite to {{board_title}}": "",
+    "Invite to &quot;{{board_title}}&quot;": "",
     "It can be helpful to use your email address as your username.": "",
     "I will remember my login!": "",
     "Join": "",
