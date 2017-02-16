@@ -66,18 +66,18 @@ locales.es = {
     "Edit note": "Editar nota",
     "Edit current note": "Editar nota actual",
     "Edit persona": "Editar persona",
-    "<em>{{email}}</em> has a Turtl persona. This share will be encrypted using their public key.": "<em>{{email}}</em> tiene una persona de Turtl. Esta compartición será encriptada usando su clave pública.", //revisar
+    "<em>{{email}}</em> has a Turtl persona. This share will be encrypted using their public key.": "<em>{{email}}</em> tiene una persona de Turtl. Esta compartición será encriptada usando su clave pública.",
     "{{email}}</em> is not a current Turtl user.": "{{email}}</em> no es un usuario de Turtl.",
     "{{email}}</em> needs to upgrade their persona.": "{{email}}</em> necesita actualizar su persona.",
     "Email me when someone shares with me": "Mándame un correo cuando alguien comparta algo conmigo",
     "(empty note)": "(nota vacia)",
-    "Enable sharing": "Activar compartir", // revisar
+    "Enable sharing": "Activar comparticiones",
     "Enter a new password": "Escribe una nueva contraseña",
     "Enter a passphrase": "Escribe una frase de contraseña",
     "Enter your invite code": "Escribe tu código de invitación",
     "Error loading profile": "Error cargando perfil",
-    "Error removing invite.": "Error eliminando invitación.", //revisar
-    "Error removing share.": "Error eliminando compartición.", //revisar
+    "Error removing invite.": "Error eliminando invitación.",
+    "Error removing share.": "Error eliminando compartición.",
     "Example:": "Ejemplo:",
     "excellent": "excelente",
     "Feedback": "Feedback",
@@ -86,8 +86,8 @@ locales.es = {
     "From": "De",
     "Full name": "Nombre completo",
     "Generating PGP key in background": "Generando clave PGP en segundo plano",
-    "Give your feedback": "Danos tu feedback", // revisar
-    "Give us feedback": "Danos feedback", //revisar
+    "Give your feedback": "Danos tu feedback",
+    "Give us feedback": "Danos feedback",
     "good": "buena",
     "Grabbing profile from server": "Descargando perfil del servidor",
     "great": "muy buena",
@@ -99,12 +99,12 @@ locales.es = {
     ", however you have {{length}} changes waiting to be synced that will be lost if you do this": ", sin embargo tienes {{length}} cambios esperando a ser sincronizados que serán perdidos si haces esto",
     "Ideas": "Ideas",
     "If you are having trouble using Turtl, please email us at <code>info@turtl.it</code>": "Si tienes problemas usando Turtl, mándanos un correo a <code>info@turtl.it</code>",
-    "In an upcoming release, you will be able to see pending profile changes and file uploads/downloads that are in progress.": "En futuras actualizaciones, serás capaz de ver cambios de perfil pendientes y cargas/descargas de archivos en progreso.", //revisar
+    "In an upcoming release, you will be able to see pending profile changes and file uploads/downloads that are in progress.": "En futuras actualizaciones, serás capaz de ver cambios de perfil pendientes y cargas/descargas de archivos en progreso.",
     "Image": "Imagen",
     "Image URL": "URL de la imagen",
     "Indexing notes": "Indexando notas",
     "Initializing Turtl": "Inicializando Turtl",
-    "Invite": "Invitar", //revisar
+    "Invite": "Invitar",
     "Invitee's email address": "Correo del invitado",
     "Invite accepted": "Invitación aceptada",
     "Invite accepted!": "¡Invitación aceptada!",
@@ -123,7 +123,7 @@ locales.es = {
     "Leave this board": "Salir de este tablón",
     "Loading profile": "Cargando perfil",
     "Login": "Loguéate",
-    "Login failed": "Login fallido", //revisar todas estas de login
+    "Login failed": "Logueo fallido",
     "Login to an existing account": "Loguéate en una cuenta existente",
     "Logout": "Desloguearte",
     "Log out": "Desloguearte",
@@ -143,8 +143,8 @@ locales.es = {
     "No notes here!": "¡Aquí no hay notas!",
     "Note preview": "Previsualización de la nota",
     "Note text": "Nota de texto",
-    "{{num_shared_with}} people": "{{num_shared_with}} personas", // revisar estas dos
-    "{{num_shared_with}} person": "{{num_shared_with}} personas",
+    "{{num_shared_with}} people": "{{num_shared_with}} personas",
+    "{{num_shared_with}} person": "{{num_shared_with}} persona",
     "Offline mode": "Modo offline",
     "ok": "ok",
     "One hash makes a large title": "Una almohadilla hace un título grande",
@@ -159,17 +159,17 @@ locales.es = {
     "Passwords": "Contraseñas",
     "Paste this into another note to link to this one": "Pega esto en otra nota para hacer un enlace a esta nota",
     "Pending invites": "Invitaciones pendientes",
-    "{{permissions}} permissions": "{{permissions}} permisos", //revisar
-    "Personas enable secure sharing with others by giving your account a name and email that others can look up.": "Personas activa la compartición segura con otros proporcionando a tu cuenta un nombre y un correo que otros pueden buscar.", //revisar
-    "Personas enable sharing with others": "Personas activa la compartición con otros", // por dios, revisar todos los comparticion
-    "Persona settings updated.": "Ajustes de Persona actualizados.", //revisar todos los persona
+    "{{permissions}} permissions": "{{permissions}} permisos",
+    "Personas enable secure sharing with others by giving your account a name and email that others can look up.": "Personas activa la compartición segura con otros proporcionando a tu cuenta un nombre y un correo que otros pueden buscar.",
+    "Personas enable sharing with others": "Personas activa la compartición con otros",
+    "Persona settings updated.": "Ajustes de Persona actualizados.",
     "Photos": "Fotos",
-    "Please enter an email for your persona": "Por favor, introduce un correo para tu persona", //revisar escribe vs introduce
+    "Please enter an email for your persona": "Por favor, introduce un correo para tu persona",
     "Please enter a passphrase. Hint: Sentences are much better than single words.": "Por favor, introduce una frase de contraseña. Pista: una frase es mucho mejor que una sóla palabra.",
-    "Please enter a passphrase to protect the invite": "Por favor, introduce una frase de contraseña para proteger la invitación", //revisar los invite
+    "Please enter a passphrase to protect the invite": "Por favor, introduce una frase de contraseña para proteger la invitación",
     "Please enter a username 3 characters or longer.": "Por favor, introduce un nombre de usuario de 3 o más caracteres.",
     "Please enter a valid email": "Por favor, introduce un correo válido",
-    "Please enter some feedback": "Por favor, escribe algún feedback", //revisar
+    "Please enter some feedback": "Por favor, escribe algún feedback",
     "Please give this invite a title": "Por favor, escribe un título para esta invitación",
     "Please give your board a title": "Por favor, escribe un título para tu tablón",
     "Prev": "Ante",
@@ -182,7 +182,7 @@ locales.es = {
     "Read more about <a href=\"http://support.mashery.com/docs/customizing_your_portal/Markdown_Cheat_Sheet\" target=\"_blank\">markdown</a>.": "Lee más sobre <a href=\"http://support.mashery.com/docs/customizing_your_portal/Markdown_Cheat_Sheet\" target=\"_blank\">markdown</a>.",
     "Really delete this note?": "¿Eliminar esta nota?",
     "Really delete this persona? All shares to and from it will be deleted as well.": "¿Eliminar esta persona? Todas las comparticiones a y de esta persona también serán eliminadas.",
-    "Really leave this board?": "¿Salir de este tablón?",// revisar estas líneas
+    "Really leave this board?": "¿Salir de este tablón?",
     "Really reject this invite?": "¿Rechazar esta invitación?",
     "Really remove this invite?": "¿Eliminar esta invitación?",
     "Really remove this user from the board?": "¿Eliminar este usuario del tablón?",
@@ -208,7 +208,7 @@ locales.es = {
     "Show all tags": "Mostrar todas las etiquetas",
     "Show this help": "Mostrar esta ayuda",
     "Skip this step": "Saltar este paso",
-    "Stay logged in": "Mantenerse logueado", //revisar
+    "Stay logged in": "Mantenerse logueado",
     "<span class=\"count\">{{num_notes}}</span> notes": "<span class=\"count\">{{num_notes}}</span> notas",
     "Syncing changes from server": "Sincronizando cambios del servidor",
     "Sync now": "Sicronizar ahora",
@@ -219,11 +219,11 @@ locales.es = {
     "Text note": "Nota de texto",
     "Text search": "Buscar texto",
     "Thanks!": "¡Gracias!",
-    "That board doesn't seem to exist": "Parece que ese tablón no existe", //revisar estas 3 lineas
+    "That board doesn't seem to exist": "Parece que ese tablón no existe",
     "That email is already registered to another persona": "Ese correo ya ha sido registrado por otra persona",
     "That invite wasn't found.": "Esa invitación no ha sido encontrada.",
-    "That passphrase is making me cringe.": "Esa frase de contraseña me está acojonando.", //revisar
-    "The current username/password you entered do not match the currently logged in user's": "El usuario y contraseña introducidos no coinciden con los del usuario logueado.", //revisar
+    "That passphrase is making me cringe.": "Esa frase de contraseña da grima.",
+    "The current username/password you entered do not match the currently logged in user's": "El usuario y contraseña introducidos no coinciden con los del usuario logueado en este momento.",
     "There was a problem accepting that invite. Please try again.": "Ha habido un problema aceptando esa invitación. Por favor, inténtalo de nuevo.",
     "There was a problem changing your login. We are undoing the changes. Please try again.": "Ha habido un problema cambiando tu login. Estamos deshaciendo los cambios. Por favor, inténtalo de nuevo.",
     "There was a problem clearing your profile": "Ha habido un problema limpiando tu perfil",
@@ -234,7 +234,7 @@ locales.es = {
     "There was a problem deleting your note: {{err}}": "Ha habido un problema borrando tu nota: {{err}}",
     "There was a problem deleting your persona": "Ha habido un problema borrando tu persona",
     "There was a problem generating a key for your persona": "Ha habido un problema generando la clave para tu persona",
-    "There was a problem grabbing that invite.": "Ha habido un problema recibiendo esa invitación.", //revisar estas tres
+    "There was a problem grabbing that invite.": "Ha habido un problema recibiendo esa invitación.",
     "There was a problem leaving that board": "Ha habido un problema saliendo de ese tablón.",
     "There was a problem opening that file": "Ha habido un problema abriendo ese archivo",
     "There was a problem rejecting that invite. Please try again.": "Ha habido un problema rechazando esa invitación. Por favor, inténtalo de nuevo.",
@@ -242,9 +242,9 @@ locales.es = {
     "There was a problem saving that account": "Ha habido un problema guardando esa cuenta",
     "There was a problem saving the attachment": "Ha habido un problema guardando el adjunto",
     "There was a problem saving your settings": "Ha habido un problema guardando tus ajustes",
-    "There was a problem sending that invite": "Ha habido un problema enviando esa invitación", //revisar todos los that=esa
+    "There was a problem sending that invite": "Ha habido un problema enviando esa invitación",
     "There was a problem syncing to the server. Trying again soon.": "Ha habido un problema sincronizando con el servidor. Se reintentará más tarde.",
-    "There was a problem unlocking the invite. Do you have the right passphrase?": "Ha habido un problema desbloqueando la invitación. ¿Tienes la frase de contraseña correcta?", //revisar unlocks
+    "There was a problem unlocking the invite. Do you have the right passphrase?": "Ha habido un problema desbloqueando la invitación. ¿Tienes la frase de contraseña correcta?",
     "There was a problem updating that board": "Ha habido un problema actualizando ese tablón",
     "There was a problem updating that note": "Ha habido un problema actualizando esa nota",
     "There was a problem updating that persona": "Ha habido un problema actualizando esa persona",
@@ -257,22 +257,22 @@ locales.es = {
     "This note is not in any boards.": "Esta nota no está en ningún tablón.",
     "This passphrase is used to encrypt the invite. You can communicate it to the invitee via a secure channel (in-person, encrypted email, encrypted chat, etc).": "Esta frase de contraseña será usada para encriptar la invitación. Puedes enviársela al invitado a través de un canal seguro (en persona, correo encriptado, chat encriptado, etc).",
     "This persona doesn't have a key.": "Esta persona no tiene una clave.",
-    "This share will happen over email. It's recommended you protect the invite.": "Lo compartirás a través del correo. Es recomendable que protejas la invitación.", //reeeevisar
-    "This URL is already bookmarked in another note": "Esta URL ya esta como marcador en otra nota", //revisar esto
+    "This share will happen over email. It's recommended you protect the invite.": "Lo compartirás a través del correo. Es recomendable que protejas la invitación.",
+    "This URL is already bookmarked in another note": "Esta URL ya esta guardada en otro marcador",
     "This URL is already bookmarked in {{ids_length}} notes": "Esta URL ya esta como marcador en {{ids_length}} notas",
     "This will erase all your local data and log you out. Your profile will be downloaded again next time you log in{{msg}}. Continue?": "Esto borrará todos tus datos locales y te deslogueará. Tu perfil será descargado de nuevo la próxima vez que te loguees{{msg}}. ¿Continuar?",
     "Title": "Título",
     "todo lists": "las lista de cosas que hacer",
     "too short": "muy corta",
-    "Turtl has no \"Lost password\" feature. If you lose your login, your profile is gone forever!": "Turtl no tiene una función de \"Contraseña perdida\". Si pierdes tus datos de logueo, ¡perderás tu perfil para siempre!", //revisar
-    "Turtl notes use Markdown, a format that's easy to read and write and doesn't require a clunky editor.": "Las notas de Turtl usan Markdown, un formato fácil de leer y de escribir que no requiere un complejo editor.", //revisar clunky
+    "Turtl has no \"Lost password\" feature. If you lose your login, your profile is gone forever!": "Turtl no tiene una función de \"Contraseña perdida\". Si pierdes tus datos de logueo, ¡perderás tu perfil para siempre!",
+    "Turtl notes use Markdown, a format that's easy to read and write and doesn't require a clunky editor.": "Las notas de Turtl usan Markdown, un formato fácil de leer y de escribir que no requiere un complejo editor.",
     "Turtl now also supports TeX math. Begin and end your equation(s) with <code>$$</code>:": "Turtl también soporta TeX math. Empieza y termina tus ecuaciones con <code>$$</code>:",
     "Turtl places": "Lugares de Turtl",
     "Turtl server": "Servidor de Turtl",
     "Two hashes for a smaller header": "Dos almohadillas (#) para una cabecera más pequeña",
     "Unlock and accept": "Desbloquear y aceptar",
     "Unlock": "Desbloquear",
-    "Unshare": "Descompartir", //revisar
+    "Unshare": "Dejar de compartir",
     "(untitled board)": "(tablón sin título)",
     "Updating your login. Please be patient (and DO NOT close the app)!": "Actualizando tu login. Por favor, ten paciencia (¡Y no cierres la aplicación!)",
     "URL": "URL",
@@ -290,8 +290,8 @@ locales.es = {
     "Write": "Escribe",
     "Yes, delete my account": "Sí, elimina mi cuenta",
     "You are currently in offline mode.": "Ahora mismo estás en modo desconectado.",
-    "You can also make text __bold__, *italic* or ~~strikethrough~~.": "También puedes hacer texto __en negrita__, *en cursiva* o ~~tachado~~.", // arreglada, avisar
-    "You can also make text <strong>bold</strong>, <em>italic</em> or <strike>strikethrough</strike>.": "También puedes hacer texto <strong>en negrita</strong>, <em>en cursiva</em> o <strike>tachado</strike>.", //arreglada, avisar
+    "You can also make text __bold__, *italic* or ~~strikethrough~~.": "También puedes hacer texto __en negrita__, *en cursiva* o ~~tachado~~.",
+    "You can also make text <strong>bold</strong>, <em>italic</em> or <strike>strikethrough</strike>.": "También puedes hacer texto <strong>en negrita</strong>, <em>en cursiva</em> o <strike>tachado</strike>.",
     "you can make<br>1. numbered bullets<br>1. as well": "también puedes hacer <br>1. listas numeradas<br>1. como estas",
     "you can make</li><li>numbered bullets</li><li>as well": "también puedes hacer</li><li>listas numeradas</li><li> como estas",
     "You can remove your persona at any time, which will cancel all shares you have with others (making your account anonymous).": "Puedes eliminar tu persona en cualquier momento, lo que cancelará todas las comparticiones con otros usuarios (haciendo tu cuenta anónima).",
