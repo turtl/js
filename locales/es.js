@@ -10,8 +10,8 @@ locales.es = {
     "Admin": "Administrador",
     "Advanced settings": "Ajustes avanzados",
     "All notes": "Todas las notas",
-    "Also delete notes in the above <em>{{parentname}}{{board_title}}</em>": "Eliminar también las notas en <em>{{parentname}}{{board_title}}</em>", //revisar
-    "Also delete notes in the above <strong>{{count}}</strong> boards": "Eliminar también las notas en <strong>{{count}}</strong> tablón", //revisar
+    "Also delete notes in the above <em>{{parentname}}{{board_title}}</em>": "Eliminar también las notas en el tablón superior <em>{{parentname}}{{board_title}}</em>",
+    "Also delete notes in the above <strong>{{count}}</strong> boards": "Eliminar también las notas en los <strong>{{count}}</strong> tablones superiores",
     "A note on how Turtl works": "Una nota sobre cómo funciona Turtl",
     "Answer the question (private)": "Responde a la pregunta (privada)",
     "Are you sure you want to delete the board <em>{{parent}}{{board}}</em> as well as its children:": "¿Seguro que quieres eliminar el tablón <em>{{parent}}{{board}}</em> junto a sus hijos:",
@@ -34,9 +34,9 @@ locales.es = {
     "Clear local data": "Limpiar datos locales",
     "Client version: <em>{{version}}</em>": "Versión del cliente: <em>{{version}}</em>",
     "Coming soon!": "¡Muy pronto!",
-    "comma, separate, tags": "coma, separación, etiquetas", //revisar
+    "comma, separate, tags": "coma, separación, etiquetas",
     "Confirm passphrase": "Confirmar frase de contraseña",
-    "Confirm your current login": "Confirmar tu login actual", // revisar
+    "Confirm your current login": "Confirmar tu login actual",
     "Connected to the Turtl service": "Conectado al servicio de Turtl",
     "Connected to the Turtl service! Disengaging offline mode. Syncing your profile.": "¡Conectado al servicio de Turtl! Desactivando modo offline. Sincronizando tu perfil.",
     "Couldn't connect to the server": "No se ha podido conectar con el servidor",
@@ -45,7 +45,7 @@ locales.es = {
     "Create a persona</a></strong> to share.": "Crear una persona</a></strong> para compartir.",
     "Create date": "Fecha de creación",
     "Create": "Crear",
-    "Create nested board": "Crear tablón anidado", //revisar
+    "Create nested board": "Crear tablón anidado",
     "Crypto error": "Error criptográfico",
     "Current passphrase": "Frase de contraseña actual",
     "Current username": "Nombre de usuario actual",
@@ -309,6 +309,9 @@ locales.es = {
     "Your persona": "Tu persona",
     "Your public persona has been created!": "¡Tu persona pública ha sido creada con éxito!",
     "Your settings": "Tus ajustes",
-    "Send": "Enviar"
+    "Send": "Enviar",
+    "image": "imagen",
+    "file": "archivo",
+    "password": "contraseña"    
 };
 

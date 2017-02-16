@@ -309,6 +309,9 @@ locales.XX = {	// NOTE: change XX to the two-letter language code
     "Your persona": "",
     "Your public persona has been created!": "",
     "Your settings": "",
-    "Send": ""
+    "Send": "",
+    "image": "",
+    "file": "",
+    "password": ""   
 };
 
