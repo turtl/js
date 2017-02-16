@@ -43,7 +43,7 @@ locales.es = {
     "Create a board": "Crear un tablón",
     "Create an account": "Crear una cuenta",
     "Create a persona</a></strong> to share.": "Crear una persona</a></strong> para compartir.",
-    "Create date": "Crear fecha", // revisar
+    "Create date": "Fecha de creación",
     "Create": "Crear",
     "Create nested board": "Crear tablón anidado", //revisar
     "Crypto error": "Error criptográfico",
@@ -111,7 +111,7 @@ locales.es = {
     "Invite pending. Sent {{ago}}": "Invitación pendiente. Enviada {{ago}}",
     "Invite sent": "Invitación enviada",
     "Invite title (shared with invitee)": "Título de la invitación (compartido con el invitado)",
-    "Invite to \"{{board_title}}\"": "Invitar a \"{{board_title}}\"",
+    "Invite to {{board_title}}": "Invitar a {{board_title}}",
     "It can be helpful to use your email address as your username.": "Puede ser de ayuda usar tu dirección de correo como nombre de usuario.",
     "I will remember my login!": "¡Me acordaré de mi login!",
     "Join": "Unirse",
@@ -142,7 +142,7 @@ locales.es = {
     "No notes found.": "No se han encontrado notas.",
     "No notes here!": "¡Aquí no hay notas!",
     "Note preview": "Previsualización de la nota",
-    "Note text": "Texto de la nota",
+    "Note text": "Nota de texto",
     "{{num_shared_with}} people": "{{num_shared_with}} personas", // revisar estas dos
     "{{num_shared_with}} person": "{{num_shared_with}} personas",
     "Offline mode": "Modo offline",
@@ -174,7 +174,7 @@ locales.es = {
     "Please give your board a title": "Por favor, escribe un título para tu tablón",
     "Prev": "Ante",
     "Promo code": "Código promocional",
-    "Protect this invite": "Protege esta invitación",
+    "Protect this invite": "Proteger esta invitación",
     "Public persona": "Persona pública",
     "Quick help": "Ayuda rápida",
     "Quote text with a caret": "Cita texto con un símbolo de intercalación (^)",
@@ -215,8 +215,8 @@ locales.es = {
     "Tag note": "Etiquetar nota",
     "Tap <em>+</em> to start": "Pulsa <em>+</em> para empezar",
     "Tap the share button to start": "Pulsa el botón de compartir para empezar",
-    "text note": "texto de la nota",
-    "Text note": "Texto de la nota",
+    "text note": "nota de texto",
+    "Text note": "Nota de texto",
     "Text search": "Buscar texto",
     "Thanks!": "¡Gracias!",
     "That board doesn't seem to exist": "Parece que ese tablón no existe", //revisar estas 3 lineas
