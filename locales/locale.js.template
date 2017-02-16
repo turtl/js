@@ -308,6 +308,7 @@ locales.XX = {	// NOTE: change XX to the two-letter language code
     "Your passphrase does not match the confirmation.": "",
     "Your persona": "",
     "Your public persona has been created!": "",
-    "Your settings": ""
+    "Your settings": "",
+    "Send": ""
 };
 

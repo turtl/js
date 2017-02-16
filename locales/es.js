@@ -308,6 +308,7 @@ locales.es = {
     "Your passphrase does not match the confirmation.": "Tu frase de contraseña no coincide con la confirmación.",
     "Your persona": "Tu persona",
     "Your public persona has been created!": "¡Tu persona pública ha sido creada con éxito!",
-    "Your settings": "Tus ajustes"
+    "Your settings": "Tus ajustes",
+    "Send": "Enviar"
 };
 
