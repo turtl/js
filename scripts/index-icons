@@ -3,7 +3,7 @@
 ### This script creates svg-icons.js, used to inline SVG icons for easier
 ### styling
 
-file=./library/svg-icons.js
+file=$1
 
 echo "var svg_icons = {};" > $file
 for x in $(ls images/site/icons/*.svg); do

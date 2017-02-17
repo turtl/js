@@ -134,7 +134,7 @@ var UserJoinController = UserBaseController.extend({
 					return;
 				}
 				turtl.events.trigger('ui-error', i18next.t('There was a problem saving that account'), err);
-				log.error('users: join: ', derr(err));
+				log.error('users: join: ', err, derr(err));
 				this.inp_submit.set('disabled', '');
 			})
 			.finally(function() {

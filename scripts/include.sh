@@ -32,12 +32,14 @@ function all_css() {
 }
 
 function vendor_js() {
-	echo "${SEARCH_PATH}library/mootools-core-1.5.2.js"
-	echo "${SEARCH_PATH}library/mootools-more-1.5.1.js"
-	echo "${SEARCH_PATH}library/composer.js"
-	echo "${SEARCH_PATH}library/bluebird.js"
-	echo "${SEARCH_PATH}library/handlebars.runtime-v2.0.0.js"
-	echo "${SEARCH_PATH}library/i18next.js"
+	echo "${SEARCH_PATH}lib/vnd/mootools-core-1.5.2.js"
+	echo "${SEARCH_PATH}lib/vnd/mootools-more-1.5.1.js"
+	echo "${SEARCH_PATH}lib/vnd/composer.js"
+	echo "${SEARCH_PATH}lib/vnd/bluebird.js"
+	find ${SEARCH_PATH}lib/vnd -name "*.js" \
+		| grep -v 'mootools-' \
+		| grep -v 'composer\.js' \
+		| grep -v 'bluebird\.js'
 }
 
 function all_js() {
@@ -47,18 +49,11 @@ function all_js() {
 	find ${SEARCH_PATH}config -name '*.js' \
 		| LC_ALL=C sort \
 		| grep -v 'config\.js'
-	find ${SEARCH_PATH}library -name '*.js' \
+	find ${SEARCH_PATH}lib/app -name '*.js' \
 		| LC_ALL=C sort \
 		| grep -v 'ignore' \
-		| grep -v 'mootools-' \
-		| grep -v 'composer' \
-		| grep -v 'cowcrypt' \
-		| grep -v 'bluebird' \
-		| grep -v 'handlebars\.runtime' \
 		| grep -v 'templates\.js' \
 		| grep -v '\.thread\.' \
-		| grep -v 'openpgp\.worker' \
-		| grep -v 'i18n.*\.js' \
 		| sed 's| |___|g'
 	for jsfile in $jsfiles; do print_js $jsfile; done
 
@@ -70,7 +65,7 @@ function all_js() {
 	path_to_js "${SEARCH_PATH}handlers"
 	path_to_js "${SEARCH_PATH}locales"
 	path_to_js "${SEARCH_PATH}turtl"
-	echo "${SEARCH_PATH}library/templates.js"
+	echo "${SEARCH_PATH}lib/app/templates.js"
 	echo "${SEARCH_PATH}main.js"
 }
 
