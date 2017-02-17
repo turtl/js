@@ -4,8 +4,8 @@ node_modules
 index.html
 *.css
 !reset.css
-library/templates.js
-library/svg-icons.js
+lib/app/templates.js
+lib/app/svg-icons.js
 turtl.min.js
 *.stackdump
 
