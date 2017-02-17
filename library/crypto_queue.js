@@ -158,7 +158,7 @@
 					}
 					catch(err)
 					{
-						log.error('tcrypt.sync: err: ', res, derr(err));
+						//log.error('tcrypt.sync: err: ', res, derr(err));
 						res = {type: 'error', data: err.message, trace: err.stack};
 						res = {data: res};
 						res = completefn(res);

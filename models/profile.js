@@ -274,6 +274,10 @@ var Profile = Composer.RelationalModel.extend({
 					return note.deserialize()
 						.then(function() {
 							return note;
+						})
+						.catch(function(err) { return err.data && err.data.match(/Authentication/); }, function(err) {
+							// return the unencrypted note.
+							return note;
 						});
 				}));
 			})
