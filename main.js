@@ -175,7 +175,10 @@ var turtl = {
 			turtl.profile = new Profile();
 			turtl.search = new Search();
 			turtl.files = new Files();
-			turtl.user.get_auth().then(turtl.api.set_auth.bind(turtl.api))
+			turtl.user.gen_auth()
+				.then(function(auth) {
+					turtl.api.set_auth(turtl.user.get('username'), auth);
+				});
 			turtl.events.trigger('app:objects-loaded');
 
 			turtl.show_loading_screen(true);
@@ -562,7 +565,6 @@ var _turtl_init = function()
 	turtl.site_url = config.site_url || '';
 	turtl.api = new Api(
 		config.api_url,
-		'',
 		function(cb_success, cb_fail) {
 			return function(data)
 			{
@@ -612,7 +614,7 @@ var _turtl_init = function()
 	view.fix_template_paths();
 
 	var clid = localStorage.client_id;
-	if(!clid) clid = localStorage.client_id = tcrypt.random_hash();
+	if(!clid) clid = localStorage.client_id = tcrypt.to_hex(tcrypt.random_bytes(32));
 	turtl.client_id = clid;
 	turtl.init();
 

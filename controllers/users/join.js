@@ -107,17 +107,17 @@ var UserJoinController = UserBaseController.extend({
 
 		var user = new User({
 			username: username,
-			password: password
+			password: password,
 		});
 
 		this.el_loader.addClass('active');
 		this.inp_submit.set('disabled', 'disabled');
 		turtl.loading(true);
-		user.join({}).bind(this)
+		user.join().bind(this)
 			.then(function(userdata) {
 				var data = user.toJSON();
 				data.id = userdata.id;
-				turtl.events.bind_once('app:load:profile-loaded', this.create_initial_boards.bind(this));
+				turtl.events.bind_once('app:load:profile-loaded', this.create_initial_profile.bind(this));
 				return turtl.user.login(data)
 					.then(this.save_login.bind(this));
 			})
@@ -143,12 +143,21 @@ var UserJoinController = UserBaseController.extend({
 			});
 	},
 
-	create_initial_boards: function()
+	create_initial_profile: function()
 	{
-		// create some initial boardssss
-		var add_board = function(name)
+		var add_space = function(name)
 		{
-			var board = new Board({title: name});
+			var space = new Space({title: name});
+			space.create_or_ensure_key(null, {silent: true});
+			return space.save()
+				.then(function() {
+					turtl.profile.get('spaces').upsert(space);
+					return space;
+				});
+		};
+		var add_board = function(space_id, name)
+		{
+			var board = new Board({space_id: space_id, title: name});
 			board.create_or_ensure_key(null, {silent: true});
 			return board.save()
 				.then(function() {
@@ -156,15 +165,17 @@ var UserJoinController = UserBaseController.extend({
 					return board;
 				});
 		};
-		return add_board(i18next.t('Bookmarks'))
-			.then(function() {
-				return add_board(i18next.t('Photos'))
+		var personal_space_id = null;
+		return add_space(i18next.t('Personal'))
+			.then(function(space) {
+				personal_space_id = space.id();
+				return add_board(personal_space_id, i18next.t('Bookmarks'));
 			})
 			.then(function() {
-				return add_board(i18next.t('Passwords'));
+				return add_board(personal_space_id, i18next.t('Photos'))
 			})
 			.then(function() {
-				return add_board(i18next.t('Ideas'));
+				return add_board(personal_space_id, i18next.t('Passwords'));
 			})
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', i18next.t('There was a problem creating your initial boards'), err);

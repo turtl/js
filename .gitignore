@@ -8,4 +8,5 @@ lib/app/templates.js
 lib/app/svg-icons.js
 turtl.min.js
 *.stackdump
+sess.vim
 

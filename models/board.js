@@ -3,11 +3,9 @@ var Board = Protected.extend({
 
 	public_fields: [
 		'id',
+		'space_id',
 		'user_id',
 		'keys',
-		'privs',
-		'meta',
-		'shared'
 	],
 
 	private_fields: [

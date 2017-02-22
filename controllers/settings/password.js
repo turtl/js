@@ -56,9 +56,9 @@ var ChangePasswordController = FormController.extend({
 		return delay(300).bind(this)
 			.then(function() {
 				return Promise.all([
-					turtl.user.get_key(),
-					user.get_key({skip_cache: true}),
-					user.get_key({old: true, skip_cache: true})
+					turtl.user.gen_key(),
+					user.gen_key({skip_cache: true}),
+					user.gen_key({old: true, skip_cache: true})
 				]);
 			})
 			.spread(function(cur_key, new_key, new_key_old) {

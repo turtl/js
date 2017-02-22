@@ -83,7 +83,7 @@ var Keychain = SyncCollection.extend({
 			if(options.return_model) return models[0];
 			try
 			{
-				return tcrypt.key_to_bin(models[0].get('k'));
+				return tcrypt.key_from_string(models[0].get('k'));
 			}
 			catch(err)
 			{
@@ -98,10 +98,10 @@ var Keychain = SyncCollection.extend({
 		// keychain if an entry is found.
 		var user_keys = turtl.user.get('settings').get_by_key('keys').value();
 		if(!user_keys || !user_keys[item_id]) return false;
-		var key = tcrypt.key_to_bin(user_keys[item_id]);
+		var key = tcrypt.key_from_string(user_keys[item_id]);
 		var model = this.upsert_key(item_id, 'board', key, {force_add: true})
 		if(options.return_model) return model;
-		return tcrypt.key_to_bin(model.get('k'));
+		return tcrypt.key_from_string(model.get('k'));
 	},
 
 	/**

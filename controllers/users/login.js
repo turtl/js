@@ -75,12 +75,8 @@ var UserLoginController = UserBaseController.extend({
 					username: user.get('username'),
 					password: user.get('password')
 				});
-				turtl.user.login(data, {old: meta.old})
+				turtl.user.login(data)
 					.then(this.save_login.bind(this));
-				if(meta.old)
-				{
-					barfr.barf(i18next.t('Your master key was generated using an older method. To upgrade it, please go to the "Change password" section of your account settings under the Turtl menu.'));
-				}
 			})
 			.catch(function(err) {
 				this.inp_submit.set('disabled', '');

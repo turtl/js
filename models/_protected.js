@@ -121,9 +121,6 @@ var Protected = Composer.RelationalModel.extend({
 			throw new ProtectedEmptyError();
 		}
 
-		var action = 'encrypt';
-		if(options.hash) action = 'encrypt+hash';
-
 		// serialize all *public* relations into an object
 		var public_data = {};
 		return Promise.all(Object.keys(this.relations).map(function(key) {
@@ -169,17 +166,18 @@ var Protected = Composer.RelationalModel.extend({
 			.then(function() {
 				// serialize the main object now
 				var msg = {
-					action: action,
-					key: this.key,
-					data: data,
-					private_fields: this.private_fields,
-					rawdata: options.rawdata
+					action: 'encrypt',
+					args: [
+						this.key,
+						tcrypt.from_string(JSON.stringify(data)),
+						{ nonce: tcrypt.random_bytes(tcrypt.noncelen()) }
+					],
 				};
 				return new Promise(function(resolve, reject) {
 					cqueue.push(msg, function(err, res) {
 						if(err || res.error) return reject(err || res.error);
-						var enc = res.success[0];
-						if(!options.skip_base64) enc = btoa(enc);
+						var enc = res.success.c;
+						if(!options.skip_base64) enc = tcrypt.to_base64(enc);
 						// update our public data object with the encrypted
 						public_data[this.body_key] = enc;
 						this.set(public_data, options);
