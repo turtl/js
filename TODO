@@ -1,1 +1,8 @@
 - Your settings -> Resend confirmation (only if unconfirmed)
+- Concept of current space
+  - can be localized for bookmarker
+- Update bookmarker to just take a URL
+  - all scraping happens in-app
+  - look for og:image tags before doing image/div bg-imag scan
+- moving boards to a new space should move notes locally, but NOT sync them
+  - sync records will come from server directly

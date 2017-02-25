@@ -3,7 +3,7 @@ var boards = {
 	{
 		var slide = false;
 		var page_con = turtl.controllers.pages.get_subcontroller('sub');
-		if((page_con instanceof NotesIndexController || page_con instanceof BoardsShareController) && page_con.board_id != 'all')
+		if((page_con instanceof NotesIndexController) && page_con.board_id != 'all')
 		{
 			slide = 'right';
 		}
@@ -22,22 +22,8 @@ var boards = {
 		turtl.back.push(turtl.route.bind(turtl, '/boards'));
 		turtl.controllers.pages.load(NotesIndexController, {board_id: board_id}, {
 			force_reload: force_reload,
-			slide: turtl.controllers.pages.is([BoardsController, SharingController]) ? 'left' : null
+			slide: turtl.controllers.pages.is([BoardsController]) ? 'left' : null
 		});
 	},
-
-	sharing: function(board_id)
-	{
-		var page_con = turtl.controllers.pages.get_subcontroller('sub');
-		var slide = false;
-		if(page_con instanceof BoardsController)
-		{
-			slide = 'left';
-		}
-		turtl.back.push(turtl.route.bind(turtl, '/boards'));
-		turtl.controllers.pages.load(BoardsShareController, {board_id: board_id}, {
-			slide: slide
-		});
-	}
 };
 

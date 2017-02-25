@@ -36,7 +36,6 @@ var User = Protected.extend({
 		var password = this.get('password');
 		return this.gen_auth(username, password, options).bind(this)
 			.then(function(auth) {
-				this.unset('password');
 				this.logged_in = true;
 
 				// now grab the user record by ID from the API.
@@ -202,7 +201,7 @@ var User = Protected.extend({
 		var password = this.get('password');
 		var version = options.version || 0;
 
-		if(!username || !password) return;
+		if(!this.key && (!username || !password)) return;
 
 		return this.gen_key(username, password, version).bind(this)
 			.then(function(_key) {

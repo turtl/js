@@ -148,7 +148,7 @@ var UserJoinController = UserBaseController.extend({
 		var add_space = function(name)
 		{
 			var space = new Space({title: name});
-			space.create_or_ensure_key(null, {silent: true});
+			space.create_or_ensure_key({silent: true});
 			return space.save()
 				.then(function() {
 					turtl.profile.get('spaces').upsert(space);
@@ -158,7 +158,7 @@ var UserJoinController = UserBaseController.extend({
 		var add_board = function(space_id, name)
 		{
 			var board = new Board({space_id: space_id, title: name});
-			board.create_or_ensure_key(null, {silent: true});
+			board.create_or_ensure_key({silent: true});
 			return board.save()
 				.then(function() {
 					turtl.profile.get('boards').upsert(board);

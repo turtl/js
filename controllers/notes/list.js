@@ -108,7 +108,6 @@ var NotesListController = Composer.ListController.extend({
 						// up on it and re-display the notes
 						turtl.search.trigger('reset');
 					});
-					this.render();
 				});
 		}.bind(this));
 		this.render({initial: true});

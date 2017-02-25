@@ -39,7 +39,7 @@ var NotesIndexController = Composer.Controller.extend({
 				window.history.go(-1);
 			}
 			this.search.boards.push(this.board_id);
-			this.search.boards = this.search.boards.concat(board.get_child_board_ids());
+			this.search.boards = this.search.boards.concat();
 
 			var title = board.get('title');
 			var back = turtl.router.get_param(window.location.search, 'back');

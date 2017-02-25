@@ -38,27 +38,15 @@ var Protected = Composer.RelationalModel.extend({
 	private_fields: [],
 
 	/**
-	 * here, we test for the old serialization format. if detected, we pass it
-	 * in verbatim to tcrypt (which is adept at handling it). if not detected,
-	 * we base64-decode the data before handing the raw serialized data off to
-	 * tcrypt.
-	 */
-	detect_old_format: function(data)
-	{
-		var raw = data.match(/:i[0-9a-f]{32}$/) ? data : tcrypt.from_base64(data);
-		return raw;
-	},
-
-	/**
 	 * Make sure that a symmetric key exists for this model. If not, returns
 	 * false, if so returns the key.
 	 *
 	 * Takes a set of key data holding the encrypted key in case the key simply
 	 * needs to be found/decrypted.
 	 */
-	ensure_key_exists: function(keydata)
+	ensure_key_exists: function()
 	{
-		if(!this.key) this.key = this.find_key(keydata);
+		if(!this.key) this.key = this.find_key();
 		if(!this.key) return false;
 		return this.key;
 	},
@@ -78,12 +66,12 @@ var Protected = Composer.RelationalModel.extend({
 	/**
 	 * If this model is new, create a new key, otherwise ensure/grab it.
 	 */
-	create_or_ensure_key: function(keydata, options)
+	create_or_ensure_key: function(options)
 	{
 		options || (options = {});
 
 		if(this.is_new()) this.generate_key();
-		else this.ensure_key_exists(keydata);
+		else this.ensure_key_exists();
 	},
 
 	/**
@@ -108,6 +96,7 @@ var Protected = Composer.RelationalModel.extend({
 		{
 			return Promise.reject(new ProtectedNoKeyFoundError('no key found for '+ this.base_url + ': ' + this.id()));
 		}
+		var key = this.key;
 
 		var json = this.toJSON();
 		var data = {};
@@ -168,7 +157,7 @@ var Protected = Composer.RelationalModel.extend({
 				var msg = {
 					action: 'encrypt',
 					args: [
-						this.key,
+						key,
 						tcrypt.from_string(JSON.stringify(data)),
 						{ nonce: tcrypt.random_bytes(tcrypt.noncelen()) }
 					],
@@ -202,19 +191,11 @@ var Protected = Composer.RelationalModel.extend({
 		{
 			return Promise.reject(new ProtectedNoKeyFoundError('no key found for '+ this.base_url + ': ' + this.id()));
 		}
+		var key = this.key;
 
-		try
-		{
-			var data = this.detect_old_format(this.get(this.body_key));
-		}
-		catch(err)
-		{
-			var proterr = new ProtectedMissingBodyError();
-			proterr.message = err.message;
-			proterr.stack = err.stack;
-			throw proterr;
-		}
-
+		var body = this.get(this.body_key);
+		if(!body) return new Promise.reject('protected: deserialize: missing data: ', this.table || this.base_url, this.id());
+		var data = tcrypt.from_base64(body);
 		if(!data) return new Promise.reject('protected: deserialize: missing data: ', this.table || this.base_url, this.id());
 
 		// decrypt all relational objects first
@@ -257,10 +238,10 @@ var Protected = Composer.RelationalModel.extend({
 				return new Promise(function(resolve, reject) {
 					var msg = {
 						action: 'decrypt',
-						key: this.key,
-						data: data,
-						private_fields: this.private_fields,
-						rawdata: options.rawdata
+						args: [
+							key,
+							data,
+						],
 					};
 					cqueue.push(msg, function(err, res) {
 						if(err || res.error)
@@ -268,10 +249,15 @@ var Protected = Composer.RelationalModel.extend({
 							log.error('protected: deserialize: ', this.id(), this.base_url, (err || res.error.res));
 							return reject(err || res.error.res);
 						}
-						this.set(res.success, options);
 						return resolve(res.success);
 					}.bind(this))
 				}.bind(this));
+			})
+			.then(function(bin) {
+				if(options.setter) return options.setter(bin)
+				var json = tcrypt.to_string(bin);
+				var body = JSON.parse(json);
+				this.set(body, options);
 			});
 	},
 
@@ -294,40 +280,26 @@ var Protected = Composer.RelationalModel.extend({
 	},
 
 	/**
-	 * Given a set of keys for an object and a search pattern, find the matching
-	 * key and decrypt it using one of the decrypting keys provided by the
-	 * search object. This in turn allows the object to be decrypted.
-	 * 
-	 * Keys are in the format
-	 *   {b: <id>, k: <encrypted key>}
-	 *   {u: <id>, k: <encrypted key>}
-	 * "b" "u" and "s" correspond to board, user, space
-	 * restecpfully.
-	 *
-	 * Search is in the format:
-	 * {
-	 *   u: {id: <user id>, k: <user's key>}
-	 *   b: {id: <board id>, k: <board's key>}
-	 *   ...
-	 * }
-	 *
-	 * Search keys can also be arrays, if you are looking for multiple items
-	 * under that key:
-	 * {
-	 *   u: [
-	 *     {id: <user1 id>, k: <user1's key>},
-	 *     {id: <user2 id>, k: <user2's key>}
-	 *   ],
-	 *   b: {id: <board id>, k: <board's key>}
-	 * }
+	 * Override me to return a search based on this model's subkeys.
 	 */
-	find_key: function(keys, search, options)
+	get_key_search: function()
 	{
-		search || (search = {});
+		return new Keychain();
+	},
+
+	/**
+	 * Find this models key by crawling up the subkey tree. First we check for
+	 * direct entries in the profile keychain. If that doesn't work, then we ask
+	 * the model to generate a keychain with entries in it that could possibly
+	 * decrypt the model's key.
+	 */
+	find_key: function(options)
+	{
 		options || (options = {});
 
+		log.trace('find_key: init: ', options);
+
 		// first, check the keychain
-		log.trace('find_key: init: ', keys, search, options);
 		var key = turtl.profile.get('keychain').find_key(this.id());
 		log.trace('find_key: ', key ? 'found in keychain' : 'not in keychain, searching');
 		if(key) return key;
@@ -339,58 +311,33 @@ var Protected = Composer.RelationalModel.extend({
 		//
 		// Also, grab the keys from this object's key store and concat them to
 		// the key search list
-		var keys = Array.clone(keys || []).concat(this.get('keys').toJSON());
+		var keys = this.get('keys').toJSON();
 		log.trace('find_key: keys: ', keys);
 
-		// automatically add a user entry to the key search
-		if(!search.u) search.u = [];
-		if(search.u && typeOf(search.u) != 'array') search.u = [search.u];
-		search.u.push({id: turtl.user.id(), k: turtl.user.key});
+		// grab the model's key search
+		var search = this.get_key_search();
 
-		var search_keys = Object.keys(search);
-		var encrypted_key = false;
-		var decrypting_key = false;
-		for(var x = 0; x < keys.length; x++)
-		{
-			var ikey = keys[x];
-			log.trace('find_key: key: ', x, ikey, enckey, encrypted_key);
-			if(!ikey || !ikey.k) continue;
-			var enckey = ikey.k;
-			delete(ikey.k);
-			var match = false;
-			Object.each(ikey, function(id, type) {
-				if(encrypted_key) return;
-				if(search[type] && search[type].id && search[type].id == id)
-				{
-					encrypted_key = enckey;
-					decrypting_key = search[type].k;
-				}
-				else if(Array.isArray(search[type]))
-				{
-					var entries = search[type];
-					for(var y in entries)
-					{
-						var entry = entries[y];
-						if(!entry.k || !entry.id) return;
-						if(entry.id == id)
-						{
-							encrypted_key = enckey;
-							decrypting_key = entry.k;
-							break;
-						}
-					}
-				}
-			});
-			log.trace('find_key: found? ', x, encrypted_key, decrypting_key);
-			if(encrypted_key) break;
+		// make sure the user is part of the key search (helps keychain entries
+		// decrypt themselves)
+		search.upsert_key(turtl.user.id(), 'user', turtl.user.key, {skip_save: true});
+
+		var decrypted_key = null;
+		for(var i = 0, n = keys.length; i < n; i++) {
+			var keyentry = keys[i];
+			var encrypted_key = keyentry.k;
+			var type_key = Object.keys(keyentry)
+				.filter(function(k) { return k != 'k'; })[0];
+			var item_id = keyentry[type_key];
+			log.trace('find_key: search item ', type_key, item_id);
+			if(!item_id) continue;
+			var key = search.find_key(item_id);
+			if(!key) continue;
+			log.trace('find_key: found matching key from', type_key, item_id);
+			var decrypted_key = this.decrypt_key(key, encrypted_key);
+			if(!decrypted_key) continue;
+			break;
 		}
-
-		if(decrypting_key && encrypted_key)
-		{
-			key = this.decrypt_key(decrypting_key, encrypted_key);
-		}
-
-		return key || false;
+		return decrypted_key || false;
 	},
 
 	/**
@@ -414,11 +361,9 @@ var Protected = Composer.RelationalModel.extend({
 
 		var keys = [];
 		members.each(function(m) {
-			m = Object.clone(m);
 			var encrypting_key = m.k;
 			var enc = this.encrypt_key(encrypting_key, this.key).toString();
-			m.k = enc;
-			keys.push(m);
+			keys.push(Composer.object.merge({}, m, {k: enc}));
 		}.bind(this));
 
 		this.set({keys: keys}, options);
@@ -439,7 +384,7 @@ var Protected = Composer.RelationalModel.extend({
 	 */
 	decrypt_key: function(decrypting_key, encrypted_key)
 	{
-		var raw = this.detect_old_format(encrypted_key);
+		var raw = tcrypt.from_base64(encrypted_key);
 		try
 		{
 			var decrypted = tcrypt.decrypt(decrypting_key, raw, {raw: true});

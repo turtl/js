@@ -36,7 +36,7 @@ var Keychain = SyncCollection.extend({
 	upsert_key: function(item_id, item_type, key, options)
 	{
 		options || (options = {});
-		var entry = this.find_key(item_id, {disable_migrate: true, return_model: true});
+		var entry = this.find_key(item_id, {return_model: true});
 		var key = tcrypt.key_to_string(key);
 		if(entry && entry.get('type') == item_type)
 		{
@@ -53,6 +53,7 @@ var Keychain = SyncCollection.extend({
 			});
 		}
 		this.upsert(entry);
+		if(options.skip_save) return;
 		return entry.save(options)
 			.catch(function(err) {
 				barfr.barf(i18next.t('Error saving key for item: {{err}}', {err: err}));
@@ -78,30 +79,20 @@ var Keychain = SyncCollection.extend({
 		var models = this.filter(function(m) {
 			return m.get('item_id') == item_id;
 		});
-		if(models.length > 0)
+		if(models.length == 0) return false;
+		if(options.return_model) return models[0];
+
+		var key = models[0].get('k');
+		if(!key) return false;
+		try
 		{
-			if(options.return_model) return models[0];
-			try
-			{
-				return tcrypt.key_from_string(models[0].get('k'));
-			}
-			catch(err)
-			{
-				log.error('keychain: error deserializing key: ', models[0].id(), derr(err));
-				return false;
-			}
+			return tcrypt.key_from_string(key);
 		}
-
-		if(options.disable_migrate) return false;
-
-		// search the user data, and run a migration from user settings into the
-		// keychain if an entry is found.
-		var user_keys = turtl.user.get('settings').get_by_key('keys').value();
-		if(!user_keys || !user_keys[item_id]) return false;
-		var key = tcrypt.key_from_string(user_keys[item_id]);
-		var model = this.upsert_key(item_id, 'board', key, {force_add: true})
-		if(options.return_model) return model;
-		return tcrypt.key_from_string(model.get('k'));
+		catch(err)
+		{
+			log.error('keychain: error deserializing key: ', models[0].id(), derr(err));
+			return false;
+		}
 	},
 
 	/**

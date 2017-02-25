@@ -334,6 +334,7 @@ var Sync = Composer.Model.extend({
 		var poll_id = this.poll_id++;
 		var enabled = function()
 		{
+			if(options.force) return true;
 			if(!this.enabled) return false;
 			if(!turtl.user || !turtl.user.logged_in) return false;
 			if(!config.poll_api_for_changes) return false;
@@ -531,7 +532,8 @@ var Sync = Composer.Model.extend({
 			var fn = 'update';
 			var rec = item;
 		}
-		return (db_table[fn])(rec).bind(this)
+		return (db_table[fn])(rec)
+			.bind(this)
 			.then(function() {
 				// if we're ading a new file, skip the local tracker and handle
 				// this matter via the designated file queue

@@ -270,7 +270,7 @@ var NotesEditController = FormController.extend({
 		var clone = this.clone;
 		clone.key = this.model.key;
 		clone.get('file').key = clone.key;
-		clone.create_or_ensure_key(null, {silent: true});
+		clone.create_or_ensure_key({silent: true});
 		clone.set(data);
 
 		// grab the file binary, and clear it out from the model

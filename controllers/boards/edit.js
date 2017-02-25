@@ -55,7 +55,7 @@ var BoardsEditController = FormController.extend({
 			return;
 		}
 
-		this.model.create_or_ensure_key(null, {silent: true});
+		this.model.create_or_ensure_key({silent: true});
 		var clone = this.model.clone();
 		clone.set({title: title});
 		clone.save()

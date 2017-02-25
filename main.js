@@ -190,12 +190,11 @@ var turtl = {
 			turtl.setup_local_db().bind({})
 				.then(function() {
 					this.start = new Date().getTime();
+					turtl.setup_syncing();
 					return turtl.profile.load();
 				})
 				.then(function() {
-					return turtl.setup_syncing();
-				})
-				.then(function() {
+					turtl.start_syncing();
 					log.info('profile: loaded in: ', (new Date().getTime()) - this.start);
 					turtl.update_loading_screen(i18next.t('Indexing notes'));
 					return turtl.search.reindex();
@@ -370,9 +369,6 @@ var turtl = {
 
 	setup_syncing: function()
 	{
-		// enable syncing
-		turtl.sync.start();
-
 		// register our tracking for local syncing (db => in-mem)
 		//
 		// NOTE: order matters here! since the keychain holds keys in its data,
@@ -386,7 +382,11 @@ var turtl = {
 		turtl.sync.register_local_tracker('notes', turtl.profile.get('notes'));
 		turtl.sync.register_local_tracker('files', turtl.files);
 		turtl.sync.register_local_tracker('invites', turtl.profile.get('invites'));
+	},
 
+	start_syncing: function()
+	{
+		turtl.sync.start();
 		turtl.files.start_syncing();
 	},
 

@@ -75,13 +75,17 @@ var Board = Protected.extend({
 
 		this.set({user_id: turtl.user.id()}, options);
 
-		var keychain = turtl.profile.get('keychain');
-		var existing = keychain.find_key(this.id());
-		if(!existing || (this.key && JSON.stringify(existing) != JSON.stringify(this.key)))
-		{
-			// key needs an add/update
-			return keychain.upsert_key(this.id(), 'board', this.key);
-		}
+		var space_id = this.get('space_id');
+		var subkeys = [];
+		var space = turtl.profile.get('spaces').get(space_id);
+		if(space) subkeys.push({s: space.id(), k: space.key});
+
+		// is this needed? copied from Note model's update_keys() fn
+		var key = this.ensure_key_exists();
+		if(!key) return Promise.reject(new Error('board: missing key: '+ this.id()));
+
+		// ok, we have a key, we can update our subkeys now
+		this.generate_subkeys(subkeys);
 		return Promise.resolve();
 	},
 
@@ -94,15 +98,29 @@ var Board = Protected.extend({
 			});
 	},
 
-	find_key: function(keys, search, options)
+	get_key_search: function()
 	{
-		options || (options = {});
-		search || (search = {});
-		search.b || (search.b = []);
+		var space_ids = [this.get('space_id')];
+		// also look in keys for space ids. they really shouldn't be in here if
+		// not in note.spaces, but it's much better to find a key and be wrong
+		// than to have a note you cannot decrypt and be right.
+		this.get('keys').each(function(key) {
+			var space_id = key.get('s');
+			if(space_id && space_ids.indexOf(space_id) < 0)
+			{
+				space_ids.push(space_id);
+			}
+		});
 
-		// TODO: find space key
-
-		return this.parent(keys, search, options);
+		var search = new Keychain();
+		var keychain = turtl.profile.get('keychain');
+		var spaces = turtl.profile.get('spaces');
+		space_ids.forEach(function(space_id) {
+			var space = spaces.get(space_id);
+			if(!space || !space.key) return;
+			search.upsert_key(space.id(), 'space', space.key, {skip_save: true});
+		});
+		return search;
 	},
 
 	each_note: function(callback, options)
@@ -143,8 +161,7 @@ var Board = Protected.extend({
 
 	note_count: function()
 	{
-		var child_board_ids = this.get_child_board_ids();
-		var boards = [this.id()].concat(child_board_ids);
+		var boards = [this.id()];
 		return turtl.search.search({boards: boards}).bind(this)
 			.spread(function(notes) {
 				var unique_notes  = notes.filter(function(note, i) { return i == notes.lastIndexOf(note); });

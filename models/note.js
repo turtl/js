@@ -81,13 +81,12 @@ var Note = Protected.extend({
 	{
 		options || (options = {});
 
-		var boards = this.get('boards') || [];
+		this.set({user_id: turtl.user.id()}, options);
+
+		var board_id = this.get('board_id');
 		var subkeys = [];
-		boards.forEach(function(bid) {
-			var board = turtl.profile.get('boards').get(bid);
-			if(!board) return;
-			subkeys.push({b: board.id(), k: board.key});
-		}.bind(this));
+		var board = turtl.profile.get('boards').get(board_id);
+		if(board) subkeys.push({b: board.id(), k: board.key});
 
 		// make sure we do this BEFORE generate_subkeys(). the reason is that
 		// many times, update_keys() gets called from save() from a board being
@@ -98,18 +97,10 @@ var Note = Protected.extend({
 		//
 		// see Note.find_key() for more details
 		var key = this.ensure_key_exists();
-		if(!key) Promise.reject(new Error('note: missing key: '+ this.id()));
+		if(!key) return Promise.reject(new Error('note: missing key: '+ this.id()));
 
 		// ok, we have a key, we can update our subkeys now
 		this.generate_subkeys(subkeys);
-
-		var keychain = turtl.profile.get('keychain');
-		var existing = keychain.find_key(this.id());
-		if(!existing || (this.key && JSON.stringify(existing) != JSON.stringify(this.key)))
-		{
-			// key needs an add/update
-			return keychain.upsert_key(this.id(), 'note', this.key);
-		}
 		return Promise.resolve();
 	},
 
@@ -227,14 +218,9 @@ var Note = Protected.extend({
 			});
 	},
 
-	find_key: function(keys, search, options)
+	get_key_search: function()
 	{
-		options || (options = {});
-		search || (search = {});
-		search.b || (search.b = []);
-
-		var board_ids = this.get('boards') || [];
-
+		var board_ids = [this.get('board_id')];
 		// also look in keys for board ids. they really shouldn't be in here if
 		// not in note.boards, but it's much better to find a key and be wrong
 		// than to have a note you cannot decrypt and be right.
@@ -246,15 +232,15 @@ var Note = Protected.extend({
 			}
 		});
 
+		var search = new Keychain();
 		var keychain = turtl.profile.get('keychain');
+		var boards = turtl.profile.get('boards');
 		board_ids.forEach(function(board_id) {
-			var board_key = turtl.profile.get('boards').get(board_id).key;
-			// not in memory? search the keychain. another unorthadox method,
-			// but better to find a key and be wrong etc etc etc
-			if(!board_key) board_key = keychain.find_key(board_id);
-			if(board_key) search.b.push({id: board_id, k: board_key});
-		}.bind(this));
-		return this.parent(keys, search, options);
+			var board = boards.get(board_id);
+			if(!board) return;
+			search.upsert_key(board.id(), 'board', board.key, {skip_save: true});
+		});
+		return search;
 	},
 
 	// a hook function, called on a remote model when we get a server-generated

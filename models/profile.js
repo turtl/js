@@ -34,18 +34,6 @@ var Profile = Composer.RelationalModel.extend({
 
 	init: function()
 	{
-		this.bind_relational('boards', 'destroy', function(board) {
-			if(this.get_current_board() == board)
-			{
-				this.set_current_board(this.get('boards').first());
-			}
-		}.bind(this));
-		this.bind_relational('boards', 'add', function(board) {
-			if(this.get('boards').models().length == 1)
-			{
-				this.set_current_board(board);
-			}
-		}.bind(this));
 	},
 
 	/**
@@ -273,18 +261,5 @@ var Profile = Composer.RelationalModel.extend({
 				throw err;
 			});
 	},
-
-	get_current_board: function()
-	{
-		var cur = this.get('current_board', false);
-		if(!cur) cur = this.get('boards').first();
-		return cur;
-	},
-
-	set_current_board: function(obj, options)
-	{
-		options || (options = {});
-		return this.set({current_board: obj}, options);
-	}
 });
 
