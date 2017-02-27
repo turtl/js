@@ -32,8 +32,14 @@ var Profile = Composer.RelationalModel.extend({
 	// timer for persisting
 	persist_timer: null,
 
+	current_space_id: null,
+
 	init: function()
 	{
+		this.get('spaces').bind('change', function(space) {
+			if(space.id() != this.current_space().id()) return;
+			this.trigger('change:cur-space');
+		}.bind(this));
 	},
 
 	/**
@@ -260,6 +266,24 @@ var Profile = Composer.RelationalModel.extend({
 				log.error('profile: calculate_size: problem grabbing notes for board: ', board.id, derr(err));
 				throw err;
 			});
+	},
+
+	current_space: function()
+	{
+		var spaces = this.get('spaces');
+		var space_id = this.current_space_id;
+		var space = spaces.get(space_id);
+		if(!space) space = spaces.first();
+		return space;
+	},
+
+	set_current_space: function(space_id)
+	{
+		var spaces = this.get('spaces');
+		var space = spaces.get(space_id);
+		if(!space) return;
+		this.current_space_id = space_id;
+		turtl.events.trigger('space:set-current');
 	},
 });
 

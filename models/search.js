@@ -13,6 +13,7 @@ var Search = Composer.Collection.extend({
 	// tag_id -> note_id index
 	index: {
 		tags: {},
+		spaces: {},
 		boards: {},
 		colors: {},
 		all_notes: {},
@@ -363,9 +364,8 @@ var Search = Composer.Collection.extend({
 		(note.get('tags') || []).each(function(tag) {
 			this.index_type('tags', tag.get('name'), note.id());
 		}.bind(this));
-		(note.get('boards') || []).forEach(function(board_id) {
-			this.index_type('boards', board_id, note.id());
-		}.bind(this));
+		this.index_type('boards', note.get('board_id'), note.id());
+		this.index_type('spaces', note.get('space_id'), note.id());
 
 		var color = note.get('color');
 		this.index_type('colors', color, note.id());
@@ -416,9 +416,8 @@ var Search = Composer.Collection.extend({
 		(json.tags || []).each(function(tag) {
 			this.unindex_type('tags', tag, id);
 		}.bind(this));
-		(json.boards || []).each(function(board_id) {
-			this.unindex_type('boards', board_id, id);
-		}.bind(this));
+		this.unindex_type('boards', json.board_id, id);
+		this.unindex_type('spaces', json.space_id, id);
 
 		var color = json.color;
 		this.unindex_type('colors', color, id);

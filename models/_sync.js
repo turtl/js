@@ -577,6 +577,7 @@ var Sync = Composer.Model.extend({
 			next();
 		}.bind(this))
 		.tap(function() {
+			if(!sync_id) return;
 			this.set({sync_id: sync_id});
 			return this.save();
 		}.bind(this))

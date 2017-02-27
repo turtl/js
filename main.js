@@ -106,7 +106,6 @@ var turtl = {
 		turtl.user = new User();
 		turtl.controllers.pages = new PagesController();
 		turtl.controllers.header = new HeaderController();
-		turtl.controllers.sidebar = new SidebarController();
 		turtl.controllers.loading = new LoadingController();
 		turtl.controllers.pages.bind('prerelease', function() {
 			// always scroll to the top of the window on page load
@@ -125,6 +124,9 @@ var turtl = {
 
 		var initial_route = window.location.pathname;
 		turtl.setup_user({initial_route: initial_route});
+
+		// load the sidebar after we set up the user/profile object
+		turtl.controllers.sidebar = new SidebarController();
 
 		// if a user exists, log them in
 		if(config.cookie_login)
@@ -493,6 +495,7 @@ var turtl = {
 	{
 		var title = 'Turtl';
 		var back = false;
+		var options = {};
 		if(turtl.titles[0])
 		{
 			title = turtl.titles[0].title;
@@ -523,6 +526,16 @@ var turtl = {
 			var back = entry.back;
 			turtl.route(entry.back);
 		}
+	},
+
+	replace_title: function(title, backurl, options)
+	{
+		turtl.titles[turtl.titles.length - 1] = {
+			title: title,
+			back: backurl,
+			options: options,
+		};
+		turtl._set_title();
 	},
 
 	push_modal_url: function(url, options)

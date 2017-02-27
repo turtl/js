@@ -18,10 +18,12 @@ function path_to_js() {
 
 function all_css() {
 	echo "${SEARCH_PATH}css/reset.css"
+	echo "${SEARCH_PATH}css/font.css"
 	echo "${SEARCH_PATH}css/template.css"
 	echo "${SEARCH_PATH}css/general.css"
 	cssfiles="`find ${SEARCH_PATH}css -name '*.css' \
 		| LC_ALL=C sort \
+		| grep -v 'font.css' \
 		| grep -v 'template.css' \
 		| grep -v 'general.css' \
 		| grep -v 'variables.css' \

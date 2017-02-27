@@ -9,6 +9,7 @@ var Space = Protected.extend({
 
 	private_fields: [
 		'title',
+		'color',
 	],
 
 	update_keys: function(options)
@@ -43,6 +44,37 @@ var Space = Protected.extend({
 			});
 	},
 
+	get_color: function()
+	{
+		var color = this.get('color');
+		if(!color) {
+			var available_colors = [
+				'666666',
+				'e85c5c',
+				'65a5ee',
+				'9476de',
+				'76dec2',
+				'672020',
+				'd46ccf',
+				'6b6ef3',
+				'e4ba58',
+				'aa0033',
+			];
+			var id = this.id();
+			var num = 0;
+			for(var i = 0, n = id.length; i < n; i++) {
+				num += id.charCodeAt(i) * 2;
+			}
+			color = '#'+available_colors[num % available_colors.length];
+		}
+
+		var cr = parseInt(color.substr(1, 2), 16);
+		var cg = parseInt(color.substr(3, 2), 16);
+		var cb = parseInt(color.substr(5, 2), 16);
+		var avg = (cr + cg + cb) / 3;
+		var txt_shade = avg < 128 ? 'light' : 'dark';
+		return {bg: color, txt: txt_shade};
+	}
 });
 
 var Spaces = SyncCollection.extend({

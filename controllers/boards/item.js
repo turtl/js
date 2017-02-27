@@ -39,6 +39,7 @@ var BoardsItemController = Composer.Controller.extend({
 			board: data,
 		})).bind(this)
 			.then(function() {
+				if(!this.el) return;
 				this.el.set('rel', this.model.id());
 
 				var actions = [{name: 'Edit'}, {name: 'Delete'}];

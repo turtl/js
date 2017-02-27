@@ -6,19 +6,36 @@
 	> .overlay.show {opacity: 1; cursor: pointer;}
 	> .inner {position: absolute; display: flex; justify-content: space-between; flex-direction: column; z-index: 11; top: 0; left: 0; bottom: 0; width: @sidebar_travel; overflow-y: auto; .layer-hover(); background: #fff;}
 	> .inner {
-		> .gutter {padding: 0 0 42rem 0;}
+		> .gutter {}
 		> .gutter {
-			ul {margin: 0; padding: 0; list-style: none;}
-			li {border-bottom: 1rem solid @theme_border;}
-			li {
-				&.sep {border-bottom: 1rem solid @theme_gray_light;}
-				a {display: block; padding: 16rem; font-size: 1.8em;}
+			.header {display: flex; align-items: center; justify-content: space-between; padding: 16px 8px; background: @theme_black;}
+			.header {
+				h2 {font-size: 14rem; color: @theme_gray_white;}
 				a {
-					icon {display: inline-block; width: 24rem; margin: 0 8rem 0 0; font-size: 1.3em; color: @theme_gray; text-align: center;}
+					icon {display: inline-block; margin: 0 0 0 0; font-size: 24rem; color: @theme_gray_white; text-align: center;}
 				}
-				a:before {content: " "; position: absolute; opacity: 0; z-index: 4; right: 10rem; margin: 4rem 0 0 0; width: 12rem; height: 12rem; background: @theme_warn; border-radius: 6rem; .transition(opacity .3s);}
-				&.notify {
-					a:before {opacity: 1;}
+			}
+			ul.spaces {margin: 0; padding: 0; list-style: none;}
+			ul.spaces {
+				li {display: flex; border-bottom: 1rem solid @theme_border;}
+				li {
+					&.sep {border-bottom: 1rem solid @theme_gray_light;}
+					a {display: block; padding: 12rem; font-size: 17rem; border-left: 6px solid rgba(0, 0, 0, 0);}
+					a:first-child {width: 90%;}
+					a:before {content: " "; position: absolute; opacity: 0; z-index: 4; right: 10rem; margin: 4rem 0 0 0; width: 12rem; height: 12rem; background: @theme_warn; border-radius: 6rem; .transition(opacity .3s);}
+					&.notify {
+						a:before {opacity: 1;}
+					}
+					a.edit {
+						icon {font-size: 21rem; opacity: 0.6; .transition(opacity 0.3s);}
+						icon:hover {opacity: 0.9;}
+					}
+				}
+				li:hover {
+				}
+				li.add {background: @theme_gray_white;}
+				li.add {
+					a {text-align: center;}
 				}
 			}
 		}

@@ -1,8 +1,2 @@
 <input type="text" name="title" value="{{board.title}}" placeholder="{{t 'Board title'}}">
 
-{{#if parent}}
-	<p class="child">
-		{{t 'This board will be nested under "{{parent_title}}"' parent_title=parent.title}}
-	</p>
-{{/if}}
-

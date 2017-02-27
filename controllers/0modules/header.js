@@ -9,7 +9,8 @@ var HeaderController = Composer.Controller.extend({
 	events: {
 		'click a.logo': 'toggle_sidebar',
 		'click .actions li .item-actions li a': 'fire_menu_action',
-		'click .actions li': 'fire_action'
+		'click .actions li': 'fire_action',
+		'click span space': 'open_spaces',
 	},
 
 	actions: [],
@@ -53,9 +54,15 @@ var HeaderController = Composer.Controller.extend({
 		options || (options = {});
 
 		var html = title || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+		if(options.prefix_space)
+		{
+			var space = turtl.profile.current_space();
+			var color = space.get_color();
+			html = '<space class="'+color.txt+'" style="background-color: '+color.bg+';">'+space.get('title')+'</space>'+html;
+		}
 		if(backurl)
 		{
-			html = '<a href="'+ backurl +'" rel="back"><icon>'+icon('back')+'</icon><span>&nbsp;&nbsp;'+ html +'</span></a>';
+			html = '<a href="'+ backurl +'" rel="back"><icon>'+icon('back')+'</icon><span>'+ html +'</span></a>';
 			this.el.addClass('has-back');
 		}
 		else
@@ -64,7 +71,10 @@ var HeaderController = Composer.Controller.extend({
 			this.el.removeClass('has-back');
 		}
 		var html = '<em>'+html+'</em>';
-
+		this.with_bind(turtl.profile, 'change:cur-space', function() {
+			if(!options.prefix_space) return;
+			this.render_title(title, backurl, options);
+		}.bind(this), 'header:bind-space-title');
 		this.el_header.set('html', html);
 	},
 
@@ -145,6 +155,13 @@ var HeaderController = Composer.Controller.extend({
 		{
 			this.el.removeClass('notify');
 		}
+	},
+
+	open_spaces: function(e)
+	{
+		var a = Composer.find_parent('h1 em a', e.target);
+		if(a) return;
+		this.toggle_sidebar();
 	}
 });
 

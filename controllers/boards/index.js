@@ -18,7 +18,7 @@ var BoardsController = Composer.Controller.extend({
 
 	init: function()
 	{
-		turtl.push_title(i18next.t('Boards'));
+		turtl.push_title(i18next.t('Boards'), null, {prefix_space: true});
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		this.collection = new BoardsFilter(turtl.profile.get('boards'));
