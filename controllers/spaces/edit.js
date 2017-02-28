@@ -5,6 +5,7 @@ var SpacesEditController = FormController.extend({
 
 	events: {
 		'click a[rel=delete]': 'delete_space',
+		'click a[rel=leave]': 'leave_space',
 	},
 
 	modal: null,
@@ -28,13 +29,19 @@ var SpacesEditController = FormController.extend({
 		this.modal.open(this.el);
 		this.with_bind(this.modal, 'close', this.release.bind(this));
 		this.bind(['cancel', 'close'], close);
+		this.with_bind(this.model, 'destroy', close);
 	},
 
 	render: function()
 	{
+		var my_spaces = turtl.profile.get('spaces')
+			.filter(function(space) { return !space.is_shared(); });
 		this.html(view.render('spaces/edit', {
 			action: this.action,
 			space: this.model.toJSON(),
+			shared: this.model.is_shared(),
+			last_space: my_spaces.length <= 1,
+			is_new: this.model.is_new(),
 		}));
 		if(this.model.is_new())
 		{
@@ -56,6 +63,7 @@ var SpacesEditController = FormController.extend({
 			return;
 		}
 
+		var is_new = this.model.is_new();
 		this.model.create_or_ensure_key({silent: true});
 		var clone = this.model.clone();
 		clone.set({title: title});
@@ -66,6 +74,10 @@ var SpacesEditController = FormController.extend({
 
 				// add the space to our main space list
 				turtl.profile.get('spaces').upsert(this.model);
+
+				if(is_new) {
+					turtl.profile.set_current_space(this.model.id());
+				}
 
 				this.trigger('close');
 			})
@@ -79,7 +91,11 @@ var SpacesEditController = FormController.extend({
 	{
 		if(e) e.stop();
 		if(!confirm(i18next.t('Really delete this space and all of its data (boards and notes)?'))) return;
-		this.model.destroy();
+		this.model.destroy()
+			.catch(function(err) {
+				log.error('space: delete: ', derr(err));
+				barfr.barf(i18next.t('There was a problem deleting your space: {{message}}', {message: err.message}));
+			});
 	}
 });
 

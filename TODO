@@ -1,6 +1,7 @@
 - Your settings -> Resend confirmation (only if unconfirmed)
 - Concept of current space
   - can be localized for bookmarker
+- leave a space (in edit screen)
 - Update bookmarker to just take a URL
   - all scraping happens in-app
   - look for og:image tags before doing image/div bg-imag scan

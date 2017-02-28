@@ -10,6 +10,7 @@ var SidebarController = Composer.Controller.extend({
 
 	events: {
 		'click > .overlay': 'close',
+		'click .gutter .header': 'settings',
 		'click li.add a': 'add_space',
 		'click a.edit': 'edit_space',
 		// close when clicking one of the sidebar links
@@ -102,6 +103,12 @@ var SidebarController = Composer.Controller.extend({
 		{
 			this.open();
 		}
+	},
+
+	settings: function(e)
+	{
+		var atag = this.el.getElement('.header a[rel=settings]');
+		if(atag) atag.click();
 	},
 
 	add_space: function(e)

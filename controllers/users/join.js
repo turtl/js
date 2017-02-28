@@ -169,6 +169,12 @@ var UserJoinController = UserBaseController.extend({
 		return add_space(i18next.t('Personal'))
 			.then(function(space) {
 				personal_space_id = space.id();
+				return add_space(i18next.t('Work'));
+			})
+			.then(function(space) {
+				return add_space(i18next.t('Home'));
+			})
+			.then(function(space) {
 				return add_board(personal_space_id, i18next.t('Bookmarks'));
 			})
 			.then(function() {

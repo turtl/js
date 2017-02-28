@@ -36,7 +36,11 @@ var Profile = Composer.RelationalModel.extend({
 
 	init: function()
 	{
-		this.get('spaces').bind('change', function(space) {
+		var spaces = this.get('spaces');
+
+		// lets certain interested parties know that the current space has
+		// changed
+		spaces.bind('change', function(space) {
 			if(space.id() != this.current_space().id()) return;
 			this.trigger('change:cur-space');
 		}.bind(this));
@@ -115,7 +119,7 @@ var Profile = Composer.RelationalModel.extend({
 	{
 		return turtl.api.get('/sync/full', null, {timeout: 600000})
 			.then(function(profile_sync) {
-				return turtl.sync.update_local_db_from_api_sync(profile_sync);
+				return turtl.sync.update_local_db_from_api_sync(profile_sync, {skip_local_tracker: true});
 			})
 	},
 
@@ -218,13 +222,11 @@ var Profile = Composer.RelationalModel.extend({
 		var run_dec = function(type)
 		{
 			return Promise.all(this.get(type).map(function(model) {
-				return model.deserialize().bind(this)
-					.catch(function(err) {
-						throw err;
-					});
-			}.bind(this))).bind(this)
-				.catch(function(err) {
-				});
+				return model.deserialize();
+			})).catch(function(err) {
+				log.error('loading profile: deserialize '+type+': ', err);
+				throw err;
+			});
 		}.bind(this);
 		return run_dec('keychain')
 			.then(run_dec.bind(this, 'spaces'))
@@ -279,11 +281,14 @@ var Profile = Composer.RelationalModel.extend({
 
 	set_current_space: function(space_id)
 	{
-		var spaces = this.get('spaces');
-		var space = spaces.get(space_id);
-		if(!space) return;
+		// we can set to null to clear the current selection
+		if(space_id !== null) {
+			var spaces = this.get('spaces');
+			var space = spaces.get(space_id);
+			if(!space) return;
+		}
 		this.current_space_id = space_id;
-		turtl.events.trigger('space:set-current');
+		turtl.events.trigger('profile:set-current-space');
 	},
 });
 

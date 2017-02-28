@@ -1,8 +1,20 @@
 <input type="text" name="title" value="{{space.title}}" placeholder="{{t 'Space title'}}">
 
-<div class="delete">
-	<p>
-		<a href="#delete" rel="delete">{{t 'Delete this space'}} &raquo;</a>
-	</p>
-</div>
+{{#unless is_new}}
+	<div class="delete">
+		<p>
+			{{#if last_space}}
+				<span class="last">
+					{{t 'This is your last space, and cannot be deleted.'}}
+				</span>
+			{{else}}
+				{{#if shared}}
+					<a href="#leave" rel="leave">{{t 'Leave this space &raquo;'}}</a>
+				{{else}}
+					<a href="#delete" rel="delete">{{t 'Delete this space &raquo;'}}</a>
+				{{/if}}
+			{{/if}}
+		</p>
+	</div>
+{{/unless}}
 

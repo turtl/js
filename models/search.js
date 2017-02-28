@@ -455,6 +455,27 @@ var Search = Composer.Collection.extend({
 		this.index_note(note);
 	},
 
+	index_space: function(space)
+	{
+		if(!this.index.spaces[space.id()]) this.index.spaces[space.id()] = [];
+	},
+
+	unindex_space: function(space, options)
+	{
+		options || (options = {});
+
+		if(options.full)
+		{
+			delete this.index.spaces[space.id()];
+		}
+	},
+
+	reindex_space: function(space)
+	{
+		this.unindex_space(space);
+		this.index_space(space);
+	},
+
 	index_board: function(board)
 	{
 		if(!this.index.boards[board.id()]) this.index.boards[board.id()] = [];

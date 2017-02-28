@@ -71,12 +71,14 @@ var HeaderController = Composer.Controller.extend({
 			this.el.removeClass('has-back');
 		}
 		var html = '<em>'+html+'</em>';
+		var update_title = function() {
+			if(!options.prefix_space) return;
+			this.render_title(title, backurl, options);
+		}.bind(this);
 		if(turtl.profile) {
-			this.with_bind(turtl.profile, 'change:cur-space', function() {
-				if(!options.prefix_space) return;
-				this.render_title(title, backurl, options);
-			}.bind(this), 'header:bind-space-title');
+			this.with_bind(turtl.profile, 'change:cur-space', update_title, 'header:bind-space-title');
 		}
+		this.with_bind(turtl.events, 'profile:set-current-space', update_title, 'header:bind-space-title');
 		this.el_header.set('html', html);
 	},
 

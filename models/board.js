@@ -23,49 +23,9 @@ var Board = Protected.extend({
 		this.bind('destroy', function(_1, _2, options) {
 			options || (options = {});
 
-			// NOTE: if we're skipping remote sync, this is coming from a sync
-			// item (almost assuredly) and we don't want to edit/remove the
-			// notes
-			var note_promise = Promise.resolve();
-			if(!options.skip_remote_sync)
-			{
-				// whether we delete the notes or not, we loop over them all and
-				// wait on the promise for them to finish. we have to do this
-				// before the keychain entry is deleted below or else there's a
-				// chance if the note is old and doesn't have its own keychain
-				// entry it will not be able to sfind its own key when it tries
-				// to create that entry
-				if(options.delete_notes)
-				{
-					note_promise = this.each_note(function(note) {
-						return note.destroy(options);
-					});
-				}
-				else
-				{
-					var board_id = this.id();
-					note_promise = this.each_note(function(note, opts) {
-						var existing = (opts || {}).existing;
-						var boards = note.get('boards').slice(0);
-						boards = boards.erase(board_id);
-						note.set({boards: boards}, options);
-						return note.save(options);
-					}.bind(this), {decrypt: true});
-				}
-			}
-
 			// remove the keychain entry only after the notes have been saved or
 			// destroyed
-			note_promise.bind(this)
-				.then(function() {
-					// kill the keychain entry
-					turtl.profile.get('keychain').remove_key(this.id(), options);
-
-					// remove child boards, if any
-					this.get('boards').each(function(board) {
-						board.destroy(options);
-					});
-				});
+			return this.each_note(function(note) { return note.destroy(options); });
 		}.bind(this));
 	},
 
@@ -127,7 +87,7 @@ var Board = Protected.extend({
 	{
 		options || (options = {});
 		var cnotes = turtl.profile.get('notes');
-		return turtl.db.notes.query('boards').only(this.id()).execute()
+		return turtl.db.notes.query('board_id').only(this.id()).execute()
 			.then(function(notes) {
 				var promises = (notes || []).map(function(note) {
 					var existing = true;
