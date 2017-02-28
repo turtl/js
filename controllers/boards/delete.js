@@ -1,6 +1,5 @@
 var BoardsDeleteController = FormController.extend({
 	elements: {
-		'input[name=notes]': 'inp_delete_notes'
 	},
 
 	events: {
@@ -48,7 +47,8 @@ var BoardsDeleteController = FormController.extend({
 	submit: function(e)
 	{
 		if(e) e.stop();
-		var delete_notes = this.inp_delete_notes.get('checked');
+		// TODO: take away option, solidify in destroy() fn
+		var delete_notes = true;
 		this.model.destroy({delete_notes: delete_notes})
 			.catch(function(err) {
 				log.error('board: delete: ', derr(err));

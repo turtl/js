@@ -29,10 +29,7 @@ var SidebarController = Composer.Controller.extend({
 
 		this.with_bind(turtl.user, 'login', function() {
 			this.with_bind(turtl.profile.get('spaces'), ['change', 'add', 'remove', 'reset'], this.render.bind(this), 'sidebar:spaces:render');
-		});
-		this.with_bind(turtl.user, 'logout', function() {
-			this.unbind(turtl.profile.get('spaces'), ['change', 'add', 'remove', 'reset'], 'sidebar:spaces:render');
-		});
+		}, 'sidebar:login:render');
 
 		var mc = new Hammer.Manager(this.el);
 		mc.add(new Hammer.Press({time: 750}));

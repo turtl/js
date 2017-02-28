@@ -4,6 +4,7 @@ var SpacesEditController = FormController.extend({
 	},
 
 	events: {
+		'click a[rel=delete]': 'delete_space',
 	},
 
 	modal: null,
@@ -72,6 +73,13 @@ var SpacesEditController = FormController.extend({
 				turtl.events.trigger('ui-error', i18next.t('There was a problem updating that space'), err);
 				log.error('space: edit: ', this.model.id(), derr(err));
 			});
+	},
+
+	delete_space: function(e)
+	{
+		if(e) e.stop();
+		if(!confirm(i18next.t('Really delete this space and all of its data (boards and notes)?'))) return;
+		this.model.destroy();
 	}
 });
 
