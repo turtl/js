@@ -27,7 +27,7 @@ var FormController = Composer.Controller.extend({
 
 	html: function(content)
 	{
-		this.parent(view.render('modules/form-layout', {
+		return this.parent(view.render('modules/form-layout', {
 			action: this.action,
 			formclass: this.formclass,
 			buttons: this.buttons,
