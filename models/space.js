@@ -169,5 +169,6 @@ var Space = Protected.extend({
 var Spaces = SyncCollection.extend({
 	model: Space,
 	local_table: 'spaces',
+	sortfn: function(a, b) { return a.id().localeCompare(b.id()); },
 });
 

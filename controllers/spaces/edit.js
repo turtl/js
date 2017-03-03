@@ -1,6 +1,9 @@
 var SpacesEditController = FormController.extend({
+	xdom: true,
+
 	elements: {
-		'input[name=title]': 'inp_title'
+		'input[name=title]': 'inp_title',
+		'input[name=color]': 'inp_color',
 	},
 
 	events: {
@@ -25,6 +28,8 @@ var SpacesEditController = FormController.extend({
 		this.parent();
 		this.render();
 
+		this.with_bind(this.model, 'change', this.render.bind(this));
+
 		var close = this.modal.close.bind(this.modal);
 		this.modal.open(this.el);
 		this.with_bind(this.modal, 'close', this.release.bind(this));
@@ -36,23 +41,29 @@ var SpacesEditController = FormController.extend({
 	{
 		var my_spaces = turtl.profile.get('spaces')
 			.filter(function(space) { return !space.is_shared(); });
-		this.html(view.render('spaces/edit', {
+		var spacedata = this.model.toJSON();
+		var color = this.model.get_color().bg;
+		return this.html(view.render('spaces/edit', {
 			action: this.action,
-			space: this.model.toJSON(),
+			space: spacedata,
+			color: color,
 			shared: this.model.is_shared(),
 			last_space: my_spaces.length <= 1,
 			is_new: this.model.is_new(),
-		}));
-		if(this.model.is_new())
-		{
-			this.inp_title.focus.delay(300, this.inp_title);
-		}
+		})).bind(this)
+			.then(function() {
+				if(this.model.is_new())
+				{
+					this.inp_title.focus.delay(300, this.inp_title);
+				}
+			});
 	},
 
 	submit: function(e)
 	{
 		if(e) e.stop();
 		var title = this.inp_title.get('value').toString().trim();
+		var color = this.inp_color.get('value');
 
 		var errors = [];
 		if(!title) errors.push(i18next.t('Please give your space a title'));
@@ -66,7 +77,11 @@ var SpacesEditController = FormController.extend({
 		var is_new = this.model.is_new();
 		this.model.create_or_ensure_key({silent: true});
 		var clone = this.model.clone();
-		clone.set({title: title});
+
+		var data = {title: title};
+		if(color) data.color = color;
+		clone.set(data);
+
 		clone.save()
 			.bind(this)
 			.then(function() {
@@ -96,6 +111,6 @@ var SpacesEditController = FormController.extend({
 				log.error('space: delete: ', derr(err));
 				barfr.barf(i18next.t('There was a problem deleting your space: {{message}}', {message: err.message}));
 			});
-	}
+	},
 });
 

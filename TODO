@@ -1,6 +1,9 @@
 - Your settings -> Resend confirmation (only if unconfirmed)
 - Concept of current space
   - can be localized for bookmarker
+- in all notes, show only notes from current space
+- in boards, show only boards from current space
+- when adding a board, add to current space
 - leave a space (in edit screen)
 - Update bookmarker to just take a URL
   - all scraping happens in-app

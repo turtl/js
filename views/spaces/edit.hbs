@@ -1,4 +1,10 @@
 <input type="text" name="title" value="{{space.title}}" placeholder="{{t 'Space title'}}">
+<p class="color">
+	<label>
+		<input type="color" name="color" value="{{color}}" class="needsclick">
+		{{t 'Select the color for this space'}}
+	</label>
+</p>
 
 {{#unless is_new}}
 	<div class="delete">
