@@ -572,7 +572,6 @@ var _turtl_init = function()
 	// load the api URL from storage if it's there
 	if(localStorage.config_api_url) config.api_url = localStorage.config_api_url;
 
-	FastClick.attach(document.body);
 	window.port = window.port || false;
 	window._base_url = config.base_url || '';
 	turtl.site_url = config.site_url || '';
