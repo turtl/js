@@ -26,7 +26,7 @@ var NotesIndexController = Composer.Controller.extend({
 	{
 		if(this.board_id == 'all')
 		{
-			var title = i18next.t("All notes");
+			var title = '';
 			var back = undefined;
 		}
 		else
@@ -41,7 +41,7 @@ var NotesIndexController = Composer.Controller.extend({
 			this.search.boards.push(this.board_id);
 			this.search.boards = this.search.boards.concat();
 
-			var title = board.get('title');
+			var title = '';
 			var back = turtl.router.get_param(window.location.search, 'back');
 			if(!back) back = '/boards';
 		}
@@ -60,7 +60,10 @@ var NotesIndexController = Composer.Controller.extend({
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		turtl.events.trigger('header:set-actions', [
-			{name: 'search', icon: 'search'}
+			{name: 'search', icon: 'search'},
+			{name: 'menu', actions: [
+				{name: 'Settings', href: '/settings'}
+			]},
 		]);
 		this.with_bind(turtl.events, 'header:fire-action', function(name) {
 			switch(name)
@@ -68,6 +71,12 @@ var NotesIndexController = Composer.Controller.extend({
 				case 'search':
 					this.open_search();
 					break;
+			}
+		}.bind(this));
+		this.with_bind(turtl.events, 'header:menu:fire-action', function(action) {
+			switch(action)
+			{
+				case 'settings': turtl.route('/settings'); break;
 			}
 		}.bind(this));
 		this.with_bind(turtl.events, 'search:toggle', this.toggle_search.bind(this));

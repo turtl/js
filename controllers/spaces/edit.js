@@ -4,6 +4,7 @@ var SpacesEditController = FormController.extend({
 	elements: {
 		'input[name=title]': 'inp_title',
 		'input[name=color]': 'inp_color',
+		'input[name=default]': 'inp_default',
 	},
 
 	events: {
@@ -43,6 +44,7 @@ var SpacesEditController = FormController.extend({
 			.filter(function(space) { return !space.is_shared(); });
 		var spacedata = this.model.toJSON();
 		var color = this.model.get_color().bg;
+		var default_space = turtl.user.setting('default_space');
 		return this.html(view.render('spaces/edit', {
 			action: this.action,
 			space: spacedata,
@@ -50,6 +52,7 @@ var SpacesEditController = FormController.extend({
 			shared: this.model.is_shared(),
 			last_space: my_spaces.length <= 1,
 			is_new: this.model.is_new(),
+			is_default: default_space == this.model.id(),
 		})).bind(this)
 			.then(function() {
 				if(this.model.is_new())
@@ -64,6 +67,7 @@ var SpacesEditController = FormController.extend({
 		if(e) e.stop();
 		var title = this.inp_title.get('value').toString().trim();
 		var color = this.inp_color.get('value');
+		var default_space = this.inp_default.get('checked');
 
 		var errors = [];
 		if(!title) errors.push(i18next.t('Please give your space a title'));
@@ -89,6 +93,10 @@ var SpacesEditController = FormController.extend({
 
 				// add the space to our main space list
 				turtl.profile.get('spaces').upsert(this.model);
+
+				if(default_space) {
+					turtl.user.setting('default_space', this.model.id());
+				}
 
 				if(is_new) {
 					turtl.profile.set_current_space(this.model.id());

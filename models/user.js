@@ -24,7 +24,7 @@ var User = Protected.extend({
 		this.logged_in = false;
 
 		// whenever the user settings change, automatically save them (encrypted).
-		this.bind_relational('settings', ['change'], this.save_settings.bind(this), 'user:save_settings');
+		this.bind('change:settings', this.save_settings.bind(this), 'user:save_settings');
 	},
 
 	login: function(data, options)
@@ -315,7 +315,15 @@ var User = Protected.extend({
 				// TODO: run old auths from migration system, prompt user to
 				// migrate their account
 			});
-	}
+	},
+
+	setting: function(key, val)
+	{
+		var settings = clone(this.get('settings') || {});
+		if(val === undefined) return settings[key];
+		settings[key] = val;
+		this.set({settings: settings});
+	},
 });
 
 // we don't actually use this collection for anything but syncing

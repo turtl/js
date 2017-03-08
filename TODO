@@ -12,9 +12,9 @@
 	  - get rid of user bar in ham menu, move to three-dot
 	  - add "Share this space" to three dot
 - drive everything by url:
-  - /<spaceid>/notes -- all notes
-  - /<spaceid>/notes/<boardid> -- board notes
-  - /<spaceid>/sharing -- sharing
+  - /spaces/<spaceid>/notes -- all notes
+  - /spaces/<spaceid>/notes/<boardid> -- board notes
+  - /spaces/<spaceid>/sharing -- sharing
 
 - default space: first space selected when logging in
 - Your settings -> Resend confirmation (only if unconfirmed)

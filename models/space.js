@@ -85,7 +85,7 @@ var Space = Protected.extend({
 
 	is_shared: function()
 	{
-		return this.get('user_id') != turtl.user.id();
+		return !this.is_new() && this.get('user_id') != turtl.user.id();
 	},
 
 	each_type: function(type, cls, callback, options)

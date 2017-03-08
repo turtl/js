@@ -34,6 +34,12 @@
 	</li>
 </ul>
 
+<div class="connection {{#if connected}}connected{{else}}disconnected{{/if}}">
+	{{icon 'connection'}}
+	<span class="connected">{{t 'Connected to the Turtl service'}}</span>
+	<span class="disconnected">{{t 'Offline mode'}}</span>
+</div>
+
 <div class="info">
 	<p>{{t 'Client version: <em>{{version}}</em>' version=version}}</p>
 </div>

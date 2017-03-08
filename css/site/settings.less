@@ -16,6 +16,18 @@
 	> .info {
 		em {color: darken(@theme_accent, 20%);}
 	}
+
+	> .connection {padding: 16px 0; text-align: center;}
+	> .connection {
+		icon {margin: 0 8rem 0 0; font-size: 24rem; color: @theme_gray_midlight;}
+		span {display: inline; padding: 12rem 0; font-size: 15rem; color: @theme_gray;}
+		span.connected {display: none;}
+		&.connected {
+			icon {color: @theme_accent;}
+			span.disconnected {display: none;}
+			span.connected {display: inline;}
+		}
+	}
 }
 
 .settings-password {

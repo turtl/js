@@ -1,10 +1,6 @@
 <div class="overlay {{#if open}}show{{/if}}"></div>
 <div class="inner">
 	<div class="gutter">
-		<div class="header">
-			<h2>{{username}}</h2>
-			<a rel="settings" href="/settings" title="{{t 'Your settings'}}">{{icon 'account'}}</a>
-		</div>
 		<ul class="spaces">
 			<li class="add">
 				<a href="/spaces/add">
@@ -14,28 +10,11 @@
 			</li>
 			{{#each spaces}}
 				<li rel="{{id}}" class="space">
-					<a href="/spaces/{{id}}" {{#if color}}style="border-color: {{color.bg}};"{{/if}}>{{title}}</a>
+					<a href="/spaces/{{id}}/notes" {{#if color}}style="border-color: {{color.bg}};"{{/if}}>{{title}}</a>
 					<a class="edit" href="/spaces/edit/{{id}}">{{icon 'account'}}</a>
 				</li>
 			{{/each}}
 		</ul>
-	</div>
-	<div class="footer">
-		<div class="connection {{#if connected}}connected{{else}}disconnected{{/if}}">
-			{{icon 'connection'}}
-			<span class="connected">{{t 'Connected to the Turtl service'}}</span>
-			<span class="disconnected">{{t 'Offline mode'}}</span>
-		</div>
-		{{!--
-		<div class="sync">
-			{{#if connected}}
-				{{#if last_sync}}<p>{{t 'Last sync: {{val}}' val=(ago-time last_sync)}}</p>{{/if}}
-				<div class="button sync">
-					<input type="button" class="button" value="{{t 'Sync now'}}">
-				</div>
-			{{/if}}
-		</div>
-		--}}
 	</div>
 </div>
 

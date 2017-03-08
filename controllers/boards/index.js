@@ -18,7 +18,7 @@ var BoardsController = Composer.Controller.extend({
 
 	init: function()
 	{
-		turtl.push_title(i18next.t('Boards'), null, {prefix_space: true});
+		turtl.push_title('', null, {prefix_space: true});
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		this.collection = new BoardsFilter(turtl.profile.get('boards'));
@@ -26,6 +26,18 @@ var BoardsController = Composer.Controller.extend({
 		this.bind('release', this.collection.detach.bind(this.collection));
 
 		this.render();
+
+		turtl.events.trigger('header:set-actions', [
+			{name: 'menu', actions: [
+				{name: 'Settings', href: '/settings'}
+			]},
+		]);
+		this.with_bind(turtl.events, 'header:menu:fire-action', function(action) {
+			switch(action)
+			{
+				case 'settings': turtl.route('/settings'); break;
+			}
+		}.bind(this));
 
 		// set up the action button
 		this.track_subcontroller('actions', function() {

@@ -25,8 +25,6 @@ var cid_match = /[0-9a-f]+/;
 // 55553b952b137507650026a3
 var old_id_match = /^[0-9a-f]{24}$/;
 
-var default_route = '/';
-
 var turtl = {
 	client_id: null,
 
@@ -158,7 +156,16 @@ var turtl = {
 
 		turtl.events.bind('app:localized', function() {
 			turtl.localized = true;
-		})
+		});
+		var space_grabber = /\/spaces\/([0-9a-f]+)\/.*/;
+		turtl.controllers.pages.bind('prerelease', function() {
+			var path = turtl.router.cur_path();
+			if(!path.match(space_grabber)) return;
+			var space_id = path.replace(space_grabber, '$1');
+			if(!space_id) return;
+			if(!turtl.profile) return;
+			turtl.profile.set_current_space(space_id);
+		});
 	},
 
 	setup_user: function(options)
@@ -205,10 +212,15 @@ var turtl = {
 					setTimeout(turtl.show_loading_screen.bind(null, false), 200);
 					turtl.controllers.pages.release_sub();
 					turtl.controllers.nav = new NavController();
-					var initial_route = options.initial_route || default_route;
-					if(initial_route.match(/^\/users\//)) initial_route = default_route;
-					if(initial_route.match(/index.html/)) initial_route = default_route;
-					if(initial_route.match(/background.html/)) initial_route = default_route;
+					var default_space = turtl.user.setting('default_space');
+					var spaces = turtl.profile.get('spaces');
+					var space = default_space ? spaces.get(default_space) : spaces.first();
+					if(!space) space = spaces.first();
+					var space_route = '/spaces/'+space.id()+'/notes';
+					var initial_route = options.initial_route || space_route;
+					if(initial_route.match(/^\/users\//)) initial_route = space_route;
+					if(initial_route.match(/index.html/)) initial_route = space_route;
+					if(initial_route.match(/background.html/)) initial_route = space_route;
 					var dont_initial_route = ['/users/join'];
 					if(!dont_initial_route.contains(turtl.router.cur_path()))
 					{

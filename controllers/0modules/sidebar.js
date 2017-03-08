@@ -42,10 +42,13 @@ var SidebarController = Composer.Controller.extend({
 			settings.click();
 		}, {time: 5000});
 
+		// uhh, why?
+		/*
 		var refresh = setInterval(function() {
 			if(this.is_open) this.render();
 		}.bind(this), 1000);
 		this.bind('release', clearInterval.bind(window, refresh));
+		*/
 	},
 
 	render: function()
@@ -59,10 +62,11 @@ var SidebarController = Composer.Controller.extend({
 				space.color = spaces.get(space.id).get_color();
 				return space;
 			});
+		var cur_space = current_space.toJSON();
+		cur_space.color = current_space.get_color().bg;
 		return this.html(view.render('modules/sidebar', {
-			username: turtl.user.get('username'),
+			cur_space: cur_space,
 			spaces: space_data,
-			connected: (turtl.sync || {}).connected,
 			open: this.is_open,
 			last_sync: (turtl.sync || {}).last_sync,
 			polling: (turtl.sync || {})._polling
@@ -120,6 +124,7 @@ var SidebarController = Composer.Controller.extend({
 	edit_space: function(e)
 	{
 		if(e) e.stop();
+		console.log('hai');
 		var li = Composer.find_parent('li', e.target);
 		if(!li) return;
 		var space_id = li.get('rel');

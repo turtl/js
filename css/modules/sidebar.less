@@ -8,11 +8,11 @@
 	> .inner {
 		> .gutter {}
 		> .gutter {
-			.header {display: flex; align-items: center; justify-content: space-between; padding: 16px 8px; cursor: pointer; background: @theme_black;}
+			.header {background: @theme_black;}
 			.header {
-				h2 {font-size: 14rem; color: @theme_gray_white;}
-				a {
-					icon {display: inline-block; margin: 0 0 0 0; font-size: 24rem; color: @theme_gray_white; text-align: center;}
+				h2 {padding: 12rem; font-size: 14rem; color: @theme_gray_white; cursor: pointer;}
+				h2 {
+					icon {margin-left: 4rem; transform: rotate(-90deg);}
 				}
 			}
 			ul.spaces {margin: 0; padding: 0; list-style: none;}
@@ -20,7 +20,7 @@
 				li {display: flex; border-bottom: 1rem solid @theme_border;}
 				li {
 					&.sep {border-bottom: 1rem solid @theme_gray_light;}
-					a {display: block; padding: 12rem; font-size: 17rem; border-left: 8px solid rgba(0, 0, 0, 0);}
+					a {display: block; padding: 14rem 12rem; font-size: 17rem; border-left: 8rem solid rgba(0, 0, 0, 0);}
 					a:first-child {width: 90%;}
 					a:before {content: " "; position: absolute; opacity: 0; z-index: 4; right: 10rem; margin: 4rem 0 0 0; width: 12rem; height: 12rem; background: @theme_warn; border-radius: 6rem; .transition(opacity .3s);}
 					&.notify {
@@ -36,26 +36,6 @@
 				li.add {background: @theme_gray_white;}
 				li.add {
 					a {text-align: center;}
-				}
-			}
-		}
-
-		.footer {}
-		.footer {
-			> .sync {padding: 16rem; text-align: center; background: #f3f3f3;}
-			> .sync {
-				p {padding: 0 0 12rem 0; font-size: 14rem;}
-				.button {padding: 5rem 8rem; cursor: pointer; font-size: 15rem;}
-			}
-			> .connection {padding: 16px 0; text-align: center;}
-			> .connection {
-				icon {margin: 0 8rem 0 0; font-size: 24rem; color: @theme_gray_midlight;}
-				span {display: inline; padding: 12rem 0; font-size: 15rem; color: @theme_gray;}
-				span.connected {display: none;}
-				&.connected {
-					icon {color: @theme_accent;}
-					span.disconnected {display: none;}
-					span.connected {display: inline;}
 				}
 			}
 		}

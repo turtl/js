@@ -71,12 +71,12 @@ header {
 	}
 	ul.actions {position: absolute; top: 0; right: 0; height: @header_height; list-style: none; .transition(top .3s);}
 	ul.actions {
-		> li {display: inline-block; width: 44rem; height: @header_height; vertical-align: top;}
+		> li {display: inline-block; min-width: 22rem; height: @header_height; vertical-align: top;}
 		> li {
 			&.mod {position: relative;}
 			&.mod:after {display: block; content: " "; position: absolute; top: 6rem; right: 6rem; width: 10rem; height: 10rem; margin: 0 0 0 0; background: @theme_warn; border-radius: 5rem;}
 
-			> a {display: inline-block; width: @header_adjusted; height: @header_adjusted; line-height: 42rem; text-align: center;}
+			> a {display: inline-block; height: @header_adjusted; line-height: 42rem; text-align: center;}
 			> a {
 				icon {font-size: 22rem; color: #eee; vertical-align: middle;}
 				icon.info {font-size: 20rem;}

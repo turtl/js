@@ -1,59 +1,50 @@
 var NavController = Composer.Controller.extend({
 	inject: '#nav',
-	tag: 'ul',
+	tag: 'div',
 
 	elements: {
 	},
 
 	events: {
-		'click li': 'activate_nav'
+		'click': 'activate_nav'
 	},
-
-	nav: [
-		{url: '/', name: "All notes", icon: 'notes'},
-		{url: '/boards', name: 'Boards', icon: 'boards'},
-	],
 
 	init: function()
 	{
 		this.render();
-		this.with_bind(turtl.controllers.pages, 'start', this.update_nav.bind(this));
+		this.with_bind(turtl.controllers.pages, 'start', this.render.bind(this));
 		this.bind('release', function() { $('nav').removeClass('show'); });
 		this.setup_scroll();
 	},
 
 	render: function()
 	{
+		var path = turtl.router.cur_path();
+		var is_in_space = path.match(/^\/spaces\/([0-9a-f]+)\//);
+		var is_in_notes = path.match(/\/notes$/);
+		var is_listing_boards = path.match(/\/boards$/);
+		var board_regex = /.*\/boards\/([0-9a-f]+)\/notes$/;
+		var is_in_board = path.match(board_regex);
+		var board_id = path.replace(board_regex, '$1');
+
+		var title = '';
+		if(is_in_space && is_in_board) {
+			var board = turtl.profile.get('boards').get(board_id);
+			if(!board) title = i18next.t('Boards');
+			else title = board.get('title');
+		} else if(is_in_space && is_listing_boards) {
+			title = i18next.t('Boards');
+		} else if(is_in_space && is_in_notes) {
+			title = i18next.t('All notes');
+		} else {
+			$('nav').removeClass('show');
+			return;
+		}
+
 		this.html(view.render('modules/nav', {
-			nav: this.nav
+			title: title
 		}));
 		$('nav').addClass('show');
-	},
-
-	update_nav: function()
-	{
-		this.el.getElements('.sel').forEach(function(el) { el.removeClass('sel'); });
-		var url = window.location.pathname;
-		this.nav.forEach(function(item) {
-			var selected = false;
-			if(item.url == '/boards')
-			{
-				if(url.indexOf(item.url) == 0) selected = true;
-			}
-			else
-			{
-				if(url == item.url) selected = true;
-			}
-
-
-			if(selected)
-			{
-				var atag = this.el.getElement('a[href='+item.url+']');
-				var li = Composer.find_parent('li', atag);
-				if(!li || !atag) return;
-				li.addClass('sel');
-			}
-		}.bind(this));
 	},
 
 	setup_scroll: function(e)

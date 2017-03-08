@@ -69,6 +69,7 @@ var BoardsItemController = Composer.Controller.extend({
 			return;
 		}
 		if(e) e.stop();
+		// TODO: use /spaces/<spaceid>/boards/<boardid>/notes
 		turtl.route('/boards/'+this.model.id()+'/notes');
 	},
 
