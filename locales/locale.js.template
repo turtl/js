@@ -103,7 +103,7 @@ locales.XX = {	// NOTE: change XX to the two-letter language code
     "Invite pending. Sent {{ago}}": "",
     "Invite sent": "",
     "Invite title (shared with invitee)": "",
-    "Invite to \"{{board_title}}\"": "",
+    "Invite to &quot;{{board_title}}&quot;": "",
     "It can be helpful to use your email address as your username.": "",
     "I will remember my login!": "",
     "Join": "",
@@ -269,8 +269,8 @@ locales.XX = {	// NOTE: change XX to the two-letter language code
     "Write": "",
     "Yes, delete my account": "",
     "You are currently in offline mode.": "",
-    "You can also make text __bold__ or *italic*.": "",
-    "You can also make text <strong>bold</strong> or <em>italic</em>.": "",
+    "You can also make text __bold__, *italic* or ~~strikethrough~~.": "",
+    "You can also make text <strong>bold</strong>, <em>italic</em> or <strike>strikethrough</strike>.": "",
     "you can make<br>1. numbered bullets<br>1. as well": "",
     "you can make</li><li>numbered bullets</li><li>as well": "",
     "You don't have any boards shared with you.": "",
@@ -283,6 +283,12 @@ locales.XX = {	// NOTE: change XX to the two-letter language code
     "Your login was changed successfully!": "",
     "Your master key was generated using an older method. To upgrade it, please go to the \"Change password\" section of your account settings under the Turtl menu.": "",
     "Your passphrase does not match the confirmation.": "",
-    "Your settings": ""
+    "Your persona": "",
+    "Your public persona has been created!": "",
+    "Your settings": "",
+    "Send": "",
+    "image": "",
+    "file": "",
+    "password": "",
 };
 
