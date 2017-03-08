@@ -218,6 +218,8 @@ var turtl = {
 					if(!space) space = spaces.first();
 					var space_route = '/spaces/'+space.id()+'/notes';
 					var initial_route = options.initial_route || space_route;
+					if(initial_route == '/') initial_route = space_route;
+
 					if(initial_route.match(/^\/users\//)) initial_route = space_route;
 					if(initial_route.match(/index.html/)) initial_route = space_route;
 					if(initial_route.match(/background.html/)) initial_route = space_route;
