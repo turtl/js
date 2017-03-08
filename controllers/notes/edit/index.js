@@ -69,6 +69,9 @@ var NotesEditController = FormController.extend({
 		{
 			case 'text': title = i18next.t('text note'); break;
 			case 'link': title = i18next.t('bookmark'); break;
+			case 'image': title = i18next.t('image'); break;
+			case 'file': title = i18next.t('file'); break;
+			case 'password': title = i18next.t('password'); break;			
 			default: title = this.clone.get('type');
 		}
 		title = i18next.t('Editing {{title}}', {title: title});
