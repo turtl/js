@@ -1,17 +1,60 @@
 <div class="overlay {{#if open}}show{{/if}}"></div>
 <div class="inner">
-	<div class="gutter">
-		<ul class="spaces">
+	<div class="header">
+		<h2 class="{{cur_space.color.txt}}" style="background-color: {{cur_space.color.bg}};">
+			<em>{{cur_space.title}}</em>
+			{{icon 'arrow'}}
+		</h2>
+	</div>
+
+	<div class="spaces-container">
+		<div class="gutter spaces">
+			<h2>
+				{{t 'Your spaces'}}
+				<a href="#close">{{icon 'close'}}</a>
+			</h2>
+			<ul class="spaces">
+				<li class="add">
+					<a href="/spaces/add">
+						{{t 'Create a space'}}
+						{{icon 'add'}}
+					</a>
+				</li>
+				{{#each spaces}}
+					<li rel="{{id}}" class="space">
+						<a href="/spaces/{{id}}/notes" {{#if color}}style="border-color: {{color.bg}};"{{/if}}>{{title}}</a>
+						<a class="edit" href="/spaces/edit/{{id}}">{{icon 'account'}}</a>
+					</li>
+				{{/each}}
+			</ul>
+		</div>
+	</div>
+
+	<div class="gutter boards">
+		<div class="filter">
+			{{icon 'search'}}
+			<input type="text" placeholder="{{t 'Search for boards'}}">
+		</div>
+		<ul class="boards">
 			<li class="add">
-				<a href="/spaces/add">
+				<a href="/boards/add">
+					{{t 'Boards'}}
 					{{icon 'add'}}
-					New space
 				</a>
 			</li>
-			{{#each spaces}}
-				<li rel="{{id}}" class="space">
-					<a href="/spaces/{{id}}/notes" {{#if color}}style="border-color: {{color.bg}};"{{/if}}>{{title}}</a>
-					<a class="edit" href="/spaces/edit/{{id}}">{{icon 'account'}}</a>
+			<li class="board">
+				<a class="go" href="/spaces/{{@root.cur_space.id}}/notes">
+					{{icon 'notes'}}
+					{{t 'All notes'}}
+				</a>
+			</li>
+			{{#each boards}}
+				<li rel="{{id}}" class="board">
+					<a class="go" href="/spaces/{{@root.cur_space.id}}/boards/{{id}}/notes">
+						{{icon 'board'}}
+						{{title}}
+					</a>
+					<a class="edit" href="/boards/edit/{{id}}">{{icon 'account'}}</a>
 				</li>
 			{{/each}}
 		</ul>

@@ -7,6 +7,9 @@ var SettingsController = Composer.Controller.extend({
 
 	init: function()
 	{
+		this.with_bind(turtl.events, 'api:connect', this.render.bind(this));
+		this.with_bind(turtl.events, 'api:disconnect', this.render.bind(this));
+
 		turtl.push_title(i18next.t('Your settings'));
 		this.bind('release', turtl.pop_title.bind(null, false));
 

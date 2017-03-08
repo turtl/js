@@ -4,28 +4,44 @@ var SidebarController = Composer.Controller.extend({
 
 	elements: {
 		'> .overlay': 'overlay',
-		'li[rel=share]': 'el_share',
-		'.inner .connection': 'el_connection'
+		'.spaces-container': 'el_spaces',
 	},
 
 	events: {
 		'click > .overlay': 'close',
-		'click .gutter .header': 'settings',
-		'click li.add a': 'add_space',
-		'click a.edit': 'edit_space',
+		'click .header h2': 'open_spaces',
+		'click .spaces-container h2': 'close_spaces',
+		'click .spaces li.add a': 'add_space',
+		'click .spaces a.edit': 'edit_space',
+		'click .boards li.add a': 'add_board',
+		'click .boards a.edit': 'edit_board',
 		// close when clicking one of the sidebar links
 		'click ul a': 'close',
 	},
 
 	is_open: false,
+	boards: null,
 
 	init: function()
 	{
+		this.with_bind(turtl.events, 'app:objects-loaded', function() {
+			this.boards = new BoardsFilter(turtl.profile.get('boards'), {
+				filter: function(b) {
+					return b.get('space_id') == turtl.profile.current_space().id();
+				}.bind(this),
+			});
+			this.with_bind(this.boards, ['add', 'remove', 'change'], this.render.bind(this));
+			this.with_bind(turtl.profile.get('spaces'), ['add', 'remove', 'change'], this.render.bind(this));
+		}.bind(this));
+
 		this.render();
+
+		this.with_bind(turtl.events, 'profile:set-current-space', function() {
+			this.boards.refresh();
+			this.render();
+		}.bind(this));
 		this.with_bind(turtl.controllers.pages, 'prerelease', this.close.bind(this));
 		this.with_bind(turtl.events, 'sidebar:toggle', this.toggle.bind(this));
-		this.with_bind(turtl.events, 'api:connect', this.render.bind(this));
-		this.with_bind(turtl.events, 'api:disconnect', this.render.bind(this));
 		this.with_bind(turtl.events, 'app:load:profile-loaded', this.render.bind(this));
 
 		this.with_bind(turtl.user, 'login', function() {
@@ -41,18 +57,11 @@ var SidebarController = Composer.Controller.extend({
 			if(!settings) return;
 			settings.click();
 		}, {time: 5000});
-
-		// uhh, why?
-		/*
-		var refresh = setInterval(function() {
-			if(this.is_open) this.render();
-		}.bind(this), 1000);
-		this.bind('release', clearInterval.bind(window, refresh));
-		*/
 	},
 
 	render: function()
 	{
+		if(!this.boards) return;
 		if(!turtl.profile) return;
 		var current_space = turtl.profile.current_space();
 		var spaces = turtl.profile.get('spaces');
@@ -63,10 +72,11 @@ var SidebarController = Composer.Controller.extend({
 				return space;
 			});
 		var cur_space = current_space.toJSON();
-		cur_space.color = current_space.get_color().bg;
+		cur_space.color = current_space.get_color();
 		return this.html(view.render('modules/sidebar', {
 			cur_space: cur_space,
 			spaces: space_data,
+			boards: this.boards.toJSON(),
 			open: this.is_open,
 			last_sync: (turtl.sync || {}).last_sync,
 			polling: (turtl.sync || {})._polling
@@ -77,13 +87,13 @@ var SidebarController = Composer.Controller.extend({
 	{
 		this.is_open = true;
 		document.body.addClass('settings');
-		turtl.push_title(i18next.t('Your spaces'), false);
 		setTimeout(this.render.bind(this), 10);
 		turtl.events.trigger('sidebar:open');
 	},
 
 	close: function()
 	{
+		this.close_spaces();
 		if(!this.overlay) return;
 		this.is_open = false;
 		this.overlay.setStyles({position: 'fixed'});
@@ -92,7 +102,6 @@ var SidebarController = Composer.Controller.extend({
 			this.overlay.setStyles({position: ''});
 		}.bind(this), 300);
 		document.body.removeClass('settings');
-		turtl.pop_title('hubba hubba');
 		turtl.events.trigger('sidebar:close');
 	},
 
@@ -109,10 +118,19 @@ var SidebarController = Composer.Controller.extend({
 		}
 	},
 
-	settings: function(e)
+	open_spaces: function(e)
 	{
-		var atag = this.el.getElement('.header a[rel=settings]');
-		if(atag) atag.click();
+		if(e) e.stop();
+		this.el_spaces.addClass('open').addClass('zin');
+	},
+
+	close_spaces: function(e)
+	{
+		if(e) e.stop();
+		this.el_spaces.removeClass('open');
+		setTimeout(function() {
+			this.el_spaces.removeClass('zin');
+		}.bind(this), 250);
 	},
 
 	add_space: function(e)
@@ -124,7 +142,6 @@ var SidebarController = Composer.Controller.extend({
 	edit_space: function(e)
 	{
 		if(e) e.stop();
-		console.log('hai');
 		var li = Composer.find_parent('li', e.target);
 		if(!li) return;
 		var space_id = li.get('rel');
@@ -133,6 +150,27 @@ var SidebarController = Composer.Controller.extend({
 		return new SpacesEditController({
 			model: space,
 		});
-	}
+	},
+
+	add_board: function(e)
+	{
+		if(e) e.stop();
+		return new BoardsEditController({
+			model: new Board({space_id: turtl.profile.current_space().id()}),
+		});
+	},
+
+	edit_board: function(e)
+	{
+		if(e) e.stop();
+		var li = Composer.find_parent('li', e.target);
+		if(!li) return;
+		var board_id = li.get('rel');
+		if(!board_id) return;
+		var board = turtl.profile.get('boards').get(board_id);
+		return new BoardsEditController({
+			model: board,
+		});
+	},
 });
 
