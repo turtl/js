@@ -4,6 +4,7 @@ var SidebarController = Composer.Controller.extend({
 
 	elements: {
 		'> .overlay': 'overlay',
+		'> .inner': 'el_inner',
 		'.spaces-container': 'el_spaces',
 	},
 
@@ -48,15 +49,18 @@ var SidebarController = Composer.Controller.extend({
 			this.with_bind(turtl.profile.get('spaces'), ['change', 'add', 'remove', 'reset'], this.render.bind(this), 'sidebar:spaces:render');
 		}, 'sidebar:login:render');
 
-		var mc = new Hammer.Manager(this.el);
-		mc.add(new Hammer.Press({time: 750}));
-		mc.on('press', function(e) {
-			var li = Composer.find_parent('li.space', e.target);
+		var hammer = new Hammer.Manager(this.el);
+		hammer.add(new Hammer.Press({time: 750}));
+		hammer.add(new Hammer.Swipe());
+		hammer.on('press', function(e) {
+			var li = Composer.find_parent('li.space, li.board', e.target);
 			if(!li) return;
 			var settings = li.getElement('a.edit');
 			if(!settings) return;
 			settings.click();
 		}, {time: 5000});
+		hammer.on('swipeleft', this.close.bind(this));
+		this.bind('release', hammer.destroy.bind(hammer));
 	},
 
 	render: function()
@@ -80,7 +84,13 @@ var SidebarController = Composer.Controller.extend({
 			open: this.is_open,
 			last_sync: (turtl.sync || {}).last_sync,
 			polling: (turtl.sync || {})._polling
-		}));
+		})).then(function() {
+			// NOTE: for some reason, the swipe events don't propagate from the
+			// .inner div unless we specifically add them by hand here.
+			if(this._swipe_hammer) this._swipe_hammer.destroy();
+			this._swipe_hammer = new Hammer.Manager(this.el_inner);
+			this._swipe_hammer.add(new Hammer.Swipe());
+		}.bind(this))
 	},
 
 	open: function()
