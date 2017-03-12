@@ -6,6 +6,7 @@
   "license": "GPLv3",
   "devDependencies": {
     "autoprefixer": "^6.0.3",
+    "chokidar": "^1.6.1",
     "es6-promise": "^3.0.2",
     "handlebars": "^2.0.0",
     "less": "^2.5.3",

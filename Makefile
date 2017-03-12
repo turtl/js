@@ -53,7 +53,7 @@ clean:
 	rm -f index.html
 
 watch:
-	@./scripts/watch
+	@$(NODE) ./scripts/fswatch
 
 min.index.html: $(allcss) $(alljs) $(cssfiles) lib/app/templates.js views/layouts/default.html .build/postcss scripts/include.sh scripts/gen-minified-index
 	@echo "- index.html: " $?

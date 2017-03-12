@@ -35,13 +35,17 @@ body.loggedout #main {padding-top: @header_height;}
 @header_pad_top: 4rem;
 @header_adjusted: (@header_height - @header_pad_top);
 
-header {position: fixed; .fixed-fix(); z-index: 14; width: 100%; height: @header_adjusted; margin: 0 0 0 0; padding: @header_pad_top 0 0 0; background: @theme_black_bg;}
+header {position: fixed; .fixed-fix(); z-index: 14; width: 100%; height: @header_height; margin: 0 0 0 0; padding: 0 0 0 0; background: @theme_black_bg;}
 header.under {z-index: 10;}
 header {
-	a.logo {position: absolute; display: block; width: 60rem; height: 28rem; margin: 3rem 0 0 0;}
+	> div {display: flex; align-items: center; justify-content: space-between; width: 100%; flex-basis: 100%; height: @header_height;}
+	.title {display: flex; align-items: center; justify-content: flex-start;}
+	// this min-width keeps the logo/title from smashing against each other when the title is shorter. 
+	.title {min-width: 200rem;}
+	a.logo {display: flex; align-items: center; flex-basis: 60rem; width: 60rem; height: 28rem; margin: -1rem 0 0 0;}
 	a.logo {
-		img {position: relative; z-index: 2; max-width: 100%; height: 100%; margin: 0 0 0 8rem;}
-		icon {position: absolute; z-index: 1; margin: 6rem 0 0 -14rem; font-size: 28.5rem; color: #8fc46a; .transition(margin-left .3s);}
+		img {position: relative; z-index: 2; max-width: 100%; height: 100%; margin: -1rem 0 0 8rem;}
+		icon {position: relative; z-index: 1; margin: 0rem 0 0 -14rem; font-size: 28.5rem; color: #8fc46a; .transition(margin-left .3s);}
 	}
 	a.logo:before {content: " "; position: fixed; opacity: 0; z-index: 4; top: 26rem; left: 8rem; width: 12rem; height: 12rem; background: @theme_warn; border-radius: 6rem; .transition(opacity .3s);}
 	.notify {
@@ -52,7 +56,7 @@ header {
 		a.logo {display: none;}
 	}
 
-	h1 {position: absolute; width: 70%; display: flex; align-items: center; margin: 1rem 0 0 60rem; text-align: left; font-weight: normal; font-size: 1.6em; line-height: 1.2em;}
+	h1 {width: 70%; display: flex; align-items: center; margin: 0 0 0 0; text-align: left; font-weight: normal; font-size: 1.6em; line-height: 1.2em;}
 	h1 {
 		em {color: #8fc46a;}
 		em {
@@ -69,20 +73,21 @@ header {
 			}
 		}
 	}
-	ul.actions {position: absolute; top: 0; right: 0; height: @header_height; list-style: none; .transition(top .3s);}
+	ul.actions {top: 0; right: 0; height: @header_height; list-style: none;}
 	ul.actions {
 		> li {display: inline-block; min-width: 22rem; height: @header_height; vertical-align: top;}
 		> li {
 			&.mod {position: relative;}
-			&.mod:after {display: block; content: " "; position: absolute; top: 6rem; right: 6rem; width: 10rem; height: 10rem; margin: 0 0 0 0; background: @theme_warn; border-radius: 5rem;}
+			&.mod:after {display: block; content: " "; position: absolute; top: 6rem; right: 0; width: 10rem; height: 10rem; margin: 0 0 0 0; background: @theme_warn; border-radius: 5rem;}
 
+			a {min-width: 36rem;}
 			> a {display: inline-block; height: @header_adjusted; line-height: 42rem; text-align: center;}
 			> a {
 				icon {font-size: 22rem; color: #eee; vertical-align: middle;}
 				icon.info {font-size: 20rem;}
 			}
 			.item-actions {
-				> a {width: @header_height; height: @header_height; margin: 2rem 0 0 0; line-height: @header_height; text-align: center;}
+				> a {height: @header_height; margin: 2rem 0 0 0; line-height: @header_height; text-align: center;}
 				> a icon {color: #eee;}
 				> .menu {top: 8rem; right: 8rem;}
 			}
@@ -103,10 +108,3 @@ body.loggedout #tmp-slide {margin-top: @header_height;}
 body.page-slide {overflow: hidden;}
 body.page-slide #tmp-slide {display: block;}
 
-body.settings,
-body.modal:not(.search) {
-	//#wrap {height: 100%; overflow: hidden;}
-}
-
-//body.settings,
-//body.modal {overflow-y: hidden !important;}

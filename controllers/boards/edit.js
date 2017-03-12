@@ -14,13 +14,16 @@ var BoardsEditController = FormController.extend({
 	{
 		if(!this.model) this.model = new Board();
 		var space = turtl.profile.current_space();
-		this.action = this.model.is_new() ?
+		var title = this.model.is_new() ?
 			i18next.t('Create board in {{space}}', {space: space.get('title')}) :
 			i18next.t('Edit board');
+		this.action = this.model.is_new() ?
+			i18next.t('Create') :
+			i18next.t('Edit');
 
 		this.modal = new TurtlModal({
 			show_header: true,
-			title: this.action,
+			title: title,
 		});
 
 		this.parent();

@@ -127,6 +127,7 @@ var SidebarController = Composer.Controller.extend({
 	close_spaces: function(e)
 	{
 		if(e) e.stop();
+		if(!this.el_spaces) return;
 		this.el_spaces.removeClass('open');
 		setTimeout(function() {
 			this.el_spaces.removeClass('zin');
