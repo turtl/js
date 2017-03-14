@@ -31,6 +31,7 @@ var SidebarController = Composer.Controller.extend({
 		'click ul.boards a': 'close',
 		'input .boards .filter input[name=filter]': 'filter_boards',
 		'keyup .boards .filter input[name=filter]': 'filter_boards',
+		'click .boards .filter icon': 'clear_board_filter',
 	},
 
 	is_open: false,
@@ -52,6 +53,7 @@ var SidebarController = Composer.Controller.extend({
 			});
 			this.bind('board-filter', function() {
 				this.boards && this.boards.refresh({diff_events: true});
+				this.render();
 			}.bind(this));
 			this.with_bind(this.boards, ['add', 'remove', 'change'], this.render.bind(this));
 			this.with_bind(turtl.profile.get('spaces'), ['add', 'remove', 'change'], this.render.bind(this));
@@ -110,11 +112,9 @@ var SidebarController = Composer.Controller.extend({
 			open: this.is_open,
 			space_state: this.space_state,
 			last_sync: (turtl.sync || {}).last_sync,
-			polling: (turtl.sync || {})._polling
+			polling: (turtl.sync || {})._polling,
+			filter_active: !!this.board_filter,
 		})).then(function() {
-			if(get_platform() != 'mobile') {
-				this.inp_filter.focus();
-			}
 			this.fix_swiping();
 		}.bind(this))
 	},
@@ -122,9 +122,13 @@ var SidebarController = Composer.Controller.extend({
 	open: function()
 	{
 		this.is_open = true;
+		//this.clear_board_filter();
 		document.body.addClass('settings');
 		setTimeout(this.render.bind(this), 10);
 		turtl.events.trigger('sidebar:open');
+		setTimeout(function() {
+			if(get_platform() != 'mobile') this.inp_filter.focus();
+		}.bind(this), 100);
 	},
 
 	close: function()
@@ -139,6 +143,8 @@ var SidebarController = Composer.Controller.extend({
 		}.bind(this), 300);
 		document.body.removeClass('settings');
 		turtl.events.trigger('sidebar:close');
+		this.clear_board_filter();
+		this.inp_filter.blur();
 	},
 
 	toggle: function()
@@ -245,15 +251,28 @@ var SidebarController = Composer.Controller.extend({
 	filter_boards: function(e)
 	{
 		var filter = this.inp_filter.get('value');
-		if(e.key && e.key == 'esc') {
-			e.stop();
-			// if hitting esc on empty filters, close sidebar
-			if(filter == '') return this.close();
-			filter = null;
-			this.inp_filter.set('value', '');
+		if(e) {
+			if(e.key == 'enter') {
+				var board_a = this.el.getElement('ul.boards li a.go');
+				if(board_a) board_a.click();
+				return;
+			}
+			if(e.key == 'esc') {
+				e.stop();
+				// if hitting esc on empty filters, close sidebar
+				if(filter == '') return this.close();
+				filter = null;
+				this.inp_filter.set('value', '');
+			}
 		}
 		this.board_filter = filter ? filter : null;
 		this.trigger('board-filter');
+	},
+
+	clear_board_filter: function(e)
+	{
+		this.inp_filter.set('value', '');
+		this.filter_boards();
 	},
 
 	fix_swiping: function()

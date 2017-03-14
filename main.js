@@ -231,8 +231,13 @@ var turtl = {
 					if(window.port) window.port.send('profile-load-complete');
 					turtl.events.trigger('app:load:profile-loaded');
 
-					turtl.keyboard.bind('n', turtl.route.bind(turtl, '/'), 'shortcut:main:notes');
-					turtl.keyboard.bind('b', turtl.route.bind(turtl, '/boards'), 'shortcut:main:boards');
+					turtl.keyboard.bind('n', function() {
+						var space = turtl.profile.current_space();
+						turtl.route('/spaces/'+space.id()+'/notes');
+					}, 'shortcut:main:notes');
+					turtl.keyboard.bind('b', function() {
+						turtl.controllers.sidebar.open();
+					}, 'shortcut:main:boards');
 				})
 				.catch(function(err) {
 					barfr.barf(i18next.t('There was a problem with the initial load of your profile. Please try again.'));

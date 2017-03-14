@@ -41,7 +41,12 @@
 		.gutter {
 			.filter {position: relative; z-index: 3; padding: 0 @side_padding;}
 			.filter {
-				icon {position: absolute; top: 9rem; right: 18rem;}
+				icon {position: absolute; top: 9rem; right: 18rem; cursor: pointer; opacity: 1; transition: opacity 0.3s;}
+				icon.close {opacity: 0;}
+				&.active {
+					icon.close {opacity: 1;}
+					icon.find {opacity: 0;}
+				}
 				input {display: block; width: 100%; padding: 6rem; color: @theme_gray_white; box-sizing: border-box; background: @side_bg_dark; border: 0; border-radius: 3rem;}
 			}
 			ul.boards, ul.spaces {margin: 0; padding: 0; list-style: none;}

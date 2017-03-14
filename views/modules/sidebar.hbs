@@ -31,8 +31,9 @@
 	</div>
 
 	<div class="gutter boards">
-		<div class="filter">
-			{{icon 'search'}}
+		<div class="filter {{#if filter_active}}active{{/if}}">
+			{{icon 'search' class="find"}}
+			{{icon 'close' class="close"}}
 			<input name="filter" type="text" placeholder="{{t 'Search for boards'}}">
 		</div>
 		<ul class="boards">
@@ -42,12 +43,14 @@
 					{{icon 'add'}}
 				</a>
 			</li>
-			<li class="board">
-				<a class="go" href="/spaces/{{@root.cur_space.id}}/notes">
-					{{icon 'notes'}}
-					{{t 'All notes'}}
-				</a>
-			</li>
+			{{#unless filter_active}}
+				<li class="board">
+					<a class="go" href="/spaces/{{@root.cur_space.id}}/notes">
+						{{icon 'notes'}}
+						{{t 'All notes'}}
+					</a>
+				</li>
+			{{/unless}}
 			{{#each boards}}
 				<li rel="{{id}}" class="board">
 					<a class="go" href="/spaces/{{@root.cur_space.id}}/boards/{{id}}/notes">
