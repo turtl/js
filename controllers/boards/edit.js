@@ -73,6 +73,8 @@ var BoardsEditController = FormController.extend({
 				turtl.profile.get('boards').upsert(this.model);
 
 				this.trigger('close');
+				var space = turtl.profile.current_space();
+				turtl.route('/spaces/'+space.id()+'/boards/'+this.model.id()+'/notes');
 			})
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', i18next.t('There was a problem updating that board'), err);

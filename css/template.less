@@ -29,8 +29,6 @@ a { text-decoration: none; }
 #app {.transition(left .3s);}
 #main {position: relative; left: 0; z-index: 5; padding: (@header_height + @nav_height) 0 80rem 0; .transition(left 0.3s);}
 body.loggedout #main {padding-top: @header_height;}
-#main > div,
-#tmp-slide > div {padding-top: @page_top_padding;}
 
 @header_pad_top: 4rem;
 @header_adjusted: (@header_height - @header_pad_top);
@@ -42,7 +40,7 @@ header {
 	.title {display: flex; align-items: center; justify-content: flex-start;}
 	// this min-width keeps the logo/title from smashing against each other when the title is shorter. 
 	.title {min-width: 200rem;}
-	a.logo {display: flex; align-items: center; flex-basis: 60rem; width: 60rem; height: 28rem; margin: -1rem 0 0 0;}
+	a.logo {display: flex; align-items: center; flex-basis: 60rem; flex-shrink: 0; width: 60rem; height: 28rem; margin: -1rem 0 0 0;}
 	a.logo {
 		img {position: relative; z-index: 2; max-width: 100%; height: 100%; margin: -1rem 0 0 8rem;}
 		icon {position: relative; z-index: 1; margin: 0rem 0 0 -14rem; font-size: 28.5rem; color: #8fc46a; .transition(margin-left .3s);}
@@ -56,24 +54,21 @@ header {
 		a.logo {display: none;}
 	}
 
-	h1 {width: 70%; display: flex; align-items: center; margin: 0 0 0 0; text-align: left; font-weight: normal; font-size: 1.6em; line-height: 1.2em;}
+	h1 {display: flex; align-items: center; flex-grow: 1; min-width: 100rem; height: @header_height; margin: 0 0 0 0; text-align: left; font-weight: normal; font-size: 1.6em; line-height: 1.2em; .ellipsis();}
 	h1 {
-		em {color: #8fc46a;}
-		em {
-			> span,
-			a {display: flex; flex-wrap: nowrap; align-items: center; max-width: 100%; margin: 0 0 0 -10rem; padding: 7rem 0 7rem 10rem; color: #8fc46a; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}
-			a {
-				icon {vertical-align: -12%; margin-right: 8rem; color: #8fc46a; font-size: 1.4em;}
-				span {display: flex; flex-wrap: nowrap; align-items: center;}
-			}
-			space {display: block; max-width: 90rem; margin: -2rem 6rem 0 0; padding: 2rem 6rem; font-size: 14rem; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-radius: 3rem;}
-			space {
-				&.light {color: #eee;}
-				&.dark {color: @theme_black_bg;}
-			}
+		> span,
+		> a {display: block; max-width: 100%; color: @theme_primary; .ellipsis();}
+		> a {
+			icon {vertical-align: -12%; margin-right: 8rem; color: #8fc46a; font-size: 1.4em;}
+			span {display: flex; flex-wrap: nowrap; align-items: center;}
+		}
+		space {display: block; max-width: 90rem; margin: -2rem 6rem 0 0; padding: 2rem 6rem; font-size: 14rem; cursor: pointer; border-radius: 3rem;}
+		space {
+			&.light {color: #eee;}
+			&.dark {color: @theme_black_bg;}
 		}
 	}
-	ul.actions {top: 0; right: 0; height: @header_height; list-style: none;}
+	ul.actions {display: flex; flex-wrap: nowrap; top: 0; right: 0; height: @header_height; list-style: none;}
 	ul.actions {
 		> li {display: inline-block; min-width: 22rem; height: @header_height; vertical-align: top;}
 		> li {

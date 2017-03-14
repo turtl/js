@@ -211,7 +211,6 @@ var turtl = {
 				.then(function() {
 					setTimeout(turtl.show_loading_screen.bind(null, false), 200);
 					turtl.controllers.pages.release_sub();
-					turtl.controllers.nav = new NavController();
 					var default_space = turtl.user.setting('default_space');
 					var spaces = turtl.profile.get('spaces');
 					var space = default_space ? spaces.get(default_space) : spaces.first();
@@ -290,7 +289,6 @@ var turtl = {
 			$E('body').addClass('loggedout');
 
 			turtl.controllers.pages.release_sub();
-			if(turtl.controllers.nav) turtl.controllers.nav.release();
 			turtl.keyboard.unbind('shift+l');
 			turtl.keyboard.unbind('n', 'shortcut:main:notes');
 			turtl.keyboard.unbind('b', 'shortcut:main:boards');

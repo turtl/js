@@ -26,7 +26,7 @@ var NotesIndexController = Composer.Controller.extend({
 	{
 		if(this.board_id == 'all')
 		{
-			var title = '';
+			var title = i18next.t("All notes");
 			var back = undefined;
 		}
 		else
@@ -41,9 +41,8 @@ var NotesIndexController = Composer.Controller.extend({
 			this.search.boards.push(this.board_id);
 			this.search.boards = this.search.boards.concat();
 
-			var title = '';
+			var title = board.get('title');
 			var back = turtl.router.get_param(window.location.search, 'back');
-			if(!back) back = '/boards';
 		}
 
 		var tagsearch = clone(this.search);

@@ -35,7 +35,6 @@
 		& {width: 640rem; margin-left: auto; margin-right: auto;}
 	}
 }
-@page_top_padding: 16rem;
 
 // -----------------------------------------------------------------------------
 // layering stuff
@@ -60,6 +59,8 @@
 .border-radius (@radius: 2rem) { border-radius: @radius; }
 
 .fixed-fix {-webkit-transform: translateZ(0);}
+
+.ellipsis () {overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}
 
 .title-scrim (@to: bottom, @opacity: .35, @cover: 70%) {
 	background: linear-gradient(to @to, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, @opacity) @cover);

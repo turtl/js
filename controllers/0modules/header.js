@@ -54,15 +54,9 @@ var HeaderController = Composer.Controller.extend({
 		options || (options = {});
 
 		var html = title || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-		if(options.prefix_space)
-		{
-			var space = turtl.profile.current_space();
-			var color = space.get_color();
-			html = '<space class="'+color.txt+'" style="background-color: '+color.bg+';">'+space.get('title')+'</space>'+html;
-		}
 		if(backurl)
 		{
-			html = '<a href="'+ backurl +'" rel="back"><icon>'+icon('back')+'</icon><span>'+ html +'</span></a>';
+			html = '<a href="'+ backurl +'" rel="back"><icon>'+icon('back')+'</icon>'+html+'</a>';
 			this.el.addClass('has-back');
 		}
 		else
@@ -70,7 +64,12 @@ var HeaderController = Composer.Controller.extend({
 			html = '<span>'+html+'</span>';
 			this.el.removeClass('has-back');
 		}
-		var html = '<em>'+html+'</em>';
+		if(options.prefix_space)
+		{
+			var space = turtl.profile.current_space();
+			var color = space.get_color();
+			html = '<space class="'+color.txt+'" style="background-color: '+color.bg+';">'+space.get('title')+'</space>'+html;
+		}
 		var update_title = function() {
 			if(!options.prefix_space) return;
 			this.render_title(title, backurl, options);

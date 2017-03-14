@@ -8,10 +8,6 @@ config.routes = {
 	'/spaces/([0-9a-f]+)/boards': ['boards', 'index'],
 	'/spaces/([0-9a-f]+)/boards/([0-9a-f]+)/notes': ['boards', 'notes'],
 
-	'/boards': ['boards', 'index'],
-	'/boards/([0-9a-f]+)/notes': ['boards', 'notes'],
-	'/boards/share/([0-9a-f]+)': ['boards', 'sharing'],
-
 	'/settings': ['settings', 'index'],
 	'/settings/password': ['settings', 'password'],
 	'/settings/delete-account': ['settings', 'delete_account'],

@@ -13,7 +13,7 @@ var boards = {
 		});
 	},
 
-	notes: function(board_id)
+	notes: function(_space_id, board_id)
 	{
 		var force_reload = false;
 		var page_con = turtl.controllers.pages.get_subcontroller('sub') || {board_id: board_id};

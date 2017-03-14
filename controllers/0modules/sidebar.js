@@ -1,6 +1,12 @@
+// TODO: don't set classes manually. use scoped state tracking and re-render. ex:
+//  - open/close (spaces)
 var SidebarController = Composer.Controller.extend({
 	xdom: true,
 	el: '#sidebar',
+
+	is_open: false,
+	is_spaces_open: false,
+	is_Spaces_zin: false,
 
 	elements: {
 		'> .overlay': 'overlay',
@@ -17,7 +23,8 @@ var SidebarController = Composer.Controller.extend({
 		'click .boards li.add a': 'add_board',
 		'click .boards a.edit': 'edit_board',
 		// close when clicking one of the sidebar links
-		'click ul a': 'close',
+		'click ul.spaces a': 'close_spaces_del',
+		'click ul.boards a': 'close',
 	},
 
 	is_open: false,
@@ -41,7 +48,6 @@ var SidebarController = Composer.Controller.extend({
 			this.boards.refresh();
 			this.render();
 		}.bind(this));
-		this.with_bind(turtl.controllers.pages, 'prerelease', this.close.bind(this));
 		this.with_bind(turtl.events, 'sidebar:toggle', this.toggle.bind(this));
 		this.with_bind(turtl.events, 'app:load:profile-loaded', this.render.bind(this));
 
@@ -82,6 +88,8 @@ var SidebarController = Composer.Controller.extend({
 			spaces: space_data,
 			boards: this.boards.toJSON(),
 			open: this.is_open,
+			spaces_open: this.is_spaces_open,
+			spaces_zin: this.is_spaces_zin,
 			last_sync: (turtl.sync || {}).last_sync,
 			polling: (turtl.sync || {})._polling
 		})).then(function() {
@@ -107,7 +115,7 @@ var SidebarController = Composer.Controller.extend({
 		if(!this.overlay) return;
 		this.is_open = false;
 		this.overlay.setStyles({position: 'fixed'});
-		this.overlay.removeClass('show');
+		this.render();
 		setTimeout(function() {
 			this.overlay.setStyles({position: ''});
 		}.bind(this), 300);
@@ -131,17 +139,25 @@ var SidebarController = Composer.Controller.extend({
 	open_spaces: function(e)
 	{
 		if(e) e.stop();
-		this.el_spaces.addClass('open').addClass('zin');
+		this.is_spaces_open = true;
+		this.is_spaces_zin = true;
+		this.render();
+	},
+
+	close_spaces_del: function(e)
+	{
+		this.is_spaces_open = false;
+		this.render();
+		setTimeout(function() {
+			this.is_spaces_zin = false;
+			this.render();
+		}.bind(this), 250);
 	},
 
 	close_spaces: function(e)
 	{
 		if(e) e.stop();
-		if(!this.el_spaces) return;
-		this.el_spaces.removeClass('open');
-		setTimeout(function() {
-			this.el_spaces.removeClass('zin');
-		}.bind(this), 250);
+		this.close_spaces_del();
 	},
 
 	add_space: function(e)
