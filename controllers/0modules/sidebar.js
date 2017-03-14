@@ -15,6 +15,7 @@ var SidebarController = Composer.Controller.extend({
 		'> .overlay': 'overlay',
 		'> .inner': 'el_inner',
 		'.spaces-container': 'el_spaces',
+		'.boards .filter input[name=filter]': 'inp_filter',
 	},
 
 	events: {
@@ -28,21 +29,35 @@ var SidebarController = Composer.Controller.extend({
 		// close when clicking one of the sidebar links
 		'click ul.spaces a': 'close_spaces_del',
 		'click ul.boards a': 'close',
+		'input .boards .filter input[name=filter]': 'filter_boards',
+		'keyup .boards .filter input[name=filter]': 'filter_boards',
 	},
 
 	is_open: false,
 	boards: null,
+
+	board_filter: null,
 
 	init: function()
 	{
 		this.with_bind(turtl.events, 'app:objects-loaded', function() {
 			this.boards = new BoardsFilter(turtl.profile.get('boards'), {
 				filter: function(b) {
-					return b.get('space_id') == turtl.profile.current_space().id();
+					var is_in_space = b.get('space_id') == turtl.profile.current_space().id();
+					var is_in_filter = this.board_filter ?
+						b.get('title').toLowerCase().indexOf(this.board_filter.toLowerCase()) >= 0 :
+						true;
+					return is_in_space && is_in_filter;
 				}.bind(this),
 			});
+			this.bind('board-filter', function() {
+				this.boards && this.boards.refresh({diff_events: true});
+			}.bind(this));
 			this.with_bind(this.boards, ['add', 'remove', 'change'], this.render.bind(this));
 			this.with_bind(turtl.profile.get('spaces'), ['add', 'remove', 'change'], this.render.bind(this));
+			this.bind('release', function() {
+				this.boards = null;
+			}.bind(this));
 		}.bind(this));
 
 		this.render();
@@ -70,6 +85,8 @@ var SidebarController = Composer.Controller.extend({
 		}, {time: 5000});
 		hammer.on('swipeleft', this.close.bind(this));
 		this.bind('release', hammer.destroy.bind(hammer));
+
+		this.with_bind(turtl.keyboard, 'esc', this.close.bind(this));
 	},
 
 	render: function()
@@ -95,21 +112,10 @@ var SidebarController = Composer.Controller.extend({
 			last_sync: (turtl.sync || {}).last_sync,
 			polling: (turtl.sync || {})._polling
 		})).then(function() {
-			// NOTE: for some reason, the swipe events don't propagate from the
-			// .inner div unless we specifically add them by hand here.
-			if(!this._swipe_hammers) this._swipe_hammers = [];
-			if(this._swipe_hammers.length) {
-				this._swipe_hammers.forEach(function(s) { s.destroy(); });
-				this._swipe_hammers = [];
+			if(get_platform() != 'mobile') {
+				this.inp_filter.focus();
 			}
-			var make_hammer = function(el) {
-				if(!el) return;
-				var hammer = new Hammer.Manager(el);
-				hammer.add(new Hammer.Swipe());
-				this._swipe_hammers.push(hammer);
-			}.bind(this);
-			make_hammer(this.el_inner);
-			make_hammer(this.el_spaces.getElement('.gutter'));
+			this.fix_swiping();
 		}.bind(this))
 	},
 
@@ -234,6 +240,39 @@ var SidebarController = Composer.Controller.extend({
 			model: board,
 		});
 		this.close();
+	},
+
+	filter_boards: function(e)
+	{
+		var filter = this.inp_filter.get('value');
+		if(e.key && e.key == 'esc') {
+			e.stop();
+			// if hitting esc on empty filters, close sidebar
+			if(filter == '') return this.close();
+			filter = null;
+			this.inp_filter.set('value', '');
+		}
+		this.board_filter = filter ? filter : null;
+		this.trigger('board-filter');
+	},
+
+	fix_swiping: function()
+	{
+		// NOTE: for some reason, the swipe events don't propagate from the
+		// .inner div unless we specifically add them by hand here.
+		if(!this._swipe_hammers) this._swipe_hammers = [];
+		if(this._swipe_hammers.length) {
+			this._swipe_hammers.forEach(function(s) { s.destroy(); });
+			this._swipe_hammers = [];
+		}
+		var make_hammer = function(el) {
+			if(!el) return;
+			var hammer = new Hammer.Manager(el);
+			hammer.add(new Hammer.Swipe());
+			this._swipe_hammers.push(hammer);
+		}.bind(this);
+		make_hammer(this.el_inner);
+		make_hammer(this.el_spaces.getElement('.gutter'));
 	},
 });
 
