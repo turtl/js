@@ -7,10 +7,9 @@ var HeaderController = Composer.Controller.extend({
 	},
 
 	events: {
-		'click a.logo': 'toggle_sidebar',
+		'click a.logo, space': 'toggle_sidebar',
 		'click .actions li .item-actions li a': 'fire_menu_action',
 		'click .actions li': 'fire_action',
-		'click span space': 'open_spaces',
 	},
 
 	actions: [],
@@ -159,12 +158,5 @@ var HeaderController = Composer.Controller.extend({
 			this.el.removeClass('notify');
 		}
 	},
-
-	open_spaces: function(e)
-	{
-		var a = Composer.find_parent('h1 em a', e.target);
-		if(a) return;
-		this.toggle_sidebar();
-	}
 });
 
