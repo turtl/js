@@ -149,11 +149,6 @@ var turtl = {
 			connect_barf_id = barfr.barf(i18next.t('Disconnected from the Turtl service. Engaging offline mode. Your changes will be saved and synced once back online!'));
 		});
 
-		turtl.keyboard.bind('?', function() {
-			if(!turtl.user.logged_in) return;
-			//new KeyboardShortcutHelpController();
-		});
-
 		turtl.events.bind('app:localized', function() {
 			turtl.localized = true;
 		});
@@ -231,12 +226,19 @@ var turtl = {
 					if(window.port) window.port.send('profile-load-complete');
 					turtl.events.trigger('app:load:profile-loaded');
 
+					turtl.keyboard.bind('shift+/', function() {
+						new KeyboardShortcutHelpController();
+					}, 'shortcut:main:hellp');
 					turtl.keyboard.bind('n', function() {
 						var space = turtl.profile.current_space();
 						turtl.route('/spaces/'+space.id()+'/notes');
 					}, 'shortcut:main:notes');
 					turtl.keyboard.bind('b', function() {
 						turtl.controllers.sidebar.open();
+					}, 'shortcut:main:boards');
+					turtl.keyboard.bind('s', function() {
+						turtl.controllers.sidebar.open();
+						turtl.controllers.sidebar.open_spaces();
 					}, 'shortcut:main:boards');
 				})
 				.catch(function(err) {

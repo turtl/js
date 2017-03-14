@@ -15,7 +15,8 @@ var SidebarController = Composer.Controller.extend({
 		'> .overlay': 'overlay',
 		'> .inner': 'el_inner',
 		'.spaces-container': 'el_spaces',
-		'.boards .filter input[name=filter]': 'inp_filter',
+		'.spaces .filter input[name=filter]': 'inp_space_filter',
+		'.boards .filter input[name=filter]': 'inp_board_filter',
 	},
 
 	events: {
@@ -26,24 +27,38 @@ var SidebarController = Composer.Controller.extend({
 		'click .spaces a.edit': 'edit_space',
 		'click .boards li.add a': 'add_board',
 		'click .boards a.edit': 'edit_board',
-		// close when clicking one of the sidebar links
 		'click ul.spaces a': 'close_spaces_del',
-		'click ul.boards a': 'close',
+		'input .spaces .filter input[name=filter]': 'filter_spaces',
+		'keyup .spaces .filter input[name=filter]': 'filter_spaces',
+		'click .spaces .filter icon': 'clear_space_filter',
 		'input .boards .filter input[name=filter]': 'filter_boards',
 		'keyup .boards .filter input[name=filter]': 'filter_boards',
 		'click .boards .filter icon': 'clear_board_filter',
 	},
 
 	is_open: false,
+	spaces: null,
 	boards: null,
 
+	space_filter: null,
 	board_filter: null,
+
+	skip_close_on_next_route: false,
 
 	init: function()
 	{
 		this.with_bind(turtl.events, 'app:objects-loaded', function() {
+			this.spaces = new Composer.FilterCollection(turtl.profile.get('spaces'), {
+				filter: function(b) {
+					var is_in_filter = this.space_filter ?
+						b.get('title').toLowerCase().indexOf(this.space_filter.toLowerCase()) >= 0 :
+						true;
+					return is_in_filter;
+				}.bind(this),
+			});
 			this.boards = new BoardsFilter(turtl.profile.get('boards'), {
 				filter: function(b) {
+					if(!turtl.profile) return false;
 					var is_in_space = b.get('space_id') == turtl.profile.current_space().id();
 					var is_in_filter = this.board_filter ?
 						b.get('title').toLowerCase().indexOf(this.board_filter.toLowerCase()) >= 0 :
@@ -51,13 +66,20 @@ var SidebarController = Composer.Controller.extend({
 					return is_in_space && is_in_filter;
 				}.bind(this),
 			});
+			this.bind('space-filter', function() {
+				this.spaces && this.spaces.refresh({diff_events: true});
+				this.render();
+			}.bind(this));
 			this.bind('board-filter', function() {
 				this.boards && this.boards.refresh({diff_events: true});
 				this.render();
 			}.bind(this));
 			this.with_bind(this.boards, ['add', 'remove', 'change'], this.render.bind(this));
-			this.with_bind(turtl.profile.get('spaces'), ['add', 'remove', 'change'], this.render.bind(this));
+			this.with_bind(this.spaces, ['add', 'remove', 'change'], this.render.bind(this));
 			this.bind('release', function() {
+				this.spaces.detach();
+				this.boards.detach();
+				this.spaces = null;
 				this.boards = null;
 			}.bind(this));
 		}.bind(this));
@@ -89,6 +111,12 @@ var SidebarController = Composer.Controller.extend({
 		this.bind('release', hammer.destroy.bind(hammer));
 
 		this.with_bind(turtl.keyboard, 'esc', this.close.bind(this));
+
+		// close when switching pages, UNLESS we specifically ask not to
+		this.with_bind(turtl.controllers.pages, 'prerelease', function() {
+			if(!this.skip_close_on_next_route) this.close();
+			this.skip_close_on_next_route = false;
+		}.bind(this), 'pages:close-on-page');
 	},
 
 	render: function()
@@ -96,7 +124,7 @@ var SidebarController = Composer.Controller.extend({
 		if(!this.boards) return;
 		if(!turtl.profile) return;
 		var current_space = turtl.profile.current_space();
-		var spaces = turtl.profile.get('spaces');
+		var spaces = this.spaces;
 		var space_data = spaces.toJSON()
 			.map(function(space) { 
 				if(space.id == current_space.id()) space.current = true;
@@ -113,7 +141,8 @@ var SidebarController = Composer.Controller.extend({
 			space_state: this.space_state,
 			last_sync: (turtl.sync || {}).last_sync,
 			polling: (turtl.sync || {})._polling,
-			filter_active: !!this.board_filter,
+			space_filter_active: !!this.space_filter,
+			board_filter_active: !!this.board_filter,
 		})).then(function() {
 			this.fix_swiping();
 		}.bind(this))
@@ -122,13 +151,10 @@ var SidebarController = Composer.Controller.extend({
 	open: function()
 	{
 		this.is_open = true;
-		//this.clear_board_filter();
 		document.body.addClass('settings');
 		setTimeout(this.render.bind(this), 10);
 		turtl.events.trigger('sidebar:open');
-		setTimeout(function() {
-			if(get_platform() != 'mobile') this.inp_filter.focus();
-		}.bind(this), 100);
+		this.focus_if(this.inp_board_filter);
 	},
 
 	close: function()
@@ -143,8 +169,12 @@ var SidebarController = Composer.Controller.extend({
 		}.bind(this), 300);
 		document.body.removeClass('settings');
 		turtl.events.trigger('sidebar:close');
+		this.clear_space_filter();
 		this.clear_board_filter();
-		this.inp_filter.blur();
+		setTimeout(function() {
+			this.inp_space_filter.blur();
+			this.inp_board_filter.blur();
+		}.bind(this));
 	},
 
 	toggle: function()
@@ -181,11 +211,19 @@ var SidebarController = Composer.Controller.extend({
 				this.render();
 			}.bind(this), 300);
 		}
-		this.render();
+		this.render()
+			.bind(this)
+			.then(function() {
+				setTimeout(function() {
+					if(get_platform() != 'mobile') this.inp_space_filter.focus();
+				}.bind(this), 100);
+			});
 	},
 
 	close_spaces_del: function(e)
 	{
+		if(!this.el_spaces) return;
+		this.skip_close_on_next_route = true;
 		this.space_state.open = false;
 		var spaces_height = this.el_spaces.getElement('>.gutter').getCoordinates().height;
 		var delay_scroll = spaces_height > window.getHeight();
@@ -196,6 +234,9 @@ var SidebarController = Composer.Controller.extend({
 			if(delay_scroll) this.space_state.scroll = false;
 			this.render();
 		}.bind(this), 300);
+		this.clear_space_filter();
+		this.inp_space_filter.blur();
+		this.focus_if(this.inp_board_filter, {delay: 0});
 	},
 
 	close_spaces: function(e)
@@ -208,7 +249,6 @@ var SidebarController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		new SpacesEditController();
-		this.close();
 	},
 
 	edit_space: function(e)
@@ -222,7 +262,6 @@ var SidebarController = Composer.Controller.extend({
 		new SpacesEditController({
 			model: space,
 		});
-		this.close();
 	},
 
 	add_board: function(e)
@@ -231,7 +270,6 @@ var SidebarController = Composer.Controller.extend({
 		new BoardsEditController({
 			model: new Board({space_id: turtl.profile.current_space().id()}),
 		});
-		this.close();
 	},
 
 	edit_board: function(e)
@@ -245,12 +283,38 @@ var SidebarController = Composer.Controller.extend({
 		new BoardsEditController({
 			model: board,
 		});
-		this.close();
+	},
+
+	filter_spaces: function(e)
+	{
+		var filter = this.inp_space_filter.get('value');
+		if(e) {
+			if(e.key == 'enter') {
+				var space_a = this.el.getElement('ul.spaces li a.go');
+				if(space_a) space_a.click();
+				return;
+			}
+			if(e.key == 'esc') {
+				e.stop();
+				// if hitting esc on empty filters, close sidebar
+				if(filter == '') return this.close();
+				filter = null;
+				this.inp_space_filter.set('value', '');
+			}
+		}
+		this.space_filter = filter ? filter : null;
+		this.trigger('space-filter');
+	},
+
+	clear_space_filter: function(e)
+	{
+		this.inp_space_filter.set('value', '');
+		this.filter_spaces();
 	},
 
 	filter_boards: function(e)
 	{
-		var filter = this.inp_filter.get('value');
+		var filter = this.inp_board_filter.get('value');
 		if(e) {
 			if(e.key == 'enter') {
 				var board_a = this.el.getElement('ul.boards li a.go');
@@ -262,7 +326,7 @@ var SidebarController = Composer.Controller.extend({
 				// if hitting esc on empty filters, close sidebar
 				if(filter == '') return this.close();
 				filter = null;
-				this.inp_filter.set('value', '');
+				this.inp_board_filter.set('value', '');
 			}
 		}
 		this.board_filter = filter ? filter : null;
@@ -271,7 +335,7 @@ var SidebarController = Composer.Controller.extend({
 
 	clear_board_filter: function(e)
 	{
-		this.inp_filter.set('value', '');
+		this.inp_board_filter.set('value', '');
 		this.filter_boards();
 	},
 
@@ -292,6 +356,18 @@ var SidebarController = Composer.Controller.extend({
 		}.bind(this);
 		make_hammer(this.el_inner);
 		make_hammer(this.el_spaces.getElement('.gutter'));
+	},
+
+	focus_if: function(el, options)
+	{
+		options || (options = {});
+
+		if(get_platform() == 'mobile') return;
+		if(options.delay === undefined) {
+			setTimeout(function() { el.focus(); }.bind(this), 100);
+		} else {
+			el.focus();
+		}
 	},
 });
 

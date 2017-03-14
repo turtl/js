@@ -13,6 +13,11 @@
 				{{t 'Your spaces'}}
 				<a href="#close">{{icon 'close'}}</a>
 			</h2>
+			<div class="filter {{#if space_filter_active}}active{{/if}}">
+				{{icon 'search' class="find"}}
+				{{icon 'close' class="close"}}
+				<input name="filter" type="text" placeholder="{{t 'Search for spaces'}}">
+			</div>
 			<ul class="spaces">
 				<li class="add">
 					<a href="/spaces/add">
@@ -22,7 +27,7 @@
 				</li>
 				{{#each spaces}}
 					<li rel="{{id}}" class="space">
-						<a href="/spaces/{{id}}/notes" {{#if color}}style="border-color: {{color.bg}};"{{/if}}>{{title}}</a>
+						<a class="go" href="/spaces/{{id}}/notes" {{#if color}}style="border-color: {{color.bg}};"{{/if}}>{{title}}</a>
 						<a class="edit" href="/spaces/edit/{{id}}">{{icon 'account'}}</a>
 					</li>
 				{{/each}}
@@ -31,7 +36,7 @@
 	</div>
 
 	<div class="gutter boards">
-		<div class="filter {{#if filter_active}}active{{/if}}">
+		<div class="filter {{#if board_filter_active}}active{{/if}}">
 			{{icon 'search' class="find"}}
 			{{icon 'close' class="close"}}
 			<input name="filter" type="text" placeholder="{{t 'Search for boards'}}">
@@ -43,7 +48,7 @@
 					{{icon 'add'}}
 				</a>
 			</li>
-			{{#unless filter_active}}
+			{{#unless board_filter_active}}
 				<li class="board">
 					<a class="go" href="/spaces/{{@root.cur_space.id}}/notes">
 						{{icon 'notes'}}
