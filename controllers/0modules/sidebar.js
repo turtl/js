@@ -97,9 +97,19 @@ var SidebarController = Composer.Controller.extend({
 		})).then(function() {
 			// NOTE: for some reason, the swipe events don't propagate from the
 			// .inner div unless we specifically add them by hand here.
-			if(this._swipe_hammer) this._swipe_hammer.destroy();
-			this._swipe_hammer = new Hammer.Manager(this.el_inner);
-			this._swipe_hammer.add(new Hammer.Swipe());
+			if(!this._swipe_hammers) this._swipe_hammers = [];
+			if(this._swipe_hammers.length) {
+				this._swipe_hammers.forEach(function(s) { s.destroy(); });
+				this._swipe_hammers = [];
+			}
+			var make_hammer = function(el) {
+				if(!el) return;
+				var hammer = new Hammer.Manager(el);
+				hammer.add(new Hammer.Swipe());
+				this._swipe_hammers.push(hammer);
+			}.bind(this);
+			make_hammer(this.el_inner);
+			make_hammer(this.el_spaces.getElement('.gutter'));
 		}.bind(this))
 	},
 
@@ -143,22 +153,37 @@ var SidebarController = Composer.Controller.extend({
 		if(e) e.stop();
 		this.space_state.open = true;
 		this.space_state.zin = true;
-		this.render();
-		setTimeout(function() {
+
+		// apply the "Scroll" class pre-emptively if our space content is going
+		// to be larger than the window vertically. otherwise, apply it after
+		// the space container expands fully.
+		//
+		// the purpose of all this is to eliminate the scrollbar flashing and
+		// disappearing when opening/closing the spaces menu.
+		var spaces_height = this.el_spaces.getElement('>.gutter').getCoordinates().height;
+		if(spaces_height > window.getHeight()) {
 			this.space_state.scroll = true;
-			this.render();
-		}.bind(this), 300);
+		} else {
+			setTimeout(function() {
+				this.space_state.scroll = true;
+				this.render();
+			}.bind(this), 300);
+		}
+		this.render();
 	},
 
 	close_spaces_del: function(e)
 	{
 		this.space_state.open = false;
-		this.space_state.scroll = false;
+		var spaces_height = this.el_spaces.getElement('>.gutter').getCoordinates().height;
+		var delay_scroll = spaces_height > window.getHeight();
+		if(!delay_scroll) this.space_state.scroll = false;
 		this.render();
 		setTimeout(function() {
 			this.space_state.zin = false;
+			if(delay_scroll) this.space_state.scroll = false;
 			this.render();
-		}.bind(this), 250);
+		}.bind(this), 300);
 	},
 
 	close_spaces: function(e)
@@ -170,7 +195,8 @@ var SidebarController = Composer.Controller.extend({
 	add_space: function(e)
 	{
 		if(e) e.stop();
-		return new SpacesEditController();
+		new SpacesEditController();
+		this.close();
 	},
 
 	edit_space: function(e)
@@ -181,17 +207,19 @@ var SidebarController = Composer.Controller.extend({
 		var space_id = li.get('rel');
 		if(!space_id) return;
 		var space = turtl.profile.get('spaces').get(space_id);
-		return new SpacesEditController({
+		new SpacesEditController({
 			model: space,
 		});
+		this.close();
 	},
 
 	add_board: function(e)
 	{
 		if(e) e.stop();
-		return new BoardsEditController({
+		new BoardsEditController({
 			model: new Board({space_id: turtl.profile.current_space().id()}),
 		});
+		this.close();
 	},
 
 	edit_board: function(e)
@@ -202,9 +230,10 @@ var SidebarController = Composer.Controller.extend({
 		var board_id = li.get('rel');
 		if(!board_id) return;
 		var board = turtl.profile.get('boards').get(board_id);
-		return new BoardsEditController({
+		new BoardsEditController({
 			model: board,
 		});
+		this.close();
 	},
 });
 
