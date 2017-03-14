@@ -5,8 +5,11 @@ var SidebarController = Composer.Controller.extend({
 	el: '#sidebar',
 
 	is_open: false,
-	is_spaces_open: false,
-	is_Spaces_zin: false,
+	space_state: {
+		open: false,
+		zin: false,
+		scroll: false,
+	},
 
 	elements: {
 		'> .overlay': 'overlay',
@@ -88,8 +91,7 @@ var SidebarController = Composer.Controller.extend({
 			spaces: space_data,
 			boards: this.boards.toJSON(),
 			open: this.is_open,
-			spaces_open: this.is_spaces_open,
-			spaces_zin: this.is_spaces_zin,
+			space_state: this.space_state,
 			last_sync: (turtl.sync || {}).last_sync,
 			polling: (turtl.sync || {})._polling
 		})).then(function() {
@@ -139,17 +141,22 @@ var SidebarController = Composer.Controller.extend({
 	open_spaces: function(e)
 	{
 		if(e) e.stop();
-		this.is_spaces_open = true;
-		this.is_spaces_zin = true;
+		this.space_state.open = true;
+		this.space_state.zin = true;
 		this.render();
+		setTimeout(function() {
+			this.space_state.scroll = true;
+			this.render();
+		}.bind(this), 300);
 	},
 
 	close_spaces_del: function(e)
 	{
-		this.is_spaces_open = false;
+		this.space_state.open = false;
+		this.space_state.scroll = false;
 		this.render();
 		setTimeout(function() {
-			this.is_spaces_zin = false;
+			this.space_state.zin = false;
 			this.render();
 		}.bind(this), 250);
 	},
