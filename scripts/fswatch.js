@@ -54,6 +54,7 @@ function main() {
 		ignoreInitial: true,
 	};
 	console.log('Start fs monitor');
+	do_make();
 	chokidar.watch('.', options)
 		.on('all', function(ev, path) {
 			console.log('fs: ', ev, path);
