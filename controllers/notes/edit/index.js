@@ -48,15 +48,18 @@ var NotesEditController = FormController.extend({
 
 	init: function()
 	{
-		if(this.board_id == 'all') this.board_id = null;
-
 		if(!(this.confirm_unsaved === true || this.confirm_unsaved === false))
 		{
 			this.confirm_unsaved = config.confirm_unsaved;
 		}
 
+		var board_id = this.board_id || turtl.param_router.get().board_id;
+		if(!board_id) {
+			var space = turtl.profile.current_space();
+			board_id = space.setting('last_board_used_for_edit');
+		}
 		if(!this.model) this.model = new Note({
-			boards: (this.board_id ? [this.board_id] : []),
+			board_id: board_id,
 			type: this.type || 'text'
 		});
 		this.clone = this.model.clone();
