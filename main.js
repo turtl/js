@@ -62,6 +62,7 @@ var turtl = {
 
 	// some general libs we use
 	router: null,
+	param_router: new ParamRouter(),
 	api: null,
 	back: null,
 
@@ -120,6 +121,8 @@ var turtl = {
 
 		turtl.overlay = new TurtlOverlay();
 
+		config.routes = turtl.param_router.parse_routes(config.routes);
+
 		var initial_route = window.location.pathname;
 		turtl.setup_user({initial_route: initial_route});
 
@@ -154,9 +157,7 @@ var turtl = {
 		});
 		var space_grabber = /\/spaces\/([0-9a-f]+)\/.*/;
 		turtl.controllers.pages.bind('prerelease', function() {
-			var path = turtl.router.cur_path();
-			if(!path.match(space_grabber)) return;
-			var space_id = path.replace(space_grabber, '$1');
+			var space_id = turtl.param_router.get().space_id;
 			if(!space_id) return;
 			if(!turtl.profile) return;
 			turtl.profile.set_current_space(space_id);
@@ -468,6 +469,9 @@ var turtl = {
 			filter_trailing_slash: true,
 			selector: 'a:not([href^=#])'
 		});
+
+		// parameterize our routes.
+		turtl.param_router.set_router(turtl.router);
 
 		// catch ALL #hash links and stop them in their tracks. this fixes a bug
 		// in NWJS v0.15.x where setting the window location to a hash crashes
