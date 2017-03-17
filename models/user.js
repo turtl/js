@@ -324,6 +324,18 @@ var User = Protected.extend({
 		settings[key] = val;
 		this.set({settings: settings});
 	},
+
+	delete_setting: function(keyspec)
+	{
+		if(!keyspec) return;
+		var settings = clone(this.get('settings') || {});
+
+		var re = new RegExp('^'+keyspec.replace(/\*/g, '.*?')+'$');
+		Object.keys(settings).forEach(function(key) {
+			if(key.match(re)) delete settings[key];
+		});
+		this.set({settings: settings});
+	},
 });
 
 // we don't actually use this collection for anything but syncing
