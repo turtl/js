@@ -111,6 +111,9 @@ var Profile = Composer.RelationalModel.extend({
 				return this.load_deserialized();
 			})
 			.then(function() {
+				return turtl.user.deserialize();
+			})
+			.then(function() {
 				turtl.sync.save();
 			})
 			.then(function() {
