@@ -13,8 +13,9 @@ var boards = {
 		});
 	},
 
-	notes: function(_space_id, board_id)
+	notes: function()
 	{
+		var board_id = turtl.param_router.get().board_id;
 		var force_reload = false;
 		var page_con = turtl.controllers.pages.get_subcontroller('sub') || {board_id: board_id};
 		if(page_con.board_id != board_id) force_reload = true;
