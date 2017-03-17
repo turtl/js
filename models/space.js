@@ -16,6 +16,12 @@ var Space = Protected.extend({
 	{
 		this.parent.apply(this, arguments);
 
+		// make sure we remove any space-specific settings when a space is
+		// destroyed
+		this.bind('destroy', function() {
+			if(!turtl.user) return;
+			turtl.user.delete_setting('spaces:'+this.id()+':*');
+		}.bind(this));
 		// make sure the current space gets updated properly when destroyed
 		this.bind('destroy', function() {
 			if(!turtl.profile) return;
@@ -164,6 +170,11 @@ var Space = Protected.extend({
 		var txt_shade = avg < 140 ? 'light' : 'dark';
 		return {bg: color, txt: txt_shade};
 	},
+
+	setting: function(key, val)
+	{
+		return turtl.user.setting('spaces:'+this.id()+':'+key, val);
+	}
 });
 
 var Spaces = SyncCollection.extend({
