@@ -227,6 +227,18 @@ var Note = Protected.extend({
 
 	get_key_search: function()
 	{
+		var space_ids = [this.get('space_id')];
+		// also look in keys for space ids. they really shouldn't be in here if
+		// not in note.spaces, but it's much better to find a key and be wrong
+		// than to have a note you cannot decrypt and be right.
+		this.get('keys').each(function(key) {
+			var space_id = key.get('b');
+			if(space_id && space_ids.indexOf(space_id) < 0)
+			{
+				space_ids.push(space_id);
+			}
+		});
+
 		var board_ids = [this.get('board_id')];
 		// also look in keys for board ids. they really shouldn't be in here if
 		// not in note.boards, but it's much better to find a key and be wrong
@@ -240,7 +252,12 @@ var Note = Protected.extend({
 		});
 
 		var search = new Keychain();
-		var keychain = turtl.profile.get('keychain');
+		var spaces = turtl.profile.get('spaces');
+		space_ids.forEach(function(space_id) {
+			var space = spaces.get(space_id);
+			if(!space) return;
+			search.upsert_key(space.id(), 'space', space.key, {skip_save: true});
+		});
 		var boards = turtl.profile.get('boards');
 		board_ids.forEach(function(board_id) {
 			var board = boards.get(board_id);
@@ -313,78 +330,5 @@ var Notes = SyncCollection.extend({
 				this.upsert(note, options);
 			});
 	},
-
-	/**
-	 * we need a version of this function that correctly sniffs out the proper
-	 * action on "edit" when dealing with a shared note.
-	 *
-	 * for isntance, if a note is edited, and it's shared by someone else, and
-	 * the note no longer contains in its keys any of the boards we have in data
-	 * then the note was essentially "unshared" from us.
-	 *
-	 * conversely if a note is edited, and it's shared, and it does NOT exist in
-	 * data currently, we should add (upsert) it because it was moved into one
-	 * of our boards
-	 */
-	run_incoming_sync_item: function(sync, item)
-	{
-		var promise = false;
-		if(sync.action == 'edit' && item.shared)
-		{
-			var board_ids = turtl.profile.get('boards').map(function(b) { return b.id(); });
-			var board_idx = make_index(board_ids);
-			// determine if the model is any in-mem boards
-			var in_board = false;
-			(item.boards || []).forEach(function(b) { in_board = board_idx[b]; });
-			var model = this.get(item.id);
-			if(model)
-			{
-				// ok, we have an existing in-mem model. if it's in any in-mem
-				// boards, matches, then upsert the data. if it isn't a member
-				// of any in-mem boards, then the only thing that's left is that
-				// is was edited to be removed from the board in question and
-				// should be destroyed locally
-				if(in_board)
-				{
-					var temp = new this.model(item);
-					promise = temp.deserialize().bind(this)
-						.then(function() {
-							model.set(temp.toJSON());
-						});
-				}
-				else
-				{
-					promise = model.destroy({skip_remote_sync: true});
-				}
-			}
-			else
-			{
-				model = new this.model(item);
-				promise = model.deserialize().bind(this)
-					.then(function() {
-						// yes, upsert.
-						// see SyncCollection.run_incoming_sync (models/_sync.js)
-						// if you REALLLLLYY need a full sexplanation
-						this.upsert(model);
-					})
-					// check if we have a file attached to this new (shared) note.
-					// if so, create a dummy file record and then trigger the
-					// download
-					.tap(function() {
-						var file_id = model.get('file').id(true);
-						if(!file_id) return;
-
-						var file = new FileData({id: file_id, note_id: model.id()});
-						return file.save({skip_serialize: true, skip_remote_sync: true})
-							.then(function() {
-								var filejob = {id: file_id};
-								return turtl.hustle.Queue.put(filejob, {tube: 'files:download', ttr: 300});
-							});
-					});
-			}
-			if(promise) return promise;
-		}
-		return this.parent.apply(this, arguments);
-	}
 });
 
