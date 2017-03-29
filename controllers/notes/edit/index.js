@@ -16,7 +16,6 @@ var NotesEditController = FormController.extend({
 	},
 
 	events: {
-		'click .note-boards': 'open_boards',
 		'click ul.colors li': 'switch_color',
 		'click .button-row ul a[rel=tag]': 'open_tags',
 		'click .button-row .desc': 'open_tags',
@@ -404,15 +403,6 @@ var NotesEditController = FormController.extend({
 			}
 		}
 		this.clone.set({color: color});
-	},
-
-	open_boards: function(e)
-	{
-		if(e) e.stop();
-		new NotesEditBoardsController({
-			model: this.clone,
-			modal_opts: this.modal_opts
-		});
 	},
 
 	open_tags: function(e)

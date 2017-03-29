@@ -62,8 +62,8 @@ var NotesEditTagsController = FormController.extend({
 
 	load_suggested_tags: function()
 	{
-		var boards = this.clone.get('boards') || [];
-		return turtl.search.search({boards: boards}).bind(this)
+		var board_id = this.clone.get('board_id');
+		return turtl.search.search({board: board_id}).bind(this)
 			.spread(function(_, suggested_tags) {
 				var mtags = this.clone.get('tags');
 				suggested_tags = suggested_tags
