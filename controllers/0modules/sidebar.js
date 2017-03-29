@@ -230,6 +230,7 @@ var SidebarController = Composer.Controller.extend({
 		if(!delay_scroll) this.space_state.scroll = false;
 		this.render();
 		setTimeout(function() {
+			this.skip_close_on_next_route = false;
 			this.space_state.zin = false;
 			if(delay_scroll) this.space_state.scroll = false;
 			this.render();
@@ -318,7 +319,15 @@ var SidebarController = Composer.Controller.extend({
 		if(e) {
 			if(e.key == 'enter') {
 				var board_a = this.el.getElement('ul.boards li a.go');
-				if(board_a) board_a.click();
+				if(board_a) {
+					var li = Composer.find_parent('li.board', board_a);
+					var bid = li && li.get('rel');
+					if(turtl.param_router.get().board_id == bid) {
+						this.close();
+					} else {
+						board_a.click();
+					}
+				}
 				return;
 			}
 			if(e.key == 'esc') {

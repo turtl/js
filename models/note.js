@@ -8,8 +8,9 @@ var Note = Protected.extend({
 
 	public_fields: [
 		'id',
+		'space_id',
+		'board_id',
 		'user_id',
-		'boards',
 		'file',
 		'has_file',
 		'keys',
@@ -83,8 +84,14 @@ var Note = Protected.extend({
 
 		this.set({user_id: turtl.user.id()}, options);
 
-		var board_id = this.get('board_id');
 		var subkeys = [];
+
+		var space_id = this.get('space_id');
+		var space = turtl.profile.get('spaces').get(space_id);
+		if(!space) throw new Error('Note.update_keys() -- bad space id: '+space_id);
+		subkeys.push({s: space.id(), k: space.key});
+
+		var board_id = this.get('board_id');
 		var board = turtl.profile.get('boards').get(board_id);
 		if(board) subkeys.push({b: board.id(), k: board.key});
 

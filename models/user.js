@@ -24,6 +24,9 @@ var User = Protected.extend({
 		this.logged_in = false;
 
 		// whenever the user settings change, automatically save them (encrypted).
+		this.bind('change:settings', function() {
+			console.trace('change settings');
+		});
 		this.bind('change:settings', this.save_settings.bind(this), 'user:save_settings');
 	},
 

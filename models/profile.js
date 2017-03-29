@@ -111,7 +111,7 @@ var Profile = Composer.RelationalModel.extend({
 				return this.load_deserialized();
 			})
 			.then(function() {
-				return turtl.user.deserialize();
+				return turtl.user.deserialize({silent: true});
 			})
 			.then(function() {
 				turtl.sync.save();
@@ -295,6 +295,14 @@ var Profile = Composer.RelationalModel.extend({
 		}
 		this.current_space_id = space_id;
 		turtl.events.trigger('profile:set-current-space');
+	},
+
+	space_boards: function()
+	{
+		var space_id = this.current_space().id();
+		return turtl.profile.get('boards').filter(function(b) {
+			return b.get('space_id') == space_id;
+		});
 	},
 });
 

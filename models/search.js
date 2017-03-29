@@ -13,8 +13,8 @@ var Search = Composer.Collection.extend({
 	// tag_id -> note_id index
 	index: {
 		tags: {},
-		spaces: {},
-		boards: {},
+		space: {},
+		board: {},
 		colors: {},
 		all_notes: {},
 		note_tags: {},
@@ -160,17 +160,16 @@ var Search = Composer.Collection.extend({
 				var val = search[index];
 				if(!val) continue;
 				if(res && res.length == 0) break;
-				var lookup_options = {};
 				switch(index)
 				{
 					case 'text':
 						res_intersect(this.ft.search(val).map(function(r) { return r.ref; }));
 						break;
-					case 'boards':
-						lookup_options.or = true;
-						// NO BREAK
+					case 'board':
+					case 'space':
+						val = [val];
 					case 'tags':
-						res_intersect(this.index_lookup(res, index, val, lookup_options));
+						res_intersect(this.index_lookup(res, index, val));
 						break;
 					case 'colors':
 						res_intersect(this.index_lookup(res, 'colors', val, {or: true}));
@@ -219,7 +218,7 @@ var Search = Composer.Collection.extend({
 
 	index_lookup_and: function(res, index, vals)
 	{
-		// loop over all values passed for this index type and interset the
+		// loop over all values passed for this index type and intersext the
 		// corresponding values.
 		//
 		// for now, there is ONLY an intersection (ie AND) search type, no
@@ -364,8 +363,8 @@ var Search = Composer.Collection.extend({
 		(note.get('tags') || []).each(function(tag) {
 			this.index_type('tags', tag.get('name'), note.id());
 		}.bind(this));
-		this.index_type('boards', note.get('board_id'), note.id());
-		this.index_type('spaces', note.get('space_id'), note.id());
+		this.index_type('board', note.get('board_id'), note.id());
+		this.index_type('space', note.get('space_id'), note.id());
 
 		var color = note.get('color');
 		this.index_type('colors', color, note.id());
@@ -416,8 +415,8 @@ var Search = Composer.Collection.extend({
 		(json.tags || []).each(function(tag) {
 			this.unindex_type('tags', tag, id);
 		}.bind(this));
-		this.unindex_type('boards', json.board_id, id);
-		this.unindex_type('spaces', json.space_id, id);
+		this.unindex_type('board', json.board_id, id);
+		this.unindex_type('space', json.space_id, id);
 
 		var color = json.color;
 		this.unindex_type('colors', color, id);
@@ -457,7 +456,7 @@ var Search = Composer.Collection.extend({
 
 	index_space: function(space)
 	{
-		if(!this.index.spaces[space.id()]) this.index.spaces[space.id()] = [];
+		if(!this.index.space[space.id()]) this.index.space[space.id()] = [];
 	},
 
 	unindex_space: function(space, options)
@@ -466,7 +465,7 @@ var Search = Composer.Collection.extend({
 
 		if(options.full)
 		{
-			delete this.index.spaces[space.id()];
+			delete this.index.space[space.id()];
 		}
 	},
 
@@ -478,7 +477,7 @@ var Search = Composer.Collection.extend({
 
 	index_board: function(board)
 	{
-		if(!this.index.boards[board.id()]) this.index.boards[board.id()] = [];
+		if(!this.index.board[board.id()]) this.index.board[board.id()] = [];
 	},
 
 	unindex_board: function(board, options)
@@ -487,7 +486,7 @@ var Search = Composer.Collection.extend({
 
 		if(options.full)
 		{
-			delete this.index.boards[board.id()];
+			delete this.index.board[board.id()];
 		}
 	},
 
@@ -499,6 +498,7 @@ var Search = Composer.Collection.extend({
 
 	index_type: function(type, index_id, item_id)
 	{
+		if(index_id === null || index_id === undefined) return;
 		if(typeOf(this.index[type][index_id]) != 'array')
 		{
 			this.index[type][index_id] = [];

@@ -1,3 +1,14 @@
+{{#if show_board_selector}}
+	<div class="board">
+		<select name="board_id">
+			<option value="">{{t 'Select a board'}}</option>
+			{{#each boards}}
+				<option value="{{id}}" {{#equal @root.note.board_id id}}selected{{/equal}}>{{title}}</option>
+			{{/each}}
+		</select>
+	</div>
+{{/if}}
+
 {{#equal-or type 'file' 'image'}}
 	<div class="file-container"></div>
 	{{#equal type 'image'}}
@@ -22,8 +33,6 @@
 <div class="formatting clear">
 	<a href="#formatting" rel="formatting">{{t 'Formatting help'}}</a>
 </div>
-
-<div class="boards-container"></div>
 
 {{!--	Disable colors for now ='[
 <ul class="colors">

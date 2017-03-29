@@ -202,6 +202,7 @@ var Protected = Composer.RelationalModel.extend({
 		return Promise.all(Object.keys(this.relations).map(function(key) {
 			var rel = this.get(key);
 			if(!rel) return false;
+			if(rel.has_body && !rel.has_body()) return false;
 			if(!this.public_fields.contains(key)) return false;
 			if(key == 'keys') return false;
 
@@ -300,7 +301,8 @@ var Protected = Composer.RelationalModel.extend({
 		log.trace('find_key: init: ', options);
 
 		// first, check the keychain
-		var key = turtl.profile.get('keychain').find_key(this.id());
+		var keychain = turtl.profile.get('keychain');
+		var key = keychain.find_key(this.id());
 		log.trace('find_key: ', key ? 'found in keychain' : 'not in keychain, searching');
 		if(key) return key;
 
@@ -330,13 +332,15 @@ var Protected = Composer.RelationalModel.extend({
 			var item_id = keyentry[type_key];
 			log.trace('find_key: search item ', type_key, item_id);
 			if(!item_id) continue;
-			var key = search.find_key(item_id);
+			// check the custom search first, if that fails, check the keychain
+			var key = search.find_key(item_id) || keychain.find_key(item_id);
 			if(!key) continue;
 			log.trace('find_key: found matching key from', type_key, item_id);
 			var decrypted_key = this.decrypt_key(key, encrypted_key);
 			if(!decrypted_key) continue;
 			break;
 		}
+		if(!decrypted_key) console.log('XXX');
 		return decrypted_key || false;
 	},
 
@@ -415,7 +419,13 @@ var Protected = Composer.RelationalModel.extend({
 			err instanceof ProtectedNoKeyFoundError ||
 			err instanceof TcryptError;
 		return crypto_error;
-	}
+	},
+
+
+	has_body: function()
+	{
+		return !!this.get(this.body_key);
+	},
 });
 
 var ProtectedShared = Protected.extend({

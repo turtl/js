@@ -5,10 +5,10 @@ var NotesIndexController = Composer.Controller.extend({
 		'> .notes': 'note_list'
 	},
 
-	board: null,
 	search: {
 		text: '',
-		boards: [],
+		space: null,
+		board: null,
 		tags: [],
 		sort: NOTE_DEFAULT_SORT,
 		page: 1,
@@ -24,7 +24,8 @@ var NotesIndexController = Composer.Controller.extend({
 
 	init: function()
 	{
-		if(this.board_id == 'all')
+		this.search.space = turtl.param_router.get().space_id;
+		if(this.board_id == 'all' || !this.board_id)
 		{
 			var title = i18next.t("All notes");
 			var back = undefined;
@@ -38,8 +39,7 @@ var NotesIndexController = Composer.Controller.extend({
 				log.error('notes: index: bad board id: ', this.board_id);
 				window.history.go(-1);
 			}
-			this.search.boards.push(this.board_id);
-			this.search.boards = this.search.boards.concat();
+			this.search.board = this.board_id;
 
 			var title = board.get('title');
 			var back = turtl.router.get_param(window.location.search, 'back');
@@ -140,7 +140,7 @@ var NotesIndexController = Composer.Controller.extend({
 	{
 		new NotesEditController({
 			type: type,
-			board_id: this.board_id
+			board_id: turtl.param_router.get().board_id,
 		});
 	},
 

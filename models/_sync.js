@@ -96,6 +96,14 @@ var Sync = Composer.Model.extend({
 	},
 
 	/**
+	 * grab all pending (outgoing) sync items
+	 */
+	get_unsynced: function()
+	{
+		return turtl.db.sync_outgoing.query().all().execute();
+	},
+
+	/**
 	 * setup up a name -> collection maping that takes changes from the database
 	 * and syncs them to the respective in-mem data
 	 */
@@ -200,7 +208,7 @@ var Sync = Composer.Model.extend({
 		if(!config.sync_to_api) return false;
 		if(!this.connected) return false;
 		if(!turtl.db) return false;
-		return turtl.db.sync_outgoing.query().all().execute().bind(this)
+		return this.get_unsynced().bind(this)
 			.then(function(items) {
 				if(!items || !items.length) return;
 				if(!this.connected) return;
@@ -248,13 +256,13 @@ var Sync = Composer.Model.extend({
 				return promise.bind(this)
 					.then(function(synced) {
 						log.debug('sync: outgoing: response: ', synced);
-						if(synced.error)
-						{
-							log.error('sync: outgoing: api error: ', synced.error);
-							barfr.barf(i18next.t('There was a problem syncing to the server (we\'ll try again soon): {{err}}', {err: synced.error}));
+
+						var failures = synced.failures;
+						if(failures.length) {
+							log.error('sync: outgoing: errors: ', failures);
+							barfr.barf(i18next.t('There was a problem syncing to the server ({{num}} items failed to sync). Go to Settings > Sync info for more information.', failures.length));
 						}
 						if(!synced.success) return;
-
 						var actions = synced.success.map(function(sync) {
 							// remove the successful sync records (it passes
 							// back the IDs we handed it from our DB)
@@ -452,13 +460,6 @@ var Sync = Composer.Model.extend({
 
 		if(type == 'note')
 		{
-			if(item.board_id && !item.boards)
-			{
-				item.boards = [item.board_id];
-				delete item.board_id;
-			}
-			if(!Array.isArray(item.boards)) item.boards = [];
-
 			// move hashes to IDs
 			if(item.file && (!item.file.id && item.file.hash))
 			{

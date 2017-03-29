@@ -131,7 +131,7 @@ var NotesViewController = NoteBaseController.extend({
 			}
 		}
 		var show_info = false;
-		if(note.boards.length || note.tags.length) show_info = true;
+		if(note.board_id || note.tags.length) show_info = true;
 		var type_content = view.render('notes/types/'+type, {
 			note: note,
 			show_info: show_info

@@ -27,7 +27,7 @@ a { text-decoration: none; }
 //#wrap {position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: scroll;}
 #wrap {height: 100%; overflow-y: scroll; overflow-x: hidden;}
 #app {.transition(left .3s);}
-#main {position: relative; left: 0; z-index: 5; padding: (@header_height + @nav_height) 0 80rem 0; .transition(left 0.3s);}
+#main {position: relative; left: 0; z-index: 5; padding: @header_height 0 80rem 0; .transition(left 0.3s);}
 body.loggedout #main {padding-top: @header_height;}
 
 @header_pad_top: 4rem;
@@ -98,7 +98,7 @@ body.settings {
 }
 
 /* body page slide shite */
-#tmp-slide {position: absolute; margin-top: (@header_height + @nav_height); display: none; width: 100%; overflow-y: scroll; .transition(left 0.3s);}
+#tmp-slide {position: absolute; margin-top: @header_height; display: none; width: 100%; overflow-y: scroll; .transition(left 0.3s);}
 body.loggedout #tmp-slide {margin-top: @header_height;}
 body.page-slide {overflow: hidden;}
 body.page-slide #tmp-slide {display: block;}

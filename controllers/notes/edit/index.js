@@ -1,13 +1,15 @@
 var NotesEditController = FormController.extend({
+	xdom: true,
+
 	elements: {
 		'form': 'el_form',
+		'select[name=board_id]': 'inp_board',
 		'input[name=title]': 'inp_title',
 		'input[name=url]': 'inp_url',
 		'input[name=username]': 'inp_username',
 		'input[name=password]': 'inp_password',
 		'textarea[name=text]': 'inp_text',
 		'.password': 'el_password',
-		'.boards-container': 'el_boards',
 		'.file-container': 'el_file',
 		'.existing': 'el_existing',
 		'.button-row': 'el_buttons'
@@ -122,10 +124,19 @@ var NotesEditController = FormController.extend({
 			this.bind('release', this.url_timer.unbind.bind(this.url_timer));
 		}
 
-		this.render();
+		this.render()
+			.bind(this)
+			.then(function() {
+				this.track_subcontroller('file', function() {
+					return new NotesEditFileController({
+						inject: this.el_file,
+						model: this.clone
+					});
+				}.bind(this));
+				// track unsaved changes to the model
+				this.form_data = this.el_form.toQueryString();
+			});
 
-		// track unsaved changes to the model
-		this.form_data = this.el_form.toQueryString();
 		var close = function()
 		{
 			this.modal.close();
@@ -157,6 +168,8 @@ var NotesEditController = FormController.extend({
 		this.with_bind(this.clone, 'change', unsaved);
 		this.with_bind(this.clone.get('tags'), ['add', 'remove'], unsaved);
 		this.with_bind(this.clone.get('file'), 'change', unsaved);
+
+		this.with_bind(turtl.profile.get('boards'), ['add', 'remove', 'change'], this.render.bind(this));
 
 		// basically copy tumblr's fixed footer tagging interface
 		var footer_desc = function()
@@ -195,55 +208,46 @@ var NotesEditController = FormController.extend({
 		var data = this.model.toJSON();
 		if(!data.color) delete data.color;
 
-		this.html(view.render('notes/edit/index', {
+		var boards = turtl.profile.space_boards().map(function(b) { return b.toJSON(); });
+		return this.html(view.render('notes/edit/index', {
 			note: data,
+			show_board_selector: !this.board_id,
+			boards: boards,
 			type: this.model.get('type') || this.type,
 			colors: colors
-		}));
-		setTimeout(this.resize_text.bind(this), 10);
-
-		if(this.model.is_new())
-		{
-			var focus_el = null;
-			switch(this.type)
-			{
-				case 'text': focus_el = this.inp_text; break;
-				case 'link': focus_el = this.inp_url; break;
-				case 'image': focus_el = this.inp_url; break;
-				case 'password': focus_el = this.inp_password; break;
-			}
-			// NOTE: the delay here is same as CSS transition
-			//
-			// without this, the modal will jump forward to the textarea whlie
-			// sliding in, making the transition look really ugly and stupid.
-			// beware!
-			if(focus_el) setTimeout(focus_el.focus.bind(focus_el), 300);
-		}
-
-		this.track_subcontroller('boards', function() {
-			return new NotesEditBoardsListController({
-				inject: this.el_boards,
-				model: this.clone
+		})).bind(this)
+			.then(function() {
+				setTimeout(this.resize_text.bind(this), 10);
+				if(this.model.is_new())
+				{
+					var focus_el = null;
+					switch(this.type)
+					{
+						case 'text': focus_el = this.inp_text; break;
+						case 'link': focus_el = this.inp_url; break;
+						case 'image': focus_el = this.inp_url; break;
+						case 'password': focus_el = this.inp_password; break;
+					}
+					// NOTE: the delay here is same as CSS transition
+					//
+					// without this, the modal will jump forward to the textarea whlie
+					// sliding in, making the transition look really ugly and stupid.
+					// beware!
+					if(focus_el) setTimeout(focus_el.focus.bind(focus_el), 300);
+				}
+				if(this.el_existing)
+				{
+					this.check_url();
+					this.el_existing.set('slide', {duration: 300});
+					this.el_existing.get('slide').hide();
+				}
 			});
-		}.bind(this));
-
-		this.track_subcontroller('file', function() {
-			return new NotesEditFileController({
-				inject: this.el_file,
-				model: this.clone
-			});
-		}.bind(this));
-
-		if(this.el_existing)
-		{
-			this.check_url();
-			this.el_existing.set('slide', {duration: 300});
-			this.el_existing.get('slide').hide();
-		}
 	},
 
 	grab_form_data: function()
 	{
+		var space_id = turtl.profile.current_space().id();
+		var board_id  = (this.inp_board ? this.inp_board.get('value') : this.board_id) || null;
 		var title = this.inp_title.get('value');
 		var url = this.inp_url && this.inp_url.get('value');
 		var username = this.inp_username && this.inp_username.get('value');
@@ -251,6 +255,8 @@ var NotesEditController = FormController.extend({
 		var text = this.inp_text.get('value');
 
 		var data = {
+			space_id: space_id,
+			board_id: board_id,
 			title: title,
 			url: url,
 			username: username,

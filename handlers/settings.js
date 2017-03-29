@@ -2,7 +2,7 @@ var settings = {
 	index: function()
 	{
 		var slide = false;
-		if(turtl.controllers.pages.is([ChangePasswordController, DeleteAccountController]))
+		if(turtl.controllers.pages.is([ChangePasswordController, DeleteAccountController, SyncController]))
 		{
 			slide = 'right';
 		}
@@ -34,6 +34,19 @@ var settings = {
 		}
 		turtl.back.push(turtl.route.bind(turtl, '/settings'));
 		turtl.controllers.pages.load(DeleteAccountController, {}, {
+			slide: slide
+		});
+	},
+
+	sync: function()
+	{
+		var slide = false;
+		if(turtl.controllers.pages.is(SettingsController))
+		{
+			slide = 'left';
+		}
+		turtl.back.push(turtl.route.bind(turtl, '/settings'));
+		turtl.controllers.pages.load(SyncController, {}, {
 			slide: slide
 		});
 	},
