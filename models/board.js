@@ -121,8 +121,7 @@ var Board = Protected.extend({
 
 	note_count: function()
 	{
-		var boards = [this.id()];
-		return turtl.search.search({boards: boards}).bind(this)
+		return turtl.search.search({board: this.id()}).bind(this)
 			.spread(function(notes) {
 				var unique_notes  = notes.filter(function(note, i) { return i == notes.lastIndexOf(note); });
 				return unique_notes.length;
