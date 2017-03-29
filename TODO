@@ -1,14 +1,14 @@
 # Interface notes
-- default space: first space selected when logging in
+- Notes should add space key (if they dont already, looks like only board key?)
 - Your settings -> Resend confirmation (only if unconfirmed)
-- Concept of current space
-  - can be localized for bookmarker
-- in all notes, show only notes from current space
-- in boards, show only boards from current space
-- when adding a board, add to current space
-- leave a space (in edit screen)
-- Update bookmarker to just take a URL
-  - all scraping happens in-app
-  - look for og:image tags before doing image/div bg-imag scan
+- Sharing
+  - based off email
+  - can only share with confirmed accounts
+  - leave a space (in edit screen)
+- Update bookmarker
+  - should be aware of spaces, have space selector
+  - bookmarker should accept a URL, fill in the rest itself (title, thumbnail, desc)
+    - og:image!!
+  - should save last space/last board used
 - moving boards to a new space should move notes locally, but NOT sync them
   - sync records will come from server directly
