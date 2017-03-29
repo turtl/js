@@ -17,6 +17,13 @@
 			{{t 'Sync info'}}
 		</a>
 	</li>
+	{{#unless confirmed}}
+		<li>
+			<a href="#resend-confirmation">
+				{{t 'Resend confirmation'}}
+			</a>
+		</li>
+	{{/unless}}
 </ul>
 <ul class="item-list">
 	<li>

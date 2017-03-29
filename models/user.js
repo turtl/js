@@ -336,6 +336,11 @@ var User = Protected.extend({
 		});
 		this.set({settings: settings});
 	},
+
+	resend_confirmation: function()
+	{
+		return turtl.api.post('/users/confirmation/resend');
+	},
 });
 
 // we don't actually use this collection for anything but syncing

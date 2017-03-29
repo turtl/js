@@ -1,5 +1,5 @@
 # Interface notes
-- Notes should add space key (if they dont already, looks like only board key?)
+- User edit sync record not actually updating user data
 - Your settings -> Resend confirmation (only if unconfirmed)
 - Sharing
   - based off email

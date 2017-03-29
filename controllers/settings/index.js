@@ -1,14 +1,17 @@
 var SettingsController = Composer.Controller.extend({
+	xdom: true,
 	class_name: 'settings',
 
 	events: {
-		'click a[href=#wipe]': 'wipe_data'
+		'click a[href=#wipe]': 'wipe_data',
+		'click a[href=#resend-confirmation]': 'resend_confirmation',
 	},
 
 	init: function()
 	{
 		this.with_bind(turtl.events, 'api:connect', this.render.bind(this));
 		this.with_bind(turtl.events, 'api:disconnect', this.render.bind(this));
+		this.with_bind(turtl.user, 'change:confirmed', this.render.bind(this));
 
 		turtl.push_title(i18next.t('Your settings'));
 		this.bind('release', turtl.pop_title.bind(null, false));
@@ -18,9 +21,11 @@ var SettingsController = Composer.Controller.extend({
 
 	render: function()
 	{
-		this.html(view.render('settings/index', {
+		var confirmed = turtl.user.get('confirmed');
+		return this.html(view.render('settings/index', {
 			connected: (turtl.sync || {}).connected,
 			version: config.client + '-' + config.version,
+			confirmed: confirmed,
 		}));
 	},
 
@@ -50,6 +55,20 @@ var SettingsController = Composer.Controller.extend({
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', i18next.t('There was a problem clearing your profile'), err);
 				log.error('settings: wipe db: ', derr(err));
+			});
+	},
+
+	resend_confirmation: function(e)
+	{
+		if(e) e.stop();
+
+		return turtl.user.resend_confirmation()
+			.then(function() {
+				barfr.barf(i18next.t('Confirmation email resent'));
+			})
+			.catch(function(err) {
+				turtl.events.trigger('ui-error', i18next.t('There was a problem resending your confirmation email'), err);
+				log.error('settings: resend confirm: ', derr(err));
 			});
 	}
 });
