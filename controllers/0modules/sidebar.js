@@ -263,6 +263,7 @@ var SidebarController = Composer.Controller.extend({
 		new SpacesEditController({
 			model: space,
 		});
+		this.close();
 	},
 
 	add_board: function(e)
@@ -284,6 +285,7 @@ var SidebarController = Composer.Controller.extend({
 		new BoardsEditController({
 			model: board,
 		});
+		this.close();
 	},
 
 	filter_spaces: function(e)
