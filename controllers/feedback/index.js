@@ -11,7 +11,7 @@ var FeedbackController = FormController.extend({
 
 	init: function()
 	{
-		turtl.push_title(i18next.t('Give us feedback'));
+		turtl.push_title(i18next.t('Give us feedback'), '/settings');
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		this.with_bind(turtl.events, 'api:connect', this.render.bind(this));
@@ -19,16 +19,10 @@ var FeedbackController = FormController.extend({
 		this.requires_connection({msg: i18next.t('Sending feedback requires a connection to the Turtl server.')});
 
 		this.render();
-
-		this.bind('release', function() {
-			Autosize.destroy(this.inp_text);
-		}.bind(this));
 	},
 
 	render: function()
 	{
-		Autosize.destroy(this.inp_text);
-
 		if(!turtl.sync.connected) return this.html(view.render('feedback/noconnection'));
 
 		var email = turtl.user.get('username');
@@ -38,7 +32,6 @@ var FeedbackController = FormController.extend({
 
 		if(this.inp_text)
 		{
-			setTimeout(function() { autosize(this.inp_text); }.bind(this), 10);
 			this.inp_text.focus();
 		}
 	},
