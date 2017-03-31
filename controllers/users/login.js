@@ -27,13 +27,21 @@ var UserLoginController = UserBaseController.extend({
 
 	render: function()
 	{
+		var last_username = turtl.settings.get('last_username');
 		var content = view.render('users/login', {
 			server: config.api_url,
 			autologin: this.autologin(),
-			show_autologin: config.has_autologin
+			show_autologin: config.has_autologin,
+			last_username: last_username,
 		});
 		this.html(content);
-		(function() { this.inp_username.focus(); }).delay(10, this);
+		(function() {
+			if(last_username) {
+				this.inp_password.focus();
+			} else {
+				this.inp_username.focus();
+			}
+		}).delay(10, this);
 
 		this.el_settings.set('slide', {duration: 300});
 		this.el_settings.get('slide').hide();
@@ -71,6 +79,7 @@ var UserLoginController = UserBaseController.extend({
 			.spread(function(id, meta) {
 				var data = user.toJSON();
 				data.id = id;
+				turtl.settings.set('last_username', user.get('username'));
 				turtl.user.set({
 					username: user.get('username'),
 					password: user.get('password')

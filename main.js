@@ -50,8 +50,6 @@ var turtl = {
 	// holds the title breadcrumbs
 	titles: [],
 
-	controllers: {},
-
 	controllers: {
 		pages: null,
 		header: null,
@@ -65,6 +63,7 @@ var turtl = {
 	param_router: new ParamRouter(),
 	api: null,
 	back: null,
+	settings: new PublicSetting(),
 
 	// holds the last successfully routed url
 	last_url: null,
@@ -355,6 +354,7 @@ var turtl = {
 	{
 		options || (options = {});
 
+		turtl.settings.clear();
 		if(!turtl.user.logged_in)
 		{
 			console.log('wipe_local_db only works when logged in. if you know the users ID, you can wipe via:');
