@@ -140,7 +140,7 @@ var HeaderController = Composer.Controller.extend({
 		var rel = a && a.get('rel');
 		if(!rel) return;
 		setTimeout(function() {
-			this.bind_to.trigger('header:menu:fire-action', rel);
+			this.bind_to.trigger('header:menu:fire-action', rel, a);
 		}.bind(this));
 	},
 
