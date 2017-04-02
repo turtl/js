@@ -431,7 +431,6 @@ var Users = SyncCollection.extend({
 				// sync id BEFORE logging out so we don't get into an endless logout
 				// loop.
 				setTimeout(function() { turtl.user.logout(); }, 3000);
-				return Promise.resolve();
 				break;
 			case 'edit':
 				turtl.user.set(item);
