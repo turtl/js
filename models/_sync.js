@@ -413,7 +413,9 @@ var Sync = Composer.Model.extend({
 
 				failed = true;
 				if(orig && !options.skip_notify) turtl.events.trigger('api:disconnect');
-				if(err instanceof Error) throw err;
+				if(err instanceof Error && !err.disconnected && !err.timed_out) {
+					throw err;
+				}
 			})
 			.finally(function() {
 				this._polling = false;
