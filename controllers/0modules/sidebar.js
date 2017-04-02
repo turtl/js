@@ -27,6 +27,7 @@ var SidebarController = Composer.Controller.extend({
 		'click .spaces a.edit': 'edit_space',
 		'click .boards li.add a': 'add_board',
 		'click .boards a.edit': 'edit_board',
+		'click .boards a.go': 'close',
 		'click ul.spaces a': 'close_spaces_del',
 		'input .spaces .filter input[name=filter]': 'filter_spaces',
 		'keyup .spaces .filter input[name=filter]': 'filter_spaces',
@@ -324,11 +325,7 @@ var SidebarController = Composer.Controller.extend({
 				if(board_a) {
 					var li = Composer.find_parent('li.board', board_a);
 					var bid = li && li.get('rel');
-					if(turtl.param_router.get().board_id == bid) {
-						this.close();
-					} else {
-						board_a.click();
-					}
+					board_a.click();
 				}
 				return;
 			}
