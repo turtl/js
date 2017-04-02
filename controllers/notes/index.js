@@ -24,7 +24,8 @@ var NotesIndexController = Composer.Controller.extend({
 
 	init: function()
 	{
-		this.search.space = turtl.param_router.get().space_id;
+		var space_id = turtl.profile.current_space().id();
+		this.search.space = space_id;
 		if(this.board_id == 'all' || !this.board_id)
 		{
 			var title = i18next.t("All notes");
@@ -61,7 +62,8 @@ var NotesIndexController = Composer.Controller.extend({
 		turtl.events.trigger('header:set-actions', [
 			{name: 'search', icon: 'search'},
 			{name: 'menu', actions: [
-				{name: 'Settings', href: '/settings'}
+				{name: i18next.t('Collaboration'), href: '/spaces/'+space_id+'/sharing'},
+				{name: i18next.t('Settings'), href: '/settings'},
 			]},
 		]);
 		this.with_bind(turtl.events, 'header:fire-action', function(name) {
@@ -72,11 +74,11 @@ var NotesIndexController = Composer.Controller.extend({
 					break;
 			}
 		}.bind(this));
-		this.with_bind(turtl.events, 'header:menu:fire-action', function(action) {
-			switch(action)
-			{
-				case 'settings': turtl.route('/settings'); break;
+		this.with_bind(turtl.events, 'header:menu:fire-action', function(action, atag) {
+			if(action == 'collaboration' || action == 'sharing') {
+				return new SpacesSharingController();
 			}
+			turtl.route(atag.get('href'));
 		}.bind(this));
 		this.with_bind(turtl.events, 'search:toggle', this.toggle_search.bind(this));
 		this.with_bind(turtl.keyboard, '/', this.open_search.bind(this));
