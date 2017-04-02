@@ -1,6 +1,3 @@
-# Interface notes
-- User edit sync record not actually updating user data
-- Your settings -> Resend confirmation (only if unconfirmed)
 - Sharing
   - based off email
   - can only share with confirmed accounts
