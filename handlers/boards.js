@@ -23,7 +23,7 @@ var boards = {
 		turtl.back.push(turtl.route.bind(turtl, '/boards'));
 		turtl.controllers.pages.load(NotesIndexController, {board_id: board_id}, {
 			force_reload: force_reload,
-			slide: turtl.controllers.pages.is([BoardsController]) ? 'left' : null
+			slide: false,
 		});
 	},
 };

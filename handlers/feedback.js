@@ -1,9 +1,14 @@
 var feedback = {
 	index: function()
 	{
-		turtl.back.clear();
+		var slide = false;
+		if(turtl.controllers.pages.is(SettingsController))
+		{
+			slide = 'left';
+		}
+		turtl.back.push(turtl.route.bind(turtl, '/settings'));
 		turtl.controllers.pages.load(FeedbackController, {}, {
-			slide: false
+			slide: slide
 		});
 	}
 };
