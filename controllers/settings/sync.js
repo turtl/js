@@ -1,6 +1,6 @@
 var SyncController = Composer.Controller.extend({
 	xdom: true,
-	class_name: 'settings-sync',
+	class_name: 'settings-sync content',
 
 	init: function()
 	{
