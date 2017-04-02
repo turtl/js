@@ -6,6 +6,7 @@ var User = Protected.extend({
 		'id',
 		'storage',
 		'name',
+		'username',
 		'pubkey',
 	],
 
@@ -188,6 +189,63 @@ var User = Protected.extend({
 		// no need to roll back on failure, because everything is a copy of a
 		// copy of a copy. either everything works prefectly and we post it to
 		// the server, or one tiny thing goes wrong and we post nothing.
+
+		// welcome to the future. welcome to a brand new you.
+		var user = new User(turtl.user.toJSON());
+		var auth = null;
+		user.set({
+			username: new_username,
+			password: new_password,
+		});
+		return user.gen_auth(new_username, new_password)
+			.then(function(_auth) {
+				auth = _auth;
+				return user.serialize();
+			})
+			.then(function() {
+				// copy in the keychain
+				return Promise.map(turtl.profile.get('keychain').models(), function(keyentry) {
+					var newkey = new KeychainEntry();
+					newkey.key = user.key;
+					newkey.set(keyentry.toJSON());
+					return newkey.serialize()
+						.then(function() {
+							return newkey.safe_json();
+						});
+				});
+			})
+			.then(function(keys) {
+				var userdata = user.safe_json();
+				var auth_change = {
+					user: {
+						username: userdata.username,
+						body: userdata.body,
+					},
+					auth: auth,
+					keychain: keys,
+				};
+				return turtl.api.put('/users/'+turtl.user.id(), auth_change);
+			})
+			.then(function(res) {
+				turtl.sync.ignore_on_next_sync(res.sync_ids);
+				turtl.user.key = null;
+				turtl.user.auth = null;
+				return turtl.user.login({username: new_username, password: new_password}, {silent: true})
+					.then(function() {
+						return turtl.user.save();
+					})
+					.then(function() {
+						turtl.profile.get('keychain').each(function(key) {
+							key.key = user.key;
+							key.save({skip_remote_sync: true});
+						});
+					});
+			})
+			.then(function() {
+				setTimeout(function() {
+					turtl.user.logout();
+				}, 3000);
+			});
 	},
 
 	write_cookie: function(options)
@@ -206,7 +264,7 @@ var User = Protected.extend({
 		return this.gen_key(username, password, version).bind(this)
 			.then(function(_key) {
 				key = _key;
-				return this.gen_auth();
+				return this.gen_auth(username, password, options);
 			})
 			.then(function(_auth) {
 				auth = _auth;

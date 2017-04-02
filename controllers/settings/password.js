@@ -1,5 +1,8 @@
 var ChangePasswordController = FormController.extend({
+	xdom: true,
+
 	elements: {
+		'form': 'el_form',
 		'input[name=cur_username]': 'inp_cur_username',
 		'input[name=cur_password]': 'inp_cur_password',
 		'input[name=new_username]': 'inp_new_username',
@@ -21,14 +24,25 @@ var ChangePasswordController = FormController.extend({
 	{
 		turtl.push_title(i18next.t('Change password'), '/settings');
 
+		this.with_bind(turtl.events, 'api:connect', this.render.bind(this));
+		this.with_bind(turtl.events, 'api:disconnect', this.render.bind(this));
+
 		this.parent();
 		this.render();
 	},
 
 	render: function()
 	{
-		this.html(view.render('settings/password', {}));
-		this.inp_cur_username.focus.delay(300, this.inp_cur_username);
+		var connected = (turtl.sync || {}).connected;
+		return this.html(view.render('settings/password', {
+			connected: connected,
+			username: turtl.user.get('username'),
+		})).bind(this)
+			.then(function() {
+				if(!connected) this.el_form && this.el_form.addClass('bare');
+				else this.el_form && this.el_form.removeClass('bare');
+				if(this.inp_cur_password) this.inp_cur_password.focus.delay(300, this.inp_cur_password);
+			});
 	},
 
 	save: function(e)
@@ -41,7 +55,6 @@ var ChangePasswordController = FormController.extend({
 		var new_confirm = this.inp_new_confirm.get('value');
 
 		var user = new User({username: cur_username, password: cur_password});
-		var cur_key = JSON.stringify();
 
 		var loading = function(yesno)
 		{
@@ -52,21 +65,18 @@ var ChangePasswordController = FormController.extend({
 
 		var pending_barf = barfr.barf(i18next.t('Updating your login. Please be patient (and DO NOT close the app)!'));
 		loading(true);
-		window._loading=loading;
 		return delay(300).bind(this)
 			.then(function() {
 				return Promise.all([
-					turtl.user.gen_key(),
-					user.gen_key({skip_cache: true}),
-					user.gen_key({old: true, skip_cache: true})
+					turtl.user.gen_key(turtl.user.get('username'), turtl.user.get('password'), 0),
+					user.gen_key(cur_username, cur_password, 0, {skip_cache: true}),
 				]);
 			})
-			.spread(function(cur_key, new_key, new_key_old) {
+			.spread(function(cur_key, new_key) {
 				var errors = [];
 				cur_key = JSON.stringify(cur_key);
 				new_key = JSON.stringify(new_key);
-				new_key_old = JSON.stringify(new_key_old);
-				if(new_key != cur_key && new_key_old != cur_key)
+				if(new_key != cur_key)
 				{
 					errors.push([this.inp_cur_username, i18next.t('The current username/password you entered do not match the currently logged in user\'s.')]);
 				}
@@ -88,8 +98,7 @@ var ChangePasswordController = FormController.extend({
 
 				return turtl.user.change_password(new_username, new_password)
 					.then(function() {
-						barfr.barf(i18next.t('Your login was changed successfully!'));
-						turtl.route('/settings');
+						barfr.barf(i18next.t('Your login was changed successfully! Logging you out...'));
 					})
 					.finally(function() {
 						barfr.close_barf(pending_barf);
