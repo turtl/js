@@ -420,6 +420,31 @@ var Users = SyncCollection.extend({
 		// (since we only ever get one user object synced: ours)
 		item.key = 'user';
 		return this.parent.apply(this, arguments);
-	}
+	},
+
+	run_incoming_sync_item: function(sync, item)
+	{
+		switch(sync.action) {
+			case 'change-password':
+				barfr.barf(i18next.t('Your password was changed. You will be logged out momentarily.'));
+				// NOTE: this delay is important. it lets the sync system save the
+				// sync id BEFORE logging out so we don't get into an endless logout
+				// loop.
+				setTimeout(function() { turtl.user.logout(); }, 3000);
+				return Promise.resolve();
+				break;
+			case 'edit':
+				turtl.user.set(item);
+				break;
+			case 'delete':
+				barfr.barf(i18next.t('Your account was deleted. You will be logged out momentarily.'));
+				// NOTE: this timeout gives the sync system some time to mark
+				// the item as handled before logging out. not that it REALLY
+				// matters since the account will be deleted, but still.
+				setTimeout(function() { turtl.user.logout(); }, 3000);
+				break;
+		} 
+		return Promise.resolve();
+	},
 });
 
