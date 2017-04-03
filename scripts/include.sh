@@ -17,20 +17,19 @@ function path_to_js() {
 }
 
 function all_css() {
-	echo "${SEARCH_PATH}css/reset.css"
-	echo "${SEARCH_PATH}css/font.css"
-	echo "${SEARCH_PATH}css/template.css"
-	echo "${SEARCH_PATH}css/general.css"
-	cssfiles="`find ${SEARCH_PATH}css -name '*.css' \
+	echo "${BUILD}/css/vnd/reset.css"
+	find ${BUILD}/css/vnd -name '*.css' \
+		| grep -v 'reset.css'
+	echo "${BUILD}/css/font.css"
+	echo "${BUILD}/css/template.css"
+	echo "${BUILD}/css/general.css"
+	find ${BUILD}/css -name '*.css' \
 		| LC_ALL=C sort \
 		| grep -v 'font.css' \
 		| grep -v 'template.css' \
 		| grep -v 'general.css' \
 		| grep -v 'variables.css' \
-		| grep -v 'reset.css' `"
-	for cssfile in $cssfiles; do
-		echo $cssfile
-	done
+		| grep -v 'reset.css'
 }
 
 function vendor_js() {
@@ -67,7 +66,7 @@ function all_js() {
 	path_to_js "${SEARCH_PATH}handlers"
 	path_to_js "${SEARCH_PATH}locales"
 	path_to_js "${SEARCH_PATH}turtl"
-	echo "${SEARCH_PATH}lib/app/templates.js"
+	path_to_js "${BUILD}/"
 	echo "${SEARCH_PATH}main.js"
 }
 

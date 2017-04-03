@@ -3,11 +3,9 @@
 ### This script creates svg-icons.js, used to inline SVG icons for easier
 ### styling
 
-file=$1
-
-echo "var svg_icons = {};" > $file
+echo "var svg_icons = {};"
 for x in $(ls images/site/icons/*.svg); do
 	name=$(echo $x | xargs basename | sed 's|\.svg.*||')
-	echo "svg_icons['${name}'] = '$( cat $x | tr -d '\n' )';" >> $file
+	echo "svg_icons['${name}'] = '$( cat $x | tr -d '\n' )';"
 done
 

@@ -1,3 +1,5 @@
+@import 'variables';
+
 // -----------------------------------------------------------------------------
 // app fonts
 // -----------------------------------------------------------------------------
@@ -14,7 +16,7 @@
 	.import-font-src(@path, @format) when (default()) {
 		src: url(@path) format(@format);
 	}
-	@font-path: ~"../images/font/@{path}";
+	@font-path: ~"@{static}/images/font/@{path}";
 	@font-face {
 		font-family: @name;
 		font-weight: @weight;
@@ -28,14 +30,14 @@
 .import-font('Noto Sans', 'NotoSans-Bold.ttf', 700, 'normal', 'ttf');
 .import-font('Noto Sans', 'NotoSans-BoldItalic.ttf', 700, 'italic', 'ttf');
 .import-font('Noto Mono', 'NotoMono-Regular.ttf', 400, 'normal', 'ttf');
-//@font-face {font-family: 'Raleway'; font-style: normal; font-weight: 400; src: local('Raleway'), url(../images/font/raleway.woff) format('woff');}
-//@font-face {font-family: 'Raleway'; font-style: normal; font-weight: 600; src: local('Raleway SemiBold'), local('Raleway-SemiBold'), url(../images/font/raleway-semibold.woff) format('woff');}
+//@font-face {font-family: 'Raleway'; font-style: normal; font-weight: 400; src: local('Raleway'), url(@{static}/images/font/raleway.woff) format('woff');}
+//@font-face {font-family: 'Raleway'; font-style: normal; font-weight: 600; src: local('Raleway SemiBold'), local('Raleway-SemiBold'), url(@{static}/images/font/raleway-semibold.woff) format('woff');}
 
 // -----------------------------------------------------------------------------
 // katex fonts
 // -----------------------------------------------------------------------------
 
-@font-folder: "../images/fonts/katex";
+@font-folder: "@{static}/images/fonts/katex";
 @use-eot: false;
 @use-ttf: true;
 @use-woff: false;

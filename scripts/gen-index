@@ -43,5 +43,5 @@ index="$(do_replace "$index" '{{gencss}}' "$css")"
 index="$(do_replace "$index" '{{genjs}}' "$js")"
 
 # send our generated data into their restecpive files
-echo -ne "$index" > index.html
+echo -ne "$index"
 
