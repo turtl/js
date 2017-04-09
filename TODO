@@ -7,5 +7,6 @@
   - bookmarker should accept a URL, fill in the rest itself (title, thumbnail, desc)
     - og:image!!
   - should save last space/last board used
+- import/export
 - moving boards to a new space should move notes locally, but NOT sync them
   - sync records will come from server directly
