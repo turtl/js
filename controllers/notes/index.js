@@ -62,7 +62,7 @@ var NotesIndexController = Composer.Controller.extend({
 		turtl.events.trigger('header:set-actions', [
 			{name: 'search', icon: 'search'},
 			{name: 'menu', actions: [
-				{name: i18next.t('Collaboration'), href: '/spaces/'+space_id+'/sharing'},
+				{name: i18next.t('Share this space'), href: '/spaces/'+space_id+'/sharing'},
 				{name: i18next.t('Settings'), href: '/settings'},
 			]},
 		]);
@@ -75,7 +75,7 @@ var NotesIndexController = Composer.Controller.extend({
 			}
 		}.bind(this));
 		this.with_bind(turtl.events, 'header:menu:fire-action', function(action, atag) {
-			if(action == 'collaboration' || action == 'sharing') {
+			if(atag.get('href').match(/\/spaces\/.*?\/sharing$/)) {
 				return new SpacesSharingController();
 			}
 			turtl.route(atag.get('href'));

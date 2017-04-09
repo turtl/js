@@ -64,7 +64,6 @@ var NotesViewController = NoteBaseController.extend({
 		this.with_bind(this.modal, 'header:menu:fire-action', function(action) {
 			switch(action)
 			{
-				case 'edit': this.open_edit(); break;
 				case 'delete': this.open_delete(); break;
 			}
 		}.bind(this));
