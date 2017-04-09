@@ -56,7 +56,8 @@ $(BUILD)/css/%.css: css/%.less
 $(BUILD)/postcss: $(cssfiles) $(cssvndout)
 	@echo "- postcss:" $?
 	@$(NODE) $(POSTCSS) --use autoprefixer --replace $?
-	@touch $@
+	@echo '"A lot of people are laughing at the heels on your shoes"' > $@
+	@echo '"I'"'"'m not gonna be wearing the shoes, am I?!"' >> $@
 
 ################################################################################
 # icons
