@@ -11,5 +11,8 @@
     "handlebars": "^2.0.0",
     "less": "^2.5.3",
     "postcss-cli": "^2.3.2"
+  },
+  "dependencies": {
+    "turtl-lib-permissions": "git+https://github.com/turtl/lib-permissions.git#master"
   }
 }
