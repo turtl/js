@@ -40,6 +40,24 @@ $(BUILD)/lib/app/templates.js: $(handlebars)
 	@mv $(BUILD)/templates.js $@
 
 ################################################################################
+# script generation
+################################################################################
+
+$(BUILD)/lib/app/svg-icons.js: $(allsvg) scripts/index-icons
+	@echo "- SVG: " $?
+	@test -d "$(@D)" || mkdir -p "$(@D)"
+	@./scripts/index-icons > $@
+
+$(BUILD)/lib/app/lib-permissions.js: node_modules/turtl-lib-permissions/process.js
+	@echo "- lib-permissions.js"
+	@cp $? $@
+	@echo "(function() {" >> $@
+	@echo -n "var permdata = " >> $@
+	@cat node_modules/turtl-lib-permissions/permissions.json >> $@
+	@echo "Composer.object.merge(Permissions, Permissions.process(permdata))" >> $@
+	@echo "})();" >> $@
+
+################################################################################
 # CSS
 ################################################################################
 
@@ -60,19 +78,10 @@ $(BUILD)/postcss: $(cssfiles) $(cssvndout)
 	@echo '"I'"'"'m not gonna be wearing the shoes, am I?!"' >> $@
 
 ################################################################################
-# icons
-################################################################################
-
-$(BUILD)/lib/app/svg-icons.js: $(allsvg) scripts/index-icons
-	@echo "- SVG: " $?
-	@test -d "$(@D)" || mkdir -p "$(@D)"
-	@./scripts/index-icons > $@
-
-################################################################################
 # index
 ################################################################################
 
-index.html: $(alljs) $(cssfiles) $(cssvndout) $(BUILD)/lib/app/svg-icons.js $(BUILD)/lib/app/templates.js views/layouts/default.html $(BUILD)/postcss scripts/include.sh scripts/gen-index
+index.html: $(alljs) $(cssfiles) $(cssvndout) $(BUILD)/lib/app/svg-icons.js $(BUILD)/lib/app/templates.js $(BUILD)/lib/app/lib-permissions.js views/layouts/default.html $(BUILD)/postcss scripts/include.sh scripts/gen-index
 	@echo "- index.html: " $?
 	@./scripts/gen-index > $@
 
@@ -80,11 +89,11 @@ tests/index.html: $(testsjs) index.html tests/scripts/gen-index
 	@echo "- tests/index.html: " $?
 	@./tests/scripts/gen-index
 
-min.index.html: $(alljs) $(cssfiles) $(cssvndout) $(BUILD)/lib/app/svg-icons.js $(BUILD)/lib/app/templates.js views/layouts/default.html $(BUILD)/postcss scripts/include.sh scripts/gen-index
+min.index.html: $(alljs) $(cssfiles) $(cssvndout) $(BUILD)/lib/app/svg-icons.js $(BUILD)/lib/app/templates.js $(BUILD)/lib/app/lib-permissions.js views/layouts/default.html $(BUILD)/postcss scripts/include.sh scripts/gen-index
 	@echo "- index.html: " $?
 	@./scripts/gen-minified-index
 
-minify: $(cssfiles) lib/app/templates.js lib/app/svg-icons.js $(BUILD)/postcss min.index.html
+minify: $(cssfiles) lib/app/templates.js lib/app/svg-icons.js $(BUILD)/lib/app/lib-permissions.js $(BUILD)/postcss min.index.html
 
 ################################################################################
 # util
