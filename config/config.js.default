@@ -39,5 +39,9 @@ var config = {
 
 	// show a overlay under modals and above the main content (can be
 	// overridden).
-	modal_overlay: true
+	modal_overlay: true,
+
+	// when building locally, we can't request resources outside of our domain.
+	// this makes it so the bookmarker can grab external resources via an API.
+	bookmarker_proxy: false,
 }
