@@ -15,7 +15,7 @@
 	</p>
 {{/unless}}
 
-{{#unless is_new}}
+{{#if show_delete}}
 	<div class="delete">
 		<p>
 			{{#if last_space}}
@@ -31,5 +31,5 @@
 			{{/if}}
 		</p>
 	</div>
-{{/unless}}
+{{/if}}
 

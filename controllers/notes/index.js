@@ -24,7 +24,8 @@ var NotesIndexController = Composer.Controller.extend({
 
 	init: function()
 	{
-		var space_id = turtl.profile.current_space().id();
+		var space = turtl.profile.current_space();
+		var space_id = space.id();
 		this.search.space = space_id;
 		if(this.board_id == 'all' || !this.board_id)
 		{
@@ -86,23 +87,25 @@ var NotesIndexController = Composer.Controller.extend({
 
 		this.render();
 
-		// set up the action button
-		this.track_subcontroller('actions', function() {
-			var actions = new ActionController();
-			actions.set_actions([
-				{title: i18next.t('Text note'), name: 'text', icon: 'write', shortcut: 't'},
-				{title: i18next.t('Bookmark'), name: 'link', icon: 'bookmark', shortcut: 'b'},
-				{title: i18next.t('Image'), name: 'image', icon: 'image', shortcut: 'i'},
-				{title: i18next.t('File'), name: 'file', icon: 'file', shortcut: 'f'},
-				{title: i18next.t('Password'), name: 'password', icon: 'password', shortcut: 'p'}
-			]);
-			this.with_bind(actions, 'actions:fire', this.open_add.bind(this));
-			this.with_bind(turtl.keyboard, 'a', function() {
-				if(actions.is_open) return;
-				actions.open();
-			});
-			return actions;
-		}.bind(this));
+		if(space.can_i(Permissions.permissions.add_note)) {
+			// set up the action button
+			this.track_subcontroller('actions', function() {
+				var actions = new ActionController();
+				actions.set_actions([
+					{title: i18next.t('Text note'), name: 'text', icon: 'write', shortcut: 't'},
+					{title: i18next.t('Bookmark'), name: 'link', icon: 'bookmark', shortcut: 'b'},
+					{title: i18next.t('Image'), name: 'image', icon: 'image', shortcut: 'i'},
+					{title: i18next.t('File'), name: 'file', icon: 'file', shortcut: 'f'},
+					{title: i18next.t('Password'), name: 'password', icon: 'password', shortcut: 'p'}
+				]);
+				this.with_bind(actions, 'actions:fire', this.open_add.bind(this));
+				this.with_bind(turtl.keyboard, 'a', function() {
+					if(actions.is_open) return;
+					actions.open();
+				});
+				return actions;
+			}.bind(this));
+		}
 
 		this.with_bind(turtl.search, 'search-tags', function(tags) {
 			this.saved_tags = tags;

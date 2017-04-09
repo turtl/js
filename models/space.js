@@ -89,6 +89,19 @@ var Space = Protected.extend({
 			});
 	},
 
+	can_i: function(permission, options)
+	{
+		var user_id = turtl.user.id();
+		// grab the curren user's member record
+		var member = this.get('members')
+			.filter(function(member) { return member.user_id == user_id; })[0];
+		// if no record, get out
+		if(!member) return false;
+		var role = member.role;
+		// check the permissions!
+		return Permissions.role_permissions[role].indexOf(permission) >= 0;
+	},
+
 	is_shared: function()
 	{
 		return !this.is_new() && this.get('user_id') != turtl.user.id();

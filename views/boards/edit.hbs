@@ -1,2 +1,10 @@
 <input type="text" name="title" value="{{board.title}}" placeholder="{{t 'Board title'}}">
 
+{{#if show_delete}}
+	<div class="delete">
+		<p>
+			<a href="#delete" rel="delete">{{t 'Delete this board &raquo;'}}</a>
+		</p>
+	</div>
+{{/if}}
+

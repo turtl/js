@@ -1,102 +1,11 @@
 @import 'variables';
 
-.boards {
-	.search {margin: 0; .standard-width();}
-	.search {
-		form {.uncard(); padding: 0;}
-		icon {float: right; position: relative; top: 12rem; height: 0; cursor: pointer; font-size: 20rem; color: @theme_gray; opacity: 0; .transition(opacity .3s);}
-		icon.active {opacity: 1;}
-		input {}
-	}
-	.item-list li h2 highlight {background: #ffff99;}
-}
-
-.boards, .board-share, .sharing {
-	@item_height: 56rem;
-	@item_pad_top: 6rem;
-	@item_pad_side: 9rem;
-	ul.item-list {
-		> li {padding: @item_pad_top 9rem;}
-		> li {
-			div.item-actions > a {width: 16rem; height: @item_height; margin: -@item_pad_top -@item_pad_side 0 0; padding: 0 @item_pad_side 0 16rem; line-height: @item_height + 4rem;}
-			ul.item-list {width: auto; margin: 8rem 0 0 0; padding: 0 0 0 9rem; border-top: 1rem solid @theme_border;}
-			ul.item-list {
-				li {padding-right: 0;}
-			}
-			small {font-size: 11rem;}
-		}
-		> li:last-child {border-bottom: 0;}
-		> li.shared-with-me {background: @theme_shared;}
-	}
-}
-
-// this is a modal div, btw
-.note-edit-boards {background: @theme_gutter;}
-// note board selector styles
-.boards.select {
-	ul.item-list {
-		> li {
-			a.check {float: right; margin: 8rem 0 0 0;}
-			a.check {
-				icon {color: @theme_gray_light; .transition(color .3s, transform .3s;);}
-				&.selected icon {transform: scale(1.1, 1.1); color: @theme_accent;}
-			}
-		}
-	}
-}
-
 .boards-edit {
-	p.child {padding-top: 20rem; color: @theme_gray;}
-}
-
-.boards-delete {}
-.boards-delete {
-	.standard-form {}
-	p.warn {
-		em {color: @theme_accent;}
-	}
-	p.child {margin-bottom: 0;}
-	p.cancel {margin: 0;}
-	ul {margin: 0 0 16rem 40rem;}
-	ul {
-		li {color: @theme_accent;}
-	}
-	.fr.delete-notes {padding: 0 0 0 0; font-size: 1.3em;}
-	.fr.delete-notes {
-		label {display: inline-block; padding: 32rem 0 32rem 0;}
-		label {
-			em {color: @theme_accent;}
-		}
-	}
-}
-
-.board-share {padding: 16rem 0 0 0;}
-.board-share {
-	p.head {font-size: 14rem;}
-	.challenge {margin: 8rem 0 32rem 0;}
-	.challenge {
-		&.active icon {transform: rotate(90deg);}
-		icon {font-size: 14rem; transform: rotate(270deg); .transition(transform .3s);}
-		label {display: block; margin: 0 0 10rem 0; font-size: 15rem;}
-		.inner {margin: 10rem 0 0 0; padding: 4rem 10rem; background: @theme_gray_white;}
-		.inner {
-			p, li {font-size: 14rem;}
-			ul {list-style: none;}
-			li {margin: 0 0 12rem 6rem; line-height: 16rem;}
-			li {
-				strong {display: block; margin: 0 0 4rem 0;}
-			}
-		}
-	}
-}
-.boards-invite {
-	.loader {position: relative;}
-	.loader {
-		svg {display: none; position: absolute; top: 10rem; right: 3rem; width: 20rem; height: 20rem;}
-		svg.show {display: inline-block;}
-		svg {
-			path {fill: @theme_accent;}
-		}
+	.delete {margin: 32px 0 0 0;}
+	.delete {
+		p:last-child {padding: 0; margin: 0;}
+		.last,
+		a {display: block; padding: 8rem; font-size: 14rem; text-align: center; background: @theme_gray_white;}
 	}
 }
 

@@ -54,15 +54,22 @@ var NotesEditController = FormController.extend({
 			this.confirm_unsaved = config.confirm_unsaved;
 		}
 
+		var space = turtl.profile.current_space();
 		var board_id = this.board_id || turtl.param_router.get().board_id;
 		if(!board_id) {
-			var space = turtl.profile.current_space();
 			board_id = space.setting('last_board_used_for_edit');
 		}
 		if(!this.model) this.model = new Note({
 			board_id: board_id,
 			type: this.type || 'text'
 		});
+
+		var perm_map = {
+			add: Permissions.permissions.add_note,
+			edit: Permissions.permissions.edit_note,
+		};
+		if(!permcheck(space, perm_map[this.model.is_new() ? 'add' : 'edit'])) return this.release();
+
 		this.clone = this.model.clone();
 		this.clone.get('file').unset('set');
 

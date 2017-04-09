@@ -39,12 +39,14 @@ var NotesViewController = NoteBaseController.extend({
 			this.release();
 			throw new Error('notes: view: no model passed');
 		}
+		var space = turtl.profile.current_space();
+
 		var actions = [];
 		if(!this.hide_actions)
 		{
-			actions = [
-				{name: 'menu', actions: [/*{name: 'Edit'},*/ {name: 'Delete'}]}
-			];
+			if(space.can_i(Permissions.permissions.delete_note)) {
+				actions.push({name: 'menu', actions: [{name: 'Delete'}]});
+			}
 		}
 		this.modal = new TurtlModal(Object.merge({
 			show_header: true,
@@ -99,12 +101,18 @@ var NotesViewController = NoteBaseController.extend({
 		// set up the action button
 		if(!this.hide_actions)
 		{
-			this.track_subcontroller('actions', function() {
-				var actions = new ActionController({inject: this.modal.el});
-				actions.set_actions([{title: i18next.t('Edit note'), name: 'edit', icon: 'edit'}]);
-				this.with_bind(actions, 'actions:fire', this.open_edit.bind(this, null));
-				return actions;
-			}.bind(this));
+			var button_actions = [];
+			if(space.can_i(Permissions.permissions.edit_note)) {
+				button_actions.push({title: i18next.t('Edit note'), name: 'edit', icon: 'edit'});
+			}
+			if(button_actions.length > 0) {
+				this.track_subcontroller('actions', function() {
+					var actions = new ActionController({inject: this.modal.el});
+					actions.set_actions(button_actions);
+					this.with_bind(actions, 'actions:fire', this.open_edit.bind(this, null));
+					return actions;
+				}.bind(this));
+			}
 		}
 
 		this.parent();
@@ -175,6 +183,8 @@ var NotesViewController = NoteBaseController.extend({
 	open_edit: function(e)
 	{
 		if(e) e.stop();
+		var space = turtl.profile.current_space();
+		if(!permcheck(space, Permissions.permissions.edit_note)) return;
 		new NotesEditController({
 			model: this.model
 		});
@@ -183,6 +193,8 @@ var NotesViewController = NoteBaseController.extend({
 	open_delete: function(e)
 	{
 		if(e) e.stop();
+		var space = turtl.profile.current_space();
+		if(!permcheck(space, Permissions.permissions.delete_note)) return;
 		if(!confirm(i18next.t('Really delete this note?'))) return false;
 		this.model.destroy()
 			.catch(function(err) {

@@ -21,6 +21,13 @@ var SpacesEditController = FormController.extend({
 		if(!this.model) this.model = new Space();
 		this.action = this.model.is_new() ? 'Create': 'Edit';
 
+		var perm_map = {
+			edit: Permissions.permissions.edit_space
+		};
+		if(!this.model.is_new()) {
+			if(!permcheck(this.model, perm_map['edit'])) return this.release();
+		}
+
 		this.modal = new TurtlModal({
 			show_header: true,
 			title: this.action + ' space'
@@ -45,13 +52,15 @@ var SpacesEditController = FormController.extend({
 		var spacedata = this.model.toJSON();
 		var color = this.model.get_color().bg;
 		var default_space = turtl.user.setting('default_space');
+		var show_delete = !this.model.is_new()
+			&& this.model.can_i(Permissions.permissions.delete_space);
 		return this.html(view.render('spaces/edit', {
 			action: this.action,
 			space: spacedata,
 			color: color,
 			shared: this.model.is_shared(),
 			last_space: my_spaces.length <= 1,
-			is_new: this.model.is_new(),
+			show_delete: show_delete,
 			is_default: default_space == this.model.id(),
 		})).bind(this)
 			.then(function() {
@@ -113,6 +122,7 @@ var SpacesEditController = FormController.extend({
 	delete_space: function(e)
 	{
 		if(e) e.stop();
+		if(!permcheck(this.model, Permissions.permissions.delete_space)) return;
 		if(!confirm(i18next.t('Really delete this space and all of its data (boards and notes)?'))) return;
 		this.model.destroy()
 			.catch(function(err) {
