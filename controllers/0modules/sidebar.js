@@ -134,8 +134,12 @@ var SidebarController = Composer.Controller.extend({
 			});
 		var cur_space = current_space.toJSON();
 		cur_space.color = current_space.get_color();
+		var cur_space_id = current_space.id();
+		var cur_board_id = turtl.param_router.get().board_id;
 		return this.html(view.render('modules/sidebar', {
 			cur_space: cur_space,
+			cur_space_id: cur_space_id,
+			cur_board_id: cur_board_id,
 			spaces: space_data,
 			boards: this.boards.toJSON(),
 			open: this.is_open,
@@ -250,6 +254,7 @@ var SidebarController = Composer.Controller.extend({
 	add_space: function(e)
 	{
 		if(e) e.stop();
+		this.close();
 		new SpacesEditController();
 	},
 
@@ -270,6 +275,7 @@ var SidebarController = Composer.Controller.extend({
 	add_board: function(e)
 	{
 		if(e) e.stop();
+		this.close();
 		new BoardsEditController({
 			model: new Board({space_id: turtl.profile.current_space().id()}),
 		});

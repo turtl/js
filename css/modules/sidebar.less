@@ -60,6 +60,7 @@
 					&.notify {
 						a:before {opacity: 1;}
 					}
+					&.sel a {font-weight: bold; opacity: 0.85;}
 					a.edit {
 						icon {font-size: 18rem;}
 					}
@@ -73,6 +74,9 @@
 				li {
 					.go {
 						icon {margin: 0 6rem 0 0; opacity: 0.25;}
+					}
+					&.sel {
+						.go icon {opacity: 0.5;}
 					}
 				}
 			}

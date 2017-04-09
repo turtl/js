@@ -26,7 +26,7 @@
 					</a>
 				</li>
 				{{#each spaces}}
-					<li rel="{{id}}" class="space">
+					<li rel="{{id}}" class="space {{#equal id @root.cur_space_id}}sel{{/equal}}">
 						<a class="go" href="/spaces/{{id}}/notes" {{#if color}}style="border-color: {{color.bg}};"{{/if}}>{{title}}</a>
 						<a class="edit" href="/spaces/edit/{{id}}">{{icon 'account'}}</a>
 					</li>
@@ -49,7 +49,7 @@
 				</a>
 			</li>
 			{{#unless board_filter_active}}
-				<li class="board">
+				<li class="board {{#unless cur_board_id}}sel{{/unless}}">
 					<a class="go" href="/spaces/{{@root.cur_space.id}}/notes">
 						{{icon 'notes'}}
 						{{t 'All notes'}}
@@ -57,7 +57,7 @@
 				</li>
 			{{/unless}}
 			{{#each boards}}
-				<li rel="{{id}}" class="board">
+				<li rel="{{id}}" class="board {{#equal id @root.cur_board_id}}sel{{/equal}}">
 					<a class="go" href="/spaces/{{@root.cur_space.id}}/boards/{{id}}/notes">
 						{{icon 'board'}}
 						{{title}}
