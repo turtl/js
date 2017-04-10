@@ -49,7 +49,7 @@
 				</a>
 			</li>
 			{{#unless board_filter_active}}
-				<li class="board {{#unless cur_board_id}}sel{{/unless}}">
+				<li class="board {{#if in_all_notes}}sel{{/if}}">
 					<a class="go" href="/spaces/{{@root.cur_space.id}}/notes">
 						{{icon 'notes'}}
 						{{t 'All notes'}}

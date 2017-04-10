@@ -136,9 +136,11 @@ var SidebarController = Composer.Controller.extend({
 		cur_space.color = current_space.get_color();
 		var cur_space_id = current_space.id();
 		var cur_board_id = turtl.param_router.get().board_id;
+		var in_all_notes = turtl.router.cur_path().match(/\/spaces\/[^\/]+\/notes/);
 		return this.html(view.render('modules/sidebar', {
 			cur_space: cur_space,
 			cur_space_id: cur_space_id,
+			in_all_notes: in_all_notes,
 			cur_board_id: cur_board_id,
 			spaces: space_data,
 			boards: this.boards.toJSON(),
