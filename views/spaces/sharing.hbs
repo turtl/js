@@ -1,1 +1,35 @@
-get a job, sir
+<div class="send {{#if send_open}}open{{/if}}">
+	<form class="standard-form">
+		<input name="title" type="text" placeholder="{{t 'Invite title (shared with invitee)'}}" value="{{invite_title}}">
+		<input name="email" type="email" placeholder="{{t 'Invitee email'}}">
+		<select name="role">
+			{{#each roles}}
+				<option value="{{this}}" {{#equal this 'admin'}}selected{{/equal}}>{{this}}</option>
+			{{/each}}
+		</select>
+		<input name="passphrase" type="text" placeholder="{{t 'Passphrase (optional, but recommended)'}}">
+		<p>
+			{{t 'This passphrase is used to encrypt the invite. You can communicate it to the invitee via a secure channel (in-person, encrypted email, encrypted chat, etc).'}}
+		</p>
+		<div class="buttons">
+			<div class="button cancel">
+				<span>{{t 'Cancel'}}</span>
+			</div>
+			<div class="button">
+				<input type="submit" value="{{t 'Invite'}}">
+			</div>
+		</div>
+	</form>
+</div>
+
+<div class="members memlist">
+	<h3>{{t 'Members'}}</h3>
+	<div class="container"></div>
+</div>
+
+
+<div class="invites memlist {{#if can_add_invite}}has-perm{{/if}}">
+	<h3>{{t 'Invites'}}</h3>
+	<div class="container"></div>
+</div>
+

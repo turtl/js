@@ -1,6 +1,11 @@
 var Space = Protected.extend({
 	base_url: '/spaces',
 
+	relations: {
+		members: { collection: 'Members' },
+		invites: { collection: 'Invites' },
+	},
+
 	public_fields: [
 		'id',
 		'user_id',
@@ -94,10 +99,10 @@ var Space = Protected.extend({
 		var user_id = turtl.user.id();
 		// grab the curren user's member record
 		var member = this.get('members')
-			.filter(function(member) { return member.user_id == user_id; })[0];
+			.select_one({user_id: user_id});
 		// if no record, get out
 		if(!member) return false;
-		var role = member.role;
+		var role = member.get('role');
 		// check the permissions!
 		return Permissions.role_permissions[role].indexOf(permission) >= 0;
 	},

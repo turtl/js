@@ -2,13 +2,17 @@
   - based off email
   - can only share with confirmed accounts
   - leave a space (in edit screen)
-  - set owner to another member ("set-space-owner")
-  - implement perms checking ("add-space-invite" "edit-space-invite" "delete-space-invite")
+  - member: edit/delete
+  - invite: edit/delete
+  - sharing modal (header menu):
+    - member: leave this space
+	- owner: transfer ownership ("set-space-owner")
 - Update bookmarker
   - should be aware of spaces, have space selector
   - bookmarker should accept a URL, fill in the rest itself (title, thumbnail, desc)
-    - og:image!!
   - should save last space/last board used
 - import/export
+- upgrade from turtl v0.6
+  - ...
 - moving boards to a new space should move notes locally, but NOT sync them
   - sync records will come from server directly
