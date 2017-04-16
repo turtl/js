@@ -51,6 +51,7 @@ var SpacesMemberItemController = Composer.Controller.extend({
 		var role = this.model.get('role');
 		var email = this.model.get_email();
 		return this.html(view.render('spaces/members/item', {
+			is_me: this.model.get('user_id') == turtl.user.id(),
 			email: email,
 			role: role,
 		}));

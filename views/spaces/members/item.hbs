@@ -1,4 +1,7 @@
 <div class="share-actions"></div>
 <h2>{{email}}</h2>
-<p>{{role}}</p>
+<p>
+	{{role}}
+	{{#if is_me}} - <em>{{t 'You'}}</em>{{/if}}
+</p>
 

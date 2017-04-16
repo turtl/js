@@ -1,27 +1,18 @@
 var SpacesSharingController = Composer.Controller.extend({
 	xdom: true,
-	class_name: 'spaces-sharing',
+	class_name: 'spaces-sharing interface',
 
 	elements: {
 		'.memlist.members .container': 'member_container',
 		'.memlist.invites .container': 'invite_container',
-		'.send input[name=title]': 'inp_title',
-		'.send input[name=email]': 'inp_email',
-		'.send select[name=role]': 'inp_role',
-		'.send input[name=passphrase]': 'inp_passphrase',
 	},
 
 	events: {
-		'submit .send form': 'send_invite',
-		'click .send .button.cancel': 'close_send',
 	},
 
 	model: null,
 	members: null,
 	invites: null,
-	modal: null,
-
-	send_open: false,
 
 	init: function() {
 		if(!this.model) this.model = turtl.profile.current_space();
@@ -35,26 +26,31 @@ var SpacesSharingController = Composer.Controller.extend({
 			actions.push({name: 'menu', actions: [{name: i18next.t('Send invite'), href: '#send-invite'}]});
 		}
 
-		var title = i18next.t('Collaborators on "{{space}}"', {space: this.model.get('title')});
-		this.modal = new TurtlModal({
-			show_header: true,
-			title: title,
-			actions: actions,
-			class_name: 'turtl-modal spaces-sharing-modal',
-		});
+		var title = i18next.t('Sharing');
+		turtl.push_title(title, null, {prefix_space: true});
+		this.bind('release', turtl.pop_title.bind(null, false));
 
-		this.with_bind(this.modal, 'header:menu:fire-action', function(action, tag) {
-			switch(tag.get('href'))
-			{
-				case '#send-invite': this.open_send(); break;
-			}
+		turtl.events.trigger('header:set-actions', [
+			{name: 'menu', actions: [
+				{name: i18next.t('Settings'), href: '/settings'},
+			]},
+		]);
+		this.with_bind(turtl.events, 'header:menu:fire-action', function(action, atag) {
+			turtl.route(atag.get('href'));
 		}.bind(this));
+
+		if(this.model.can_i(Permissions.permissions.add_space_invite)) {
+			this.track_subcontroller('actions', function() {
+				var actions = new ActionController();
+				actions.set_actions([{title: 'New member', name: 'share', icon: 'add_user'}]);
+				this.with_bind(actions, 'actions:fire', this.open_send.bind(this));
+				return actions;
+			}.bind(this));
+		}
 
 		this.render()
 			.bind(this)
 			.then(function() {
-				this.modal.open(this.el);
-
 				this.sub('member-list', function() {
 					return new SpacesMemberListController({
 						inject: this.member_container,
@@ -74,9 +70,6 @@ var SpacesSharingController = Composer.Controller.extend({
 					});
 				}.bind(this));
 			});
-		var close = this.modal.close.bind(this.modal);
-		this.with_bind(this.modal, 'close', this.release.bind(this));
-		this.bind(['cancel', 'close'], close);
 	},
 
 	render: function() {
@@ -84,13 +77,8 @@ var SpacesSharingController = Composer.Controller.extend({
 		var can_edit_invite = this.model.can_i(Permissions.permissions.edit_space_invite);
 		var can_delete_invite = this.model.can_i(Permissions.permissions.delete_space_invite);
 		var space = this.model.toJSON();
-		var roles = Object.values(Permissions.roles)
-			.filter(function(r) { return r != Permissions.roles.owner; });
-		return this.html(view.render('spaces/sharing', {
+		return this.html(view.render('spaces/sharing/index', {
 			space: space,
-			roles: roles,
-			invite_title: i18next.t('Invite to "{{space}}"', {space: space.title}),
-			send_open: this.send_open,
 			can_add_invite: can_add_invite,
 			can_edit_invite: can_edit_invite,
 			can_delete_invite: can_delete_invite,
@@ -98,32 +86,8 @@ var SpacesSharingController = Composer.Controller.extend({
 	},
 
 	open_send: function() {
-		this.send_open = true;
-		this.render()
-			.bind(this)
-			.then(function() {
-				this.inp_email && this.inp_email.focus()
-			});
-	},
-
-	close_send: function() {
-		this.send_open = false;
-		this.render();
-	},
-
-	send_invite: function(e) {
-		if(e) e.stop();
-		var space_id = this.model.id();
-		var title = this.inp_title.get('value');
-		var email = this.inp_email.get('value');
-		var role = this.inp_role.get('value');
-		var passphrase = this.inp_passphrase.get('value') || false;
-
-		var invite = new Invite({
-			space_id: space_id,
-			role: role,
-			has_passphrase: !!passphrase,
-			title: title,
+		new SpacesSharingSendController({
+			model: this.model,
 		});
 	},
 });

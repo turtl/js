@@ -399,6 +399,11 @@ var User = Protected.extend({
 	{
 		return turtl.api.post('/users/confirmation/resend');
 	},
+
+	find_by_email: function(email)
+	{
+		return turtl.api.get('/users/email/'+email);
+	},
 });
 
 // we don't actually use this collection for anything but syncing

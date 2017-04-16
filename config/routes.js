@@ -7,6 +7,7 @@ config.routes = {
 	'/spaces/:space_id/notes': ['notes', 'index'],
 	'/spaces/:space_id/boards': ['boards', 'index'],
 	'/spaces/:space_id/boards/:board_id/notes': ['boards', 'notes'],
+	'/spaces/:space_id/sharing': ['spaces', 'sharing'],
 
 	'/settings': ['settings', 'index'],
 	'/settings/password': ['settings', 'password'],

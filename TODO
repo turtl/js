@@ -1,3 +1,5 @@
+- formcontroller :require_connection doesnt disable button on first render
+  - ex: add space invite when disconnected
 - Sharing
   - based off email
   - can only share with confirmed accounts

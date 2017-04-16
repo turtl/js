@@ -10,15 +10,8 @@
 }
 
 .spaces-sharing-modal {background: @theme_gutter;}
-.spaces-sharing {padding-bottom: 32rem;}
+.spaces-sharing {padding: 16rem 0;}
 .spaces-sharing {
-	.send {max-height: 0; overflow: hidden; margin: 0 0 16rem 0; transition: max-height 0.3s;}
-	.send {
-		&.open {max-height: 355rem;}
-		.standard-form {padding-bottom: 16rem; background: @theme_white !important;}
-		p {font-size: 14rem; color: @theme_gray; line-height: 1.2em;}
-		.buttons {display: flex; justify-content: space-around; align-items: center; margin: 16rem 0 0 0;}
-	}
 	.memlist {padding: 0 8rem;}
 	.memlist {
 		h3 {font-size: 1.6em; margin: 0 0 16rem 0; color: @theme_black;}
@@ -29,7 +22,11 @@
 	.item-list {margin-bottom: 32rem;}
 	.item-list {
 		li {
-			h2 {font-size: 14rem; max-width: 60%; .ellipsis();}
+			h2 {font-size: 14rem; max-width: 90%; .ellipsis();}
+			p {margin: 0; padding-bottom: 3rem;}
+			p {
+				em {color: @theme_accent;}
+			}
 		}
 
 		@item_height: 56rem;
@@ -49,5 +46,14 @@
 		> li.shared-with-me {background: @theme_shared;}
 
 	}
+}
+
+.spaces-invite {
+	.email-note {overflow: hidden; max-height: 0; transition: max-height 0.3s;}
+	.email-note {
+		&.open {max-height: 68rem;}
+		p {padding: 8rem; color: lighten(@theme_warn, 10%); margin: 0; background: @theme_gutter;}
+	}
+	p {font-size: 14rem; color: @theme_gray; line-height: 1.2em;}
 }
 
