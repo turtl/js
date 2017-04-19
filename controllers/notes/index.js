@@ -76,6 +76,7 @@ var NotesIndexController = Composer.Controller.extend({
 			}
 		}.bind(this));
 		this.with_bind(turtl.events, 'header:menu:fire-action', function(action, atag) {
+			turtl.back.push(turtl.route.bind(turtl, turtl.router.cur_path()));
 			turtl.route(atag.get('href'));
 		}.bind(this));
 		this.with_bind(turtl.events, 'search:toggle', this.toggle_search.bind(this));

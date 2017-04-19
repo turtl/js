@@ -1,18 +1,4 @@
 var boards = {
-	index: function()
-	{
-		var slide = false;
-		var page_con = turtl.controllers.pages.get_subcontroller('sub');
-		if((page_con instanceof NotesIndexController) && page_con.board_id != 'all')
-		{
-			slide = 'right';
-		}
-		turtl.back.clear();
-		turtl.controllers.pages.load(BoardsController, {}, {
-			slide: slide
-		});
-	},
-
 	notes: function()
 	{
 		var board_id = turtl.param_router.get().board_id;

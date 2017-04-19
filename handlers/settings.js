@@ -6,7 +6,6 @@ var settings = {
 		{
 			slide = 'right';
 		}
-		turtl.back.clear();
 		turtl.controllers.pages.load(SettingsController, {}, {
 			slide: slide
 		});
