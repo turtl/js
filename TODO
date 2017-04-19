@@ -1,5 +1,3 @@
-- formcontroller :require_connection doesnt disable button on first render
-  - ex: add space invite when disconnected
 - Sharing
   - based off email
   - can only share with confirmed accounts
@@ -16,5 +14,7 @@
 - import/export
 - upgrade from turtl v0.6
   - ...
+- formcontroller :require_connection doesnt disable button on first render
+  - ex: add space invite when disconnected
 - moving boards to a new space should move notes locally, but NOT sync them
   - sync records will come from server directly

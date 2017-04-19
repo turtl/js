@@ -58,6 +58,7 @@ var SpacesSharingController = Composer.Controller.extend({
 						collection: this.members,
 						edit_permission: Permissions.permissions.edit_space_member,
 						delete_permission: Permissions.permissions.delete_space_member,
+						set_owner_permission: Permissions.permissions.set_space_owner,
 					});
 				}.bind(this));
 				this.sub('invite-list', function() {

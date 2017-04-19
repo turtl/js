@@ -10,6 +10,7 @@ var SpacesMemberListController = Composer.ListController.extend({
 
 	edit_permission: null,
 	delete_permission: null,
+	set_owner_permission: null,
 
 	empty: false,
 
@@ -42,8 +43,11 @@ var SpacesMemberListController = Composer.ListController.extend({
 						space: this.space,
 						edit_permission: this.edit_permission,
 						delete_permission: this.delete_permission,
+						set_owner_permission: this.set_owner_permission,
 					});
-				}.bind(this), {container: function() { return this.container; }.bind(this)});
+				}.bind(this), {
+					container: function() { return this.container; }.bind(this)
+				});
 			});
 	},
 
@@ -51,7 +55,11 @@ var SpacesMemberListController = Composer.ListController.extend({
 		return this.html(view.render('spaces/members/list', {
 			empty: this.empty,
 			empty_msg: i18next.t('No items'),
-		}));
+		})).bind(this)
+			.then(function() {
+				if(this.empty) this.el.addClass('is-empty');
+				else this.el.removeClass('is-empty');
+			});
 	},
 });
 

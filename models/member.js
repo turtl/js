@@ -1,6 +1,8 @@
 var Member = Composer.Model.extend({
+	// used by the member controller
 	get_email: function() {
-		return this.get('username');
+		var email = this.get('username');
+		return email && email.toLowerCase();
 	}
 });
 

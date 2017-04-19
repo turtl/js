@@ -12,6 +12,12 @@
 .spaces-sharing-modal {background: @theme_gutter;}
 .spaces-sharing {padding: 16rem 0;}
 .spaces-sharing {
+	p.empty {display: none;}
+	.is-empty {
+		p.empty {display: block;}
+		.item-list {display: none;}
+	}
+
 	.memlist {padding: 0 8rem;}
 	.memlist {
 		h3 {font-size: 1.6em; margin: 0 0 16rem 0; color: @theme_black;}
@@ -51,9 +57,10 @@
 .spaces-invite {
 	.email-note {overflow: hidden; max-height: 0; transition: max-height 0.3s;}
 	.email-note {
-		&.open {max-height: 68rem;}
-		p {padding: 8rem; color: lighten(@theme_warn, 10%); margin: 0; background: @theme_gutter;}
+		&.open {max-height: 83rem;}
+		p {padding: 8rem; margin: 0; color: inherit; background: @theme_gutter;}
 	}
 	p {font-size: 14rem; color: @theme_gray; line-height: 1.2em;}
+	select.role {font-size: 14rem;}
 }
 
