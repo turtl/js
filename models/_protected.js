@@ -125,7 +125,7 @@ var Protected = Composer.RelationalModel.extend({
 
 			var do_serialize = function(model)
 			{
-				if(!(model instanceof Protected)) return false;
+				if(!(model instanceof Protected)) return Promise.resolve([model.toJSON(), false]);
 				try
 				{
 					return model.serialize({alert_empty: true});
@@ -138,21 +138,26 @@ var Protected = Composer.RelationalModel.extend({
 
 			if(rel instanceof Composer.Model)
 			{
-				var promise = do_serialize(rel);
+				var promise = Promise.resolve(do_serialize(rel))
+					.then(function(data) {
+						if(data && data[0]) public_data[key] = data[0];
+					});
 			}
 			else if(rel instanceof Composer.Collection)
 			{
-				var promise = Promise.all(rel.map(function(model) {
-					return do_serialize(model);
-				}).filter(function(p) { return !!p; }));
+				var coll = [];
+				var promise = Promise.map(rel.models(), function(model) {
+					return Promise.resolve(do_serialize(model))
+						.then(function(data) {
+							if(data && data[0]) coll.push(data[0]);
+						});
+				}).then(function() {
+					public_data[key] = coll;
+				});
 			}
 			if(!promise) return false;
 
-			return promise
-				.then(function(reldata) {
-					// set the result of the serialization into the public data
-					public_data[key] = reldata[0];
-				});
+			return promise;
 		}.bind(this))).bind(this)
 			.then(function() {
 				// serialize the main object now

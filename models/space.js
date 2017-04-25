@@ -9,8 +9,13 @@ var Space = Protected.extend({
 	public_fields: [
 		'id',
 		'user_id',
-		// NOTE: members/invites aren't in this list, but they are effectively
-		// part of the public fields. see safe_json override below.
+		// ------
+		// NOTE: we save members/invites to the local db, although we don't
+		// techinically don't want them going to the API (it will ignore them).
+		// just a reminder that this is what we want to have happen.
+		'members',
+		'invites',
+		// ------
 		'keys',
 	],
 
@@ -62,25 +67,6 @@ var Space = Protected.extend({
 			if(!this.id(true)) return;
 			turtl.search.reindex_space(this);
 		}.bind(this));
-	},
-
-	/**
-	 * override to essentially make members/invites "public" fields so they get
-	 * saved to the local DB on save. technically, we shouldn't be sending these
-	 * fields across to the API, but realistically it completely discards them
-	 * so we're safe.
-	 *
-	 * the reason we don't make the "real" public fields is because the
-	 * Protected model throws a little tantrum when trying to (de)serialize
-	 * collections in relation objects (creates double entries, deletes some
-	 * entries, etc). don't have time to dig right now, so hacking this.
-	 */
-	safe_json: function()
-	{
-		var data = this.parent.apply(this, arguments);
-		data.members = this.get('members').safe_json();
-		data.invites = this.get('invites').safe_json();
-		return data;
 	},
 
 	update_keys: function(options)

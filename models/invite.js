@@ -34,6 +34,16 @@ var Invite = Protected.extend({
 		return email && email.toLowerCase();
 	},
 
+	serialize: function() {
+		if(!this.key) this.gen_invite_key();
+		return this.parent.apply(this, arguments);
+	},
+
+	deserialize: function() {
+		if(!this.key) this.gen_invite_key();
+		return this.parent.apply(this, arguments);
+	},
+
 	gen_invite_key: function(passphrase) {
 		if(!passphrase) passphrase = this.default_passphrase;
 		var hashme = 'invite salt';
