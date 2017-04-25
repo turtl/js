@@ -1,13 +1,17 @@
 var SpacesMemberItemController = Composer.Controller.extend({
 	xdom: true,
 	tag: 'li',
+	class_name: 'member',
 
 	elements: {
 		'.share-actions': 'actions_container',
+		'.editing select[name=role]': 'inp_role',
 	},
 
 	events: {
 		'click .menu a[href=#edit]': 'open_edit',
+		'click .editing a[href=#save]': 'save_edit',
+		'click .editing a[href=#cancel]': 'cancel_edit',
 		'click .menu a[href=#delete]': 'open_delete',
 		'click .menu a[href=#set-owner]': 'open_set_owner',
 	},
@@ -18,6 +22,8 @@ var SpacesMemberItemController = Composer.Controller.extend({
 	edit_permission: null,
 	delete_permission: null,
 	set_owner_permission: null,
+
+	edit_mode: false,
 
 	init: function() {
 		if(!this.model) {
@@ -59,16 +65,57 @@ var SpacesMemberItemController = Composer.Controller.extend({
 	render: function() {
 		var role = this.model.get('role');
 		var email = this.model.get_email();
+		var roles = {};
+		Object.keys(Permissions.roles).forEach(function(role) {
+			if(role == Permissions.roles.owner) return;
+			roles[Permissions.roles[role]] = Permissions.desc[role];
+		});
 		return this.html(view.render('spaces/members/item', {
 			is_me: this.model.get('user_id') == turtl.user.id(),
 			email: email,
 			role: role,
+			edit_mode: this.edit_mode,
+			roles: roles,
 		}));
 	},
 
 	open_edit: function(e) {
 		if(e) e.stop();
-		console.log('edit');
+		this.edit_mode = true;
+		this.render();
+	},
+
+	save_edit: function(e) {
+		if(e) e.stop();
+		if(!this.inp_role) {
+			this.edit_mode = false;
+			this.render();
+			return;
+		}
+		var role = this.inp_role.get('value');
+		var clone = this.model.clone();
+		clone.set({role: role});
+		clone.save()
+			.bind(this)
+			.then(function() {
+				this.edit_mode = false;
+				this.model.set(clone.toJSON());
+				this.render();
+			})
+			.catch(function(err) {
+				if(err.disconnected) {
+					barfr.barf(i18next.t('Couldn\'t connect to the server'));
+					return;
+				}
+				turtl.events.trigger('ui-error', i18next.t('There was a problem editing the user'), err);
+				log.error('spaces: sharing: edit user: ', err, derr(err));
+			});
+	},
+
+	cancel_edit: function(e) {
+		if(e) e.stop();
+		this.edit_mode = false;
+		this.render();
 	},
 
 	open_delete: function(e) {

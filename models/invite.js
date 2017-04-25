@@ -1,6 +1,4 @@
 var Invite = Protected.extend({
-	base_url: '/invites',
-
 	public_fields: [
 		'id',
 		'space_id',
@@ -17,8 +15,17 @@ var Invite = Protected.extend({
 
 	default_passphrase: 'this is the default passphrase lol',
 
+	sync: RemoteSync,
+	url: function() {
+		var base = '/spaces/'+this.get('space_id')+'/invites';
+		if(!this.is_new()) base += '/'+this.id();
+		return base;
+	},
+
 	init: function() {
-		this.set({id: this.cid()});
+		if(!this.id(true)) {
+			this.set({id: this.cid()});
+		}
 	},
 
 	// used by the member controller
