@@ -124,6 +124,7 @@ var Protected = Composer.RelationalModel.extend({
 
 			var do_serialize = function(model)
 			{
+				if(!(model instanceof Protected)) return false;
 				try
 				{
 					return model.serialize({alert_empty: true});
@@ -208,6 +209,7 @@ var Protected = Composer.RelationalModel.extend({
 
 			var do_deserialize = function(model)
 			{
+				if(!(model instanceof Protected)) return false;
 				try
 				{
 					return model.deserialize();
