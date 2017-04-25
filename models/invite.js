@@ -22,12 +22,6 @@ var Invite = Protected.extend({
 		return base;
 	},
 
-	init: function() {
-		if(!this.id(true)) {
-			this.set({id: this.cid()});
-		}
-	},
-
 	// used by the member controller
 	get_email: function() {
 		var email = this.get('to_user');
@@ -89,28 +83,18 @@ var Invite = Protected.extend({
 			});
 	},
 
-	send: function(options) {
-		var space_id = this.get('space_id');
-		return turtl.api.post('/spaces/'+space_id+'/invites', this.safe_json())
-			.bind(this)
-			.then(function(data) {
-				// NOTE: we'll have some sync_ids come through, but i'd rather
-				// not ignore them.
-				this.set(this.parse(data));
-				return this;
-			});
-	},
-
-	update: function(options) {
-		var space_id = this.get('space_id');
-		return turtl.api.put('/spaces/'+space_id+'/invites/'+this.id(), this.safe_json())
-			.bind(this)
-			.then(function(data) {
-				// NOTE: we'll have some sync_ids come through, but i'd rather
-				// not ignore them.
-				this.set(this.parse(data));
-				return this;
-			});
+	// a little tricky hack to ALWAYS send the ID with save()
+	save: function(options) {
+		var id = this.id();
+		var _tmp_safe = this.safe_json.bind(this);
+		this.safe_json = function() {
+			var data = _tmp_safe.apply(arguments);
+			data.id = id;
+			return data;
+		};
+		var promise = this.parent.apply(this, arguments);
+		this.safe_json = _tmp_safe;
+		return promise;
 	},
 });
 
