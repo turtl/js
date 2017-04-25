@@ -100,6 +100,7 @@ var SpacesMemberItemController = Composer.Controller.extend({
 			.then(function() {
 				this.edit_mode = false;
 				this.model.set(clone.toJSON());
+				this.space.save();
 				this.render();
 			})
 			.catch(function(err) {
@@ -122,6 +123,10 @@ var SpacesMemberItemController = Composer.Controller.extend({
 		if(e) e.stop();
 		if(!confirm(i18next.t('Really delete this user from this space?'))) return;
 		this.model.destroy()
+			.bind(this)
+			.then(function() {
+				this.space.save();
+			})
 			.catch(function(err) {
 				if(err.disconnected) {
 					barfr.barf(i18next.t('Couldn\'t connect to the server'));
