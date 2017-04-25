@@ -112,6 +112,7 @@ var Protected = Composer.RelationalModel.extend({
 
 		// serialize all *public* relations into an object
 		var public_data = {};
+
 		return Promise.all(Object.keys(this.relations).map(function(key) {
 			var rel = this.get(key);
 			if(!rel) return false;
@@ -342,7 +343,6 @@ var Protected = Composer.RelationalModel.extend({
 			if(!decrypted_key) continue;
 			break;
 		}
-		if(!decrypted_key) console.log('XXX');
 		return decrypted_key || false;
 	},
 
