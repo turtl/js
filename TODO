@@ -1,6 +1,7 @@
 - Sharing
-  - based off email
-  - can only share with confirmed accounts
+  - invitee: list pending invites
+    - possibly in the dropdown menu? with a red dot? (only shows if there are pending invites)
+  - can only accept share with confirmed email
   - leave a space (in edit screen)
   - member: edit/delete
   - invite: edit/delete
