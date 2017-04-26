@@ -12,7 +12,6 @@
   - should be aware of spaces, have space selector
   - bookmarker should accept a URL, fill in the rest itself (title, thumbnail, desc)
   - should save last space/last board used
-- initial spaces: add default colors!
 - import/export
 - upgrade from turtl v0.6
   - ...

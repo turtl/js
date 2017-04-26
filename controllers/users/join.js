@@ -117,14 +117,16 @@ var UserJoinController = UserBaseController.extend({
 			.then(function(userdata) {
 				var data = user.toJSON();
 				data.id = userdata.id;
-				turtl.events.bind_once('app:load:profile-loaded', this.create_initial_profile.bind(this));
 				return turtl.user.login(data)
 					.then(this.save_login.bind(this));
 			})
 			.then(function() {
 				turtl.events.bind_once('app:load:profile-loaded', function() {
-					turtl.route('/');
-				});
+					return this.create_initial_profile()
+						.then(function() {
+							turtl.route('/');
+						});
+				}.bind(this));
 			})
 			.catch(function(err) {
 				this.inp_submit.disabled = false;
@@ -145,9 +147,9 @@ var UserJoinController = UserBaseController.extend({
 
 	create_initial_profile: function()
 	{
-		var add_space = function(name)
+		var add_space = function(data)
 		{
-			var space = new Space({title: name});
+			var space = new Space(data);
 			space.create_or_ensure_key({silent: true});
 			return space.save()
 				.then(function() {
@@ -166,13 +168,13 @@ var UserJoinController = UserBaseController.extend({
 				});
 		};
 		var personal_space_id = null;
-		return add_space(i18next.t('Personal'))
+		return add_space({title: i18next.t('Personal'), color: '#408080'})
 			.then(function(space) {
 				personal_space_id = space.id();
-				return add_space(i18next.t('Work'));
+				return add_space({title: i18next.t('Work'), color: '#439645'});
 			})
 			.then(function(space) {
-				return add_space(i18next.t('Home'));
+				return add_space({title: i18next.t('Home'), color: '#800000'});
 			})
 			.then(function(space) {
 				return add_board(personal_space_id, i18next.t('Bookmarks'));
