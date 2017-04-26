@@ -125,6 +125,7 @@ var SidebarController = Composer.Controller.extend({
 		if(!this.boards) return;
 		if(!turtl.profile) return;
 		var current_space = turtl.profile.current_space();
+		if(!current_space) return;
 		var spaces = this.spaces;
 		var space_data = spaces.toJSON()
 			.map(function(space) { 
