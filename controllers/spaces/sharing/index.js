@@ -30,11 +30,24 @@ var SpacesSharingController = Composer.Controller.extend({
 		turtl.push_title(title, null, {prefix_space: true});
 		this.bind('release', turtl.pop_title.bind(null, false));
 
-		turtl.events.trigger('header:set-actions', [
-			{name: 'menu', actions: [
+		var invites = turtl.profile.get('invites');
+		var set_header_actions = function() {
+			var header_actions = [];
+			if(invites.size() > 0) {
+				header_actions.push({name: 'invites', icon: 'notification', class: 'notification mod bottom'});
+			}
+			header_actions.push({name: 'menu', actions: [
 				{name: i18next.t('Settings'), href: '/settings'},
-			]},
-		]);
+			]});
+			turtl.events.trigger('header:set-actions', header_actions);
+		}.bind(this);
+		set_header_actions();
+		this.with_bind(invites, ['add', 'remove', 'reset', 'clear'], set_header_actions);
+		this.with_bind(turtl.events, 'header:fire-action', function(name) {
+			switch(name) {
+				case 'invites': new InvitesController(); break;
+			}
+		}.bind(this));
 		this.with_bind(turtl.events, 'header:menu:fire-action', function(action, atag) {
 			turtl.route(atag.get('href'));
 		}.bind(this));

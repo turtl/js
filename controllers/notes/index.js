@@ -60,19 +60,25 @@ var NotesIndexController = Composer.Controller.extend({
 		turtl.push_title(title, back, {prefix_space: true});
 		this.bind('release', turtl.pop_title.bind(null, false));
 
-		turtl.events.trigger('header:set-actions', [
-			{name: 'search', icon: 'search'},
-			{name: 'menu', actions: [
+		var invites = turtl.profile.get('invites');
+		var set_header_actions = function() {
+			var header_actions = [];
+			if(invites.size() > 0) {
+				header_actions.push({name: 'invites', icon: 'notification', class: 'notification mod bottom'});
+			}
+			header_actions.push({name: 'search', icon: 'search'});
+			header_actions.push({name: 'menu', actions: [
 				{name: i18next.t('Share this space'), href: '/spaces/'+space_id+'/sharing'},
 				{name: i18next.t('Settings'), href: '/settings'},
-			]},
-		]);
+			]});
+			turtl.events.trigger('header:set-actions', header_actions);
+		}.bind(this);
+		set_header_actions();
+		this.with_bind(invites, ['add', 'remove', 'reset', 'clear'], set_header_actions);
 		this.with_bind(turtl.events, 'header:fire-action', function(name) {
-			switch(name)
-			{
-				case 'search':
-					this.open_search();
-					break;
+			switch(name) {
+				case 'invites': new InvitesController(); break;
+				case 'search': this.open_search(); break;
 			}
 		}.bind(this));
 		this.with_bind(turtl.events, 'header:menu:fire-action', function(action, atag) {

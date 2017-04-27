@@ -74,6 +74,9 @@ header {
 		> li {
 			&.mod {position: relative;}
 			&.mod:after {display: block; content: " "; position: absolute; top: 6rem; right: 0; width: 10rem; height: 10rem; margin: 0 0 0 0; background: @theme_warn; border-radius: 5rem;}
+			&.mod.bottom:after {top: auto; bottom: 8rem; right: 2rem;}
+
+			&.notification {margin-right: 6rem;}
 
 			a {min-width: 36rem;}
 			> a {display: inline-block; height: @header_adjusted; line-height: 42rem; text-align: center;}
