@@ -8,6 +8,9 @@
   - sharing modal (header menu):
     - member: leave this space
 	- owner: transfer ownership ("set-space-owner")
+- Delete keychain entries on model destroy
+  - spaces (delete key on unshare as well?)
+  - boards/notes?
 - Update bookmarker
   - should be aware of spaces, have space selector
   - bookmarker should accept a URL, fill in the rest itself (title, thumbnail, desc)
