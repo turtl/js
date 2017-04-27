@@ -75,14 +75,10 @@ var SpacesSharingController = Composer.Controller.extend({
 
 	render: function() {
 		var can_add_invite = this.model.can_i(Permissions.permissions.add_space_invite);
-		var can_edit_invite = this.model.can_i(Permissions.permissions.edit_space_invite);
-		var can_delete_invite = this.model.can_i(Permissions.permissions.delete_space_invite);
 		var space = this.model.toJSON();
 		return this.html(view.render('spaces/sharing/index', {
 			space: space,
 			can_add_invite: can_add_invite,
-			can_edit_invite: can_edit_invite,
-			can_delete_invite: can_delete_invite,
 		}));
 	},
 
