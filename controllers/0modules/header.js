@@ -146,9 +146,6 @@ var HeaderController = Composer.Controller.extend({
 
 	update_notification: function()
 	{
-		// NOTE: disable header notifications until we need them (for app updates
-		// for instance)
-		return;
 		if(turtl.user.logged_in && Object.keys(this.notifications).length > 0)
 		{
 			this.el.addClass('notify');
