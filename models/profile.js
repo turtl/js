@@ -37,12 +37,20 @@ var Profile = Composer.RelationalModel.extend({
 	init: function()
 	{
 		var spaces = this.get('spaces');
+		var invites = this.get('invites');
 
 		// lets certain interested parties know that the current space has
 		// changed
 		spaces.bind('change', function(space) {
 			if(space.id() != this.current_space().id()) return;
 			this.trigger('change:cur-space');
+		}.bind(this));
+
+		var num_invites = 0;
+		invites.bind(['add', 'remove', 'change'], function() {
+			if(invites.size() > num_invites) {
+				barfr.barf(i18next.t('You have pending invites! Open the Turtl menu to accept.'));
+			}
 		}.bind(this));
 	},
 
