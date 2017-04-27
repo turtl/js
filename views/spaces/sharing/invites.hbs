@@ -1,9 +1,15 @@
 <p class="empty">{{t 'You have no pending invitations'}}</p>
 <ul class="item-list">
 	{{#each invites}}
-		<li class="invite">
-			<h2>{{from_username}}</h2>
-			<p>{{title}}</p>
+		<li class="invite" rel="{{id}}">
+			<div class="info">
+				<h2>{{title}}</h2>
+				<p>{{t 'From {{user}}' user=from_username}}</p>
+			</div>
+			<div class="actions">
+				<input type="button" rel="accept" value="{{t 'Accept'}}">
+				<input type="button" rel="delete" value="{{t 'Delete'}}">
+			</div>
 		</li>
 	{{/each}}
 </ul>
