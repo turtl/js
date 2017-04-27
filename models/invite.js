@@ -2,6 +2,8 @@ var Invite = Protected.extend({
 	public_fields: [
 		'id',
 		'space_id',
+		'from_user_id',
+		'from_username',
 		'to_user',
 		'role',
 		'is_passphrase_protected',
