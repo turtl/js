@@ -1,2 +1,10 @@
-get a job
+<p class="empty">{{t 'You have no pending invitations'}}</p>
+<ul class="item-list">
+	{{#each invites}}
+		<li class="invite">
+			<h2>{{from_username}}</h2>
+			<p>{{title}}</p>
+		</li>
+	{{/each}}
+</ul>
 

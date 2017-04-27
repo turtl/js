@@ -63,3 +63,18 @@
 	select.role {font-size: 14rem;}
 }
 
+.invite-list {padding: 16rem 0;}
+.invite-list {
+	p.empty {display: none;}
+	&.is-empty {
+		p.empty {display: block;}
+		.item-list {display: none;}
+	}
+	.item-list {
+		li {
+			h2 {font-size: 14rem; max-width: 90%; .ellipsis();}
+			p {margin: 0; padding-bottom: 3rem;}
+		}
+	}
+}
+

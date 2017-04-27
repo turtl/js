@@ -45,7 +45,7 @@ var SpacesSharingController = Composer.Controller.extend({
 		this.with_bind(invites, ['add', 'remove', 'reset', 'clear'], set_header_actions);
 		this.with_bind(turtl.events, 'header:fire-action', function(name) {
 			switch(name) {
-				case 'invites': new InvitesController(); break;
+				case 'invites': turtl.route('/invites'); break;
 			}
 		}.bind(this));
 		this.with_bind(turtl.events, 'header:menu:fire-action', function(action, atag) {

@@ -1,18 +1,11 @@
 var InvitesController = Composer.Controller.extend({
 	xdom: true,
-	class_name: 'invite-list',
-
-	modal: null,
+	class_name: 'invite-list interface',
 
 	init: function() {
-		this.modal = new TurtlModal(Object.merge({
-			show_header: true,
-			title: i18next.t('Your invites'),
-		}, this.modal_opts && this.modal_opts() || {}));
-
-		var close = this.modal.close.bind(this.modal);
-		this.with_bind(this.modal, 'close', this.release.bind(this));
-		this.bind(['cancel', 'close'], close);
+		var title = i18next.t('Your invites');
+		turtl.push_title(title, null, {prefix_space: true});
+		this.bind('release', turtl.pop_title.bind(null, false));
 
 		this.render()
 			.bind(this)
@@ -23,9 +16,14 @@ var InvitesController = Composer.Controller.extend({
 
 	render: function() {
 		var invites = turtl.profile.get('invites').toJSON();
+		var empty = invites.length == 0;
 		return this.html(view.render('spaces/sharing/invites', {
 			invites: invites,
-		}));
+		})).bind(this)
+			.then(function() {
+				if(empty) this.el.addClass('is-empty');
+				else this.el.removeClass('is-empty');
+			});
 	},
 });
 
