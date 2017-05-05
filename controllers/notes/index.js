@@ -126,6 +126,8 @@ var NotesIndexController = Composer.Controller.extend({
 			this.search.tags = [];
 			this.search.colors = [];
 			this.trigger('run-search');
+			var list = this.sub('list');
+			if(list) list.trigger('search-reset');
 			var search_btn = $E('header li[rel=search]');
 			search_btn.removeClass('mod');
 		}.bind(this));
@@ -134,8 +136,8 @@ var NotesIndexController = Composer.Controller.extend({
 			search_btn.addClass('mod');
 		}.bind(this));
 		this.bind('run-search', function() {
-			var list = this.get_subcontroller('list');
-			if(list) list.trigger('search', {reset_pages: true, scroll_to_top: true});
+			var list = this.sub('list');
+			if(list) list.trigger('run-search', {reset_pages: true, scroll_to_top: true});
 		}.bind(this));
 	},
 

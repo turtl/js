@@ -11,7 +11,13 @@ var NotesListController = Composer.ListController.extend({
 		'click .paginate a': 'paginate'
 	},
 
-	view_mode: 'masonry',
+	viewstate: {
+		initial: true,
+		empty: true,
+		no_results: false,
+		mode: 'masonry',
+	},
+
 	masonry: null,
 	masonry_timer: null,
 
@@ -29,9 +35,23 @@ var NotesListController = Composer.ListController.extend({
 		this.masonry_timer = new Timer(10);
 		this.with_bind(this.masonry_timer, 'fired', this.update_masonry.bind(this));
 
-		var renderopts = {empty: true};
-		this.bind('list:empty', this.render.bind(this, renderopts));
-		this.bind('list:notempty', this.render.bind(this));
+		this.bind('list:empty', function() {
+			this.viewstate.empty = true;
+			this.render();
+		}.bind(this));
+		this.bind('list:notempty', function() {
+			this.viewstate.empty = false;
+			this.render();
+		}.bind(this));
+		this.bind('run-search', function() {
+			this.trigger.apply(this, ['search'].concat(arguments));
+			this.viewstate.searching = true;
+			this.render();
+		}.bind(this));
+		this.bind('search-reset', function() {
+			this.viewstate.searching = false;
+			this.render();
+		}.bind(this));
 		this.bind('release', function() { this.masonry_timer.unbind(); }.bind(this));
 
 		var resize_timer = new Timer(10);
@@ -50,6 +70,9 @@ var NotesListController = Composer.ListController.extend({
 			// run an initial search
 			this.do_search().bind(this)
 				.spread(function(ids, tags) {
+					// clear the "initial" state
+					this.viewstate.initial = false;
+
 					// curtail rendering duplicate result sets
 					this._last_search = JSON.stringify(ids);
 
@@ -94,8 +117,7 @@ var NotesListController = Composer.ListController.extend({
 						this._last_search = string_ids;
 
 						// let render know what's going on
-						if(ids.length == 0) { renderopts.no_results = true; }
-						else { delete renderopts.no_results; }
+						this.viewstate.no_results = ids.length === 0;
 
 						// always go back to the top after a search
 						if(options.scroll_to_top)
@@ -110,17 +132,17 @@ var NotesListController = Composer.ListController.extend({
 					});
 				});
 		}.bind(this));
-		this.render({initial: true});
+		this.render();
 	},
 
-	render: function(options)
+	render: function()
 	{
-		options || (options = {});
+		var empty = this.viewstate.empty && !this.viewstate.searching;
+		var no_results = this.viewstate.no_results && this.viewstate.searching;
 		return this.html(view.render('notes/list', {
-			initial: options.initial,
-			empty: options.no_results ? false : options.empty,
-			no_results: options.no_results,
-			view_mode: this.view_mode,
+			state: this.viewstate,
+			empty: empty,
+			no_results: no_results,
 			show_prev: this.search.page > 1,
 			show_next: ((this.search.page * this.search.per_page) < turtl.search.total),
 		})).bind(this)
@@ -143,7 +165,7 @@ var NotesListController = Composer.ListController.extend({
 
 	update_view: function()
 	{
-		switch(this.view_mode)
+		switch(this.viewstate.mode)
 		{
 			case 'masonry':
 				this.masonry_timer.reset();
@@ -159,7 +181,7 @@ var NotesListController = Composer.ListController.extend({
 
 	update_masonry: function()
 	{
-		if(!this.view_mode.match(/^masonry/)) return;
+		if(!this.viewstate.mode.match(/^masonry/)) return;
 
 		if(this.masonry) this.masonry.detach();
 		var start = new Date().getTime();

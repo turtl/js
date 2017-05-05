@@ -6,6 +6,14 @@
 .notes {
 	@note_list_margin: 3.125rem;
 	.list-container {padding: (@note_list_margin * 2) @note_list_margin;}
+	.list-container {
+		.view-states {
+			.page-empty {display: none;};
+			&.initial .initial {display: block;}
+			&.no-results .no-results {display: block;}
+			&.empty .empty {display: block;}
+		}
+	}
 	ul.note-list {position: relative; width: 100%; margin: 0; padding: 0; list-style: none;}
 	ul.note-list {
 		li {margin: 0 @note_list_margin (@note_list_margin * 2) @note_list_margin;}

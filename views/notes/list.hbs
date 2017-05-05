@@ -1,17 +1,14 @@
-{{#if initial}}
-	<p class="page-empty">{{t 'Decrypting notes...'}}</p>
-{{/if}}
-{{#if no_results}}
-	<p class="page-empty">{{t 'No notes found.'}}</p>
-{{/if}}
-{{#if empty}}
-	<p class="page-empty">
+<div class="view-states {{#if empty}}empty{{/if}} {{#if state.initial}}initial{{/if}} {{#if no_results}}no-results{{/if}}">
+	<p class="page-empty initial">{{t 'Decrypting notes...'}}</p>
+	<p class="page-empty no-results">{{t 'No notes found.'}}</p>
+	<p class="page-empty empty">
 		{{icon 'notes'}}
 		{{t 'No notes here!'}}<br>
 		<small>{{t 'Tap <em>+</em> to start'}}</small>
 	</p>
-{{/if}}
-<ul class="note-list clear {{view_mode}}"></ul>
+</div>
+
+<ul class="note-list clear {{state.mode}}"></ul>
 
 <p class="paginate">
 	{{#if show_prev}}
