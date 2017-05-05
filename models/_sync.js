@@ -7,7 +7,7 @@ var Sync = Composer.Model.extend({
 	enabled: false,
 
 	// some polling vars
-	connected: true,
+	connected: false,
 	_polling: false,
 	_outgoing_sync_running: false,
 

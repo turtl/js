@@ -20,6 +20,12 @@ var Members = SyncCollection.extend({
 		if(a.get('role') == Permissions.roles.owner) return -1;
 		if(b.get('role') == Permissions.roles.owner) return 1;
 		return (a.get_email() || '').localeCompare(b.get_email() || '');
+	},
+
+	find_user: function(user_id) {
+		return this.find(function(m) {
+			return m.get('user_id') == user_id;
+		});
 	}
 });
 

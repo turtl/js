@@ -1,13 +1,9 @@
+- note empty screen doesnt show up when last note is deleted from board
 - Sharing
-  - unshare not removing space
-  - add space.can_i to boards in sidebar
   - leave a space (in edit screen)
-  - leave a space (in share screen)
   - member: edit/delete
     - edit duplicates the item actions
-  - sharing modal (header menu):
-    - member: leave this space
-	- owner: transfer ownership ("set-space-owner")
+  - owner: transfer ownership ("set-space-owner")
 - Delete keychain entries on model destroy
   - spaces (delete key on unshare as well?)
   - boards/notes?

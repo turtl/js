@@ -147,6 +147,8 @@ var SidebarController = Composer.Controller.extend({
 			cur_board_id: cur_board_id,
 			spaces: space_data,
 			boards: this.boards.toJSON(),
+			can_add_boards: current_space.can_i(Permissions.permissions.add_board),
+			can_edit_boards: current_space.can_i(Permissions.permissions.edit_board),
 			open: this.is_open,
 			space_state: this.space_state,
 			last_sync: (turtl.sync || {}).last_sync,

@@ -8,6 +8,7 @@ var SpacesEditController = FormController.extend({
 	},
 
 	events: {
+		'click a[rel=share]': 'share_space',
 		'click a[rel=delete]': 'delete_space',
 		'click a[rel=leave]': 'leave_space',
 	},
@@ -47,18 +48,19 @@ var SpacesEditController = FormController.extend({
 
 	render: function()
 	{
+		var is_shared = this.model.is_shared_with_me();
 		var my_spaces = turtl.profile.get('spaces')
-			.filter(function(space) { return !space.is_shared(); });
+			.filter(function(space) { return !space.is_shared_with_me(); });
 		var spacedata = this.model.toJSON();
 		var color = this.model.get_color().bg;
 		var default_space = turtl.user.setting('default_space');
 		var show_delete = !this.model.is_new()
-			&& (this.model.is_shared() || this.model.can_i(Permissions.permissions.delete_space));
+			&& (is_shared || this.model.can_i(Permissions.permissions.delete_space));
 		return this.html(view.render('spaces/edit', {
 			action: this.action,
 			space: spacedata,
 			color: color,
-			shared: this.model.is_shared(),
+			shared: is_shared,
 			last_space: my_spaces.length <= 1,
 			show_delete: show_delete,
 			is_default: default_space == this.model.id(),
@@ -119,6 +121,13 @@ var SpacesEditController = FormController.extend({
 			});
 	},
 
+	share_space: function(e)
+	{
+		// let the link route. just make sure we close the modal in case we're
+		// already on the share page the route doesnt trigger
+		this.trigger('close');
+	},
+
 	delete_space: function(e)
 	{
 		if(e) e.stop();
@@ -130,5 +139,30 @@ var SpacesEditController = FormController.extend({
 				barfr.barf(i18next.t('There was a problem deleting your space: {{message}}', {message: err.message}));
 			});
 	},
+
+	leave_space: function(e)
+	{
+		if(e) e.stop();
+		if(!turtl.sync.connected) {
+			barfr.barf(i18next.t('Leaving a space requires a connection to the Turtl server'));
+			return;
+		}
+		if(!confirm(i18next.t('Really leave this space?'))) return;
+		var member = this.model.get('members').find_user(turtl.user.id());
+		if(!member) return false;
+		return member.destroy()
+			.bind(this)
+			.then(function() {
+				this.model.destroy({skip_remote_sync: true});
+			})
+			.catch(function(err) {
+				if(err.disconnected) {
+					barfr.barf(i18next.t('Couldn\'t connect to the server'));
+					return;
+				}
+				turtl.events.trigger('ui-error', i18next.t('There was a problem leaving the space'), err);
+				log.error('spaces: edit: leave: ', err, derr(err));
+			});
+	}
 });
 

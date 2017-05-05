@@ -121,7 +121,7 @@ var Space = Protected.extend({
 			.filter(function(m) { return m.get('role') == Permissions.roles.owner; })[0];
 	},
 
-	is_shared: function()
+	is_shared_with_me: function()
 	{
 		return !this.is_new() && this.get('user_id') != turtl.user.id();
 	},

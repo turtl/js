@@ -36,6 +36,7 @@ var SpacesMemberItemController = Composer.Controller.extend({
 			throw new Error('members: item: no space passed');
 		}
 		this.with_bind(this.model, 'change', this.render.bind(this));
+		this.with_bind(this.model, 'leave-space', this.open_leave.bind(this));
 		this.render()
 			.bind(this)
 			.then(function() {
@@ -156,7 +157,7 @@ var SpacesMemberItemController = Composer.Controller.extend({
 	open_leave: function(e) {
 		if(e) e.stop();
 		if(!confirm(i18next.t('Really leave this space?'))) return;
-		this.do_delete({skip_space_save: true})
+		this.do_delete()
 			.then(function() {
 				this.space.destroy({skip_remote_sync: true});
 			})

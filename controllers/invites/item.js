@@ -87,6 +87,8 @@ var InvitesItemController = Composer.Controller.extend({
 								return turtl.sync.poll_api_for_changes({force: true});
 							})
 							.then(function() {
+								var space = turtl.profile.get('spaces').get(space_id) || new Space();
+								barfr.barf(i18next.t('Invite accepted! You are now a member of the space "'+space.get('title')+'"'));
 								turtl.route('/spaces/'+space_id+'/notes');
 							})
 							.catch(function(err) {

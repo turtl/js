@@ -36,9 +36,12 @@ var SpacesSharingController = Composer.Controller.extend({
 			if(invites.size() > 0) {
 				header_actions.push({name: 'invites', icon: 'notification', class: 'notification mod bottom'});
 			}
-			header_actions.push({name: 'menu', actions: [
-				{name: i18next.t('Settings'), href: '/settings'},
-			]});
+			var menu_actions = []
+			menu_actions.push({name: i18next.t('Settings'), href: '/settings'});
+			if(this.model.is_shared_with_me()) {
+				menu_actions.push({name: i18next.t('Leave this space'), href: '#leave'});
+			}
+			header_actions.push({name: 'menu', actions: menu_actions});
 			turtl.events.trigger('header:set-actions', header_actions);
 		}.bind(this);
 		set_header_actions();
@@ -50,6 +53,9 @@ var SpacesSharingController = Composer.Controller.extend({
 			}
 		}.bind(this));
 		this.with_bind(turtl.events, 'header:menu:fire-action', function(action, atag) {
+			if(atag.get('href').match(/#leave/)) {
+				return this.open_leave();
+			}
 			turtl.route(atag.get('href'));
 		}.bind(this));
 
@@ -100,6 +106,13 @@ var SpacesSharingController = Composer.Controller.extend({
 		new SpacesSharingSendController({
 			model: this.model,
 		});
+	},
+
+	open_leave: function(e) {
+		if(e) e.stop();
+		var model = this.members.find_user(turtl.user.id());
+		if(!model) return;
+		model.trigger('leave-space');
 	},
 });
 

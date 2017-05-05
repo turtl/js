@@ -43,10 +43,14 @@
 		</div>
 		<ul class="boards">
 			<li class="add">
-				<a href="/boards/add">
-					{{t 'Boards'}}
-					{{icon 'add'}}
-				</a>
+				{{#if can_add_boards}}
+					<a href="/boards/add">
+						{{t 'Boards'}}
+						{{icon 'add'}}
+					</a>
+				{{else}}
+					<span>{{t 'Boards'}}</span>
+				{{/if}}
 			</li>
 			{{#unless board_filter_active}}
 				<li class="board {{#if in_all_notes}}sel{{/if}}">
@@ -62,7 +66,9 @@
 						{{icon 'board'}}
 						{{title}}
 					</a>
-					<a class="edit" href="/boards/edit/{{id}}">{{icon 'account'}}</a>
+					{{#if @root.can_edit_boards}}
+						<a class="edit" href="/boards/edit/{{id}}">{{icon 'account'}}</a>
+					{{/if}}
 				</li>
 			{{/each}}
 		</ul>
