@@ -41,18 +41,23 @@ var NotesViewController = NoteBaseController.extend({
 		}
 		var space = turtl.profile.current_space();
 
-		var actions = [];
-		if(!this.hide_actions)
-		{
-			if(space.can_i(Permissions.permissions.delete_note)) {
-				actions.push({name: 'menu', actions: [{name: 'Delete'}]});
-			}
-		}
 		this.modal = new TurtlModal(Object.merge({
 			show_header: true,
 			title: this.title,
-			actions: actions
+			actions: []
 		}, this.modal_opts && this.modal_opts() || {}));
+		var setup_actions = function() {
+			var actions = [];
+			if(!this.hide_actions) {
+				if(space.can_i(Permissions.permissions.delete_note)) {
+					actions.push({name: 'menu', actions: [{name: 'Delete'}]});
+				}
+			}
+			this.modal.actions = actions;
+			this.modal.render_header();
+		}.bind(this);
+		setup_actions();
+		this.with_bind(space.get('members'), ['change', 'reset'], setup_actions);
 		this.render();
 
 		var close = this.modal.close.bind(this.modal);
@@ -64,8 +69,7 @@ var NotesViewController = NoteBaseController.extend({
 		this.with_bind(this.model.get('file'), 'change', this.render.bind(this));
 		this.with_bind(this.model, 'destroy', close);
 		this.with_bind(this.modal, 'header:menu:fire-action', function(action) {
-			switch(action)
-			{
+			switch(action) {
 				case 'delete': this.open_delete(); break;
 			}
 		}.bind(this));

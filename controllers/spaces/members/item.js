@@ -14,6 +14,7 @@ var SpacesMemberItemController = Composer.Controller.extend({
 		'click .editing a[href=#cancel]': 'cancel_edit',
 		'click .menu a[href=#delete]': 'open_delete',
 		'click .menu a[href=#set-owner]': 'open_set_owner',
+		'click .menu a[href=#leave]': 'open_leave',
 	},
 
 	model: null,
@@ -40,7 +41,10 @@ var SpacesMemberItemController = Composer.Controller.extend({
 			.then(function() {
 				var actions = [];
 				var is_me = this.model.get('user_id') == turtl.user.id();
-				if(!is_me) {
+				var is_owner = this.model.get('user_id') == this.space.get_owner().get('user_id');
+				if(is_me && !is_owner) {
+					actions.push({name: i18next.t('Leave this space'), href: '#leave'});
+				} else if(!is_me && !is_owner) {
 					if(this.space.can_i(this.edit_permission)) {
 						actions.push({name: i18next.t('Edit'), href: '#edit'});
 					}
@@ -119,19 +123,26 @@ var SpacesMemberItemController = Composer.Controller.extend({
 		this.render();
 	},
 
-	open_delete: function(e) {
-		if(e) e.stop();
-		if(!confirm(i18next.t('Really delete this user from this space?'))) return;
-		this.model.destroy()
+	do_delete: function() {
+		return this.model.destroy()
 			.bind(this)
-			.then(function() {
-				this.space.save();
-			})
 			.catch(function(err) {
 				if(err.disconnected) {
 					barfr.barf(i18next.t('Couldn\'t connect to the server'));
 					return;
 				}
+				throw err;
+			});
+	},
+
+	open_delete: function(e) {
+		if(e) e.stop();
+		if(!confirm(i18next.t('Really delete this user from this space?'))) return;
+		this.do_delete()
+			.then(function() {
+				this.space.save();
+			})
+			.catch(function(err) {
 				turtl.events.trigger('ui-error', i18next.t('There was a problem deleting the user'), err);
 				log.error('spaces: sharing: delete user: ', err, derr(err));
 			});
@@ -140,6 +151,19 @@ var SpacesMemberItemController = Composer.Controller.extend({
 	open_set_owner: function(e) {
 		if(e) e.stop();
 		console.log('set owner');
+	},
+
+	open_leave: function(e) {
+		if(e) e.stop();
+		if(!confirm(i18next.t('Really leave this space?'))) return;
+		this.do_delete({skip_space_save: true})
+			.then(function() {
+				this.space.destroy({skip_remote_sync: true});
+			})
+			.catch(function(err) {
+				turtl.events.trigger('ui-error', i18next.t('There was a problem leaving the space'), err);
+				log.error('spaces: sharing: leave: ', err, derr(err));
+			});
 	},
 });
 

@@ -2,7 +2,7 @@ var Member = Composer.Model.extend({
 	sync: RemoteSync,
 	url: function() {
 		var base = '/spaces/'+this.get('space_id')+'/members';
-		if(!this.is_new()) base += '/'+this.id();
+		if(!this.is_new()) base += '/'+this.get('user_id');
 		return base;
 	},
 
@@ -14,6 +14,12 @@ var Member = Composer.Model.extend({
 });
 
 var Members = SyncCollection.extend({
-	model: Member
+	model: Member,
+
+	sortfn: function(a, b) {
+		if(a.get('role') == Permissions.roles.owner) return -1;
+		if(b.get('role') == Permissions.roles.owner) return 1;
+		return (a.get_email() || '').localeCompare(b.get_email() || '');
+	}
 });
 

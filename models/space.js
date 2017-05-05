@@ -115,6 +115,12 @@ var Space = Protected.extend({
 		return Permissions.role_permissions[role].indexOf(permission) >= 0;
 	},
 
+	get_owner: function()
+	{
+		return this.get('members')
+			.filter(function(m) { return m.get('role') == Permissions.roles.owner; })[0];
+	},
+
 	is_shared: function()
 	{
 		return !this.is_new() && this.get('user_id') != turtl.user.id();
@@ -206,6 +212,13 @@ var Space = Protected.extend({
 var Spaces = SyncCollection.extend({
 	model: Space,
 	local_table: 'spaces',
-	sortfn: function(a, b) { return a.id().localeCompare(b.id()); },
+	sortfn: function(a, b) {
+		var default_space = turtl.user.setting('default_space');
+		var is_default_a = a.id() == default_space;
+		var is_default_b = b.id() == default_space;
+		if(is_default_a) return -1;
+		if(is_default_b) return 1;
+		return (a.get('title') || '').toLowerCase().localeCompare((b.get('title') || '').toLowerCase());
+	}
 });
 

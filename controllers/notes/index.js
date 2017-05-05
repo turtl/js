@@ -91,9 +91,12 @@ var NotesIndexController = Composer.Controller.extend({
 
 		this.render();
 
-		if(space.can_i(Permissions.permissions.add_note)) {
+		var setup_actions = function() {
+			this.remove('actions');
+			if(!space.can_i(Permissions.permissions.add_note)) return;
+
 			// set up the action button
-			this.track_subcontroller('actions', function() {
+			this.sub('actions', function() {
 				var actions = new ActionController();
 				actions.set_actions([
 					{title: i18next.t('Text note'), name: 'text', icon: 'write', shortcut: 't'},
@@ -102,14 +105,16 @@ var NotesIndexController = Composer.Controller.extend({
 					{title: i18next.t('File'), name: 'file', icon: 'file', shortcut: 'f'},
 					{title: i18next.t('Password'), name: 'password', icon: 'password', shortcut: 'p'}
 				]);
-				this.with_bind(actions, 'actions:fire', this.open_add.bind(this));
+				this.with_bind(actions, 'actions:fire', this.open_add.bind(this), 'notes:action-fire:open-add');
 				this.with_bind(turtl.keyboard, 'a', function() {
 					if(actions.is_open) return;
 					actions.open();
-				});
+				}, 'notes:keyboard:open-add');
 				return actions;
 			}.bind(this));
-		}
+		}.bind(this);
+		setup_actions();
+		this.with_bind(space.get('members'), ['change', 'reset'], setup_actions);
 
 		this.with_bind(turtl.search, 'search-tags', function(tags) {
 			this.saved_tags = tags;

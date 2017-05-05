@@ -1,10 +1,13 @@
+- space sort order: default first, then alphabetical
 - Sharing
-  - invitee: list pending invites
-    - possibly in the dropdown menu? with a red dot? (only shows if there are pending invites)
-  - can only accept share with confirmed email
+  - invites are duplicated after accepting then reloading
+  - add "Share this space" button to space edit interface
+  - unshare not removing space
+  - add space.can_i to boards in sidebar
   - leave a space (in edit screen)
+  - leave a space (in share screen)
   - member: edit/delete
-  - invite: edit/delete
+    - edit duplicates the item actions
   - sharing modal (header menu):
     - member: leave this space
 	- owner: transfer ownership ("set-space-owner")

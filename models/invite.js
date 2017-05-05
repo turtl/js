@@ -30,15 +30,30 @@ var Invite = Protected.extend({
 		return email && email.toLowerCase();
 	},
 
-	serialize: function() {
+	// -------------------------------------------------------------------------
+	// NOTE: the invite's version of (de)serialize() only actually runs the
+	// crypto operations if we specifically tell it to via an option argument.
+	// the reason behind this is that the SyncCollection.run_incoming_sync_item
+	// will call deserialize() on an incoming invite, and if that invite is
+	// passphrase-protected, the crypto will fail. bad news bears.
+	//
+	// since all the data we need to display/interact with invites is in the
+	// public data, we only really need to (de)serialize when we open/seal the
+	// invite.
+	serialize: function(options) {
+		options || (options = {});
+		if(!options.run_crypto) return Promise.resolve([this.safe_json(), null]);
 		if(!this.key) this.gen_invite_key();
 		return this.parent.apply(this, arguments);
 	},
 
-	deserialize: function() {
+	deserialize: function(options) {
+		options || (options = {});
+		if(!options.run_crypto) return Promise.resolve();
 		if(!this.key) this.gen_invite_key();
 		return this.parent.apply(this, arguments);
 	},
+	// -------------------------------------------------------------------------
 
 	gen_invite_key: function(passphrase) {
 		if(!passphrase) passphrase = this.default_passphrase;
@@ -65,12 +80,12 @@ var Invite = Protected.extend({
 			is_passphrase_protected: !!passphrase,
 			is_pubkey_protected: !!pubkey,
 		});
-		return this.serialize();
+		return this.serialize({run_crypto: true});
 	},
 
 	open: function(pubkey, privkey, passphrase) {
 		this.gen_invite_key(passphrase);
-		return this.deserialize()
+		return this.deserialize({run_crypto: true})
 			.bind(this)
 			.then(function() {
 				var message = this.get('message');
@@ -97,6 +112,10 @@ var Invite = Protected.extend({
 		var promise = this.parent.apply(this, arguments);
 		this.safe_json = _tmp_safe;
 		return promise;
+	},
+
+	accept: function() {
+		return turtl.api.post('/spaces/'+this.get('space_id')+'/invites/accepted/'+this.id());
 	},
 });
 

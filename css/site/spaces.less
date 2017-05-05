@@ -71,17 +71,31 @@
 		.item-list {display: none;}
 	}
 	.item-list {
-		li {display: flex; align-items: center; justify-content: space-between;}
-		li {
-			.info {max-width: 60%;}
-			.info {
-				h2 {font-size: 14rem; max-width: 90%; .ellipsis();}
-				p {margin: 0; padding-bottom: 3rem; .ellipsis();}
+		@item_height: 56rem;
+		@item_pad_top: 6rem;
+		@item_pad_side: 9rem;
+		> li {padding: @item_pad_top 9rem;}
+		> li {
+			&.disconnected {
+				.invite-actions {display: none;}
 			}
-			.actions {display: flex; flex: 1 50%; justify-content: flex-end;}
-			.actions {
-				input {margin: 0 2rem;}
-				input:last-child {margin-right: 0;}
+			.invite-data {
+				div.item-actions > a {width: 16rem; height: @item_height; margin: -@item_pad_top -@item_pad_side 0 0; padding: 0 @item_pad_side 0 16rem; line-height: @item_height + 4rem;}
+				h2 {font-size: 14rem; max-width: 90%; .ellipsis();}
+				h2 {
+					icon {font-size: 13rem; opacity: 0.7;}
+				}
+				p {margin: 0; padding-bottom: 3rem;}
+			}
+
+			.unseal {overflow: hidden; width: 100%; max-height: 0; transition: max-height 0.3s;}
+			.unseal {
+				&.open {max-height: 153rem;}
+				.confirmation {font-size: 14rem; margin: 0;}
+				form {padding: 9rem; .uncard(); background: @theme_gutter;}
+				form {
+					p.form-note {margin: 0; padding-top: 0;}
+				}
 			}
 		}
 	}

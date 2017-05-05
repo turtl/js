@@ -1,28 +1,29 @@
-var SpacesMemberListController = Composer.ListController.extend({
+var InvitesController = Composer.ListController.extend({
 	xdom: true,
+	class_name: 'invite-list interface',
 
 	elements: {
 		'.item-list': 'container',
 	},
 
-	space: null,
 	collection: null,
-
-	edit_permission: null,
-	delete_permission: null,
-	set_owner_permission: null,
 
 	empty: false,
 
 	init: function() {
-		if(!this.space) {
-			this.release();
-			throw new Error('members: list: no space passed');
-		}
-		if(!this.collection) {
-			this.release();
-			throw new Error('members: list: no collection passed');
-		}
+		this.collection = turtl.profile.get('invites');
+		var title = i18next.t('Your invites');
+		turtl.push_title(title, null);
+		this.bind('release', turtl.pop_title.bind(null, false));
+
+		turtl.events.trigger('header:set-actions', [
+			{name: 'menu', actions: [
+				{name: i18next.t('Settings'), href: '/settings'},
+			]}
+		]);
+		this.with_bind(turtl.events, 'header:menu:fire-action', function(action, atag) {
+			turtl.route(atag.get('href'));
+		}.bind(this));
 
 		this.bind('list:empty', function() {
 			this.empty = true;
@@ -37,13 +38,9 @@ var SpacesMemberListController = Composer.ListController.extend({
 			.bind(this)
 			.then(function() {
 				this.track(this.collection, function(model, options) {
-					return new SpacesMemberItemController({
+					return new InvitesItemController({
 						inject: options.container,
 						model: model,
-						space: this.space,
-						edit_permission: this.edit_permission,
-						delete_permission: this.delete_permission,
-						set_owner_permission: this.set_owner_permission,
 					});
 				}.bind(this), {
 					container: function() { return this.container; }.bind(this)
@@ -52,10 +49,8 @@ var SpacesMemberListController = Composer.ListController.extend({
 	},
 
 	render: function() {
-		return this.html(view.render('spaces/members/list', {
-			empty: this.empty,
-			empty_msg: i18next.t('None'),
-		})).bind(this)
+		return this.html(view.render('invites/index', {}))
+			.bind(this)
 			.then(function() {
 				if(this.empty) this.el.addClass('is-empty');
 				else this.el.removeClass('is-empty');

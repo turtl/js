@@ -42,6 +42,7 @@ var SpacesSharingController = Composer.Controller.extend({
 			turtl.events.trigger('header:set-actions', header_actions);
 		}.bind(this);
 		set_header_actions();
+		this.with_bind(this.model, 'destroy', turtl.route.bind(turtl, '/'));
 		this.with_bind(invites, ['add', 'remove', 'reset', 'clear'], set_header_actions);
 		this.with_bind(turtl.events, 'header:fire-action', function(name) {
 			switch(name) {

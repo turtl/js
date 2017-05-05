@@ -56,6 +56,7 @@ var SidebarController = Composer.Controller.extend({
 						true;
 					return is_in_filter;
 				}.bind(this),
+				sortfn: Spaces.prototype.sortfn,
 			});
 			this.boards = new BoardsFilter(turtl.profile.get('boards'), {
 				filter: function(b) {
@@ -127,7 +128,8 @@ var SidebarController = Composer.Controller.extend({
 		var current_space = turtl.profile.current_space();
 		if(!current_space) return;
 		var spaces = this.spaces;
-		var space_data = spaces.toJSON()
+		var space_data = spaces
+			.toJSON()
 			.map(function(space) { 
 				if(space.id == current_space.id()) space.current = true;
 				space.color = spaces.get(space.id).get_color();
