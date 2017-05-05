@@ -284,6 +284,9 @@ var turtl = {
 				});
 
 			// logout shortcut
+			turtl.keyboard.bind('control+shift+l', function() {
+				SettingsController.prototype.wipe_data();
+			}, 'dashboard:shortcut:clear-data');
 			turtl.keyboard.bind('shift+l', function() {
 				turtl.route('/users/logout');
 			}, 'dashboard:shortcut:logout');
