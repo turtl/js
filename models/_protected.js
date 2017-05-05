@@ -277,15 +277,27 @@ var Protected = Composer.RelationalModel.extend({
 	 */
 	safe_json: function()
 	{
-		var data = this.toJSON();
 		var safe_keys = this.public_fields.slice(0);
 		safe_keys.push(this.body_key);
 		var safe = {};
-		Object.keys(data).forEach(function(key) {
-			if(!safe_keys.contains(key)) return;
-			safe[key] = data[key];
-		});
-		return safe;
+		safe_keys.forEach(function(key) {
+			var myval = {};
+			var val = this.get(key, myval);
+			var to_json = function(model) {
+				if(model instanceof Protected) {
+					return model.safe_json();
+				} else {
+					return model.toJSON();
+				}
+			};
+			if(val instanceof Composer.Collection) {
+				val = val.map(to_json);
+			} else if(val instanceof Composer.Model) {
+				val = to_json(val);
+			}
+			if(val !== myval) safe[key] = val;
+		}.bind(this));
+		return clone(safe);
 	},
 
 	/**
