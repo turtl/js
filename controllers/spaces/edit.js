@@ -53,7 +53,7 @@ var SpacesEditController = FormController.extend({
 		var color = this.model.get_color().bg;
 		var default_space = turtl.user.setting('default_space');
 		var show_delete = !this.model.is_new()
-			&& this.model.can_i(Permissions.permissions.delete_space);
+			&& (this.model.is_shared() || this.model.can_i(Permissions.permissions.delete_space));
 		return this.html(view.render('spaces/edit', {
 			action: this.action,
 			space: spacedata,

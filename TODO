@@ -1,6 +1,4 @@
 - Sharing
-  - deleting a space member removes the space from the user's list (but not data)
-  - add "Share this space" button to space edit interface
   - unshare not removing space
   - add space.can_i to boards in sidebar
   - leave a space (in edit screen)
