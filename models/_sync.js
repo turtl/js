@@ -260,7 +260,7 @@ var Sync = Composer.Model.extend({
 						var failures = synced.failures;
 						if(failures.length) {
 							log.error('sync: outgoing: errors: ', failures);
-							barfr.barf(i18next.t('There was a problem syncing to the server ({{num}} items failed to sync). Go to Settings > Sync info for more information.', failures.length));
+							barfr.barf(i18next.t('There was a problem syncing to the server ({{num}} items failed to sync). Go to Settings > Sync info for more information.', {num: failures.length}));
 						}
 						if(!synced.success) return;
 						var actions = synced.success.map(function(sync) {
