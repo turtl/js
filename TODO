@@ -1,5 +1,4 @@
 - Sharing
-  - leave a space (in edit screen)
   - member: edit/delete
     - edit duplicates the item actions
   - owner: transfer ownership ("set-space-owner")
