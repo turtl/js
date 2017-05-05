@@ -83,9 +83,7 @@ var InvitesItemController = Composer.Controller.extend({
 						return this.model.accept()
 							.bind(this)
 							.then(function() {
-								// remove it from collections without calling out to the
-								// api
-								this.model.trigger('destroy');
+								this.model.destroy({skip_remote_sync: true});
 								return turtl.sync.poll_api_for_changes({force: true});
 							})
 							.then(function() {
