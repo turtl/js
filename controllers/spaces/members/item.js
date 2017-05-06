@@ -35,36 +35,41 @@ var SpacesMemberItemController = Composer.Controller.extend({
 			this.release();
 			throw new Error('members: item: no space passed');
 		}
+
+		var update_actions = function() {
+			var actions = [];
+			var is_me = this.model.get('user_id') == turtl.user.id();
+			var is_owner = this.model.get('user_id') == this.space.get_owner().get('user_id');
+			if(is_me && !is_owner) {
+				actions.push({name: i18next.t('Leave this space'), href: '#leave'});
+			} else if(!is_me && !is_owner) {
+				if(this.space.can_i(this.edit_permission)) {
+					actions.push({name: i18next.t('Edit'), href: '#edit'});
+				}
+				if(this.space.can_i(this.delete_permission)) {
+					actions.push({name: i18next.t('Delete'), href: '#delete'});
+				}
+				if(this.set_owner_permission && this.space.can_i(this.set_owner_permission)) {
+					actions.push({name: i18next.t('Set as owner'), href: '#set-owner'});
+				}
+			}
+			if(actions.length > 0) {
+				this.sub('actions', function() {
+					return new ItemActionsController({
+						inject: this.actions_container,
+						actions: [actions],
+					});
+				}.bind(this));
+			} else {
+				this.remove('actions');
+			}
+		}.bind(this);
+
 		this.with_bind(this.model, 'change', this.render.bind(this));
 		this.with_bind(this.model, 'leave-space', this.open_leave.bind(this));
 		this.render()
 			.bind(this)
-			.then(function() {
-				var actions = [];
-				var is_me = this.model.get('user_id') == turtl.user.id();
-				var is_owner = this.model.get('user_id') == this.space.get_owner().get('user_id');
-				if(is_me && !is_owner) {
-					actions.push({name: i18next.t('Leave this space'), href: '#leave'});
-				} else if(!is_me && !is_owner) {
-					if(this.space.can_i(this.edit_permission)) {
-						actions.push({name: i18next.t('Edit'), href: '#edit'});
-					}
-					if(this.space.can_i(this.delete_permission)) {
-						actions.push({name: i18next.t('Delete'), href: '#delete'});
-					}
-					if(this.set_owner_permission && this.space.can_i(this.set_owner_permission)) {
-						actions.push({name: i18next.t('Set as owner'), href: '#set-owner'});
-					}
-				}
-				if(actions.length > 0) {
-					this.sub('actions', function() {
-						return new ItemActionsController({
-							inject: this.actions_container,
-							actions: [actions],
-						});
-					}.bind(this));
-				}
-			});
+			.then(update_actions);
 	},
 
 	render: function() {

@@ -59,14 +59,20 @@ var SpacesSharingController = Composer.Controller.extend({
 			turtl.route(atag.get('href'));
 		}.bind(this));
 
-		if(this.model.can_i(Permissions.permissions.add_space_invite)) {
-			this.track_subcontroller('actions', function() {
-				var actions = new ActionController();
-				actions.set_actions([{title: 'New member', name: 'share', icon: 'add_user'}]);
-				this.with_bind(actions, 'actions:fire', this.open_send.bind(this));
-				return actions;
-			}.bind(this));
-		}
+		var set_main_action = function() {
+			if(this.model.can_i(Permissions.permissions.add_space_invite)) {
+				this.sub('actions', function() {
+					var actions = new ActionController();
+					actions.set_actions([{title: 'New member', name: 'share', icon: 'add_user'}]);
+					this.with_bind(actions, 'actions:fire', this.open_send.bind(this));
+					return actions;
+				}.bind(this));
+			} else {
+				this.remove('actions');
+			}
+		}.bind(this);
+		set_main_action();
+		this.with_bind(this.model.get('members'), 'reset', set_main_action);
 
 		this.render()
 			.bind(this)

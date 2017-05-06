@@ -1,6 +1,5 @@
+- initial spaces: set "Personal" to default
 - Sharing
-  - member: edit/delete
-    - edit duplicates the item actions
   - owner: transfer ownership ("set-space-owner")
 - Delete keychain entries on model destroy
   - spaces (delete key on unshare as well?)
@@ -16,3 +15,5 @@
   - ex: add space invite when disconnected
 - moving boards to a new space should move notes locally, but NOT sync them
   - sync records will come from server directly
+- sidebar: possible ro render boards OVER spaces by "b", "esc", "s" in fast succession
+
