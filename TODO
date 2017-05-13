@@ -4,13 +4,13 @@
 - Delete keychain entries on model destroy
   - spaces (delete key on unshare as well?)
   - boards/notes?
+- import/export
+- upgrade from turtl v0.6
+  - ...
 - Update bookmarker
   - should be aware of spaces, have space selector
   - bookmarker should accept a URL, fill in the rest itself (title, thumbnail, desc)
   - should save last space/last board used
-- import/export
-- upgrade from turtl v0.6
-  - ...
 - formcontroller :require_connection doesnt disable button on first render
   - ex: add space invite when disconnected
 - moving boards to a new space should move notes locally, but NOT sync them
