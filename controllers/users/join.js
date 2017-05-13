@@ -149,11 +149,14 @@ var UserJoinController = UserBaseController.extend({
 	{
 		var add_space = function(data)
 		{
+			var is_default = data.is_default;
+			delete data.is_default;
 			var space = new Space(data);
 			space.create_or_ensure_key({silent: true});
 			return space.save()
 				.then(function() {
 					turtl.profile.get('spaces').upsert(space);
+					if(is_default) turtl.user.setting('default_space', space.id());
 					return space;
 				});
 		};
@@ -168,7 +171,7 @@ var UserJoinController = UserBaseController.extend({
 				});
 		};
 		var personal_space_id = null;
-		return add_space({title: i18next.t('Personal'), color: '#408080'})
+		return add_space({title: i18next.t('Personal'), color: '#408080', is_default: true})
 			.then(function(space) {
 				personal_space_id = space.id();
 				return add_space({title: i18next.t('Work'), color: '#439645'});

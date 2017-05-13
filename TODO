@@ -1,4 +1,3 @@
-- initial spaces: set "Personal" to default
 - Sharing
   - owner: transfer ownership ("set-space-owner")
 - Delete keychain entries on model destroy
