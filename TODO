@@ -1,6 +1,3 @@
-- Delete keychain entries on model destroy
-  - spaces (delete key on unshare as well?)
-  - boards/notes?
 - import/export
 - upgrade from turtl v0.6
   - ...
