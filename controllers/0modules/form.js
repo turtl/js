@@ -21,7 +21,16 @@ var FormController = Composer.Controller.extend({
 	init: function()
 	{
 		turtl.keyboard.detach();	// disable keyboard shortcuts while editing
-		this.bind('release', function() { turtl.keyboard.attach(); });
+		// ...BUT close on escape
+		var esc_handler = function(e) {
+			if(e.key != 'esc') return;
+			this.trigger('cancel');
+		}.bind(this);
+		document.body.addEvent('keydown', esc_handler);
+		this.bind('release', function() {
+			turtl.keyboard.attach();
+			document.body.removeEvent('keydown', esc_handler);
+		});
 		return this.parent.apply(this, arguments);
 	},
 
@@ -109,6 +118,7 @@ var FormController = Composer.Controller.extend({
 		}.bind(this);
 		this.with_bind(turtl.events, ['api:connect', 'api:disconnect'], check_disconnect);
 		check_disconnect();
+		this.bind('xdom:render', check_disconnect);
 	},
 
 	disable: function(yesno)

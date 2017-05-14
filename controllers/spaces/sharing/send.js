@@ -28,6 +28,8 @@ var SpacesSharingSendController = FormController.extend({
 	passphrase_holder: false,
 
 	init: function() {
+		this.parent();
+
 		if(!this.model) {
 			this.release();
 			throw new Error('spaces: share: invite: no model passed');
