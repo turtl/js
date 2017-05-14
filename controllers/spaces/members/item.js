@@ -156,7 +156,13 @@ var SpacesMemberItemController = Composer.Controller.extend({
 
 	open_set_owner: function(e) {
 		if(e) e.stop();
-		console.log('set owner');
+		if(!confirm(i18next.t('Really hand ownership of this space to another member? (You will be demoted to admin)'))) return;
+		this.space.set_owner(this.model.get('user_id'))
+			.bind(this)
+			.catch(function(err) {
+				turtl.events.trigger('ui-error', i18next.t('There was a problem setting the new owner'), err);
+				log.error('spaces: sharing: set owner: ', err, derr(err));
+			});
 	},
 
 	open_leave: function(e) {

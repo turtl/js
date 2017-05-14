@@ -1,5 +1,3 @@
-- Sharing
-  - owner: transfer ownership ("set-space-owner")
 - Delete keychain entries on model destroy
   - spaces (delete key on unshare as well?)
   - boards/notes?
