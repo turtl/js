@@ -127,6 +127,24 @@ var Board = Protected.extend({
 				return unique_notes.length;
 			});
 	},
+
+	get_space: function()
+	{
+		var space_id = this.get('space_id');
+		if(!space_id) return false;
+		return turtl.profile.get('spaces').get(space_id) || false;
+	},
+
+	move_spaces: function(new_space_id) {
+		this.set({space_id: new_space_id});
+		return this.save({custom_method: 'move-space'})
+			.bind(this)
+			.then(function() {
+				return this.each_note(function(note) {
+					return note.move_spaces(new_space_id);
+				}, {decrypt: true});
+			});
+	},
 });
 
 var Boards = SyncCollection.extend({

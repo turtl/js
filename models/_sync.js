@@ -178,6 +178,9 @@ var Sync = Composer.Model.extend({
 			case 'create': sync_action = 'add'; break;
 			case 'update': sync_action = 'edit'; break;
 			case 'delete': sync_action = 'delete'; break;
+			case 'move-space':
+				sync_action = action;
+				break;
 			default: throw new Error('sync: queue outgoing change: bad action given: '+ action); break;
 		}
 		var sync = {

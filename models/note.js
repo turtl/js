@@ -98,7 +98,7 @@ var Note = Protected.extend({
 		// make sure we do this BEFORE generate_subkeys(). the reason is that
 		// many times, update_keys() gets called from save() from a board being
 		// deleted. by the time we get here, the note no longer has the board in
-		// note.boards[] however the note.keys[] collection still has the board
+		// note.board_id however the note.keys[] collection still has the board
 		// key entry in it. we use that entry to find the board if needed when
 		// finding the note's key.
 		//
@@ -267,27 +267,10 @@ var Note = Protected.extend({
 		return search;
 	},
 
-	// a hook function, called on a remote model when we get a server-generated
-	// ID.
-	sync_post_create: function()
-	{
-		var id = this.get('file').id();
-		if(!id) return;
-
-		turtl.db.files.query()
-			.only(id)
-			.modify({note_id: this.id()})
-			.execute()
-			.then(function(filedata) {
-				if(!filedata || !filedata[0]) return false;
-				filedata = filedata[0];
-				delete filedata.body;
-				turtl.sync.queue_remote_change('files', 'create', filedata);
-			})
-			.catch(function(err) {
-				log.error('Error uploading file: ', id, derr(err));
-			});
-	}
+	move_spaces: function(new_space_id) {
+		this.set({space_id: new_space_id});
+		return this.save({custom_method: 'move-space'});
+	},
 });
 
 var Notes = SyncCollection.extend({

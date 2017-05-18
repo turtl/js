@@ -1,3 +1,5 @@
+- file uploads / downloads are broken
+- move notes between spaces
 - import/export
 - upgrade from turtl v0.6
   - ...
@@ -5,7 +7,5 @@
   - should be aware of spaces, have space selector
   - bookmarker should accept a URL, fill in the rest itself (title, thumbnail, desc)
   - should save last space/last board used
-- moving boards to a new space should move notes locally, but NOT sync them
-  - sync records will come from server directly
 - sidebar: possible ro render boards OVER spaces by "b", "esc", "s" in fast succession
 
