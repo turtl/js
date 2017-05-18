@@ -52,8 +52,6 @@ var FeedbackController = FormController.extend({
 		if(!this.check_errors(errors)) return;
 
 		var data = {
-			user_id: turtl.user.id(),
-			email: turtl.user.get('username'),
 			body: body
 		};
 
