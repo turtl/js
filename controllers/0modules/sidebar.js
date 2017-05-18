@@ -242,6 +242,7 @@ var SidebarController = Composer.Controller.extend({
 		if(!delay_scroll) this.space_state.scroll = false;
 		this.render();
 		setTimeout(function() {
+			if(this.space_state.open) return;
 			this.skip_close_on_next_route = false;
 			this.space_state.zin = false;
 			if(delay_scroll) this.space_state.scroll = false;
