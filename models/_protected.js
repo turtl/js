@@ -297,7 +297,7 @@ var Protected = Composer.RelationalModel.extend({
 			}
 			if(val !== myval) safe[key] = val;
 		}.bind(this));
-		return clone(safe);
+		return Composer.object.clone(safe);
 	},
 
 	/**
