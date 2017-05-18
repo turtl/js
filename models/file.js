@@ -225,12 +225,9 @@ var FileData = Protected.extend({
 				// don't try to upload until we have a real note id
 				if(!note_id) return false;
 
-				url = '/notes/'+note_id+'/file';
+				url = '/notes/'+note_id+'/attachment';
 
 				var body = data.body;
-				var data = {
-					id: this.id()
-				};
 
 				// convert body to Uint8Array
 				// OH WAIT IT ALREADY IS
@@ -238,7 +235,6 @@ var FileData = Protected.extend({
 
 				// mark the save as raw and fire it off
 				options.data = raw;
-				options.querydata = data;
 				var progressfn = options.uploadprogress;
 				options.uploadprogress = function(ev) {
 					progressfn.apply(this, arguments);
