@@ -1,5 +1,5 @@
-- file uploads / downloads are broken
-- move notes between spaces
+- file upload: sizes are doubled. probably some shitty uint8 thing
+- files: make sure downloads work
 - import/export
 - upgrade from turtl v0.6
   - ...
@@ -7,5 +7,4 @@
   - should be aware of spaces, have space selector
   - bookmarker should accept a URL, fill in the rest itself (title, thumbnail, desc)
   - should save last space/last board used
-- sidebar: possible ro render boards OVER spaces by "b", "esc", "s" in fast succession
 
