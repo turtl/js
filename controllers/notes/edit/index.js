@@ -332,7 +332,7 @@ var NotesEditController = FormController.extend({
 					file.clear();
 					return this.model.clear_files().bind(this)
 						.then(function() {
-							this.model.set({has_file: 0});
+							this.model.set({has_file: false});
 							return this.model.save();
 						})
 						.catch(function(err) {
@@ -365,7 +365,7 @@ var NotesEditController = FormController.extend({
 					.then(function() {
 						// once the file is saved, update the note to have the
 						// correct meta info about it
-						this.model.set({has_file: 1})
+						this.model.set({has_file: true})
 							.get('file')
 							.unset('encrypting')
 							.set(modeldata);
