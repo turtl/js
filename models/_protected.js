@@ -101,9 +101,8 @@ var Protected = Composer.RelationalModel.extend({
 		var json = this.toJSON();
 		var data = {};
 		this.private_fields.forEach(function(k) {
-			if(typeof json[k] == 'undefined') return;
-			data[k] = json[k];
-		});
+			data[k] = this.get(k, undefined);
+		}.bind(this));
 
 		if(options.alert_empty && Object.keys(data).length == 0)
 		{
@@ -161,11 +160,17 @@ var Protected = Composer.RelationalModel.extend({
 		}.bind(this))).bind(this)
 			.then(function() {
 				// serialize the main object now
+				var final_data = data;
+				if(options.rawdata) {
+					final_data = data[Object.keys(data)[0]];
+				} else {
+					final_data = tcrypt.from_string(JSON.stringify(data));
+				}
 				var msg = {
 					action: 'encrypt',
 					args: [
 						key,
-						tcrypt.from_string(JSON.stringify(data)),
+						final_data,
 						{ nonce: tcrypt.random_bytes(tcrypt.noncelen()) }
 					],
 				};
