@@ -58,7 +58,7 @@ var NotesEditFileController = Composer.Controller.extend({
 		reader.onload = function(e)
 		{
 			// create a new file record with the binary file data
-			var binary = e.target.result;
+			var binary = new Uint8Array(e.target.result);
 
 			// if the current note has an existing file, we're going to
 			// overwrite it, otherwise create a new one
@@ -84,7 +84,7 @@ var NotesEditFileController = Composer.Controller.extend({
 				img.src = url;
 			}
 		}.bind(this);
-		reader.readAsBinaryString(file);
+		reader.readAsArrayBuffer(file);
 	},
 
 	clear_attachment: function(e)
