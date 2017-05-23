@@ -1,4 +1,3 @@
-- file upload: sizes are doubled. probably some shitty uint8 thing
 - files: make sure downloads work
 - import/export
 - upgrade from turtl v0.6
