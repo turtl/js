@@ -248,7 +248,9 @@ var FileData = Protected.extend({
 				var auth_key = (turtl.api.user || {}).auth_key;
 				if(auth_key)
 				{
-					headers['Authorization'] = 'Basic ' + btoa('user:' + auth_key);
+					var username = turtl.api.user.username;
+					var auth_key = turtl.api.user.auth_key;
+					headers['Authorization'] = 'Basic ' + btoa(username+':'+auth_key);
 				}
 			}
 			var request = {
