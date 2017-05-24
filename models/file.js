@@ -82,7 +82,7 @@ var NoteFile = Protected.extend({
 				return file.deserialize();
 			})
 			.then(function(res) {
-				return file.get('body');
+				return file.get('data');
 			});
 	},
 

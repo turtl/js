@@ -1,5 +1,5 @@
-- files are corrupted at some point in the chain
 - files: make sure downloads work
+- files: note editor blocks when attaching large file
 - import/export
 - upgrade from turtl v0.6
   - ...
