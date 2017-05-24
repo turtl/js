@@ -8,7 +8,7 @@ contains Turtl's interfaces, logic, crypto, etc.
 
 ## Documentation
 
-If you're interested in how Turtl works, [check out the docs](https://turtl.it/docs).
+If you're interested in how Turtl works, [check out the docs](https://turtlapp.com/docs/).
 
 ## Building
 
