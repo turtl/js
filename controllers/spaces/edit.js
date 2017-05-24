@@ -22,21 +22,22 @@ var SpacesEditController = FormController.extend({
 		if(!this.model) this.model = new Space();
 		this.action = this.model.is_new() ? 'Create': 'Edit';
 
-		var perm_map = {
-			edit: Permissions.permissions.edit_space
-		};
-		if(!this.model.is_new()) {
-			if(!permcheck(this.model, perm_map['edit'])) return this.release();
-		}
-
 		this.modal = new TurtlModal({
 			show_header: true,
 			title: this.action + ' space'
 		});
 
+		var set_perms = function() {
+			var can_edit = this.model.is_new() ||
+				this.model.can_i(Permissions.permissions.edit_space);
+			this.disable(!can_edit);
+		}.bind(this);
+		set_perms();
+
 		this.parent();
 		this.render();
 
+		this.with_bind(this.model, 'change', set_perms);
 		this.with_bind(this.model, 'change', this.render.bind(this));
 
 		var close = this.modal.close.bind(this.modal);
@@ -48,6 +49,8 @@ var SpacesEditController = FormController.extend({
 
 	render: function()
 	{
+		var can_edit = this.model.is_new() || 
+			this.model.can_i(Permissions.permissions.edit_space);
 		var is_shared = this.model.is_shared_with_me();
 		var my_spaces = turtl.profile.get('spaces')
 			.filter(function(space) { return !space.is_shared_with_me(); });
@@ -57,6 +60,7 @@ var SpacesEditController = FormController.extend({
 		var show_delete = !this.model.is_new()
 			&& (is_shared || this.model.can_i(Permissions.permissions.delete_space));
 		return this.html(view.render('spaces/edit', {
+			can_edit: can_edit,
 			action: this.action,
 			space: spacedata,
 			color: color,
@@ -78,7 +82,7 @@ var SpacesEditController = FormController.extend({
 		if(e) e.stop();
 		var title = this.inp_title.get('value').toString().trim();
 		var color = this.inp_color.get('value');
-		var default_space = this.inp_default.get('checked');
+		var default_space = this.inp_default && this.inp_default.get('checked');
 
 		var errors = [];
 		if(!title) errors.push(i18next.t('Please give your space a title'));

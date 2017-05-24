@@ -21,7 +21,7 @@
 						<span>{{t 'Cancel'}}</span>
 					</div>
 				{{/if}}
-				<div class="button flat submit">
+				<div class="button flat submit {{#if disabled}}disabled{{/if}}">
 					<input type="submit" {{#if tabindex}}tabindex="{{tabindex}}"{{/if}} value="{{t action}}">
 				</div>
 			</div>

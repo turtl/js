@@ -43,7 +43,8 @@ var FormController = Composer.Controller.extend({
 			tabindex: this.button_tabindex,
 			content: content,
 			footer_actions: this.footer_actions,
-			show_cancel: this.show_cancel
+			show_cancel: this.show_cancel,
+			disabled: this.disabled,
 		}));
 	},
 

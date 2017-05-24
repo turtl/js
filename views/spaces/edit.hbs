@@ -1,10 +1,12 @@
-<input type="text" name="title" value="{{space.title}}" placeholder="{{t 'Space title'}}">
-<p class="color">
-	<label>
-		<input type="color" name="color" value="{{color}}">
-		{{t 'Select the color for this space'}}
-	</label>
-</p>
+<input type="text" name="title" value="{{space.title}}" placeholder="{{t 'Space title'}}" {{#unless can_edit}}disabled{{/unless}}>
+{{#if can_edit}}
+	<p class="color">
+		<label>
+			<input type="color" name="color" value="{{color}}">
+			{{t 'Select the color for this space'}}
+		</label>
+	</p>
+{{/if}}
 
 {{#unless shared}}
 	<p class="default">
