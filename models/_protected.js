@@ -101,7 +101,9 @@ var Protected = Composer.RelationalModel.extend({
 		var json = this.toJSON();
 		var data = {};
 		this.private_fields.forEach(function(k) {
-			data[k] = this.get(k, undefined);
+			var val = this.rawdata ? this.get(k, undefined) : json[k];
+			if(val === undefined) return;
+			data[k] = val;
 		}.bind(this));
 
 		if(options.alert_empty && Object.keys(data).length == 0)
@@ -161,7 +163,7 @@ var Protected = Composer.RelationalModel.extend({
 			.then(function() {
 				// serialize the main object now
 				var final_data = data;
-				if(options.rawdata) {
+				if(this.rawdata) {
 					final_data = data[Object.keys(data)[0]];
 				} else {
 					final_data = tcrypt.from_string(JSON.stringify(data));
@@ -178,7 +180,7 @@ var Protected = Composer.RelationalModel.extend({
 					cqueue.push(msg, function(err, res) {
 						if(err || res.error) return reject(err || res.error);
 						var enc = res.success.c;
-						if(!options.skip_base64) enc = tcrypt.to_base64(enc);
+						if(!this.rawdata) enc = tcrypt.to_base64(enc);
 						// update our public data object with the encrypted
 						public_data[this.body_key] = enc;
 						this.set(public_data, options);
@@ -208,7 +210,7 @@ var Protected = Composer.RelationalModel.extend({
 		var body = this.get(this.body_key);
 		if(!body) return new Promise.reject('protected: deserialize: missing data: ', this.table || this.base_url, this.id());
 		var data = body;
-		if(!options.rawdata) data = tcrypt.from_base64(data);
+		if(!this.rawdata) data = tcrypt.from_base64(data);
 		if(!data) return new Promise.reject('protected: deserialize: missing data: ', this.table || this.base_url, this.id());
 
 		// decrypt all relational objects first
@@ -270,7 +272,7 @@ var Protected = Composer.RelationalModel.extend({
 			})
 			.tap(function(bin) {
 				if(options.setter) return options.setter(bin)
-				if(options.rawdata) {
+				if(this.rawdata) {
 					var body = {};
 					var datakey = this.private_fields[0];
 					body[datakey] = bin;

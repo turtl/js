@@ -118,6 +118,7 @@ var NoteFile = Protected.extend({
 });
 
 var FileData = Protected.extend({
+	rawdata: true,
 	base_url: '/files',
 
 	public_fields: [
@@ -153,43 +154,16 @@ var FileData = Protected.extend({
 	// -------------------------------------------------------------------------
 	// hook into some of the Protected model's crypto functions.
 	// -------------------------------------------------------------------------
-	// we never HAD files when the old format existed, so we can just assume we
-	// don't need this
-	detect_old_format: function(data)
-	{
-		return data;
-	},
-
 	// search in-mem notes for our key
 	find_key: function()
 	{
 		var note_id = this.get('note_id');
 		if(note_id) var note = turtl.profile.get('notes').get(note_id);
-		if(note)
-		{
+		if(note) {
 			this.key = note.key;
 			return this.key;
 		}
 		return this.parent.apply(this, arguments);
-	},
-
-	// set some binary-friendly options
-	serialize: function(options)
-	{
-		options || (options = {});
-		// TODO: move these options to class params
-		options.rawdata = true;
-		options.skip_base64 = true;
-		return this.parent.call(this, options);
-	},
-
-	// set some binary-friendly options
-	deserialize: function(options)
-	{
-		options || (options = {});
-		// TODO: move these options to class params
-		options.rawdata = true;
-		return this.parent.call(this, options);
 	},
 	// -------------------------------------------------------------------------
 
