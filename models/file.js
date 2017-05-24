@@ -27,9 +27,20 @@ var NoteFile = Protected.extend({
 
 	toJSON: function()
 	{
-		var data = this.parent.apply(this, arguments);
-		delete data.blob_url;
-		return data;
+		var data = this.get('data');
+		if(data)
+		{
+			this.unset('data', {silent: true});
+			var json = this.parent.apply(this, arguments);
+			var obj = {data: data};
+			this.set(obj, {silent: true});
+		}
+		else
+		{
+			var json = this.parent.apply(this, arguments);
+		}
+		delete json.blob_url;
+		return json;
 	},
 
 	find_key: function()
@@ -134,14 +145,15 @@ var FileData = Protected.extend({
 
 	toJSON: function()
 	{
-		var data = this.get(this.body_key);
-		if(data)
+		var data = this.get('data');
+		var body = this.get('body');
+		if(data || body)
 		{
+			this.unset('data', {silent: true});
 			this.unset(this.body_key, {silent: true});
 			var json = this.parent.apply(this, arguments);
-			json[this.body_key] = data;
-			var obj = {};
-			obj[this.body_key] = data;
+			var obj = {data: data};
+			obj[this.body_key] = body;
 			this.set(obj, {silent: true});
 			return json;
 		}
@@ -258,15 +270,8 @@ var FileData = Protected.extend({
 				.spread(function(res, xhr) { return res; });
 		}.bind(this);
 
-		// chrome/firefox are both being really bitchy about a very simple 302
-		// redirect, so we essentially just do it ourselves here.
-		args.disable_redirect = 1;
-		return turtl.api.get('/notes/'+note_id+'/file', args).bind(this)
+		return turtl.api.get('/notes/'+note_id+'/attachment', args).bind(this)
 			.then(do_download);
-		//return turtl.api.get('/notes/'+note_id+'/file', args, {
-		//	response_type: 'arraybuffer',
-		//	progress: options.progress
-		//});
 	},
 
 	/**
