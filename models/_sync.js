@@ -331,7 +331,7 @@ var Sync = Composer.Model.extend({
 			.bind(this)
 			.then(function(rec) {
 				this.set({sync_id: rec ? rec.value : null})
-				this.poll_api_for_changes({skip_notify: true});
+				this.poll_api_for_changes({immediate: true, skip_notify: true});
 			})
 			.catch(function(err) {
 				log.error('sync: problem grabbing sync_id: ', derr(err));
@@ -378,8 +378,8 @@ var Sync = Composer.Model.extend({
 		this.trigger('poll:start', poll_id);
 		var failed = false;
 		var sync_id = this.get('sync_id');
-		var sync_url = '/sync?sync_id='+sync_id+'&client_id='+turtl.client_id;
-		return turtl.api.get(sync_url, null, {timeout: 60000})
+		var sync_url = '/sync?sync_id='+sync_id+'&client_id='+turtl.client_id+'&immediate='+(options.immediate ? 1 : 0);
+		return turtl.api.get(sync_url, null, {timeout: 70000})
 			.bind(this)
 			.then(function(sync) {
 				if(!enabled()) return false;
@@ -428,7 +428,15 @@ var Sync = Composer.Model.extend({
 				if(!enabled()) return false;
 				if(!options.force)
 				{
-					setTimeout(this.poll_api_for_changes.bind(this, {}), 10000);
+					if(config.sync_short_poll) {
+						setTimeout(this.poll_api_for_changes.bind(this, {}), 10000);
+					} else {
+						if(failed) {
+							setTimeout(this.poll_api_for_changes.bind(this, {immediate: true}), 10000);
+						} else {
+							this.poll_api_for_changes();
+						}
+					}
 				}
 			});
 	},

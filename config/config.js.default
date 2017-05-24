@@ -29,6 +29,7 @@ var config = {
 	// whether or not to sync data w/ server
 	sync_to_api: true,
 	poll_api_for_changes: true,
+	sync_short_poll: false,
 
 	// enable things like INVITE TO GET MOAR STORAGE
 	enable_promo: false,
