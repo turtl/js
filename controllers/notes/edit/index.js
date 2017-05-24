@@ -293,7 +293,7 @@ var NotesEditController = FormController.extend({
 
 		// grab the file binary, and clear it out from the model
 		var file_set = clone.get('file').get('set');
-		var file_id = clone.get('file').id();
+		var file_id = clone.id();
 		if(file_set)
 		{
 			var filebin = clone.get('file').get('data');
@@ -369,7 +369,7 @@ var NotesEditController = FormController.extend({
 							.get('file')
 							.unset('encrypting')
 							.set(modeldata);
-						return this.model.save()
+						return this.model.save({skip_remote_sync: true})
 					})
 					.then(function() {
 						file.unset('no_preview').unset('set');
