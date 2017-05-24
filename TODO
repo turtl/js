@@ -1,3 +1,5 @@
+- adding notes WITHOUT files is now broken
+- files are corrupted at some point in the chain
 - files: make sure downloads work
 - import/export
 - upgrade from turtl v0.6

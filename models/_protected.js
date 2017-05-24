@@ -207,7 +207,8 @@ var Protected = Composer.RelationalModel.extend({
 
 		var body = this.get(this.body_key);
 		if(!body) return new Promise.reject('protected: deserialize: missing data: ', this.table || this.base_url, this.id());
-		var data = tcrypt.from_base64(body);
+		var data = body;
+		if(!options.rawdata) data = tcrypt.from_base64(data);
 		if(!data) return new Promise.reject('protected: deserialize: missing data: ', this.table || this.base_url, this.id());
 
 		// decrypt all relational objects first
@@ -267,10 +268,16 @@ var Protected = Composer.RelationalModel.extend({
 					}.bind(this))
 				}.bind(this));
 			})
-			.then(function(bin) {
+			.tap(function(bin) {
 				if(options.setter) return options.setter(bin)
-				var json = tcrypt.to_string(bin);
-				var body = JSON.parse(json);
+				if(options.rawdata) {
+					var body = {};
+					var datakey = this.private_fields[0];
+					body[datakey] = bin;
+				} else {
+					var json = tcrypt.to_string(bin);
+					var body = JSON.parse(json);
+				}
 				this.set(body, options);
 			});
 	},

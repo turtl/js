@@ -69,6 +69,7 @@ var NoteFile = Protected.extend({
 			return Promise.reject(new Error('file: to_array: bad_id'));
 		}
 
+		var file = new FileData();
 		return turtl.db.files.get(id).bind(this)
 			.then(function(filedata) {
 				if(!filedata)
@@ -76,20 +77,12 @@ var NoteFile = Protected.extend({
 					this.set({has_data: 0});
 					throw new Error('file: to_array: file data not present');
 				}
-				var file = new FileData();
 				file.key = this.key;
 				file.set(filedata);
 				return file.deserialize();
 			})
 			.then(function(res) {
-				var data = res.data;
-				var buffer = new ArrayBuffer(data.length);
-				var array = new Uint8Array(buffer);
-				for(var i = 0, n = data.length; i < n; i++)
-				{
-					array[i] = data.charCodeAt(i);
-				}
-				return array;
+				return file.get('body');
 			});
 	},
 
