@@ -260,7 +260,7 @@ var Sync = Composer.Model.extend({
 					.then(function(synced) {
 						log.debug('sync: outgoing: response: ', synced);
 
-						var failures = synced.failures;
+						var failures = synced.failures || [];
 						if(failures.length) {
 							log.error('sync: outgoing: errors: ', failures);
 							barfr.barf(i18next.t('There was a problem syncing to the server ({{num}} items failed to sync). Go to Settings > Sync info for more information.', {num: failures.length}));
@@ -543,6 +543,11 @@ var Sync = Composer.Model.extend({
 		}
 		else
 		{
+			// if we're running an update and our object's data is missing,
+			// don't bother. odds are the sync item directly after this is a
+			// delete =]
+			if(item.missing) return Promise.resolve();
+
 			var fn = 'update';
 			var rec = item;
 		}
@@ -570,6 +575,10 @@ var Sync = Composer.Model.extend({
 						throw err;
 					});
 			})
+			.catch(function(err) {
+				log.error('sync: save err: ', sync, rec)
+				throw err;
+			});
 	},
 
 	update_local_db_from_api_sync: function(sync_collection, options)
