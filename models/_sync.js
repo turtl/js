@@ -379,7 +379,7 @@ var Sync = Composer.Model.extend({
 		var failed = false;
 		var sync_id = this.get('sync_id');
 		var sync_url = '/sync?sync_id='+sync_id+'&client_id='+turtl.client_id+'&immediate='+(options.immediate ? 1 : 0);
-		return turtl.api.get(sync_url, null, {timeout: 70000})
+		return turtl.api.get(sync_url, null, {timeout: 100 * 1000})
 			.bind(this)
 			.then(function(sync) {
 				if(!enabled()) return false;
