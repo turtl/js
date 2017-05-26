@@ -56,6 +56,12 @@ icon.password {transform: rotate(-90deg);}
 div.buttons {text-align: center;}
 div.button {display: inline-block; margin: 0 3rem; cursor: pointer; line-height: 20rem; background: @theme_primary; .border-radius(); .layer-rest(); .transition(box-shadow .1s);}
 div.button {
+	&.disabled {cursor: default; background: @theme_gray;}
+	&.disabled {
+		input[type="submit"],
+		input[type="button"],
+		span {color: @theme_gray_light;}
+	}
 	&:active {.layer-flat();}
 	input[type="submit"],
 	input[type="button"],

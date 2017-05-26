@@ -251,6 +251,7 @@ var Profile = Composer.RelationalModel.extend({
 		var export_model_with_key = function(model)
 		{
 			var mdata = model.toJSON();
+			delete mdata.user_id;
 			mdata._key = tcrypt.to_base64(model.key);
 			return mdata;
 		};
@@ -259,10 +260,18 @@ var Profile = Composer.RelationalModel.extend({
 			return collection.map(export_model_with_key);
 		};
 
+		var boards = this.get('boards')
+			.filter(function(b) {
+				return !b.get('shared');
+			})
+			.map(function(b) {
+				return b.clone()
+					.unset('boards');
+			});
 		var data = {
 			keychain: export_collection_with_keys(this.get('keychain')),
 			personas: export_collection_with_keys(this.get('personas')),
-			boards: export_collection_with_keys(this.get('boards')),
+			boards: export_collection_with_keys(boards),
 			notes: [],
 			errors: []
 		};
@@ -323,6 +332,38 @@ var Profile = Composer.RelationalModel.extend({
 	restore: function(data, options)
 	{
 		options || (options = {});
+		var files = [];
+		data.notes.forEach(function(note) {
+			if(!note.file || !note.file._base64) return;
+			note.file.note_id = note.id;
+			var rawdata = atob(note.file._base64);
+			var file = new FileData({
+				id: note.file.id,
+				note_id: note.id,
+				has_data: 2,
+				size: rawdata.length,
+				data: rawdata,
+			});
+			// TODO: set file key as note key
+			files.push(file);
+		});
+		var config_sync_to_api = config.sync_to_api;
+		try {
+			config.sync_to_api = false;
+			var import_mapper = function(collection, type) {
+				collection.forEach(function(item) {
+					var model = new type(item);
+					model.save();
+				});
+			};
+			import_mapper(data.personas, Persona);
+			import_mapper(data.boards, Board);
+			import_mapper(data.notes, Note);
+			console.log('sync/file: ', syncs, files);
+		} catch(err) {
+		} finally {
+			config.sync_to_api = config_sync_to_api;
+		}
 	},
 
 	calculate_size: function(options)

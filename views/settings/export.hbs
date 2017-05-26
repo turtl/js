@@ -12,9 +12,26 @@
 			<div class="button">
 				<span>Export</span>
 			</div>
+			<p class="load">{{svg 'loading'}}</p>
 		</div>
 		<p class="progress">
 			This process can take a while.
+		</p>
+	</section>
+
+	<section class="import">
+		<form>
+			<input type="file" name="file">
+			<div class="buttons">
+				<div class="button">
+					<input type="submit" class="button" value="Import">
+				</div>
+				<p class="load">{{svg 'loading'}}</p>
+			</div>
+		</form>
+		<p class="progress">
+			This will merge the notes/boards in the export with the current
+			profile.
 		</p>
 	</section>
 </div>
