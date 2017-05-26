@@ -89,7 +89,7 @@ var UserLoginController = UserBaseController.extend({
 					barfr.barf(i18next.t('Couldn\'t connect to the server'));
 					return;
 				}
-				barfr.barf(i18next.t('Login failed.'));
+				barfr.barf(i18next.t('Login failed'));
 				log.error('login error: ', derr(err));
 			})
 			.finally(function() {
