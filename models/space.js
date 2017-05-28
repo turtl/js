@@ -84,7 +84,7 @@ var Space = Protected.extend({
 		if(!existing || (this.key && JSON.stringify(existing) != JSON.stringify(this.key)))
 		{
 			// key needs an add/update
-			return keychain.upsert_key(this.id(), 'space', this.key);
+			return keychain.upsert_key(this.id(), 'space', this.key, options);
 		}
 		return Promise.resolve();
 	},
