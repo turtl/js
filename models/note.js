@@ -112,7 +112,7 @@ var Note = Protected.extend({
 		if(!existing || (this.key && JSON.stringify(existing) != JSON.stringify(this.key)))
 		{
 			// key needs an add/update
-			return keychain.upsert_key(this.id(), 'note', this.key);
+			return keychain.upsert_key(this.id(), 'note', this.key, options);
 		}
 		return Promise.resolve();
 	},
