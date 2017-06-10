@@ -9,9 +9,10 @@ var $ES = function(selector, filter) {return ($(filter) || document).getElements
 // below!
 Composer.cid = (function() {
 	var counter = 0;
-	return function() {
+	return function(date) {
 		counter++;
-		return ('000000000000' + new Date().getTime().toString(16)).substr(-12) +
+		date || (date = new Date());
+		return ('000000000000' + date.getTime().toString(16)).substr(-12) +
 			turtl.client_id +
 			('0000' + (counter & 65535).toString(16)).substr(-4);
 	};
