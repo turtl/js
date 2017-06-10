@@ -65,9 +65,12 @@ div.button {
 	&:active {.layer-flat();}
 	input[type="submit"],
 	input[type="button"],
-	span {display: inline-block; padding: 13rem 32rem 11rem 32rem; color: #fff; text-transform: none; line-height: 12rem; font-size: 18.4rem; font-weight: normal; background: none; border: 0; box-shadow: none;}
+	span {
+		& {display: inline-block; padding: 13rem 32rem 11rem 32rem; color: #fff; text-transform: none; line-height: 12rem; font-size: 18.4rem; font-weight: normal; background: none; border: 0; box-shadow: none;}
+		&.disabled {cursor: default;}
+	}
 	input[type="submit"],
-	input[type="button"] {margin: 0; font-family: 'raleway', helvetica, arial, sans-serif;}
+	input[type="button"] {margin: 0; font-family: 'raleway', helvetica, arial, sans-serif; cursor: pointer;}
 	input[type="submit"],
 	input[type="button"] {
 		& {/*.transition(background .3s);*/}
