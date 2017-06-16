@@ -1,12 +1,11 @@
 var ExportController = Composer.Controller.extend({
-	class_name: 'export',
+	xdom: true,
+	class_name: 'export-page',
 
 	elements: {
 		'input[name=enex]': 'inp_enex',
 		'input[name=file]': 'inp_file',
-		'.export .button': 'btn_export',
 		'.export p.load': 'el_load_ex',
-		'.import .button': 'btn_import',
 		'.import p.load': 'el_load_im',
 	},
 
@@ -15,24 +14,33 @@ var ExportController = Composer.Controller.extend({
 		'submit section.import form': 'run_import',
 	},
 
+	viewstate: {
+		exporting: false,
+		importing: false,
+		import_count: 0,
+	},
+
 	init: function()
 	{
 		turtl.push_title(i18next.t('Import/Export'), '/settings');
-
 		this.render();
 	},
 
 	render: function()
 	{
-		this.html(view.render('settings/export', {}));
+		return this.html(view.render('settings/export', {
+			state: this.viewstate,
+		}), {ignore_children: [this.el_load_ex, this.el_load_im]});
 	},
 
 	run_export: function(e)
 	{
 		if(e) e.stop();
+		if(this.viewstate.exporting) return;
 		//var enex = this.inp_enex.matches(':checked');
 		var enex = false;
-		this.loading('export', true);
+		this.viewstate.exporting = true;
+		this.render();
 		turtl.profile.backup().bind(this)
 			.then(function(data) {
 				var errors = data.errors;
@@ -53,56 +61,68 @@ var ExportController = Composer.Controller.extend({
 				log.error('profile: export: ', derr(err));
 			})
 			.finally(function() {
-				this.loading('export', false);
+				this.viewstate.exporting = false;
+				this.render();
 			});
 	},
 
 	run_import: function(e)
 	{
 		if(e) e.stop();
+		if(this.viewstate.importing) return;
 		var file = this.inp_file.files[0];
 		if(!file) return false;
-		var reader = new FileReader();
-		var error = function(e)
-		{
-			log.error('settings: import: reader error: ', file, e.target.error);
-			this.inp_file.set('value', '');
-			barfr.barf('There was a problem reading that file: ' + e.target.error.message);
-		}.bind(this);
+		var action = this.el.getElement('.import input[name=action]:checked').get('value');
+		var load_backup = function() {
+			return new Promise(function(resolve, reject) {
+				var error = function(e)
+				{
+					reject(e && e.target && e.target.error);
+				}.bind(this);
 
-		reader.onerror = error;
-		reader.onabort = error;
-		reader.onload = function(e)
-		{
-			// create a new file record with the binary file data
-			var backup = e.target.result;
+				var reader = new FileReader();
+				reader.onerror = error;
+				reader.onabort = error;
+				reader.onload = function(e) {
+					// create a new file record with the binary file data
+					var backup = e.target.result;
 
-			log.debug('settings: import: read file: ', backup.length);
-			if(backup.indexOf('<?xml') >= 0)
-			{
-				backup = EvernoteExport.evernote_to_profile(backup);
-			}
-			else
-			{
-				backup = JSON.parse(backup);
-			}
-			// TODO: import w/ boards and tags
-			var tags = [];
-			var boards = [];
-			turtl.profile.restore(backup);
-		}.bind(this)
-		reader.readAsBinaryString(file);
-	},
-
-	loading: function(type, yesno) {
-		fn = yesno ? 'addClass' : 'removeClass';
-		if(type == 'export') {
-			this.btn_export[fn]('disabled');
-			this.el_load_ex[fn]('active');
-		} else if(type == 'import') {
-			this.btn_import[fn]('disabled');
-			this.el_load_im[fn]('active');
-		}
+					log.debug('settings: import: read file: ', backup.length);
+					if(backup.indexOf('<?xml') >= 0) {
+						backup = EvernoteExport.evernote_to_profile(backup);
+					} else {
+						backup = JSON.parse(backup);
+					}
+					resolve(backup);
+				};
+				reader.readAsBinaryString(file);
+			});
+		};
+		this.viewstate.importing = true;
+		this.viewstate.import_count = 0;
+		this.render();
+		load_backup()
+			.bind(this)
+			.then(function(backup) {
+				turtl.profile.bind('import:item', function(model) {
+					this.viewstate.import_count++;
+					this.render();
+				}.bind(this), 'export:import:counter');
+				return turtl.profile.restore(backup, {import_type: action});
+			})
+			.then(function() {
+				barfr.barf(i18next.t('Import successful!'));
+			})
+			.catch(function(err) {
+				log.error('settings: import: reader error: ', file, err);
+				this.inp_file.set('value', '');
+				barfr.barf('There was a problem reading that file: ' + err.message);
+			})
+			.finally(function() {
+				turtl.profile.unbind('import:item', 'export:import:counter');
+				this.viewstate.importing = false;
+				this.render();
+			});
 	},
 });
 

@@ -248,35 +248,36 @@ var Profile = Composer.RelationalModel.extend({
 
 		var schema_version = '1.0';
 
-		var export_model_with_key = function(model)
+		var export_model = function(model)
 		{
 			var mdata = model.toJSON();
 			delete mdata.user_id;
 			mdata._key = tcrypt.to_base64(model.key);
 			return mdata;
 		};
-		var export_collection_with_keys = function(collection)
+		var export_collection = function(collection)
 		{
-			return collection.map(export_model_with_key);
+			return collection.map(export_model);
 		};
 
 		var boards = this.get('boards')
-			.filter(function(b) {
-				return !b.get('shared');
-			})
+			.filter(function(b) { return !b.get('shared'); })
 			.map(function(b) {
 				return b.clone()
+					.unset('personas')
 					.unset('boards');
 			});
 		var data = {
-			keychain: export_collection_with_keys(this.get('keychain')),
-			personas: export_collection_with_keys(this.get('personas')),
-			boards: export_collection_with_keys(boards),
+			boards: export_collection(boards),
 			notes: [],
 			errors: []
 		};
 
 		return turtl.db.notes.query().all().execute().bind(this)
+			.then(function(notes) {
+				var user_id = turtl.user.id();
+				return notes.filter(function(note) { return note.user_id == user_id; });
+			})
 			.then(function(notes) {
 				return Promise.all(notes.map(function(notedata) {
 					var note = new Note(notedata);
@@ -291,7 +292,7 @@ var Profile = Composer.RelationalModel.extend({
 				}));
 			})
 			.then(function(notes) {
-				data.notes = notes.map(export_model_with_key);
+				data.notes = notes.map(export_model);
 				return Promise.each(data.notes, function(note) {
 					if(!note.file || !note.file.id) return;
 
@@ -322,7 +323,10 @@ var Profile = Composer.RelationalModel.extend({
 			})
 			.then(function() {
 				Object.keys(data).forEach(function(key) {
-					data[key].forEach(function(item) { delete item.body; });
+					data[key].forEach(function(item) {
+						delete item._key;
+						delete item.body;
+					});
 				});
 				data.version = schema_version;
 				return data;
@@ -332,38 +336,95 @@ var Profile = Composer.RelationalModel.extend({
 	restore: function(data, options)
 	{
 		options || (options = {});
-		var files = [];
+		var import_type = options.import_type;
 		data.notes.forEach(function(note) {
-			if(!note.file || !note.file._base64) return;
-			note.file.note_id = note.id;
-			var rawdata = atob(note.file._base64);
-			var file = new FileData({
-				id: note.file.id,
-				note_id: note.id,
-				has_data: 2,
-				size: rawdata.length,
-				data: rawdata,
-			});
-			// TODO: set file key as note key
-			files.push(file);
 		});
 		var config_sync_to_api = config.sync_to_api;
-		try {
-			config.sync_to_api = false;
-			var import_mapper = function(collection, type) {
-				collection.forEach(function(item) {
-					var model = new type(item);
-					model.save();
-				});
+		config.sync_to_api = false;
+
+		var files = [];
+		var import_mapper = function(items, type, table, collection, item_mapper) {
+			return Promise.map(items, function(item) {
+				return table.get(item.id)
+					.bind(this)
+					.then(function(exists) {
+						if(exists && import_type == 'restore') return;
+
+						// TODO: update existing (don't create new id)
+						// if mode is "replace"
+						var date = new Date(id_timestamp(item.id));
+						item.id = Composer.cid(date || null);
+						var key = tcrypt.random_key();
+						item_mapper && item_mapper(item, key);
+						var model = new type(item);
+						model.key = key;
+						return model.save()
+							.bind(this)
+							.then(function() {
+								this.trigger('import:item', model);
+								collection && collection.upsert(model);
+							});
+					});
+			}.bind(this), {concurrency: 4});
+		}.bind(this);
+		var pre = function() {
+			if(import_type != 'full') return Promise.resolve();
+			var wiper = function(items, model_class) {
+				return Promise.map(items, function(item) {
+					var model = new model_class(item);
+					return model.destroy();
+				}, {concurrency: 4});
 			};
-			import_mapper(data.personas, Persona);
-			import_mapper(data.boards, Board);
-			import_mapper(data.notes, Note);
-			console.log('sync/file: ', syncs, files);
-		} catch(err) {
-		} finally {
-			config.sync_to_api = config_sync_to_api;
-		}
+			return turtl.db.keychain.query().all().execute()
+				.then(function(keychain) {
+					return wiper(keychain, KeychainEntry);
+				})
+				.then(function() {
+					return turtl.db.boards.query().all().execute()
+				})
+				.then(function(boards) {
+					return wiper(boards, Board);
+				})
+				.then(function() {
+					return turtl.db.notes.query().all().execute();
+				})
+				.then(function(notes) {
+					return wiper(notes, Note);
+				});
+		};
+		return pre()
+			.bind(this)
+			.then(function() {
+				return import_mapper(data.boards, Board, turtl.db.boards, this.get('boards'));
+			})
+			.then(function() {
+				return import_mapper(data.notes, Note, turtl.db.notes, this.get('notes'), function(note, key) {
+					if(!note.file || !note.file._base64) return;
+					note.file.note_id = note.id;
+					var rawdata = atob(note.file._base64);
+					var file = new FileData({
+						id: note.file.id,
+						note_id: note.id,
+						has_data: 2,
+						size: rawdata.length,
+						data: rawdata,
+					});
+					file.key = key;
+					files.push(file);
+				});
+			})
+			.then(function() {
+				return Promise.map(files, function(file) {
+					return file.save()
+						.bind(this)
+						.then(function() {
+							this.trigger('import:item', file);
+						});
+				}.bind(this), {concurrency: 1});
+			})
+			.finally(function() {
+				config.sync_to_api = config_sync_to_api;
+			});
 	},
 
 	calculate_size: function(options)

@@ -1,0 +1,3 @@
+- import: if mode is "replace", update existing records
+  (see models/profile::353)
+
