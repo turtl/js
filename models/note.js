@@ -60,7 +60,10 @@ var Note = Protected.extend({
 
 		this.bind('destroy', function() {
 			if(this.disable_file_monitoring) return false;
-			this.clear_files();
+			// NOTE (ha ha): we skipt_remote_sync here because the server will
+			// see our note.delete and create a file.delete sync record for us
+			// automatically. wow!
+			this.clear_files({skip_remote_sync: true});
 		}.bind(this));
 
 		this.bind('change:id', function() {
@@ -187,22 +190,6 @@ var Note = Protected.extend({
 				options.table = 'notes';
 				return parentfn.call(this, options);
 			});
-	},
-
-	destroy: function(options)
-	{
-		options || (options = {});
-		var args = {};
-
-		this.get('file').revoke()
-
-		var promise = Promise.resolve();
-		if(this.get('file').id())
-		{
-			promise = this.clear_files();
-		}
-		var parentfn = this.$get_parent();
-		return promise.then(parentfn.bind(this, options));
 	},
 
 	// remove all file records attached to this note
