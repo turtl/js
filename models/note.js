@@ -43,8 +43,6 @@ var Note = Protected.extend({
 		// control the process by hand.
 		if(options.bare) return;
 
-		// if the note is destroyed or edited, update the index
-		this.bind('destroy', turtl.search.unindex_note.bind(turtl.search, this));
 		this.bind('change', function() {
 			if(!this.id(true)) return;
 			turtl.search.reindex_note(this);
@@ -58,6 +56,8 @@ var Note = Protected.extend({
 		this.bind('change:id', set_mod);
 		set_mod();
 
+		// if the note is destroyed or edited, update the index
+		this.bind('destroy', turtl.search.unindex_note.bind(turtl.search, this));
 		this.bind('destroy', function() {
 			if(this.disable_file_monitoring) return false;
 			// NOTE (ha ha): we skipt_remote_sync here because the server will

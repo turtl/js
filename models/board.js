@@ -22,9 +22,6 @@ var Board = Protected.extend({
 
 		this.bind('destroy', function(_1, _2, options) {
 			options || (options = {});
-
-			// remove the keychain entry only after the notes have been saved or
-			// destroyed
 			return this.each_note(function(note) { return note.destroy(options); });
 		}.bind(this));
 	},

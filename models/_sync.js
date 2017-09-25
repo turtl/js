@@ -482,7 +482,7 @@ var Sync = Composer.Model.extend({
 
 		if(type == 'file' && item.file)
 		{
-			var note_id = item.id;
+			var note_id = item.id || item.note_id;
 			item = item.file;
 			// don't let sync items overide the body on accident (body is synced
 			// separately via the file queue)
@@ -490,8 +490,7 @@ var Sync = Composer.Model.extend({
 			if(!item.note_id) item.note_id = note_id;
 			if(!item.id)
 			{
-				item.id = item.hash;
-				delete item.hash;
+				item.id = note_id;
 			}
 		}
 
