@@ -11,7 +11,7 @@ var ExportController = Composer.Controller.extend({
 
 	events: {
 		'click section.export .button': 'run_export',
-		'submit section.import form': 'run_import',
+		//'submit section.import form': 'run_import',
 	},
 
 	viewstate: {
@@ -22,7 +22,7 @@ var ExportController = Composer.Controller.extend({
 
 	init: function()
 	{
-		turtl.push_title(i18next.t('Import/Export'), '/settings');
+		turtl.push_title(i18next.t('Export'), '/settings');
 		this.render();
 	},
 
