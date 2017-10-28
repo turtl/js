@@ -1,5 +1,7 @@
 .PHONY: all clean watch
 
+export SHELL := /bin/bash
+
 NODE := $(shell which node)
 LESSC := node_modules/.bin/lessc
 HANDLEBARS := node_modules/.bin/handlebars
