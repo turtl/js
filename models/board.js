@@ -1,4 +1,4 @@
-var Board = Protected.extend({
+var Board = SyncModel.extend({
 	base_url: '/boards',
 
 	public_fields: [
@@ -14,12 +14,7 @@ var Board = Protected.extend({
 
 	init: function()
 	{
-		this.bind('destroy', turtl.search.unindex_board.bind(turtl.search, this, {full: true}));
-		this.bind('change', function() {
-			if(!this.id(true)) return;
-			turtl.search.reindex_board(this);
-		}.bind(this));
-
+		this.parent.apply(this, arguments);
 		this.bind('destroy', function(_1, _2, options) {
 			options || (options = {});
 			return this.each_note(function(note) { return note.destroy(options); });
@@ -146,6 +141,7 @@ var Board = Protected.extend({
 
 var Boards = SyncCollection.extend({
 	model: Board,
+	sync_type: 'board',
 
 	toJSON_hierarchical: function()
 	{

@@ -7,6 +7,12 @@ var config = {
 	// what client we're using
 	client: 'core',
 
+	// some options for setting up our core communication
+	core: {
+		adapter: 'websocket',
+		options: {},
+	},
+
 	api_url: 'http://turtl.dev:8181',
 
 	site_url: 'https://turtl.it',

@@ -1,4 +1,4 @@
-var Invite = Protected.extend({
+var Invite = SyncModel.extend({
 	public_fields: [
 		'id',
 		'space_id',
@@ -17,7 +17,6 @@ var Invite = Protected.extend({
 
 	default_passphrase: 'this is the default passphrase lol',
 
-	sync: RemoteSync,
 	url: function() {
 		var base = '/spaces/'+this.get('space_id')+'/invites';
 		if(!this.is_new()) base += '/'+this.id();
@@ -121,5 +120,6 @@ var Invite = Protected.extend({
 
 var Invites = SyncCollection.extend({
 	model: Invite,
+	sync_type: 'invite',
 });
 

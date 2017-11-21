@@ -49,6 +49,7 @@ var Space = Protected.extend({
 
 	init: function()
 	{
+		this.parent.apply(this, arguments);
 		this.bind('destroy', function(_1, _2, options) {
 			options || (options = {});
 			var options_nosync = clone(options);
@@ -61,11 +62,6 @@ var Space = Protected.extend({
 				.then(function() {
 					return turtl.profile.get('keychain').remove_key(this.id(), options);
 				});
-		}.bind(this));
-		this.bind('destroy', turtl.search.unindex_space.bind(turtl.search, this, {full: true}));
-		this.bind('change', function() {
-			if(!this.id(true)) return;
-			turtl.search.reindex_space(this);
 		}.bind(this));
 	},
 
@@ -221,7 +217,7 @@ var Space = Protected.extend({
 
 var Spaces = SyncCollection.extend({
 	model: Space,
-	local_table: 'spaces',
+	sync_type: 'space',
 	sortfn: function(a, b) {
 		var default_space = turtl.user.setting('default_space');
 		var is_default_a = a.id() == default_space;
@@ -229,6 +225,6 @@ var Spaces = SyncCollection.extend({
 		if(is_default_a) return -1;
 		if(is_default_b) return 1;
 		return (a.get('title') || '').toLowerCase().localeCompare((b.get('title') || '').toLowerCase());
-	}
+	},
 });
 

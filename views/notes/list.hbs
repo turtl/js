@@ -1,5 +1,8 @@
 <div class="view-states {{#if empty}}empty{{/if}} {{#if state.initial}}initial{{/if}} {{#if no_results}}no-results{{/if}}">
-	<p class="page-empty initial">{{t 'Decrypting notes...'}}</p>
+	<p class="page-empty initial">
+		{{icon 'notes'}}
+		{{t 'Loading notes...'}}
+	</p>
 	<p class="page-empty no-results">{{t 'No notes found.'}}</p>
 	<p class="page-empty empty">
 		{{icon 'notes'}}

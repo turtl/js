@@ -44,7 +44,7 @@ var NotesListController = Composer.ListController.extend({
 			this.render();
 		}.bind(this));
 		this.bind('run-search', function() {
-			this.trigger.apply(this, ['search'].concat(arguments));
+			this.trigger.apply(this, ['search'].concat(to_arr(arguments)));
 			this.viewstate.searching = true;
 			this.render();
 		}.bind(this));
@@ -68,8 +68,11 @@ var NotesListController = Composer.ListController.extend({
 
 		this.bind_once('xdom:render', function() {
 			// run an initial search
-			this.do_search().bind(this)
-				.spread(function(ids, tags) {
+			this.do_search()
+				.bind(this)
+				.spread(function(searched_notes, tags) {
+					var ids = searched_notes.map(function(n) { return n.id(); })
+
 					// clear the "initial" state
 					this.viewstate.initial = false;
 
@@ -83,11 +86,12 @@ var NotesListController = Composer.ListController.extend({
 						this.do_search(Object.merge({notify: true}, options));
 					}.bind(this));
 
-					var notes = turtl.profile.get('notes');
-					this.with_bind(notes, ['add', 'change', 'remove', 'reset', 'destroy'], function() {
+					var notes = this.notes;
+					notes.reset(searched_notes);
+					this.with_bind(turtl.events, ['sync:update:note', 'sync:local'], function() {
 						this.trigger('search');
 					}.bind(this))
-					this.track(turtl.search, function(model, options) {
+					this.track(notes, function(model, options) {
 						options || (options = {});
 						var fragment = options.fragment;
 						// since the search model only deals with IDs, here we pull
@@ -108,8 +112,9 @@ var NotesListController = Composer.ListController.extend({
 					});
 
 					this.with_bind(turtl.search, ['reset'], this.render.bind(this, {}));
-					this.bind('search-done', function(ids, _tags, _total, options) {
+					this.bind('search-done', function(_searched_notes, _tags, _total, options) {
 						options || (options = {});
+						var ids = this.notes.map(function(n) { return n.id(); })
 
 						// curtail rendering duplicate result sets
 						var string_ids = JSON.stringify(ids);
@@ -120,16 +125,15 @@ var NotesListController = Composer.ListController.extend({
 						this.viewstate.no_results = ids.length === 0;
 
 						// always go back to the top after a search
-						if(options.scroll_to_top)
-						{
+						if(options.scroll_to_top) {
 							$E('#wrap').scrollTo(0, 0);
 						}
 
 						// ok, all the notes we found are deserialized and loaded
 						// into mem, so we trigger a reset and the tracker will pick
 						// up on it and re-display the notes
-						turtl.search.trigger('reset');
-					});
+						this.notes.trigger('reset');
+					}.bind(this));
 				});
 		}.bind(this));
 		this.render();
@@ -153,10 +157,12 @@ var NotesListController = Composer.ListController.extend({
 	{
 		options || (options = {});
 
-		return turtl.search.search(this.search, {do_reset: true, upsert: options.upsert, silent: true})
+		return turtl.search.search(this.search)
 			.bind(this)
-			.tap(function(res) {
-				return turtl.profile.get('notes').load_and_deserialize(res[0], {silent: true});
+			.spread(function(res, tags, total) {
+				var opts = Object.merge({}, options, {silent: true});
+				this.notes.reset(res, opts);
+				return [res, tags, total];
 			})
 			.tap(function(res) {
 				if(options.notify) this.trigger.apply(this, ['search-done'].concat(res).concat([options]));

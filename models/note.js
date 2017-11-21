@@ -1,4 +1,4 @@
-var Note = Protected.extend({
+var Note = SyncModel.extend({
 	base_url: '/notes',
 
 	relations: {
@@ -43,10 +43,8 @@ var Note = Protected.extend({
 		// control the process by hand.
 		if(options.bare) return;
 
-		this.bind('change', function() {
-			if(!this.id(true)) return;
-			turtl.search.reindex_note(this);
-		}.bind(this));
+		this.parent.apply(this, arguments);
+
 		var set_mod = function()
 		{
 			if(this.get('mod')) return;
@@ -57,7 +55,6 @@ var Note = Protected.extend({
 		set_mod();
 
 		// if the note is destroyed or edited, update the index
-		this.bind('destroy', turtl.search.unindex_note.bind(turtl.search, this));
 		this.bind('destroy', function() {
 			if(this.disable_file_monitoring) return false;
 			// NOTE (ha ha): we skipt_remote_sync here because the server will
@@ -68,15 +65,8 @@ var Note = Protected.extend({
 
 		this.bind('change:id', function() {
 			var id = this.id();
-			if(id.match(old_id_match))
-			{
-				var ts = parseInt(id.substr(0, 8), 16)
-			}
-			else
-			{
-				var ts = parseInt(id.substr(0, 12), 16) / 1000;
-			}
-			this.set({created: ts}); //, {silent: true};
+			var ts = id_timestamp(id);
+			this.set({created: ts});
 		}.bind(this));
 		this.trigger('change:id');
 	},
@@ -262,7 +252,7 @@ var Note = Protected.extend({
 
 var Notes = SyncCollection.extend({
 	model: Note,
-	local_table: 'notes',
+	sync_type: 'note',
 
 	/**
 	 * given an array of note ids, either a) load them from local db,

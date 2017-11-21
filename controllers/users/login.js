@@ -75,25 +75,14 @@ var UserLoginController = UserBaseController.extend({
 		this.el_loader.addClass('active');
 		this.inp_submit.set('disabled', 'disabled');
 		turtl.loading(true);
-		user.test_auth().bind(this)
-			.spread(function(id, meta) {
-				var data = user.toJSON();
-				data.id = id;
+		turtl.user.login(username, password)
+			.bind(this)
+			.then(function() {
 				turtl.settings.set('last_username', user.get('username'));
-				turtl.user.set({
-					username: user.get('username'),
-					password: user.get('password')
-				});
-				turtl.user.login(data)
-					.then(this.save_login.bind(this));
 			})
+			.then(this.save_login.bind(this))
 			.catch(function(err) {
 				this.inp_submit.set('disabled', '');
-				if(err && err.xhr && err.xhr.status === 0)
-				{
-					barfr.barf(i18next.t('Couldn\'t connect to the server'));
-					return;
-				}
 				barfr.barf(i18next.t('Login failed'));
 				log.error('login error: ', derr(err));
 			})

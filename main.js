@@ -22,8 +22,6 @@ var dbname = function(api_url, user_id) { return 'turtl.server:'+api_url+',user:
 
 // 014d837656f10c160d0f98670a355bdfc69985137ab2a434d8995bc28027139cdb54310e29622253
 var cid_match = /[0-9a-f]+/;
-// 55553b952b137507650026a3
-var old_id_match = /^[0-9a-f]{24}$/;
 
 var turtl = {
 	client_id: null,
@@ -31,6 +29,9 @@ var turtl = {
 	site_url: null,
 
 	events: new Composer.Event(),
+
+	// our core communication lib.
+	core: new CoreComm(config.core.adapter, config.core.options),
 
 	// holds the user model
 	user: null,
@@ -81,20 +82,6 @@ var turtl = {
 
 	// holds the search model
 	search: null,
-
-	// holds our sync model, responsible for coordinating synchronizing of data
-	// between in-memory models, the local DB, and the API
-	sync: null,
-
-	// this is our local storage DB "server" (right now an IndexedDB abstraction
-	// which stores files and notes locally).
-	db: null,
-
-	// holds our db-backed queue
-	hustle: null,
-
-	// Files collection, used to track file uploads/downloads
-	files: null,
 	// -------------------------------------------------------------------------
 
 	init: function()
@@ -102,6 +89,7 @@ var turtl = {
 		if(this.loaded) return false;
 
 		turtl.user = new User();
+		turtl.search = new Search();
 		turtl.controllers.pages = new PagesController();
 		turtl.controllers.header = new HeaderController();
 		turtl.controllers.loading = new LoadingController();
@@ -113,6 +101,14 @@ var turtl = {
 
 		turtl.events.bind('ui-error', function(msg, err) {
 			barfr.barf(msg + ': ' + err.message);
+		});
+
+		turtl.core.bind('error', function(err) {
+			turtl.events.trigger('core-error', err);
+		});
+
+		turtl.core.bind('event', function(ev, data) {
+			turtl.dispatch_core_event(ev, data);
 		});
 
 		turtl.keyboard = new TurtlKeyboard();
@@ -129,9 +125,11 @@ var turtl = {
 		turtl.controllers.sidebar = new SidebarController();
 
 		// if a user exists, log them in
-		if(config.cookie_login)
-		{
-			this.user.login_from_cookie();
+		if(config.cookie_login) {
+			this.user.login_from_cookie()
+				.catch(function() {
+					turtl.route('/users/login');
+				});
 		}
 
 		this.loaded = true;
@@ -140,7 +138,7 @@ var turtl = {
 		this.route(initial_route);
 
 		var connect_barf_id = null;
-		turtl.events.bind('api:connect', function() {
+		turtl.events.bind('', function() {
 			log.info('API: connect');
 			if(connect_barf_id) barfr.close_barf(connect_barf_id);
 			connect_barf_id = barfr.barf(i18next.t('Connected to the Turtl service! Disengaging offline mode. Syncing your profile.'));
@@ -163,26 +161,55 @@ var turtl = {
 		});
 	},
 
+	dispatch_core_event: function(ev, data) {
+		if(ev != 'sync:connected') log.info('ui event: ', ev);
+		switch(ev) {
+			case 'user:login':
+				turtl.user.trigger('login');
+				break;
+			case 'user:logout':
+				turtl.user.do_logout();
+				break;
+			case 'user:change-password:logout':
+				barfr.barf(i18next.t('Your login was changed successfully!'));
+				break;
+			case 'user:delete':
+				barfr.barf(i18next.t('Your account has been deleted.'));
+				break;
+			case 'sync:update':
+				turtl.events.trigger('sync:update', data);
+				turtl.events.trigger('sync:update:'+data.type, data);
+				break;
+			case 'sync:connected':
+				break;
+			case 'sync:file:downloaded':
+				break;
+			case 'sync:file:uploaded':
+				break;
+			case 'sync:outgoing:failure':
+				break;
+			case 'sync:outgoing:complete':
+				break;
+			case 'migration-event':
+				break;
+			case 'profile:loaded':
+				turtl.events.trigger('profile-loaded');
+				break;
+			case 'profile:indexed':
+				turtl.events.trigger('profile-indexed');
+				break;
+		}
+	},
+
 	setup_user: function(options)
 	{
 		options || (options = {});
 
 		var load_profile = function()
 		{
-			// if the user is logged in, we'll put their auth info into the api object
-			if(!window._disable_cookie)
-			{
-				turtl.user.bind('change', turtl.user.write_cookie.bind(turtl.user), 'user:write_changes_to_cookie');
-			}
 			turtl.controllers.pages.release_sub();
-			turtl.sync = new Sync();
 			turtl.profile = new Profile();
-			turtl.search = new Search();
-			turtl.files = new Files();
-			turtl.user.gen_auth()
-				.then(function(auth) {
-					turtl.api.set_auth(turtl.user.get('username'), auth);
-				});
+
 			turtl.events.trigger('app:objects-loaded');
 
 			turtl.show_loading_screen(true);
@@ -190,18 +217,28 @@ var turtl = {
 
 			$E('body').removeClass('loggedout');
 
-			// sets up local storage
-			turtl.setup_local_db().bind({})
+			var profile_load_promise = new Promise(function(resolve, reject) {
+				turtl.events.bind_once('profile-loaded', resolve);
+			});
+			var profile_index_promise = new Promise(function(resolve, reject) {
+				turtl.events.bind_once('profile-indexed', resolve);
+			});
+
+			this.start = Date.now();
+			var sync = new Sync();
+			sync.start()
+				.bind(this)
 				.then(function() {
-					this.start = new Date().getTime();
-					turtl.setup_syncing();
+					turtl.update_loading_screen(i18next.t('Loading profile'));
+					return profile_load_promise;
+				})
+				.then(function() {
 					return turtl.profile.load();
 				})
 				.then(function() {
-					turtl.start_syncing();
-					log.info('profile: loaded in: ', (new Date().getTime()) - this.start);
+					log.info('profile: loaded in: ', Date.now() - this.start);
 					turtl.update_loading_screen(i18next.t('Indexing notes'));
-					return turtl.search.reindex();
+					return profile_index_promise;
 				})
 				.then(function() {
 					setTimeout(turtl.show_loading_screen.bind(null, false), 200);
@@ -222,8 +259,7 @@ var turtl = {
 					if(initial_route.match(/index.html/)) initial_route = space_route;
 					if(initial_route.match(/background.html/)) initial_route = space_route;
 					var dont_initial_route = ['/users/join'];
-					if(!dont_initial_route.contains(turtl.router.cur_path()))
-					{
+					if(!dont_initial_route.contains(turtl.router.cur_path())) {
 						turtl.route(initial_route);
 					}
 					options.initial_route = '/';
@@ -293,13 +329,6 @@ var turtl = {
 		}.bind(turtl);
 		this.user.bind('login', load_profile);
 		turtl.user.bind('logout', function() {
-			turtl.user.key = null;
-			turtl.user.auth = null;
-
-			// stop syncing
-			turtl.files.stop_syncing();
-			turtl.sync.stop();
-
 			$E('body').addClass('loggedout');
 
 			turtl.controllers.pages.release_sub();
@@ -307,54 +336,16 @@ var turtl = {
 			turtl.keyboard.unbind('n', 'shortcut:main:notes');
 			turtl.keyboard.unbind('b', 'shortcut:main:boards');
 			turtl.show_loading_screen(false);
-			turtl.user.unbind('change', 'user:write_changes_to_cookie');
-			turtl.api.clear_auth();
-
-			// local storage is for logged in people only
-			if(turtl.db)
-			{
-				turtl.db.close();
-				turtl.db = null;
-			}
 
 			// this should give us a clean slate
-			turtl.profile.destroy();
+			if(turtl.profile) turtl.profile.destroy();
 			turtl.profile = null;
-			turtl.search.wipe();
-			turtl.search = null;
-			turtl.files = null;
 
 			turtl.route('/');
 
 			turtl.events.trigger('user:logout');
 			if(window.port) window.port.send('logout');
 		}.bind(turtl));
-	},
-
-	setup_local_db: function()
-	{
-		return database.setup()
-			.then(function(db) {
-				turtl.db = db;
-				turtl.events.trigger('db-init');
-			})
-			.then(function() {
-				log.debug('turtl: hustle: create');
-				var db_name = 'hustle:'+dbname(config.api_url, turtl.user.id());
-				var hustle = new Hustle({
-					tubes: ['files:download', 'files:upload'],
-					db_name: db_name,
-					db_version: 4,
-					maintenance_delay: 5000
-				});
-				hustle.promisify();
-				log.debug('turtl: hustle: open');
-				return hustle.open()
-					.then(function() {
-						log.debug('turtl: hustle: opened');
-						turtl.hustle = hustle;
-					});
-			})
 	},
 
 	wipe_local_db: function(options)
@@ -394,29 +385,6 @@ var turtl = {
 	loading: function(show)
 	{
 		return false;
-	},
-
-	setup_syncing: function()
-	{
-		// register our tracking for local syncing (db => in-mem)
-		//
-		// NOTE: order matters here! since the keychain holds keys in its data,
-		// it's important that it runs before everything else, or you may wind
-		// up with data that doesn't get decrypted properly. next is the
-		// spaces, then boards, and lastly notes.
-		turtl.sync.register_local_tracker('user', new Users());
-		turtl.sync.register_local_tracker('keychain', turtl.profile.get('keychain'));
-		turtl.sync.register_local_tracker('spaces', turtl.profile.get('spaces'));
-		turtl.sync.register_local_tracker('boards', turtl.profile.get('boards'));
-		turtl.sync.register_local_tracker('notes', turtl.profile.get('notes'));
-		turtl.sync.register_local_tracker('files', turtl.files);
-		turtl.sync.register_local_tracker('invites', turtl.profile.get('invites'));
-	},
-
-	start_syncing: function()
-	{
-		turtl.sync.start();
-		turtl.files.start_syncing();
 	},
 
 	stop_spinner: false,
@@ -462,11 +430,11 @@ var turtl = {
 			enable_cb: function(url) {
 				var enabled = true;
 
-				if(turtl.user.logged_in && (!turtl.profile || !turtl.profile.profile_data))
-				{
+				if(turtl.user.logged_in && (!turtl.profile || !turtl.profile.loaded)) {
 					turtl.controllers.pages.trigger('loaded');
 					enabled = false;
 				}
+				if(turtl.user.logging_in) enabled = false;
 				if(!turtl.loaded) enabled = false;
 				return enabled;
 			}
@@ -605,20 +573,6 @@ var _turtl_init = function()
 	window.port = window.port || false;
 	window._base_url = config.base_url || '';
 	turtl.site_url = config.site_url || '';
-	turtl.api = new Api(
-		config.api_url,
-		function(cb_success, cb_fail) {
-			return function(data)
-			{
-				if(typeof(data) == 'string')
-				{
-					data = JSON.parse(data);
-				}
-				if(data.__error) cb_fail(data.__error);
-				else cb_success(data);
-			};
-		}
-	);
 
 	// custom sizing per-device, mainly to make everything look exactly like it
 	// does size-wise (in inches) on the iphone5. this is all made possible by

@@ -1,5 +1,4 @@
 var Member = Composer.Model.extend({
-	sync: RemoteSync,
 	url: function() {
 		var base = '/spaces/'+this.get('space_id')+'/members';
 		if(!this.is_new()) base += '/'+this.get('user_id');

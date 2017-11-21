@@ -15,6 +15,7 @@ var NotesIndexController = Composer.Controller.extend({
 		per_page: 100
 	},
 	board_id: null,
+	notes: null,
 
 	// holds the available tags from the last search, and is passed into the
 	// search controller. basically, this holds state so the search controller
@@ -48,14 +49,17 @@ var NotesIndexController = Composer.Controller.extend({
 		}
 
 		var tagsearch = clone(this.search);
-		this.with_bind(turtl.profile.get('notes'), ['add', 'remove', 'clear', 'reset'], function() {
-			var list = this.get_subcontroller('list');
+		this.notes = new Notes();
+		/*
+		this.with_bind(this.notes, ['add', 'remove', 'clear', 'reset'], function() {
+			var list = this.sub('list');
 			if(!list) return;
 			turtl.search.search(tagsearch)
 				.spread(function(_, tags) {
 					list.tags = tags;
 				});
 		}.bind(this));
+		*/
 
 		turtl.push_title(title, back, {prefix_space: true});
 		this.bind('release', turtl.pop_title.bind(null, false));
@@ -144,10 +148,11 @@ var NotesIndexController = Composer.Controller.extend({
 	render: function()
 	{
 		this.html(view.render('notes/index', {}));
-		this.track_subcontroller('list', function() {
+		this.sub('list', function() {
 			return new NotesListController({
 				inject: this.note_list,
-				search: this.search
+				search: this.search,
+				notes: this.notes,
 			});
 		}.bind(this));
 	},
@@ -162,7 +167,7 @@ var NotesIndexController = Composer.Controller.extend({
 
 	toggle_search: function()
 	{
-		var search = this.get_subcontroller('search');
+		var search = this.sub('search');
 		if(search)
 		{
 			search.release();
@@ -175,15 +180,15 @@ var NotesIndexController = Composer.Controller.extend({
 
 	open_search: function()
 	{
-		var tags = this.get_subcontroller('list').tags;
-		this.track_subcontroller('search', function() {
+		var tags = this.sub('list').tags;
+		this.sub('search', function() {
 			var search = new NotesSearchController({
 				tags: tags,
 				search: this.search
 			});
 			return search;
 		}.bind(this));
-		var search = this.get_subcontroller('search');
+		var search = this.sub('search');
 
 		search.bind('do-search', this.trigger.bind(this, 'run-search'));
 		search.bind('search-reset', this.trigger.bind(this, 'search-reset'));
