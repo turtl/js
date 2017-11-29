@@ -19,10 +19,14 @@
 		&.active icon {transform: rotate(90deg);}
 		icon {font-size: 14rem; color: @theme_primary; transform: rotate(270deg); .transition(transform .3s);}
 	}
-	p.settings {margin: 0 0 16rem 0; padding: 10rem; .card();}
-	p.settings {
-		label {color: @theme_gray}
-		small {font-size: 0.7em;}
+	.settings-container {max-height: 0; overflow: hidden; .transition(max-height 0.3s);}
+	.settings-container {
+		&.active {max-height: 120px;}
+		p.settings {margin: 0 0 16rem 0; padding: 10rem; .card();}
+		p.settings {
+			label {color: @theme_gray}
+			small {font-size: 0.7em;}
+		}
 	}
 
 	p.join {text-align: center;}

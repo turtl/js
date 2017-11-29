@@ -7,6 +7,10 @@ var UserBaseController = FormController.extend({
 		'change input[name=autologin]': 'toggle_autologin'
 	},
 
+	viewstate: {
+		endpoint: '',
+	},
+
 	init: function()
 	{
 		this.parent();
@@ -45,6 +49,16 @@ var UserBaseController = FormController.extend({
 			auth: turtl.user.auth
 		};
 		turtl.events.trigger('auth:save-login', authdata);
-	}
+	},
+
+	persist_endpoint: function(endpoint) {
+		if(!endpoint) return Promise.resolve();
+		if(endpoint == this.viewstate.endpoint) return Promise.resolve();
+		endpoint = endpoint.replace(/\/+$/, '');
+		log.debug('user: persisting api url');
+		localStorage.config_api_url = endpoint;
+		this.viewstate.endpoint = endpoint;
+		return App.prototype.set_api_endpoint(endpoint)
+	},
 });
 

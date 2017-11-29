@@ -31,7 +31,7 @@ var turtl = {
 	events: new Composer.Event(),
 
 	// our core communication lib.
-	core: new CoreComm(config.core.adapter, config.core.options),
+	core: null,
 
 	// holds the user model
 	user: null,
@@ -58,6 +58,9 @@ var turtl = {
 		sidebar: null,
 		loading: null
 	},
+
+	// a value we update to indicate the API connection state
+	connected: true,
 
 	// some general libs we use
 	router: null,
@@ -103,6 +106,37 @@ var turtl = {
 			barfr.barf(msg + ': ' + err.message);
 		});
 
+		turtl.core = new CoreComm(config.core.adapter, config.core.options);
+		var core_promise = new Promise(function(resolve, reject) {
+			turtl.core.bind('connected', function(yesno) {
+				if(!yesno) return;
+				// this is really only necessary with the websocket core handler, but
+				// it's not a bad idea either way. basically, we want to reset our core
+				// state when the app loads.
+				turtl.user.logout({clear_cookie: false, skip_do_logout: true})
+					.catch(function(err) {
+						log.warn('core: initial logout: ', derr(err));
+					});
+				turtl.core.unbind('connected', 'turtl:init:core-connected');
+				if(localStorage.config_api_url) {
+					App.prototype.set_api_endpoint(localStorage.config_api_url)
+						.then(resolve)
+						.catch(function(err) {
+							barfr.barf(i18next.t('There was a problem setting the API endpoint. Try restarting the app.'));
+							log.error('core: set endpoint: ', derr(err));
+							reject(err);
+						});
+				} else {
+					resolve();
+				}
+			}, 'turtl:init:core-connected');
+		}.bind(this));
+
+		turtl.events.bind('all', function() {
+			var ev = arguments[0];
+			log.debug('turtl.events -- '+ev, Array.prototype.slice.call(arguments, 1));
+		});
+
 		turtl.core.bind('error', function(err) {
 			turtl.events.trigger('core-error', err);
 		});
@@ -121,54 +155,59 @@ var turtl = {
 		var initial_route = window.location.pathname;
 		turtl.setup_user({initial_route: initial_route});
 
-		// load the sidebar after we set up the user/profile object
-		turtl.controllers.sidebar = new SidebarController();
-
-		// if a user exists, log them in
-		if(config.cookie_login) {
-			this.user.login_from_cookie()
-				.catch(function() {
-					turtl.route('/users/login');
-				});
-		}
-
-		this.loaded = true;
-		turtl.events.trigger('loaded');
-		if(window.port) window.port.send('loaded');
-		this.route(initial_route);
-
 		var connect_barf_id = null;
-		turtl.events.bind('', function() {
-			log.info('API: connect');
-			if(connect_barf_id) barfr.close_barf(connect_barf_id);
-			connect_barf_id = barfr.barf(i18next.t('Connected to the Turtl service! Disengaging offline mode. Syncing your profile.'));
-		});
-		turtl.events.bind('api:disconnect', function() {
-			log.info('API: disconnect');
-			if(connect_barf_id) barfr.close_barf(connect_barf_id);
-			connect_barf_id = barfr.barf(i18next.t('Disconnected from the Turtl service. Engaging offline mode. Your changes will be saved and synced once back online!'));
+		turtl.events.bind('sync:connected', function(connected) {
+			if(connected === turtl.connected) return;
+			turtl.connected = connected;
+			if(connected) {
+				if(connect_barf_id) barfr.close_barf(connect_barf_id);
+				connect_barf_id = barfr.barf(i18next.t('Connected to the Turtl service! Disengaging offline mode. Syncing your profile.'));
+			} else {
+				if(connect_barf_id) barfr.close_barf(connect_barf_id);
+				connect_barf_id = barfr.barf(i18next.t('Disconnected from the Turtl service. Engaging offline mode. Your changes will be saved and synced once back online!'));
+			}
 		});
 
 		turtl.events.bind('app:localized', function() {
 			turtl.localized = true;
 		});
-		var space_grabber = /\/spaces\/([0-9a-f]+)\/.*/;
 		turtl.controllers.pages.bind('prerelease', function() {
 			var space_id = turtl.param_router.get().space_id;
 			if(!space_id) return;
 			if(!turtl.profile) return;
 			turtl.profile.set_current_space(space_id);
 		});
+
+		return core_promise
+			.bind(this)
+			.then(function() {
+				// load the sidebar after we set up the user/profile object
+				turtl.controllers.sidebar = new SidebarController();
+
+				this.loaded = true;
+				turtl.events.trigger('loaded');
+				if(window.port) window.port.send('loaded');
+				// if a user exists, log them in
+				if(config.cookie_login) {
+					this.user.login_from_cookie()
+						.catch(function(_) {})
+						.finally(function() {
+							turtl.route(initial_route);
+						});
+				}
+			});
 	},
 
 	dispatch_core_event: function(ev, data) {
-		if(ev != 'sync:connected') log.info('ui event: ', ev);
 		switch(ev) {
 			case 'user:login':
 				turtl.user.trigger('login');
 				break;
 			case 'user:logout':
 				turtl.user.do_logout();
+				break;
+			case 'user:logout:clear-cookie':
+				turtl.user.clear_cookie();
 				break;
 			case 'user:change-password:logout':
 				barfr.barf(i18next.t('Your login was changed successfully!'));
@@ -181,6 +220,7 @@ var turtl = {
 				turtl.events.trigger('sync:update:'+data.type, data);
 				break;
 			case 'sync:connected':
+				turtl.events.trigger('sync:connected', data);
 				break;
 			case 'sync:file:downloaded':
 				break;
@@ -479,13 +519,14 @@ var turtl = {
 		options || (options = {});
 		this.setup_router(options);
 		if(
-			!this.user.logged_in &&
+			!turtl.user.logged_in &&
 			!url.match(/\/users\/login/) &&
 			!url.match(/\/users\/join/)
 		)
 		{
 			url = '/users/login';
 		}
+		log.debug('turtl::route() -- '+url);
 		this.router.route(url, options);
 	},
 
@@ -567,9 +608,6 @@ var markdown = null;
 
 var _turtl_init = function()
 {
-	// load the api URL from storage if it's there
-	if(localStorage.config_api_url) config.api_url = localStorage.config_api_url;
-
 	window.port = window.port || false;
 	window._base_url = config.base_url || '';
 	turtl.site_url = config.site_url || '';

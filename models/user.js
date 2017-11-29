@@ -236,19 +236,24 @@ var User = Protected.extend({
 		localStorage[config.user_cookie] = JSON.stringify(save);
 	},
 
-	do_logout: function() {
+	clear_cookie: function() {
+		delete localStorage[config.user_cookie];
+	},
+
+	do_logout: function(options) {
+		options || (options = {});
 		this.logged_in = false;
 		this.clear();
-		delete localStorage[config.user_cookie];
 		this.trigger('logout', this);
 	},
 
-	logout: function()
+	logout: function(options)
 	{
-		return turtl.core.send('user:logout')
+		options || (options = {});
+		return turtl.core.send('user:logout', options.clear_cookie)
 			.bind(this)
 			.then(function() {
-				this.do_logout();
+				if(!options.skip_do_logout) this.do_logout(options);
 			});
 	},
 

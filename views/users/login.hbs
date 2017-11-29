@@ -1,4 +1,4 @@
-<input type="email" name="username" placeholder="{{t 'Email'}}" value="{{last_username}}" tabindex="1" autocomplete="off" autocorrect="off" autocapitalize="off">
+<input type="email" name="username" placeholder="{{t 'Email'}}" value="{{state.last_username}}" tabindex="1" autocomplete="off" autocorrect="off" autocapitalize="off">
 <input type="password" name="password" placeholder="{{t 'Passphrase'}}" autocomplete="off" autocorrect="off" tabindex="2">
 {{#if show_autologin}}
 	<div class="autologin">
@@ -21,11 +21,13 @@
 	</p>
 </div>
 
-<a class="open-settings" href="#settings">{{t 'Advanced settings'}} {{icon 'more'}}</a>
-<p class="settings">
-	<label for="inp_server">
-		{{t 'Turtl server'}}
-		<input type="text" name="server" value="{{server}}" placeholder="https://api.turtl.it/api">
-	</label>
-</p>
+<a class="open-settings {{#if state.settings}}active{{/if}}" href="#settings">{{t 'Advanced settings'}} {{icon 'more'}}</a>
+<div class="settings-container {{#if state.settings}}active{{/if}}">
+	<p class="settings">
+		<label>
+			{{t 'Turtl server'}}
+			<input type="text" name="server" value="{{state.endpoint}}" placeholder="https://api.turtlapp.com/v3">
+		</label>
+	</p>
+</div>
 

@@ -1,4 +1,5 @@
 var UserJoinController = UserBaseController.extend({
+	xdom: true,
 	elements: {
 		'input[name=username]': 'inp_username',
 		'input[name=password]': 'inp_password',
@@ -10,7 +11,6 @@ var UserJoinController = UserBaseController.extend({
 		'.strength .inner': 'strength_bar',
 		'.strength .status': 'strength_status',
 		'a.open-settings': 'el_open_settings',
-		'p.settings': 'el_settings'
 	},
 
 	events: {
@@ -22,6 +22,14 @@ var UserJoinController = UserBaseController.extend({
 	buttons: false,
 	formclass: 'user-join',
 
+	viewstate: {
+		endpoint: '',
+		strength_text: ' - ',
+		strength_width: 0,
+		strength_class: '',
+		settings: false,
+	},
+
 	init: function()
 	{
 		this.parent();
@@ -29,22 +37,24 @@ var UserJoinController = UserBaseController.extend({
 		turtl.push_title(i18next.t('Join'), '/users/login');
 		this.bind('release', turtl.pop_title.bind(null, false));
 
-		this.render();
+		App.prototype.get_api_endpoint()
+			.bind(this)
+			.then(function(endpoint) {
+				this.viewstate.endpoint = localStorage.config_api_url || endpoint;
+			})
+			.then(this.render.bind(this))
+			.then(function() {
+				(function() { this.inp_username.focus(); }).delay(100, this);
+			});
 	},
 
 	render: function()
 	{
-		var content = view.render('users/join', {
-			server: config.api_url,
+		return this.html(view.render('users/join', {
+			state: this.viewstate,
 			autologin: this.autologin(),
 			show_autologin: config.has_autologin,
-		});
-		this.html(content);
-		(function() { this.inp_username.focus(); }).delay(100, this);
-		this.update_meter();
-
-		this.el_settings.set('slide', {duration: 300});
-		this.el_settings.get('slide').hide();
+		}));
 	},
 
 	check_login: function(inp_username, inp_password, inp_pconfirm)
@@ -82,20 +92,6 @@ var UserJoinController = UserBaseController.extend({
 	{
 		if(e) e.stop();
 
-		var server = this.inp_server.get('value').trim();
-		if(server)
-		{
-			server = server.replace(/\/+$/, '');
-			if(server != config.api_url)
-			{
-				log.debug('user: persisting api url');
-				config.api_url = server;
-				turtl.api.api_url = server;
-				// persist it
-				localStorage.config_api_url = config.api_url;
-			}
-		}
-
 		var username = this.inp_username.get('value');
 		var password = this.inp_password.get('value');
 		var pconfirm = this.inp_confirm.get('value');
@@ -110,10 +106,17 @@ var UserJoinController = UserBaseController.extend({
 			password: password,
 		});
 
+		var server = this.inp_server.get('value').trim();
+		var endpoint_promise = this.persist_endpoint(server);
+
 		this.el_loader.addClass('active');
 		this.inp_submit.set('disabled', 'disabled');
 		turtl.loading(true);
-		user.join().bind(this)
+		endpoint_promise
+			.bind(this)
+			.then(function() {
+				return user.join();
+			})
 			.then(function(userdata) {
 				var data = user.toJSON();
 				data.id = userdata.id;
@@ -145,106 +148,49 @@ var UserJoinController = UserBaseController.extend({
 			});
 	},
 
-	create_initial_profile: function()
-	{
-		var add_space = function(data)
-		{
-			var is_default = data.is_default;
-			delete data.is_default;
-			var space = new Space(data);
-			space.create_or_ensure_key({silent: true});
-			return space.save()
-				.then(function() {
-					turtl.profile.get('spaces').upsert(space);
-					if(is_default) turtl.user.setting('default_space', space.id());
-					return space;
-				});
-		};
-		var add_board = function(space_id, name)
-		{
-			var board = new Board({space_id: space_id, title: name});
-			board.create_or_ensure_key({silent: true});
-			return board.save()
-				.then(function() {
-					turtl.profile.get('boards').upsert(board);
-					return board;
-				});
-		};
-		var personal_space_id = null;
-		return add_space({title: i18next.t('Personal'), color: '#408080', is_default: true})
-			.then(function(space) {
-				personal_space_id = space.id();
-				return add_space({title: i18next.t('Work'), color: '#439645'});
-			})
-			.then(function(space) {
-				return add_space({title: i18next.t('Home'), color: '#800000'});
-			})
-			.then(function(space) {
-				return add_board(personal_space_id, i18next.t('Bookmarks'));
-			})
-			.then(function() {
-				return add_board(personal_space_id, i18next.t('Photos'))
-			})
-			.then(function() {
-				return add_board(personal_space_id, i18next.t('Passwords'));
-			})
-			.catch(function(err) {
-				turtl.events.trigger('ui-error', i18next.t('There was a problem creating your initial boards'), err);
-				log.error('users: join: initial boards: ', derr(err));
-			});
-	},
-
 	update_meter: function(e)
 	{
 		var passphrase = this.inp_password.get('value');
 		var status = ' - ';
 		if(passphrase.length >= 32)
 		{
-			status = i18next.t('excellent');
+			status = 'excellent';
 		}
 		else if(passphrase.length >= 24)
 		{
-			status = i18next.t('great');
+			status = 'great';
 		}
 		else if(passphrase.length >= 16)
 		{
-			status = i18next.t('good');
+			status = 'good';
 		}
 		else if(passphrase.length >= 10)
 		{
-			status = i18next.t('ok');
+			status = 'ok';
 		}
 		else if(passphrase.length > 4)
 		{
-			status = i18next.t('weak');
+			status = 'weak';
 		}
 		else if(passphrase.length > 0)
 		{
-			status = i18next.t('too short');
+			status = 'too short';
 		}
 
 		var width = Math.min(passphrase.length / 32, 1) * 100;
 
-		this.strength_status.set('html', status);
-		this.strength_bar.setStyles({width: width + '%'});
-		this.strength_container.className = this.strength_container.className.replace(/level-.*( |$)/, '');
-		this.strength_container.addClass('level-'+sluggify(status));
+		this.viewstate.strength_text = i18next.t(status);
+		this.viewstate.strength_width = width;
+		this.viewstate.strength_class = 'level-'+sluggify(status);
+		this.render();
 	},
 
 	toggle_settings: function(e)
 	{
 		if(e) e.stop();
 
-		if(this.el_open_settings.hasClass('active'))
-		{
-			this.el_open_settings.removeClass('active');
-			this.el_settings.slide('out');
-		}
-		else
-		{
-			this.el_open_settings.addClass('active');
-			this.el_settings.slide('in');
-		}
+		this.viewstate.settings = !this.viewstate.settings;
+		this.render();
 	}
 });
 

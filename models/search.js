@@ -32,10 +32,10 @@ var Search = Composer.Collection.extend({
 			}
 		});
 		return turtl.core.send('profile:find-notes', core_search)
-			.then(function(notes_data) {
-				var notes = notes_data.map(function(n) { return new Note(n); });
-				var tags = [];
-				var  total = 0;
+			.then(function(search_data) {
+				var notes = search_data.notes.map(function(n) { return new Note(n); });
+				var tags = search_data.tags.map(function(t) { return {name: t[0], count: t[1]}; });
+				var total = search_data.total;
 				return [notes, tags, total];
 			});
 	},

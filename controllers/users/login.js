@@ -1,4 +1,6 @@
 var UserLoginController = UserBaseController.extend({
+	xdom: true,
+
 	elements: {
 		'input[name=username]': 'inp_username',
 		'input[name=password]': 'inp_password',
@@ -16,54 +18,49 @@ var UserLoginController = UserBaseController.extend({
 	buttons: false,
 	formclass: 'user-login',
 
+	viewstate: {
+		endpoint: '',
+		last_username: '',
+		settings: false,
+	},
+
 	init: function()
 	{
 		this.parent();
 
 		turtl.push_title(i18next.t('Login'));
 		this.bind('release', turtl.pop_title.bind(null, false));
-		this.render();
+
+		App.prototype.get_api_endpoint()
+			.bind(this)
+			.then(function(endpoint) {
+				this.viewstate.last_username = turtl.settings.get('last_username');
+				this.viewstate.endpoint = localStorage.config_api_url || endpoint;
+			})
+			.then(this.render.bind(this))
+			.then(function() {
+				(function() {
+					if(this.viewstate.last_username) {
+						this.inp_password.focus();
+					} else {
+						this.inp_username.focus();
+					}
+				}).delay(10, this);
+			});
 	},
 
 	render: function()
 	{
-		var last_username = turtl.settings.get('last_username');
-		var content = view.render('users/login', {
-			server: config.api_url,
+		return this.html(view.render('users/login', {
+			state: this.viewstate,
 			autologin: this.autologin(),
 			show_autologin: config.has_autologin,
-			last_username: last_username,
-		});
-		this.html(content);
-		(function() {
-			if(last_username) {
-				this.inp_password.focus();
-			} else {
-				this.inp_username.focus();
-			}
-		}).delay(10, this);
-
-		this.el_settings.set('slide', {duration: 300});
-		this.el_settings.get('slide').hide();
+		}));
 	},
 
 	submit: function(e)
 	{
 		if(e) e.stop();
-
-		var server = this.inp_server.get('value').trim();
-		if(server)
-		{
-			server = server.replace(/\/+$/, '');
-			if(server != config.api_url)
-			{
-				log.debug('user: persisting api url');
-				config.api_url = server;
-				turtl.api.api_url = server;
-				// persist it
-				localStorage.config_api_url = config.api_url;
-			}
-		}
 
 		var username = this.inp_username.get('value');
 		var password = this.inp_password.get('value');
@@ -72,11 +69,17 @@ var UserLoginController = UserBaseController.extend({
 			password: password
 		});
 
+		var server = this.inp_server.get('value').trim();
+		var endpoint_promise = this.persist_endpoint(server);
+
 		this.el_loader.addClass('active');
 		this.inp_submit.set('disabled', 'disabled');
 		turtl.loading(true);
-		turtl.user.login(username, password)
+		endpoint_promise
 			.bind(this)
+			.then(function() {
+				return turtl.user.login(username, password);
+			})
 			.then(function() {
 				turtl.settings.set('last_username', user.get('username'));
 			})
@@ -96,16 +99,8 @@ var UserLoginController = UserBaseController.extend({
 	{
 		if(e) e.stop();
 
-		if(this.el_open_settings.hasClass('active'))
-		{
-			this.el_open_settings.removeClass('active');
-			this.el_settings.slide('out');
-		}
-		else
-		{
-			this.el_open_settings.addClass('active');
-			this.el_settings.slide('in');
-		}
+		this.viewstate.settings = !this.viewstate.settings;
+		this.render();
 	}
 });
 
