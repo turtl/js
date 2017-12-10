@@ -251,6 +251,7 @@ var SidebarController = Composer.Controller.extend({
 		}.bind(this), 300);
 		this.inp_space_filter.blur();
 		this.focus_if(this.inp_board_filter, {delay: 0});
+		this.clear_board_filter();
 	},
 
 	close_spaces: function(e)
