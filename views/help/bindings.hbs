@@ -1,8 +1,30 @@
 <div class="help content">
 	<table class="shortcuts">
+		{{!--
 		<tr>
 			<td><kbd>a</kbd></td>
 			<td>{{t 'Add a new note'}}</td>
+		</tr>
+		--}}
+		<tr>
+			<td><kbd>a</kbd><kbd>t</kbd></td>
+			<td>{{t 'Add a new text note'}}</td>
+		</tr>
+		<tr>
+			<td><kbd>a</kbd><kbd>b</kbd></td>
+			<td>{{t 'Add a new bookmark'}}</td>
+		</tr>
+		<tr>
+			<td><kbd>a</kbd><kbd>i</kbd></td>
+			<td>{{t 'Add a new image'}}</td>
+		</tr>
+		<tr>
+			<td><kbd>a</kbd><kbd>f</kbd></td>
+			<td>{{t 'Add a new file'}}</td>
+		</tr>
+		<tr>
+			<td><kbd>a</kbd><kbd>p</kbd></td>
+			<td>{{t 'Add a new password'}}</td>
 		</tr>
 		<tr>
 			<td><kbd>s</kbd></td>
@@ -41,7 +63,14 @@
 			<td>{{t 'Log out'}}</td>
 		</tr>
 	</table>
+	<h2>{{t 'Tips on keyboard navigation'}}</h2>
 	<p>
-		{{t 'If you are having trouble using Turtl, please email us at <code>info@turtl.it</code>'}}.
+		{{t 'Open a Space easily by hitting <kbd>s</kbd>, typing the name of the Space you want, and hitting <kbd>Enter</kbd>. You will then be take to the Board selector. Hit <kbd>Enter</kbd> again for "All notes" or type the name of the Board you want to open and hit <kbd>Enter</kbd> to open it.'}}
+	</p>
+	<p>
+		{{t 'Open the Board selector by hitting <kbd>b</kbd>. You can hit <kbd>Enter</kbd> with the search box blank to open "All notes" or you can type the name of the board you want and hit <kbd>Enter</kbd> to open it.'}}
+	</p>
+	<p>
+		{{t 'Find a note by hitting <kbd>/</kbd> and typing your search followed by <kbd>Enter</kbd>. The note search box supports <a href="https://sqlite.org/fts3.html#full_text_index_queries" target="_blank">Sqlite\'s FTS3 syntax</a>.'}}
 	</p>
 </div>
