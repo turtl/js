@@ -52,7 +52,7 @@ var SidebarController = Composer.Controller.extend({
 			this.spaces = new Composer.FilterCollection(turtl.profile.get('spaces'), {
 				filter: function(b) {
 					var is_in_filter = this.space_filter ?
-						b.get('title').toLowerCase().indexOf(this.space_filter.toLowerCase()) >= 0 :
+						fuzzysearch(this.space_filter.toLowerCase(), b.get('title').toLowerCase()) :
 						true;
 					return is_in_filter;
 				}.bind(this),
@@ -63,7 +63,7 @@ var SidebarController = Composer.Controller.extend({
 					if(!turtl.profile) return false;
 					var is_in_space = b.get('space_id') == turtl.profile.current_space().id();
 					var is_in_filter = this.board_filter ?
-						b.get('title').toLowerCase().indexOf(this.board_filter.toLowerCase()) >= 0 :
+						fuzzysearch(this.board_filter.toLowerCase(), b.get('title').toLowerCase()) :
 						true;
 					return is_in_space && is_in_filter;
 				}.bind(this),
