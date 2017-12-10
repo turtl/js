@@ -23,7 +23,7 @@ var FeedbackController = FormController.extend({
 
 	render: function()
 	{
-		if(!turtl.sync.connected) return this.html(view.render('feedback/noconnection'));
+		if(!turtl.connected) return this.html(view.render('feedback/noconnection'));
 
 		var email = turtl.user.get('username');
 		this.html(view.render('feedback/index', {

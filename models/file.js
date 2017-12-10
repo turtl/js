@@ -397,7 +397,7 @@ var Files = SyncCollection.extend({
 			tube: 'files:upload',
 			delay: turtl.sync.hustle_poll_delay,
 			enable_fn: function() {
-				return turtl.user.logged_in && config.sync_to_api && turtl.sync.connected
+				return turtl.user.logged_in && config.sync_to_api && turtl.connected
 			}
 		});
 	},
@@ -441,7 +441,7 @@ var Files = SyncCollection.extend({
 			tube: 'files:download',
 			delay: turtl.sync.hustle_poll_delay,
 			enable_fn: function() {
-				return turtl.user.logged_in && config.sync_to_api && turtl.sync.connected
+				return turtl.user.logged_in && config.sync_to_api && turtl.connected
 			}
 		});
 	},

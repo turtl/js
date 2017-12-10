@@ -24,9 +24,7 @@ var InvitesItemController = Composer.Controller.extend({
 		}
 
 		this.with_bind(this.model, 'change', this.render.bind(this));
-		this.with_bind(turtl.events, ['api:connect', 'api:disconnect'], function() {
-			this.render();
-		}.bind(this));
+		this.with_bind(turtl.events, 'sync:connected', this.render.bind(this));
 
 		this.render()
 			.bind(this)
@@ -45,7 +43,7 @@ var InvitesItemController = Composer.Controller.extend({
 	},
 
 	render: function() {
-		if(!turtl.sync.connected) {
+		if(!turtl.connected) {
 			this.passphrase_open = false;
 		}
 		return this.html(view.render('invites/item', {
@@ -55,14 +53,14 @@ var InvitesItemController = Composer.Controller.extend({
 			confirmed: turtl.user.get('confirmed'),
 		})).bind(this)
 			.then(function() {
-				if(turtl.sync.connected) this.el.removeClass('disconnected');
+				if(turtl.connected) this.el.removeClass('disconnected');
 				else this.el.addClass('disconnected');
 			});
 	},
 
 	unlock: function(e) {
 		if(e) e.stop();
-		if(!turtl.sync.connected) {
+		if(!turtl.connected) {
 			barfr.barf(i18next.t('You must be connected to the Turtl service to accept invites.'));
 			return;
 		}
@@ -113,7 +111,7 @@ var InvitesItemController = Composer.Controller.extend({
 
 	open_accept: function(e) {
 		if(e) e.stop();
-		if(!turtl.sync.connected) {
+		if(!turtl.connected) {
 			barfr.barf(i18next.t('You must be connected to the Turtl service to accept invites.'));
 			return;
 		}
@@ -135,7 +133,7 @@ var InvitesItemController = Composer.Controller.extend({
 
 	open_delete: function(e) {
 		if(e) e.stop();
-		if(!turtl.sync.connected) {
+		if(!turtl.connected) {
 			barfr.barf(i18next.t('You must be connected to the Turtl service to delete invites.'));
 			return;
 		}

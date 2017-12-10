@@ -147,7 +147,7 @@ var SpacesEditController = FormController.extend({
 	leave_space: function(e)
 	{
 		if(e) e.stop();
-		if(!turtl.sync.connected) {
+		if(!turtl.connected) {
 			barfr.barf(i18next.t('Leaving a space requires a connection to the Turtl server'));
 			return;
 		}

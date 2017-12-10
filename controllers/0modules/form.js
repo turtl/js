@@ -107,7 +107,7 @@ var FormController = Composer.Controller.extend({
 
 		var check_disconnect = function()
 		{
-			if(turtl.sync.connected)
+			if(turtl.connected)
 			{
 				this.disable(false);
 			}
