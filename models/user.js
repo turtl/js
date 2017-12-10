@@ -75,51 +75,25 @@ var User = Protected.extend({
 	 * know is in the API, we wait for the local DB to init (poll it) and then
 	 * add our shiny new user record to it.
 	 */
-	join: function(options)
+	join: function(username, password)
 	{
-		options || (options = {});
-		return Promise.resolve(tcrypt.asym.keygen())
+		this.logging_in = true;
+		return turtl.core.send('user:join', username, password)
 			.bind(this)
-			.then(function(keypair) {
-				this.set({
-					pubkey: tcrypt.to_base64(keypair.pubkey),
-					privkey: tcrypt.to_base64(keypair.privkey),
-				});
-				// wipe the cache manually
-				this.key = null;
-				this.auth = null;
-				return this.gen_auth(this.get('username'), this.get('password'));
+			.then(function(userdata) {
+				this.logged_in = true;
+				this.set(userdata);
+				if(config.cookie_login) {
+					this.write_cookie(username, password);
+				}
 			})
-			.tap(function() {
-				return this.serialize();
-			})
-			.then(function(auth) {
-				var data = {
-					auth: auth,
-					username: this.get('username'),
-					data: this.safe_json(),
-				};
-				return turtl.api.post('/users', data);
-			})
-			.tap(function(user) {
-				// once we have the user record, wait until the user is logged
-				// in. then we poll turtl.db until our local db object exists.
-				// once we're sure we have it, we save the new user record to
-				// the local db.
-				this.bind('login', function() {
-					this.unbind('login', 'user:join:add_local_record');
-					var check_db = function()
-					{
-						if(!turtl.db)
-						{
-							check_db.delay(10, this);
-							return false;
-						}
-						this.save();
-					}.bind(this);
-					check_db.delay(1, this);
-				}.bind(this), 'user:join:add_local_record');
+			.finally(function() {
+				this.logging_in = false;
 			});
+	},
+
+	can_migrate: function(username, password) {
+		return turtl.core.send('user:can-migrate', username, password);
 	},
 
 	/**
