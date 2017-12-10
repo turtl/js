@@ -36,7 +36,9 @@ var Sync = Composer.Model.extend({
 // define a model that listens for incoming sync changes and updates itself
 var SyncModel = Composer.RelationalModel.extend({
 	init: function() {
+		var bindname = 'syncmodel:init:sync:update:'+this.cid();
 		turtl.events.bind('sync:update', function(sync_item) {
+			if(sync_item.item_id != this.id()) return;
 			switch(sync_item.action) {
 				case 'edit':
 					this.reset(sync_item.data);
@@ -45,6 +47,9 @@ var SyncModel = Composer.RelationalModel.extend({
 					this.destroy();
 					break;
 			}
+		}.bind(this), bindname);
+		this.bind('destroy', function() {
+			turtl.events.unbind('sync:update', bindname);
 		}.bind(this));
 	}
 });
@@ -58,7 +63,6 @@ var SyncCollection = Composer.Collection.extend({
 	init: function() {
 		if(this.sync_type) {
 			turtl.events.bind('sync:update:'+this.sync_type, function(sync_item) {
-				var existing = this.get(sync_item.item_id);
 				switch(sync_item.action) {
 					case 'add':
 						this.upsert(sync_item.data);
