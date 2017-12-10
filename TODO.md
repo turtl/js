@@ -1,7 +1,6 @@
 v0.7:
 
-- set api endpoint on login/join pages
-- join
+- login w/ migration
 - note interface
   - search: sorting not working
   - search: viewstate.searching = true not being set (red dot not showing up)
