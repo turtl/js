@@ -103,7 +103,7 @@ var turtl = {
 		});
 
 		turtl.events.bind('ui-error', function(msg, err) {
-			barfr.barf(msg + ': ' + err.message);
+			barfr.barf(msg+': '+derr(err).message);
 		});
 
 		turtl.core = new CoreComm(config.core.adapter, config.core.options);
