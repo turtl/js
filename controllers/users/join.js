@@ -59,25 +59,11 @@ var UserJoinController = UserBaseController.extend({
 
 	check_login: function(inp_username, inp_password, inp_pconfirm)
 	{
-		var username = inp_username.get('value');
 		var password = inp_password.get('value');
 		var pconfirm = inp_pconfirm.get('value');
 
 		var errors = [];
-		if(username.length < 3)
-		{
-			errors.push([inp_username, i18next.t('Please enter a username 3 characters or longer.')]);
-		}
-
-		if(password.length == 0)
-		{
-			errors.push([inp_password, i18next.t('Please enter a passphrase. Hint: Sentences are much better than single words.')]);
-		}
-		else if(password.length < 4)
-		{
-			errors.push([inp_password, i18next.t('We don\'t mean to tell you your business, but a passphrase less than four characters won\'t cut it. Try again.')]);
-		}
-		else if(password != pconfirm)
+		if(password != pconfirm)
 		{
 			errors.push([inp_pconfirm, i18next.t('Your passphrase does not match the confirmation.')]);
 		}
@@ -101,11 +87,6 @@ var UserJoinController = UserBaseController.extend({
 
 		this.inp_submit.disabled = true;
 
-		var user = new User({
-			username: username,
-			password: password,
-		});
-
 		var server = this.inp_server.get('value').trim();
 		var endpoint_promise = this.persist_endpoint(server);
 
@@ -115,35 +96,18 @@ var UserJoinController = UserBaseController.extend({
 		endpoint_promise
 			.bind(this)
 			.then(function() {
-				return user.join();
-			})
-			.then(function(userdata) {
-				var data = user.toJSON();
-				data.id = userdata.id;
-				return turtl.user.login(data)
-					.then(this.save_login.bind(this));
+				return turtl.user.join(username, password);
 			})
 			.then(function() {
-				turtl.events.bind_once('app:load:profile-loaded', function() {
-					return this.create_initial_profile()
-						.then(function() {
-							turtl.route('/');
-						});
-				}.bind(this));
+				turtl.settings.set('last_username', username);
 			})
 			.catch(function(err) {
-				this.inp_submit.disabled = false;
-				if(err.disconnected)
-				{
-					barfr.barf(i18next.t('Couldn\'t connect to the server'));
-					return;
-				}
 				turtl.events.trigger('ui-error', i18next.t('There was a problem saving that account'), err);
 				log.error('users: join: ', err, derr(err));
-				this.inp_submit.set('disabled', '');
 			})
 			.finally(function() {
 				turtl.loading(false);
+				this.inp_submit.set('disabled', '');
 				this.el_loader.removeClass('active');
 			});
 	},
