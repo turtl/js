@@ -247,8 +247,8 @@ var SidebarController = Composer.Controller.extend({
 			this.space_state.zin = false;
 			if(delay_scroll) this.space_state.scroll = false;
 			this.render();
+			this.clear_space_filter();
 		}.bind(this), 300);
-		this.clear_space_filter();
 		this.inp_space_filter.blur();
 		this.focus_if(this.inp_board_filter, {delay: 0});
 	},
