@@ -84,6 +84,17 @@ var UserLoginController = UserBaseController.extend({
 				turtl.settings.set('last_username', user.get('username'));
 			})
 			.then(this.save_login.bind(this))
+			.catch(function(e) { return e.type == 'api' && e.subtype == 'Forbidden'; }, function(err) {
+				// login failed, let's try migration
+				return turtl.user.can_migrate(username, password)
+					.then(function(can) {
+						if(!can) throw err;
+						turtl.route('/users/migrate');
+						setTimeout(function() {
+							turtl.events.trigger('user:migrate:login', username, password);
+						}, 100);
+					});
+			})
 			.catch(function(err) {
 				this.inp_submit.set('disabled', '');
 				barfr.barf(i18next.t('Login failed'));
@@ -92,6 +103,7 @@ var UserLoginController = UserBaseController.extend({
 			.finally(function() {
 				turtl.loading(false);
 				this.el_loader.removeClass('active');
+				this.inp_submit.set('disabled', '');
 			});
 	},
 

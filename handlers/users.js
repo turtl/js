@@ -2,7 +2,7 @@ var users = {
 	login: function()
 	{
 		var slide = false;
-		if(turtl.controllers.pages.is([UserJoinController, UserWelcomeController]))
+		if(turtl.controllers.pages.is([UserJoinController, UserWelcomeController, UserMigrateController]))
 		{
 			slide = 'right';
 		}
@@ -23,6 +23,13 @@ var users = {
 	{
 		var slide = turtl.controllers.pages.is(UserWelcomeController) ? 'left' : false;
 		turtl.controllers.pages.load(UserJoinController, {}, {
+			slide: slide
+		});
+	},
+
+	migrate: function() {
+		var slide = turtl.controllers.pages.is(UserLoginController) ? 'left' : false;
+		turtl.controllers.pages.load(UserMigrateController, {}, {
 			slide: slide
 		});
 	},

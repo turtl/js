@@ -298,10 +298,7 @@ var turtl = {
 					if(initial_route.match(/^\/users\//)) initial_route = space_route;
 					if(initial_route.match(/index.html/)) initial_route = space_route;
 					if(initial_route.match(/background.html/)) initial_route = space_route;
-					var dont_initial_route = ['/users/join'];
-					if(!dont_initial_route.contains(turtl.router.cur_path())) {
-						turtl.route(initial_route);
-					}
+					turtl.route(initial_route);
 					options.initial_route = '/';
 					if(window.port) window.port.send('profile-load-complete');
 					turtl.events.trigger('app:load:profile-loaded');
@@ -521,7 +518,8 @@ var turtl = {
 		if(
 			!turtl.user.logged_in &&
 			!url.match(/\/users\/login/) &&
-			!url.match(/\/users\/join/)
+			!url.match(/\/users\/join/) &&
+			!url.match(/\/users\/migrate/)
 		)
 		{
 			url = '/users/login';

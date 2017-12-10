@@ -1,5 +1,5 @@
-<input type="text" name="username" placeholder="{{t 'Email'}}" value="{{state.last_username}}" tabindex="1" autocomplete="off" autocorrect="off" autocapitalize="off">
-<input type="password" name="password" placeholder="{{t 'Passphrase'}}" autocomplete="off" autocorrect="off" tabindex="2">
+<input type="text" name="username" placeholder="{{t 'Email'}}" value="{{state.username}}" tabindex="1" autocomplete="off" autocorrect="off" autocapitalize="off">
+<input type="password" name="password" placeholder="{{t 'Passphrase'}}" value="{{state.password}}" autocomplete="off" autocorrect="off" tabindex="2">
 {{#if show_autologin}}
 	<div class="autologin">
 		<label>
@@ -11,13 +11,13 @@
 
 <div class="buttons">
 	<div class="button login">
-		<input type="submit" class="button" value="{{t 'Login'}}">
+		<input type="submit" class="button" value="{{t 'Migrate'}}">
 	</div>
 	<p class="load">
 		{{svg 'loading'}}
 	</p>
 	<p>
-		<a href="/users/welcome">{{t 'Create an account'}}</a>
+		<a href="/users/login">{{t 'Login to an existing account'}}</a>
 	</p>
 </div>
 

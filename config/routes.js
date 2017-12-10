@@ -2,6 +2,7 @@ config.routes = {
 	'/users/login': ['users', 'login'],
 	'/users/welcome': ['users', 'welcome'],
 	'/users/join': ['users', 'join'],
+	'/users/migrate': ['users', 'migrate'],
 	'/users/logout': ['users', 'logout'],
 
 	'/spaces/:space_id/notes': ['notes', 'index'],
