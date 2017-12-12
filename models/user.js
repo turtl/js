@@ -101,13 +101,7 @@ var User = Protected.extend({
 	 */
 	delete_account: function(options)
 	{
-		return turtl.api._delete('/users/'+this.id())
-			.then(function(res) {
-				return turtl.wipe_local_db();
-			})
-			.then(function() {
-				return turtl.user.logout();
-			});
+		return turtl.core.send('user:delete-account');
 	},
 
 	/**
