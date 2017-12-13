@@ -4,6 +4,7 @@ var UserLoginController = UserBaseController.extend({
 	elements: {
 		'input[name=username]': 'inp_username',
 		'input[name=password]': 'inp_password',
+		'input[name=old_server]': 'inp_old_server',
 		'input[name=server]': 'inp_server',
 		'input[type=submit]': 'inp_submit',
 		'p.load': 'el_loader',
@@ -19,6 +20,7 @@ var UserLoginController = UserBaseController.extend({
 	formclass: 'user-login',
 
 	viewstate: {
+		old_endpoint: '',
 		endpoint: '',
 		last_username: '',
 		settings: false,
@@ -31,11 +33,15 @@ var UserLoginController = UserBaseController.extend({
 		turtl.push_title(i18next.t('Login'));
 		this.bind('release', turtl.pop_title.bind(null, false));
 
-		App.prototype.get_api_endpoint()
+		var endpoint_promises = [
+			App.prototype.get_api_endpoint(),
+			App.prototype.get_old_api_endpoint(),
+		];
+		Promise.all(endpoint_promises)
 			.bind(this)
-			.then(function(endpoint) {
-				this.viewstate.last_username = turtl.settings.get('last_username');
+			.spread(function(endpoint, old_endpoint) {
 				this.viewstate.endpoint = localStorage.config_api_url || endpoint;
+				this.viewstate.old_endpoint = localStorage.config_old_api_url || old_endpoint;
 			})
 			.then(this.render.bind(this))
 			.then(function() {
@@ -69,8 +75,9 @@ var UserLoginController = UserBaseController.extend({
 			password: password
 		});
 
+		var old_server = this.inp_old_server.get('value').trim();
 		var server = this.inp_server.get('value').trim();
-		var endpoint_promise = this.persist_endpoint(server);
+		var endpoint_promise = this.persist_endpoint(server, old_server);
 
 		this.el_loader.addClass('active');
 		this.inp_submit.set('disabled', 'disabled');
@@ -85,7 +92,7 @@ var UserLoginController = UserBaseController.extend({
 			})
 			.then(this.save_login.bind(this))
 			.catch(function(e) { return e.type == 'api' && e.subtype == 'Forbidden'; }, function(err) {
-				// login failed, let's try migration
+				// login failed, let's see if it's a v0.6 login...
 				return turtl.user.can_migrate(username, password)
 					.then(function(can) {
 						if(!can) throw err;
@@ -106,13 +113,5 @@ var UserLoginController = UserBaseController.extend({
 				this.inp_submit.set('disabled', '');
 			});
 	},
-
-	toggle_settings: function(e)
-	{
-		if(e) e.stop();
-
-		this.viewstate.settings = !this.viewstate.settings;
-		this.render();
-	}
 });
 

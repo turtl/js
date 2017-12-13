@@ -19,6 +19,14 @@ var App = Composer.Model.extend({
 		return turtl.core.send('app:api:get-endpoint');
 	},
 
+	set_old_api_endpoint: function(endpoint) {
+		return turtl.core.send('app:api:set-old-endpoint', endpoint);
+	},
+
+	get_old_api_endpoint: function() {
+		return turtl.core.send('app:api:get-old-endpoint');
+	},
+
 	shutdown: function() {
 		return turtl.core.send('app:shutdown');
 	},

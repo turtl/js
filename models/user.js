@@ -92,6 +92,25 @@ var User = Protected.extend({
 			});
 	},
 
+	/**
+	 * migrate an old account into a new one
+	 */
+	migrate: function(v6_username, v6_password, username, password) {
+		this.logging_in = true;
+		return turtl.core.send('user:join-migrate', v6_username, v6_password, username, password)
+			.bind(this)
+			.then(function(userdata) {
+				this.logged_in = true;
+				this.set(userdata);
+				if(config.cookie_login) {
+					this.write_cookie(username, password);
+				}
+			})
+			.finally(function() {
+				this.logging_in = false;
+			});
+	},
+
 	can_migrate: function(username, password) {
 		return turtl.core.send('user:can-migrate', username, password);
 	},
@@ -99,8 +118,7 @@ var User = Protected.extend({
 	/**
 	 * Remove a user's account and all their data.
 	 */
-	delete_account: function(options)
-	{
+	delete_account: function(options) {
 		return turtl.core.send('user:delete-account');
 	},
 

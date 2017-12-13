@@ -37,10 +37,15 @@ var UserJoinController = UserBaseController.extend({
 		turtl.push_title(i18next.t('Join'), '/users/login');
 		this.bind('release', turtl.pop_title.bind(null, false));
 
-		App.prototype.get_api_endpoint()
+		var endpoint_promises = [
+			App.prototype.get_api_endpoint(),
+			App.prototype.get_old_api_endpoint(),
+		];
+		Promise.all(endpoint_promises)
 			.bind(this)
-			.then(function(endpoint) {
+			.spread(function(endpoint, old_endpoint) {
 				this.viewstate.endpoint = localStorage.config_api_url || endpoint;
+				this.viewstate.old_endpoint = localStorage.config_old_api_url || old_endpoint;
 			})
 			.then(this.render.bind(this))
 			.then(function() {
@@ -84,8 +89,6 @@ var UserJoinController = UserBaseController.extend({
 
 		var errors = this.check_login(this.inp_username, this.inp_password, this.inp_confirm);
 		if(!this.check_errors(errors)) return;
-
-		this.inp_submit.disabled = true;
 
 		var server = this.inp_server.get('value').trim();
 		var endpoint_promise = this.persist_endpoint(server);
@@ -148,13 +151,5 @@ var UserJoinController = UserBaseController.extend({
 		this.viewstate.strength_class = 'level-'+sluggify(status);
 		this.render();
 	},
-
-	toggle_settings: function(e)
-	{
-		if(e) e.stop();
-
-		this.viewstate.settings = !this.viewstate.settings;
-		this.render();
-	}
 });
 
