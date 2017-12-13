@@ -49,6 +49,30 @@ var SidebarController = Composer.Controller.extend({
 	init: function()
 	{
 		this.with_bind(turtl.events, 'app:objects-loaded', function() {
+			// a sort function that makes fuzzy searching a bit more natural
+			var fuzzy_sort = function(default_sort) {
+				return function(a, b) {
+					var a_title = a.get('title', '');
+					var b_title = b.get('title', '');
+					if(this.board_filter) {
+						var a_title_lc = a_title.toLowerCase();
+						var b_title_lc = b_title.toLowerCase();
+						var filter = this.board_filter.toLowerCase();
+						if(a_title == filter) return -1;
+						if(b_title == filter) return 1;
+						var a_idx = a_title_lc.indexOf(filter);
+						var b_idx = b_title_lc.indexOf(filter);
+						if(a_idx == 0) return -1;
+						if(b_idx == 0) return 1;
+						if(!(a_idx >= 0 && b_idx >= 0)) {
+							if(a_idx) return -1;
+							if(b_idx) return 1;
+						}
+					}
+					return default_sort(a, b);
+				}.bind(this);
+			}.bind(this);
+
 			this.spaces = new Composer.FilterCollection(turtl.profile.get('spaces'), {
 				filter: function(b) {
 					var is_in_filter = this.space_filter ?
@@ -56,7 +80,7 @@ var SidebarController = Composer.Controller.extend({
 						true;
 					return is_in_filter;
 				}.bind(this),
-				sortfn: Spaces.prototype.sortfn,
+				sortfn: fuzzy_sort(Spaces.prototype.sortfn),
 			});
 			this.boards = new BoardsFilter(turtl.profile.get('boards'), {
 				filter: function(b) {
@@ -67,13 +91,14 @@ var SidebarController = Composer.Controller.extend({
 						true;
 					return is_in_space && is_in_filter;
 				}.bind(this),
+				sortfn: fuzzy_sort(function(a, b) { return a.get('title', '').localeCompare(b.get('title', '')); }),
 			});
 			this.bind('space-filter', function() {
-				this.spaces && this.spaces.refresh({diff_events: true});
+				this.spaces && this.spaces.refresh({diff_events: false});
 				this.render();
 			}.bind(this));
 			this.bind('board-filter', function() {
-				this.boards && this.boards.refresh({diff_events: true});
+				this.boards && this.boards.refresh({diff_events: false});
 				this.render();
 			}.bind(this));
 			this.with_bind(this.boards, ['add', 'remove', 'change'], this.render.bind(this));
