@@ -88,8 +88,11 @@ var NotesListController = Composer.ListController.extend({
 
 					var notes = this.notes;
 					notes.reset(searched_notes);
+
+					var search_timer = new Timer(500);
+					this.with_bind(search_timer, 'fired', this.trigger.bind(this, 'search'));
 					this.with_bind(turtl.events, ['sync:update:note', 'sync:local'], function() {
-						this.trigger('search');
+						search_timer.reset();
 					}.bind(this))
 					this.track(notes, function(model, options) {
 						options || (options = {});
