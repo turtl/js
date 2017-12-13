@@ -54,15 +54,6 @@ var Note = SyncModel.extend({
 		this.bind('change:id', set_mod);
 		set_mod();
 
-		// if the note is destroyed or edited, update the index
-		this.bind('destroy', function() {
-			if(this.disable_file_monitoring) return false;
-			// NOTE (ha ha): we skipt_remote_sync here because the server will
-			// see our note.delete and create a file.delete sync record for us
-			// automatically. wow!
-			this.clear_files({skip_remote_sync: true});
-		}.bind(this));
-
 		this.bind('change:id', function() {
 			var id = this.id();
 			var ts = id_timestamp(id);
@@ -179,26 +170,6 @@ var Note = SyncModel.extend({
 			.then(function() {
 				options.table = 'notes';
 				return parentfn.call(this, options);
-			});
-	},
-
-	// remove all file records attached to this note
-	clear_files: function(options)
-	{
-		options || (options = {});
-
-		return turtl.db.files.query('note_id')
-			.only(this.id())
-			.execute()
-			.then(function(files) {
-				var actions = [];
-				files.each(function(filedata) {
-					if(options.exclude && options.exclude.contains(filedata.id)) return;
-					delete filedata.body;
-					var file = new FileData(filedata);
-					actions.push(file.destroy(options));
-				});
-				return Promise.all(actions);
 			});
 	},
 

@@ -15,10 +15,6 @@ var Board = SyncModel.extend({
 	init: function()
 	{
 		this.parent.apply(this, arguments);
-		this.bind('destroy', function(_1, _2, options) {
-			options || (options = {});
-			return this.each_note(function(note) { return note.destroy(options); });
-		}.bind(this));
 	},
 
 	update_keys: function(options)
@@ -75,42 +71,6 @@ var Board = SyncModel.extend({
 		return search;
 	},
 
-	each_note: function(callback, options)
-	{
-		options || (options = {});
-		var cnotes = turtl.profile.get('notes');
-		return turtl.db.notes.query('board_id').only(this.id()).execute()
-			.then(function(notes) {
-				var promises = (notes || []).map(function(note) {
-					var existing = true;
-					// if we have an existing note in-memory, use it.
-					// this will also apply our changes in any listening
-					// collections
-					var cnote = cnotes.find_by_id(note.id)
-					if(!cnote)
-					{
-						// if we don't have an existing in-mem model,
-						// create one and then apply our changes to it
-						cnote = new Note(note);
-						existing = false;
-						if(options.decrypt)
-						{
-							return cnote.deserialize()
-								.then(function() {
-									return callback(cnote, {existing: true});
-								})
-								.catch(function(err) {
-									log.error('board.each_note(): deserialize: ', err, note);
-									throw err;
-								});
-						}
-					}
-					return callback(cnote, {existing: existing});
-				});
-				return Promise.all(promises);
-			});
-	},
-
 	note_count: function()
 	{
 		return turtl.search.search({board: this.id()}).bind(this)
@@ -132,9 +92,12 @@ var Board = SyncModel.extend({
 		return this.save({custom_method: 'move-space'})
 			.bind(this)
 			.then(function() {
+				// TODO: core conversion??
+				/*
 				return this.each_note(function(note) {
 					return note.move_spaces(new_space_id);
 				}, {decrypt: true});
+				*/
 			});
 	},
 });
