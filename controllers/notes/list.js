@@ -32,7 +32,7 @@ var NotesListController = Composer.ListController.extend({
 
 	init: function()
 	{
-		this.masonry_timer = new Timer(10);
+		this.masonry_timer = new Timer(50);
 		this.with_bind(this.masonry_timer, 'fired', this.update_masonry.bind(this));
 
 		this.bind('list:empty', function() {
@@ -55,8 +55,7 @@ var NotesListController = Composer.ListController.extend({
 		this.bind('release', function() { this.masonry_timer.unbind(); }.bind(this));
 
 		var resize_timer = new Timer(10);
-		var resize_reset = function()
-		{
+		var resize_reset = function() {
 			resize_timer.reset();
 		}.bind(this);
 		window.addEvent('resize', resize_reset);
@@ -70,7 +69,7 @@ var NotesListController = Composer.ListController.extend({
 			// run an initial search
 			this.do_search()
 				.bind(this)
-				.spread(function(searched_notes, tags) {
+				.spread(function(searched_notes, tags, _total) {
 					var ids = searched_notes.map(function(n) { return n.id(); })
 
 					// clear the "initial" state
@@ -115,27 +114,14 @@ var NotesListController = Composer.ListController.extend({
 					});
 
 					this.with_bind(turtl.search, ['reset'], this.render.bind(this, {}));
-					this.bind('search-done', function(_searched_notes, _tags, _total, options) {
+					this.bind('search-done', function(searched_notes, _tags, _total, options) {
 						options || (options = {});
-						var ids = this.notes.map(function(n) { return n.id(); })
-
-						// curtail rendering duplicate result sets
-						var string_ids = JSON.stringify(ids);
-						if(string_ids == this._last_search) return;
-						this._last_search = string_ids;
-
-						// let render know what's going on
-						this.viewstate.no_results = ids.length === 0;
+						this.notes.reset(searched_notes, options)
+						this.viewstate.no_results = this.notes.size() === 0;
+						this.render();
 
 						// always go back to the top after a search
-						if(options.scroll_to_top) {
-							$E('#wrap').scrollTo(0, 0);
-						}
-
-						// ok, all the notes we found are deserialized and loaded
-						// into mem, so we trigger a reset and the tracker will pick
-						// up on it and re-display the notes
-						this.notes.trigger('reset');
+						if(options.scroll_to_top) $E('#wrap').scrollTo(0, 0);
 					}.bind(this));
 				});
 		}.bind(this));
@@ -163,12 +149,11 @@ var NotesListController = Composer.ListController.extend({
 		return turtl.search.search(this.search)
 			.bind(this)
 			.spread(function(res, tags, total) {
-				var opts = Object.merge({}, options, {silent: true});
-				this.notes.reset(res, opts);
-				return [res, tags, total];
+				var opts = Object.merge({}, options);
+				return [res, tags, total, opts];
 			})
 			.tap(function(res) {
-				if(options.notify) this.trigger.apply(this, ['search-done'].concat(res).concat([options]));
+				if(options.notify) this.trigger.apply(this, ['search-done'].concat(res));
 			});
 	},
 

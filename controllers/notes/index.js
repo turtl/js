@@ -195,8 +195,7 @@ var NotesIndexController = Composer.Controller.extend({
 		search.bind('search-mod', this.trigger.bind(this, 'search-mod'));
 
 		// if we have save tags, hand them to the search controller
-		if(this.saved_tags)
-		{
+		if(this.saved_tags) {
 			search.trigger('update-available-tags', this.saved_tags);
 		}
 	},

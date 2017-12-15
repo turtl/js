@@ -1,9 +1,5 @@
 v0.7:
 
-- note interface
-  - search: sorting not working
-  - search: viewstate.searching = true not being set (red dot not showing up)
-  - pagination
 - adding/updating spaces/notes/boards
   - implement `sync:local` event (when something changes locally in data we want
     to re-search, see controllers/notes/list.js)

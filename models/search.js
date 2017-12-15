@@ -1,4 +1,6 @@
 var Search = Composer.Collection.extend({
+	total: 0,
+
 	search: function(search, options)
 	{
 		search || (search = {});
@@ -32,10 +34,14 @@ var Search = Composer.Collection.extend({
 			}
 		});
 		return turtl.core.send('profile:find-notes', core_search)
+			.bind(this)
 			.then(function(search_data) {
 				var notes = search_data.notes.map(function(n) { return new Note(n); });
 				var tags = search_data.tags.map(function(t) { return {name: t[0], count: t[1]}; });
 				var total = search_data.total;
+				this.total = total;
+				this.trigger('search-done', notes, tags, total);
+				this.trigger('search-tags', tags);
 				return [notes, tags, total];
 			});
 	},

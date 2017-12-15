@@ -62,11 +62,11 @@ var NotesSearchController = Composer.Controller.extend({
 					break;
 			}
 		}.bind(this));
-		this.with_bind(turtl.search, 'reset', function() {
-			this.modal.set_title(titlefn(turtl.search.total), turtl.last_url);
+		this.with_bind(turtl.search, 'search-done', function(_notes, _tags, total) {
+			this.modal.set_title(titlefn(total), turtl.last_url);
 		}.bind(this));
 
-		var timer = new Timer(500);
+		var timer = new Timer(250);
 		this.with_bind(timer, 'fired', this.trigger.bind(this, 'do-search'));
 		this.bind('search-text', timer.reset.bind(timer));
 		this.bind('release', function() {
