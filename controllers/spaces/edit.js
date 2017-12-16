@@ -84,15 +84,6 @@ var SpacesEditController = FormController.extend({
 		var color = this.inp_color.get('value');
 		var default_space = this.inp_default && this.inp_default.get('checked');
 
-		var errors = [];
-		if(!title) errors.push(i18next.t('Please give your space a title'));
-
-		if(errors.length)
-		{
-			barfr.barf(errors.join('<br>'));
-			return;
-		}
-
 		var is_new = this.model.is_new();
 		this.model.create_or_ensure_key({silent: true});
 		var clone = this.model.clone();
