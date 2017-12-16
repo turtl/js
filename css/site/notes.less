@@ -102,7 +102,7 @@
 		@img_header_height: 30rem;
 		@img_header_top_pad: 4rem;
 		@img_header_margin_bottom: 3rem;	// aligns the text as if header weren't there
-		.content h1.main-title {position: relative; z-index: 11; display: block; height: @img_header_height; margin: -(@img_header_height + @img_header_top_pad) 0 @img_header_margin_bottom 0; padding: @img_header_top_pad 0 0 6%; line-height: @img_header_height; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; .title-scrim(bottom, .45);}
+		.content h1.main-title {position: relative; z-index: 11; display: block; height: @img_header_height; margin: -(@img_header_height + @img_header_top_pad) 0 @img_header_margin_bottom 0; padding: @img_header_top_pad 0 0 6%; line-height: @img_header_height; color: #fff; .ellipsis(); .title-scrim(bottom, .45);}
 		@media @desktop {
 			.content h1.main-title {padding-left: 24rem;}
 		}
@@ -122,7 +122,7 @@
 
 	.file {height: (@file_height - (@content_pad * 2)); padding: @content_pad; text-align: center; background: @theme_gray_white; .layer-rest();}
 	.file {
-		strong {display: inline-block; width: 100%; font-size: 16rem; line-height: 20rem; font-weight: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+		strong {display: inline-block; width: 100%; font-size: 16rem; line-height: 20rem; font-weight: normal; .ellipsis();}
 		strong {
 			icon {width: 20rem;}
 			svg {display: none; width: 20rem; height: 20rem; vertical-align: bottom;}
@@ -290,7 +290,7 @@
 		.file {
 			icon {margin: 4rem 8rem 0 0;}
 			p {margin: 0; padding: 0; font-size: 14rem;}
-			p.info {width: 100%; margin: 0 0 6rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+			p.info {width: 100%; margin: 0 0 6rem 0; .ellipsis();}
 			p.size {float: left; padding-left: 30rem;}
 			p.remove {float: right;}
 			p.remove {
