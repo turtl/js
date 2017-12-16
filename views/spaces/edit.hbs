@@ -15,9 +15,11 @@
 			{{t 'Set this as your default space'}}
 		</label>
 	</p>
-	<p class="share">
-		<a href="/spaces/{{space.id}}/sharing" rel="share">{{t 'Share this space &raquo;'}}</a>
-	</p>
+	{{#unless is_new}}
+		<p class="share">
+			<a href="/spaces/{{space.id}}/sharing" rel="share">{{t 'Share this space &raquo;'}}</a>
+		</p>
+	{{/unless}}
 {{/unless}}
 
 {{#if show_delete}}

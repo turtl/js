@@ -46,20 +46,13 @@ var NotesIndexController = Composer.Controller.extend({
 
 			var title = board.get('title');
 			var back = turtl.router.get_param(window.location.search, 'back');
+			this.with_bind(board, 'change:title', function() {
+				turtl.controllers.header.update_title(board.get('title'));
+			}.bind(this));
 		}
 
 		var tagsearch = clone(this.search);
 		this.notes = new Notes();
-		/*
-		this.with_bind(this.notes, ['add', 'remove', 'clear', 'reset'], function() {
-			var list = this.sub('list');
-			if(!list) return;
-			turtl.search.search(tagsearch)
-				.spread(function(_, tags) {
-					list.tags = tags;
-				});
-		}.bind(this));
-		*/
 
 		turtl.push_title(title, back, {prefix_space: true});
 		this.bind('release', turtl.pop_title.bind(null, false));

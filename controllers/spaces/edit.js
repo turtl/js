@@ -68,6 +68,7 @@ var SpacesEditController = FormController.extend({
 			last_space: my_spaces.length <= 1,
 			show_delete: show_delete,
 			is_default: default_space == this.model.id(),
+			is_new: this.model.is_new(),
 		})).bind(this)
 			.then(function() {
 				if(this.model.is_new())
@@ -85,29 +86,21 @@ var SpacesEditController = FormController.extend({
 		var default_space = this.inp_default && this.inp_default.get('checked');
 
 		var is_new = this.model.is_new();
-		this.model.create_or_ensure_key({silent: true});
 		var clone = this.model.clone();
 
 		var data = {title: title};
 		if(color) data.color = color;
 		clone.set(data);
-
 		clone.save()
 			.bind(this)
 			.then(function() {
 				this.model.set(clone.toJSON());
-
-				// add the space to our main space list
-				turtl.profile.get('spaces').upsert(this.model);
-
 				if(default_space) {
 					turtl.user.setting('default_space', this.model.id());
 				}
-
 				if(is_new) {
 					turtl.profile.set_current_space(this.model.id());
 				}
-
 				this.trigger('close');
 			})
 			.catch(function(err) {

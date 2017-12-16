@@ -16,6 +16,7 @@ var HeaderController = Composer.Controller.extend({
 
 	bind_to: null,
 	notifications: {},
+	title_updater: null,
 
 	init: function()
 	{
@@ -48,6 +49,10 @@ var HeaderController = Composer.Controller.extend({
 		this.update_notification();
 	},
 
+	update_title: function(newtitle) {
+		if(this.title_updater) this.title_updater(newtitle);
+	},
+
 	render_title: function(title, backurl, options)
 	{
 		options || (options = {});
@@ -72,6 +77,9 @@ var HeaderController = Composer.Controller.extend({
 		var update_title = function() {
 			if(!options.prefix_space) return;
 			this.render_title(title, backurl, options);
+		}.bind(this);
+		this.title_updater = function(newtitle) {
+			this.render_title(newtitle, backurl, options);
 		}.bind(this);
 		if(turtl.profile) {
 			this.with_bind(turtl.profile.get('spaces'), ['change:title', 'change:color'], update_title, 'header:bind-space-title:'+this.cid());

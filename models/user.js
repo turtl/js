@@ -1,25 +1,9 @@
-var User = Protected.extend({
-	base_url: '/users',
-	local_table: 'user',
-
-	public_fields: [
-		'id',
-		'storage',
-		'name',
-		'username',
-		'pubkey',
-	],
-
-	private_fields: [
-		'settings',
-		'privkey',
-	],
+var User = Composer.Model.extend({
+	sync_type: 'user',
 
 	logged_in: false,
 	logging_in: false,
 	changing_password: false,
-
-	auth: null,
 
 	init: function() {
 		this.logged_in = false;
@@ -271,52 +255,6 @@ var User = Protected.extend({
 	find_by_email: function(email)
 	{
 		return turtl.api.get('/users/email/'+email);
-	},
-});
-
-// we don't actually use this collection for anything but syncing
-var Users = SyncCollection.extend({
-	model: User,
-	local_table: 'user',
-
-	sync_record_from_db: function(userdata, msg)
-	{
-		if(!userdata) return false;
-		if(turtl.sync.should_ignore([msg.sync_id], {type: 'local'})) return false;
-
-		turtl.user.set(userdata);
-	},
-
-	sync_record_from_api: function(item)
-	{
-		// make sure item.key is set so the correct record updates in the DB
-		// (since we only ever get one user object synced: ours)
-		item.key = 'user';
-		return this.parent.apply(this, arguments);
-	},
-
-	run_incoming_sync_item: function(sync, item)
-	{
-		switch(sync.action) {
-			case 'change-password':
-				barfr.barf(i18next.t('Your password was changed. You will be logged out momentarily.'));
-				// NOTE: this delay is important. it lets the sync system save the
-				// sync id BEFORE logging out so we don't get into an endless logout
-				// loop.
-				setTimeout(function() { turtl.user.logout(); }, 3000);
-				break;
-			case 'edit':
-				turtl.user.set(item);
-				break;
-			case 'delete':
-				barfr.barf(i18next.t('Your account was deleted. You will be logged out momentarily.'));
-				// NOTE: this timeout gives the sync system some time to mark
-				// the item as handled before logging out. not that it REALLY
-				// matters since the account will be deleted, but still.
-				setTimeout(function() { turtl.user.logout(); }, 3000);
-				break;
-		} 
-		return Promise.resolve();
 	},
 });
 

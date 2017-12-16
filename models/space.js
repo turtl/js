@@ -1,28 +1,10 @@
-var Space = Protected.extend({
-	base_url: '/spaces',
-
+var Space = Composer.RelationalModel.extend({
 	relations: {
 		members: { collection: 'Members' },
 		invites: { collection: 'Invites' },
 	},
 
-	public_fields: [
-		'id',
-		'user_id',
-		// ------
-		// NOTE: we save members/invites to the local db, although we don't
-		// techinically don't want them going to the API (it will ignore them).
-		// just a reminder that this is what we want to have happen.
-		'members',
-		'invites',
-		// ------
-		'keys',
-	],
-
-	private_fields: [
-		'title',
-		'color',
-	],
+	sync_type: 'space',
 
 	initialize: function()
 	{
@@ -34,6 +16,7 @@ var Space = Protected.extend({
 			if(!turtl.user) return;
 			turtl.user.delete_setting('spaces:'+this.id()+':*');
 		}.bind(this));
+
 		// make sure the current space gets updated properly when destroyed
 		this.bind('destroy', function() {
 			if(!turtl.profile) return;
@@ -50,52 +33,6 @@ var Space = Protected.extend({
 	init: function()
 	{
 		this.parent.apply(this, arguments);
-		this.bind('destroy', function(_1, _2, options) {
-			options || (options = {});
-			var options_nosync = clone(options);
-			options_nosync.skip_remote_sync = true;
-			return this.each_note(function(note) { return note.destroy(options_nosync); })
-				.bind(this)
-				.then(function() {
-					return this.each_board(function(board) { return board.destroy(options_nosync); });
-				})
-				.then(function() {
-					return turtl.profile.get('keychain').remove_key(this.id(), options);
-				});
-		}.bind(this));
-	},
-
-	update_keys: function(options)
-	{
-		options || (options = {});
-
-		this.set({user_id: turtl.user.id()}, options);
-
-		// is this needed? copied from Note model's update_keys() fn
-		var key = this.ensure_key_exists();
-		if(!key) return Promise.reject(new Error('space: missing key: '+ this.id()));
-
-		var keychain = turtl.profile.get('keychain');
-		var existing = keychain.find_key(this.id());
-		if(!existing || (this.key && JSON.stringify(existing) != JSON.stringify(this.key)))
-		{
-			// key needs an add/update
-			return keychain.upsert_key(this.id(), 'space', this.key, options);
-		}
-		return Promise.resolve();
-	},
-
-	save: function(options)
-	{
-		options || (options = {});
-
-		var parentfn = this.$get_parent();
-		return this.update_keys(options)
-			.bind(this)
-			.then(function() {
-				options.table = 'spaces';
-				return parentfn.call(this, options);
-			});
 	},
 
 	can_i: function(permission, options)
@@ -130,52 +67,6 @@ var Space = Protected.extend({
 	is_shared_with_me: function()
 	{
 		return !this.is_new() && this.get('user_id') != turtl.user.id();
-	},
-
-	each_type: function(type, cls, callback, options)
-	{
-		options || (options = {});
-		var memcollection = turtl.profile.get(type);
-		return turtl.db[type].query('space_id').only(this.id()).execute()
-			.then(function(items) {
-				var promises = (items || []).map(function(item) {
-					var existing = true;
-					// if we have an existing item in-memory, use it.
-					// this will also apply our changes in any listening
-					// collections
-					var model = memcollection.get(item.id)
-					if(!model)
-					{
-						// if we don't have an existing in-mem model,
-						// create one and then apply our changes to it
-						model = new cls(item);
-						existing = false;
-						if(options.decrypt)
-						{
-							return model.deserialize()
-								.then(function() {
-									return callback(model, {existing: true});
-								})
-								.catch(function(err) {
-									log.error('space.each_type(): deserialize: ', err, item);
-									throw err;
-								});
-						}
-					}
-					return callback(model, {existing: existing});
-				});
-				return Promise.all(promises);
-			});
-	},
-
-	each_board: function(callback, options)
-	{
-		return this.each_type('boards', Board, callback, options);
-	},
-
-	each_note: function(callback, options)
-	{
-		return this.each_type('notes', Note, callback, options);
 	},
 
 	get_color: function()

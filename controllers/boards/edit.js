@@ -55,8 +55,7 @@ var BoardsEditController = FormController.extend({
 			show_move: show_move,
 			show_delete: show_delete,
 		}));
-		if(this.model.is_new())
-		{
+		if(this.model.is_new()) {
 			this.inp_title.focus.delay(300, this.inp_title);
 		}
 	},
@@ -65,26 +64,12 @@ var BoardsEditController = FormController.extend({
 		if(e) e.stop();
 		var title = this.inp_title.get('value').toString().trim();
 
-		var errors = [];
-		if(!title) errors.push(i18next.t('Please give your board a title'));
-
-		if(errors.length)
-		{
-			barfr.barf(errors.join('<br>'));
-			return;
-		}
-
-		this.model.create_or_ensure_key({silent: true});
 		var clone = this.model.clone();
 		clone.set({title: title});
 		clone.save()
 			.bind(this)
 			.then(function() {
 				this.model.set(clone.toJSON());
-
-				// add the board to our main board list
-				turtl.profile.get('boards').upsert(this.model);
-
 				this.trigger('close');
 				turtl.route('/spaces/'+this.space.id()+'/boards/'+this.model.id()+'/notes');
 			})

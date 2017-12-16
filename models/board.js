@@ -1,5 +1,5 @@
 var Board = SyncModel.extend({
-	base_url: '/boards',
+	sync_type: 'board',
 
 	public_fields: [
 		'id',
@@ -11,65 +11,6 @@ var Board = SyncModel.extend({
 	private_fields: [
 		'title'
 	],
-
-	init: function()
-	{
-		this.parent.apply(this, arguments);
-	},
-
-	update_keys: function(options)
-	{
-		options || (options = {});
-
-		this.set({user_id: turtl.user.id()}, options);
-
-		var space_id = this.get('space_id');
-		var subkeys = [];
-		var space = turtl.profile.get('spaces').get(space_id);
-		if(space) subkeys.push({s: space.id(), k: space.key});
-
-		// is this needed? copied from Note model's update_keys() fn
-		var key = this.ensure_key_exists();
-		if(!key) return Promise.reject(new Error('board: missing key: '+ this.id()));
-
-		// ok, we have a key, we can update our subkeys now
-		this.generate_subkeys(subkeys);
-		return Promise.resolve();
-	},
-
-	save: function(options)
-	{
-		var parentfn = this.$get_parent();
-		return this.update_keys(options).bind(this)
-			.then(function() {
-				return parentfn.call(this, options);
-			});
-	},
-
-	get_key_search: function()
-	{
-		var space_ids = [this.get('space_id')];
-		// also look in keys for space ids. they really shouldn't be in here if
-		// not in note.spaces, but it's much better to find a key and be wrong
-		// than to have a note you cannot decrypt and be right.
-		this.get('keys').each(function(key) {
-			var space_id = key.get('s');
-			if(space_id && space_ids.indexOf(space_id) < 0)
-			{
-				space_ids.push(space_id);
-			}
-		});
-
-		var search = new Keychain();
-		var keychain = turtl.profile.get('keychain');
-		var spaces = turtl.profile.get('spaces');
-		space_ids.forEach(function(space_id) {
-			var space = spaces.get(space_id);
-			if(!space || !space.key) return;
-			search.upsert_key(space.id(), 'space', space.key, {skip_save: true});
-		});
-		return search;
-	},
 
 	note_count: function()
 	{
@@ -105,13 +46,6 @@ var Board = SyncModel.extend({
 var Boards = SyncCollection.extend({
 	model: Board,
 	sync_type: 'board',
-
-	toJSON_hierarchical: function()
-	{
-		var boards = this.toJSON()
-			.sort(function(a, b) { return (a.title || '').localeCompare(b.title || ''); });
-		return boards;
-	},
 
 	toJSON_named: function(board_ids)
 	{

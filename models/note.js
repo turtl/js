@@ -1,5 +1,5 @@
 var Note = SyncModel.extend({
-	base_url: '/notes',
+	sync_type: 'note',
 
 	relations: {
 		tags: { collection: 'Tags' },

@@ -1,20 +1,5 @@
 var Invite = SyncModel.extend({
-	public_fields: [
-		'id',
-		'space_id',
-		'from_user_id',
-		'from_username',
-		'to_user',
-		'role',
-		'is_passphrase_protected',
-		'is_pubkey_protected',
-		'title',
-	],
-
-	private_fields: [
-		'message'
-	],
-
+	sync_type: 'invite',
 	default_passphrase: 'this is the default passphrase lol',
 
 	url: function() {
