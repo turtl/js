@@ -1,9 +1,12 @@
 v0.7:
 
-- adding/updating spaces/notes/boards
+- note edit
+  - note image preview
+- reloading doesnt kill previous sync, need to watch out
+- adding a board doesnt switch to new board
 - sync:
-  - when models save, send to core
   - need anything special for `move-space`?
+  - notify failed syncs `sync:outgoing:failure`
 - user settings persist to core
   - need core support?
 - invites/sharing

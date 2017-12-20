@@ -46,7 +46,6 @@ var turtl = {
 	overlay: null,
 
 	loaded: false,
-	router: false,
 
 	// holds the title breadcrumbs
 	titles: [],
@@ -110,13 +109,6 @@ var turtl = {
 		var core_promise = new Promise(function(resolve, reject) {
 			turtl.core.bind('connected', function(yesno) {
 				if(!yesno) return;
-				// this is really only necessary with the websocket core handler, but
-				// it's not a bad idea either way. basically, we want to reset our core
-				// state when the app loads.
-				turtl.user.logout({clear_cookie: false, skip_do_logout: true})
-					.catch(function(err) {
-						log.warn('core: initial logout: ', derr(err));
-					});
 				turtl.core.unbind('connected', 'turtl:init:core-connected');
 				if(localStorage.config_api_url) {
 					App.prototype.set_api_endpoint(localStorage.config_api_url)
@@ -526,6 +518,14 @@ var turtl = {
 		}
 		log.debug('turtl::route() -- '+url);
 		this.router.route(url, options);
+	},
+
+	route_to_space: function(space_id) {
+		if(!space_id && turtl.profile) {
+			var space = turtl.profile.current_space();
+			if(space) space_id = space.id();
+		}
+		return turtl.route('/spaces/'+space_id+'/notes');
 	},
 
 	_set_title: function()

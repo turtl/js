@@ -79,15 +79,18 @@ var UserMigrateController = UserJoinController.extend({
 		this.inp_submit.set('disabled', 'disabled');
 		turtl.loading(true);
 
+		var error = null;
 		endpoint_promise
 			.bind(this)
 			.then(function() {
+				barfr.barf(i18next.t('Migration started. This can take a few minutes! Please be patient.'));
 				return turtl.user.migrate(v6_username, v6_password, username, password);
 			})
 			.then(function() {
 				turtl.settings.set('last_username', username);
 			})
 			.catch(function(err) {
+				error = err;
 				turtl.events.trigger('ui-error', i18next.t('There was a problem saving that account'), err);
 				log.error('users: migrate: ', err, derr(err));
 			})

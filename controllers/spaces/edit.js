@@ -99,7 +99,7 @@ var SpacesEditController = FormController.extend({
 					turtl.user.setting('default_space', this.model.id());
 				}
 				if(is_new) {
-					turtl.profile.set_current_space(this.model.id());
+					turtl.route_to_space(this.model.id());
 				}
 				this.trigger('close');
 			})

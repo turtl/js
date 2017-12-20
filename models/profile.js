@@ -51,6 +51,9 @@ var Profile = Composer.RelationalModel.extend({
 	},
 
 	set_current_space: function(space_id) {
+		var current_space = this.current_space();
+		var current_space_id = current_space && current_space.id();
+		if(current_space_id == space_id) return;
 		// we can set to null to clear the current selection
 		if(space_id !== null) {
 			var spaces = this.get('spaces');
@@ -58,7 +61,7 @@ var Profile = Composer.RelationalModel.extend({
 			if(!space) return;
 		}
 		this.current_space_id = space_id;
-		turtl.events.trigger('profile:set-current-space');
+		//turtl.events.trigger('profile:set-current-space');
 	},
 
 	space_boards: function() {

@@ -16,8 +16,8 @@ var Sync = Composer.Model.extend({
 		return turtl.core.send('sync:status');
 	},
 
-	shutdown: function() {
-		return turtl.core.send('sync:shutdown');
+	shutdown: function(wait) {
+		return turtl.core.send('sync:shutdown', wait);
 	},
 
 	get_pending: function() {
@@ -39,19 +39,23 @@ var SyncModel = Composer.RelationalModel.extend({
 		var bindname = 'syncmodel:init:sync:update:'+this.cid();
 		turtl.events.bind('sync:update', function(sync_item) {
 			if(sync_item.item_id != this.id()) return;
-			switch(sync_item.action) {
-				case 'edit':
-					this.reset(sync_item.data);
-					break;
-				case 'delete':
-					this.destroy();
-					break;
-			}
+			return this.incoming_sync(sync_item);
 		}.bind(this), bindname);
 		this.bind('destroy', function() {
 			turtl.events.unbind('sync:update', bindname);
 		}.bind(this));
-	}
+	},
+
+	incoming_sync: function(sync_item) {
+		switch(sync_item.action) {
+			case 'edit':
+				this.reset(sync_item.data);
+				break;
+			case 'delete':
+				this.destroy({skip_remote_sync: true});
+				break;
+		}
+	},
 });
 
 // define a collection that listens for incoming sync changes and updates its
@@ -62,14 +66,16 @@ var SyncCollection = Composer.Collection.extend({
 
 	init: function() {
 		if(this.sync_type) {
-			turtl.events.bind('sync:update:'+this.sync_type, function(sync_item) {
-				switch(sync_item.action) {
-					case 'add':
-						this.upsert(sync_item.data);
-						break;
-				}
-			}.bind(this));
+			turtl.events.bind('sync:update:'+this.sync_type, this.incoming_sync.bind(this))
 		}
-	}
+	},
+
+	incoming_sync: function(sync_item) {
+		switch(sync_item.action) {
+			case 'add':
+				this.upsert(sync_item.data);
+				break;
+		}
+	},
 });
 

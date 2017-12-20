@@ -70,6 +70,7 @@ var BoardsEditController = FormController.extend({
 			.bind(this)
 			.then(function() {
 				this.model.set(clone.toJSON());
+				turtl.profile.get('boards').upsert(this.model);
 				this.trigger('close');
 				turtl.route('/spaces/'+this.space.id()+'/boards/'+this.model.id()+'/notes');
 			})

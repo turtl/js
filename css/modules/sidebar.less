@@ -10,6 +10,7 @@
 	> .overlay.show {opacity: 1; cursor: pointer;}
 	> .inner {position: absolute; z-index: 11; top: 0; left: 0; bottom: 0; width: @sidebar_travel; overflow-y: auto; .layer-hover(); background: @side_bg;}
 	> .inner {
+		&.spaces-open .boards.gutter {display: none;}
 		.text() {color: @theme_white; opacity: 0.75; transition: opacity 0.3s;}
 		a, icon {.text();}
 		icon:hover {opacity: 1;}

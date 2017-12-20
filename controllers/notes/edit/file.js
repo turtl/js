@@ -58,7 +58,8 @@ var NotesEditFileController = Composer.Controller.extend({
 		reader.onload = function(e)
 		{
 			// create a new file record with the binary file data
-			var binary = new Uint8Array(e.target.result);
+			var base64_url = e.target.result;
+			var base64 = base64_url.slice(base64_url.indexOf(','));
 
 			// if the current note has an existing file, we're going to
 			// overwrite it, otherwise create a new one
@@ -67,7 +68,7 @@ var NotesEditFileController = Composer.Controller.extend({
 				name: file.name,
 				type: file.type,
 				size: binary.length,
-				data: binary
+				data: base64,
 			}).unset('cleared', {silent: true});
 			log.debug('note: edit: read file: ', binary.length);
 
@@ -84,7 +85,7 @@ var NotesEditFileController = Composer.Controller.extend({
 				img.src = url;
 			}
 		}.bind(this);
-		reader.readAsArrayBuffer(file);
+		reader.readAsDataURL(file);
 	},
 
 	clear_attachment: function(e)

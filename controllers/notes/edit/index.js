@@ -272,112 +272,38 @@ var NotesEditController = FormController.extend({
 		return data;
 	},
 
-	submit: function(e)
-	{
+	submit: function(e) {
 		if(e) e.stop();
-
-		var errors = [];
 
 		var data = this.grab_form_data();
 
-		if(this.model.is_new())
-		{
-			data.user_id = turtl.user.id();
-		}
-
 		var clone = this.clone;
-		clone.key = this.model.key;
-		clone.get('file').key = clone.key;
-		clone.create_or_ensure_key({silent: true});
 		clone.set(data);
 
 		// grab the file binary, and clear it out from the model
 		var file_set = clone.get('file').get('set');
 		var file_id = clone.id();
-		if(file_set)
-		{
-			var filebin = clone.get('file').get('data');
-			clone.get('file').unset('data');
-		}
-
-		if(file_set || this.model.get('file').id(true))
-		{
-			clone.get('file').set({id: file_id, no_preview: true}, {silent: true});
+		if(!file_set) {
+			clone.unset('file');
 		}
 
 		return clone.save()
 			.bind(this)
 			.then(function() {
-				if(!this.model.key) this.model.key = clone.key;
 				this.model.set(clone.toJSON({get_file: true}));
-				if(clone.get('file').get('cleared'))
-				{
-					this.model.get('file').clear().trigger('change');
-				}
-				if(clone.get('file').get('set'))
-				{
-					this.model.get('file').trigger('change');
-				}
 				this.have_unsaved = false;
 
-				// add the note to our main note list
-				turtl.profile.get('notes').upsert(this.model);
-				this.trigger('saved');
-				this.trigger('close');
+				if(clone.get('file').get('cleared')) {
+					this.model.get('file').clear();
+					var tmpfile = new FileData({id: clone.id()});
+					return tmpfile.destroy();
+				}
+
 			})
 			.then(function() {
+				this.trigger('saved');
+				this.trigger('close');
 				var file = this.model.get('file');
-				if(clone.get('file').get('cleared'))
-				{
-					file.clear();
-					return this.model.clear_files().bind(this)
-						.then(function() {
-							this.model.set({has_file: false});
-							return this.model.save();
-						})
-						.catch(function(err) {
-							turtl.events.trigger('ui-error', i18next.t('There was a problem removing the attachement'), err);
-							log.error('note: edit: file: ', this.model.id(), derr(err));
-						});
-				}
-				if(!file_set) return;
-				file.unset('set').revoke();
-
-				file.set({encrypting: true});
-				clone.clear_files();
-				var filedata = new FileData({data: filebin});
-				filedata.key = this.model.key;
-				var modeldata = {};
-				log.debug('file: pre: ', filebin.length);
-				return filedata.serialize().bind(this)
-					.spread(function(res) {
-						res.id = file_id;
-						var encfile = new FileData(res);
-						encfile.key = this.model.key;
-						log.debug('file: post: ', file_id, res.body.length);
-						encfile.set({note_id: this.model.id()});
-						modeldata = {id: file_id, has_data: 2, size: res.body.length};
-						// force this to be an "add"
-						encfile.unset('id');
-						encfile._cid = file_id;
-						return encfile.save({skip_serialize: true});
-					})
-					.then(function() {
-						// once the file is saved, update the note to have the
-						// correct meta info about it
-						this.model.set({has_file: true})
-							.get('file')
-							.unset('encrypting')
-							.set(modeldata);
-						return this.model.save({skip_remote_sync: true})
-					})
-					.then(function() {
-						file.unset('no_preview').unset('set');
-					})
-					.catch(function(err) {
-						turtl.events.trigger('ui-error', i18next.t('There was a problem saving the attachment'), err);
-						log.error('note: edit: file: ', this.model.id(), derr(err));
-					});
 			})
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', i18next.t('There was a problem updating that note'), err);

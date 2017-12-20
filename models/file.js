@@ -135,8 +135,6 @@ var FileData = Composer.Model.extend({
 	public_fields: [
 		'id',
 		'note_id',
-
-		'has_data'		// needed?
 	],
 
 	private_fields: [

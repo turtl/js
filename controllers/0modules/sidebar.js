@@ -113,8 +113,8 @@ var SidebarController = Composer.Controller.extend({
 
 		this.render();
 
-		this.with_bind(turtl.events, 'profile:set-current-space', function() {
-			this.boards.refresh();
+		this.with_bind(turtl.controllers.pages, 'prerelease', function() {
+			if(this.boards) this.boards.refresh();
 			this.render();
 		}.bind(this));
 		this.with_bind(turtl.events, 'sidebar:toggle', this.toggle.bind(this));

@@ -43,7 +43,7 @@ var SettingsController = Composer.Controller.extend({
 				if(!confirm(i18next.t('This will erase all your local data and log you out. Your profile will be downloaded again next time you log in{{msg}}. Continue?', {msg: outgoing_msg}))) {
 					return;
 				}
-				return sync.shutdown();
+				return sync.shutdown(false);
 			})
 			.then(function() {
 				return turtl.user.logout();

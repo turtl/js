@@ -25,7 +25,7 @@ var Space = Composer.RelationalModel.extend({
 			// collection, so we need to wait for the event chain to propagate
 			// (and the space to be removed) before selcting the next space
 			setTimeout(function() {
-				turtl.profile.set_current_space(null);
+				turtl.route_to_space();
 			});
 		}.bind(this));
 	},
