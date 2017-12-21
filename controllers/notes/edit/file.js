@@ -59,7 +59,7 @@ var NotesEditFileController = Composer.Controller.extend({
 		{
 			// create a new file record with the binary file data
 			var base64_url = e.target.result;
-			var base64 = base64_url.slice(base64_url.indexOf(','));
+			var base64 = base64_url.slice(base64_url.indexOf(',') + 1);
 
 			// if the current note has an existing file, we're going to
 			// overwrite it, otherwise create a new one
@@ -67,10 +67,12 @@ var NotesEditFileController = Composer.Controller.extend({
 				set: true,		// lets us know we did change the file
 				name: file.name,
 				type: file.type,
-				size: binary.length,
-				data: base64,
+				size: file.size,
+				filedata: {
+					data: base64,
+				},
 			}).unset('cleared', {silent: true});
-			log.debug('note: edit: read file: ', binary.length);
+			log.debug('note: edit: read file: ', file.size);
 
 			// TODO: clear out this.model.get('meta')?
 

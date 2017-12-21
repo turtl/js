@@ -1,6 +1,9 @@
 v0.7:
 
-- note edit
+- note interfaces
+  - removing a file and saving opens annoying "are you sure?" dialog
+  - adding a file to a note re-renders the note view, but doesnt show the
+    filename until its closed/re-opened (is data not coming through sync??)
   - note image preview
 - reloading doesnt kill previous sync, need to watch out
 - adding a board doesnt switch to new board

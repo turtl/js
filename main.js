@@ -1,28 +1,6 @@
 var $E = function(selector, filter) {return ($(filter) || document).getElement(selector);};
 var $ES = function(selector, filter) {return ($(filter) || document).getElements(selector);};
 
-// make our client IDs such that they are always sorted *after* real,
-// server-generated IDs ('z.') and they are chronologically sortable from each
-// other. Also, append in the original cid() at the end for easier debugging.
-//
-// NOTE: *DO NOT* change the cid scheme without updating the cid_match regex
-// below!
-Composer.cid = (function() {
-	var counter = 0;
-	return function() {
-		counter++;
-		return ('000000000000' + new Date().getTime().toString(16)).substr(-12) +
-			turtl.client_id +
-			('0000' + (counter & 65535).toString(16)).substr(-4);
-	};
-})();
-
-// keeps track of our db naming process
-var dbname = function(api_url, user_id) { return 'turtl.server:'+api_url+',user:'+user_id; };
-
-// 014d837656f10c160d0f98670a355bdfc69985137ab2a434d8995bc28027139cdb54310e29622253
-var cid_match = /[0-9a-f]+/;
-
 var turtl = {
 	client_id: null,
 

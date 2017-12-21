@@ -19,55 +19,24 @@ var NoteFile = Composer.Model.extend({
 
 	creating_blob: false,
 
+	init: function() {
+		this.bind('destroy', function() {
+			this.revoke();
+		}.bind(this));
+	},
+
 	clear: function()
 	{
 		this.revoke();
 		return this.parent.apply(this, arguments);
 	},
 
-	toJSON: function()
-	{
-		var data = this.get('data');
-		if(data)
-		{
-			this.unset('data', {silent: true});
-			var json = this.parent.apply(this, arguments);
-			var obj = {data: data};
-			this.set(obj, {silent: true});
-		}
-		else
-		{
-			var json = this.parent.apply(this, arguments);
-		}
-		delete json.blob_url;
-		return json;
-	},
-
-	find_key: function()
-	{
-		var note = this && this.get_parent && this.get_parent();
-		if(note)
-		{
-			this.key = note.key;
-			return this.key;
-		}
-		return this.parent.apply(this, arguments);
-	},
-
 	has_data: function()
 	{
 		if(!this.id()) return Promise.reject('file: has_data: bad id');
-		return turtl.db.files.get(this.id()).bind(this)
-			.then(function(filedata) {
-				if(!filedata) return false;
-				return turtl.db.notes.get(filedata.note_id).bind(this)
-					.then(function(notedata) {
-						if(!notedata) return false;
-						var size = ((notedata.file || {}).size || 0);
-						if(size == 0) return false;
-						return size <= (filedata.body || '').length;
-					});
-			});
+		return FileData.prototype.load_contents(id)
+			.then(function() { return true; })
+			.catch(function(_) { return false; });
 	},
 
 	to_array: function(options)
@@ -75,26 +44,11 @@ var NoteFile = Composer.Model.extend({
 		options || (options = {});
 
 		var id = this.id()
-		if(!id)
-		{
+		if(!id) {
 			return Promise.reject(new Error('file: to_array: bad_id'));
 		}
 
-		var file = new FileData();
-		return turtl.db.files.get(id).bind(this)
-			.then(function(filedata) {
-				if(!filedata)
-				{
-					this.set({has_data: 0});
-					throw new Error('file: to_array: file data not present');
-				}
-				file.key = this.key;
-				file.set(filedata);
-				return file.deserialize();
-			})
-			.then(function(res) {
-				return file.get('data');
-			});
+		return FileData.prototype.load_contents(id);
 	},
 
 	to_blob: function(options)
@@ -141,24 +95,11 @@ var FileData = Composer.Model.extend({
 		'data'
 	],
 
-	toJSON: function()
-	{
-		var data = this.get('data');
-		var body = this.get('body');
-		if(data || body)
-		{
-			this.unset('data', {silent: true});
-			this.unset(this.body_key, {silent: true});
-			var json = this.parent.apply(this, arguments);
-			var obj = {data: data};
-			obj[this.body_key] = body;
-			this.set(obj, {silent: true});
-			return json;
-		}
-		else
-		{
-			return this.parent.apply(this, arguments);
-		}
+	load_contents: function(note_id) {
+		return turtl.core.send('profile:note:get-file', note_id)
+			.then(function(base64) {
+				return new Uint8Array(base64_to_buffer(base64));
+			});
 	},
 });
 

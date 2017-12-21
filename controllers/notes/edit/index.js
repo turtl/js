@@ -290,7 +290,7 @@ var NotesEditController = FormController.extend({
 		return clone.save()
 			.bind(this)
 			.then(function() {
-				this.model.set(clone.toJSON({get_file: true}));
+				this.model.set(clone.toJSON());
 				this.have_unsaved = false;
 
 				if(clone.get('file').get('cleared')) {

@@ -29,18 +29,19 @@ var Note = SyncModel.extend({
 		'color',
 	],
 
+	initialize: function() {
+		this.bind('change:id', function() {
+			if(this.get('file').get('name')) {
+				this.get('file').set({id: this.id()});
+			}
+		}.bind(this));
+		return this.parent.apply(this, arguments);
+	},
+
 	init: function(options)
 	{
 		options || (options = {});
-
-		// we want the ability to create a new note without having it listen to
-		// data changes and reindex itself or delete files or any of that
-		// nonsense. this is usually because we're going to use one of it's
-		// internal functions (such as clearing files) manually and need to
-		// control the process by hand.
-		if(options.bare) return;
-
-		this.parent.apply(this, arguments);
+		this.parent();
 
 		var set_mod = function()
 		{
@@ -97,11 +98,11 @@ var Note = SyncModel.extend({
 			switch(sync_item.action) {
 				case 'add':
 				case 'edit':
-					this.get('file').set(sync_item.data);
+					this.get('file').reset(sync_item.data);
 					// TODO: load file for preview if image
 					break;
 				case 'delete':
-					this.unset('file');
+					this.get('file').clear();
 					break;
 			}
 		}

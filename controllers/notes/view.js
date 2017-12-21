@@ -147,7 +147,7 @@ var NotesViewController = NoteBaseController.extend({
 			note: note,
 			show_info: show_info
 		});
-		this.html(view.render('notes/view', {
+		return this.html(view.render('notes/view', {
 			note: note,
 			content: type_content
 		})).bind(this)

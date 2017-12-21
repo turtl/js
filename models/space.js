@@ -30,11 +30,6 @@ var Space = Composer.RelationalModel.extend({
 		}.bind(this));
 	},
 
-	init: function()
-	{
-		this.parent.apply(this, arguments);
-	},
-
 	can_i: function(permission, options)
 	{
 		var user_id = turtl.user.id();
