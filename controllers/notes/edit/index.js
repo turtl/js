@@ -71,6 +71,7 @@ var NotesEditController = FormController.extend({
 		if(!permcheck(space, perm_map[this.model.is_new() ? 'add' : 'edit'])) return this.release();
 
 		this.clone = this.model.clone();
+		this.clone.enable_sync = false;
 		this.clone.get('file').unset('set');
 
 		this.parent();
@@ -291,19 +292,18 @@ var NotesEditController = FormController.extend({
 			.bind(this)
 			.then(function() {
 				this.model.set(clone.toJSON());
-				this.have_unsaved = false;
-
+				var next = Promise.resolve();
 				if(clone.get('file').get('cleared')) {
 					this.model.get('file').clear();
 					var tmpfile = new FileData({id: clone.id()});
-					return tmpfile.destroy();
+					next = tmpfile.destroy();
 				}
-
+				this.have_unsaved = false;
+				return next;
 			})
 			.then(function() {
 				this.trigger('saved');
 				this.trigger('close');
-				var file = this.model.get('file');
 			})
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', i18next.t('There was a problem updating that note'), err);

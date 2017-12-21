@@ -30,7 +30,7 @@ var Note = SyncModel.extend({
 	],
 
 	initialize: function() {
-		this.bind('change:id', function() {
+		this.bind('change', function() {
 			if(this.get('file').get('name')) {
 				this.get('file').set({id: this.id()});
 			}

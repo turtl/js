@@ -129,12 +129,10 @@ var NotesViewController = NoteBaseController.extend({
 	{
 		var type = this.model.get('type');
 		var note = this.model.toJSON();
-		if(type == 'image' && !note.url && !(note.file || {}).name)
-		{
+		if(type == 'image' && !note.url && !(note.file || {}).name) {
 			type = 'text';
 		}
-		if(note.file)
-		{
+		if(note.file) {
 			note.file.blob_url = this.model.get('file').get('blob_url');
 			if(note.file.meta && note.file.meta.width && note.file.meta.height)
 			{
