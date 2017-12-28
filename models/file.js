@@ -34,7 +34,7 @@ var NoteFile = Composer.Model.extend({
 	has_data: function()
 	{
 		if(!this.id()) return Promise.reject('file: has_data: bad id');
-		return FileData.prototype.load_contents(id)
+		return FileData.prototype.load_contents(this.id())
 			.then(function() { return true; })
 			.catch(function(_) { return false; });
 	},

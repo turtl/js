@@ -30,10 +30,13 @@ var Note = SyncModel.extend({
 	],
 
 	initialize: function() {
-		this.bind('change', function() {
+		this.bind('file-id', function() {
 			if(this.get('file').get('name')) {
 				this.get('file').set({id: this.id()});
 			}
+		}.bind(this));
+		this.bind('change', function() {
+			this.trigger('file-id');
 		}.bind(this));
 		return this.parent.apply(this, arguments);
 	},
@@ -58,6 +61,8 @@ var Note = SyncModel.extend({
 			this.set({created: ts});
 		}.bind(this));
 		this.trigger('change:id');
+
+		this.trigger('file-id');
 	},
 
 	add_tag: function(tag)
