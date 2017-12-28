@@ -197,6 +197,9 @@ var turtl = {
 			case 'sync:file:uploaded':
 				break;
 			case 'sync:outgoing:failure':
+				barfr.barf(i18next.t('There was an error syncing a local change and syncing is paused. Click to open your sync settings and fix &raquo;'), {
+					onclick: function() { turtl.route('/settings/sync'); }
+				});
 				break;
 			case 'sync:outgoing:complete':
 				break;
