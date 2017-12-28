@@ -9,8 +9,7 @@ var SettingsController = Composer.Controller.extend({
 
 	init: function()
 	{
-		this.with_bind(turtl.events, 'api:connect', this.render.bind(this));
-		this.with_bind(turtl.events, 'api:disconnect', this.render.bind(this));
+		this.with_bind(turtl.events, 'sync:connected', this.render.bind(this));
 		this.with_bind(turtl.user, 'change:confirmed', this.render.bind(this));
 
 		turtl.push_title(i18next.t('Your settings'));
@@ -23,7 +22,7 @@ var SettingsController = Composer.Controller.extend({
 	{
 		var confirmed = turtl.user.get('confirmed');
 		return this.html(view.render('settings/index', {
-			connected: (turtl.sync || {}).connected,
+			connected: turtl.connected,
 			version: config.client + '-' + config.version,
 			confirmed: confirmed,
 		}));

@@ -1,16 +1,13 @@
 v0.7:
 
-- adding a board doesnt switch to new board
 - sync:
   - need anything special for `move-space`?
-  - notify failed syncs `sync:outgoing:failure`
+  - when remote files change, make sure we update locally (if image)
 - user settings persist to core
   - need core support?
 - invites/sharing
+- sync settings
 - files
-  - core support for grabbing file data?
-  - show image files inline
-  - when remote files change, make sure we update locally (if image)
 - cleanup
   - Protected and all its derivative functions
   - old js syncing stuff
