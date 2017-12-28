@@ -1,8 +1,5 @@
 v0.7:
 
-- note interfaces
-  - note image preview
-- reloading doesnt kill previous sync, need to watch out
 - adding a board doesnt switch to new board
 - sync:
   - need anything special for `move-space`?
