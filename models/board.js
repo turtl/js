@@ -30,16 +30,7 @@ var Board = SyncModel.extend({
 
 	move_spaces: function(new_space_id) {
 		this.set({space_id: new_space_id});
-		return this.save({custom_method: 'move-space'})
-			.bind(this)
-			.then(function() {
-				// TODO: core conversion??
-				/*
-				return this.each_note(function(note) {
-					return note.move_spaces(new_space_id);
-				}, {decrypt: true});
-				*/
-			});
+		return this.save({custom_method: 'move-space'});
 	},
 });
 
