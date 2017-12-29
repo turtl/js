@@ -1,5 +1,6 @@
 v0.7:
 
+- sidebar: when selecting a space, board search is NO LONGER FOCUSED
 - sync:
   - need anything special for `move-space`?
   - when remote files change, make sure we update locally (if image)
@@ -13,7 +14,6 @@ v0.7:
   - old js syncing stuff
   - old js file syncing junk
 - wire up all settings interfaces to core
-  - wire up `connected` status
   - change password
   - sync info
   - resend confirmation (need core support?)
