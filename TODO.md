@@ -2,7 +2,6 @@ v0.7:
 
 - sidebar: when selecting a space, board search is NO LONGER FOCUSED
 - sync:
-  - need anything special for `move-space`?
   - when remote files change, make sure we update locally (if image)
 - user settings persist to core
   - need core support?

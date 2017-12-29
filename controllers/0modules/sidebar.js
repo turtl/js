@@ -275,7 +275,7 @@ var SidebarController = Composer.Controller.extend({
 			this.clear_space_filter();
 		}.bind(this), 300);
 		this.inp_space_filter.blur();
-		this.focus_if(this.inp_board_filter, {delay: 0});
+		this.focus_if(this.inp_board_filter, {delay: 5});
 		this.clear_board_filter();
 	},
 
@@ -412,9 +412,9 @@ var SidebarController = Composer.Controller.extend({
 
 		if(get_platform() == 'mobile') return;
 		if(options.delay === undefined) {
-			setTimeout(function() { el.focus(); }.bind(this), 100);
+			setTimeout(function() { el.focus(); }, 100);
 		} else {
-			el.focus();
+			setTimeout(function() { el.focus(); }, options.delay);
 		}
 	},
 });
