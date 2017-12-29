@@ -1,6 +1,5 @@
 v0.7:
 
-- sidebar: when selecting a space, board search is NO LONGER FOCUSED
 - sync:
   - when remote files change, make sure we update locally (if image)
 - user settings persist to core
