@@ -233,6 +233,7 @@ var User = Composer.Model.extend({
 		if(val === undefined) return settings[key];
 		settings[key] = val;
 		this.set({settings: settings});
+		return this.save();
 	},
 
 	delete_setting: function(keyspec)
@@ -245,6 +246,7 @@ var User = Composer.Model.extend({
 			if(key.match(re)) delete settings[key];
 		});
 		this.set({settings: settings});
+		return this.save();
 	},
 
 	resend_confirmation: function()

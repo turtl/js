@@ -2,8 +2,6 @@ v0.7:
 
 - sync:
   - when remote files change, make sure we update locally (if image)
-- user settings persist to core
-  - need core support?
 - invites/sharing
 - sync settings
 - files
