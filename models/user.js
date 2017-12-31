@@ -251,12 +251,12 @@ var User = Composer.Model.extend({
 
 	resend_confirmation: function()
 	{
-		return turtl.api.post('/users/confirmation/resend');
+		return turtl.core.send('user:resend-confirmation');
 	},
 
 	find_by_email: function(email)
 	{
-		return turtl.api.get('/users/email/'+email);
+		return turtl.core.send('user:find-by-email', email);
 	},
 });
 
