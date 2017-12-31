@@ -62,6 +62,10 @@ var Note = SyncModel.extend({
 		}.bind(this));
 		this.trigger('change:id');
 
+		this.bind_relational('file', 'destroy', function() {
+			this.get('file').clear();
+		}.bind(this));
+
 		this.trigger('file-id');
 	},
 
@@ -95,22 +99,8 @@ var Note = SyncModel.extend({
 	},
 
 	incoming_sync: function(sync_item) {
-		if(sync_item.type == 'note') {
-			return this.parent(sync_item);
-		}
-
-		if(sync_item.type == 'file') {
-			switch(sync_item.action) {
-				case 'add':
-				case 'edit':
-					this.get('file').reset(sync_item.data);
-					// TODO: load file for preview if image
-					break;
-				case 'delete':
-					this.get('file').clear();
-					break;
-			}
-		}
+		if(sync_item.type != 'note') return;
+		return this.parent(sync_item);
 	},
 });
 

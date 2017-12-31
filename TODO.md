@@ -1,10 +1,6 @@
 v0.7:
 
-- sync:
-  - when remote files change, make sure we update locally (if image)
 - invites/sharing
-- sync settings
-- files
 - cleanup
   - Protected and all its derivative functions
   - old js syncing stuff

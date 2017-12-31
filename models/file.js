@@ -1,4 +1,4 @@
-var NoteFile = Composer.Model.extend({
+var NoteFile = SyncModel.extend({
 	sync_type: 'file',
 
 	defaults: {
@@ -61,8 +61,7 @@ var NoteFile = Composer.Model.extend({
 		return this.to_array().bind(this)
 			.then(function(array) {
 				var blob = new Blob([array.buffer], {type: this.get('type')});
-				if(!options.force)
-				{
+				if(!options.force) {
 					this.set({blob_url: URL.createObjectURL(blob)}, options);
 				}
 				return blob;
@@ -79,12 +78,19 @@ var NoteFile = Composer.Model.extend({
 		URL.revokeObjectURL(blob_url);
 		this.unset('blob_url');
 		return this;
-	}
+	},
+
+	incoming_sync: function(sync_item) {
+		if(sync_item.type != 'file') return;
+		// guaranteed by some sierra club asshole not to leak a blob URL...
+		// IF you step on it.
+		this.revoke();
+		return this.parent(sync_item);
+	},
 });
 
 var FileData = Composer.Model.extend({
 	rawdata: true,
-	sync_type: 'file',
 
 	public_fields: [
 		'id',
