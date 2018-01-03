@@ -105,19 +105,26 @@ var FormController = Composer.Controller.extend({
 	{
 		options || (options = {});
 
+		var connect_barf = null;
+		var close_barf = function() {
+			if(!connect_barf) return;
+			barfr.close_barf(connect_barf);
+			connect_barf = null;
+		};
 		var check_disconnect = function()
 		{
+			close_barf();
 			if(turtl.connected)
 			{
 				this.disable(false);
 			}
 			else
 			{
-				barfr.barf(options.msg);
+				connect_barf = barfr.barf(options.msg);
 				this.disable(true);
 			}
 		}.bind(this);
-		this.with_bind(turtl.events, ['api:connect', 'api:disconnect'], check_disconnect);
+		this.with_bind(turtl.events, 'sync:connected', check_disconnect);
 		check_disconnect();
 		this.bind('xdom:render', check_disconnect);
 	},
