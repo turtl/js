@@ -1,10 +1,7 @@
 v0.7:
 
 - wire up all settings interfaces to core
-  - change password
   - sync info
-  - resend confirmation (need core support?)
-  - feedback
 - Update bookmarker
   - should be aware of spaces, have space selector
   - bookmarker should accept a URL, fill in the rest itself (title, thumbnail, desc)
