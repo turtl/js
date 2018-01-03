@@ -110,7 +110,6 @@ var SpacesMemberItemController = Composer.Controller.extend({
 			.then(function() {
 				this.edit_mode = false;
 				this.model.set(clone.toJSON());
-				this.space.save();
 				this.render();
 			})
 			.catch(function(err) {
@@ -130,24 +129,13 @@ var SpacesMemberItemController = Composer.Controller.extend({
 	},
 
 	do_delete: function() {
-		return this.model.destroy()
-			.bind(this)
-			.catch(function(err) {
-				if(err.disconnected) {
-					barfr.barf(i18next.t('Couldn\'t connect to the server'));
-					return;
-				}
-				throw err;
-			});
+		return this.model.delete()
 	},
 
 	open_delete: function(e) {
 		if(e) e.stop();
 		if(!confirm(i18next.t('Really delete this user from this space?'))) return;
-		this.do_delete()
-			.then(function() {
-				this.space.save();
-			})
+		this.model.delete()
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', i18next.t('There was a problem deleting the user'), err);
 				log.error('spaces: sharing: delete user: ', err, derr(err));
@@ -168,10 +156,7 @@ var SpacesMemberItemController = Composer.Controller.extend({
 	open_leave: function(e) {
 		if(e) e.stop();
 		if(!confirm(i18next.t('Really leave this space?'))) return;
-		this.do_delete()
-			.then(function() {
-				this.space.destroy({skip_remote_sync: true});
-			})
+		this.model.leave()
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', i18next.t('There was a problem leaving the space'), err);
 				log.error('spaces: sharing: leave: ', err, derr(err));

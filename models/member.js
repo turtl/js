@@ -9,7 +9,19 @@ var Member = Composer.Model.extend({
 	get_email: function() {
 		var email = this.get('username');
 		return email && email.toLowerCase();
-	}
+	},
+
+	save: function() {
+		return turtl.core.send('profile:space:edit-member', this.toJSON());
+	},
+
+	leave: function() {
+		return turtl.core.send('profile:space:leave', this.get('space_id'));
+	},
+
+	delete: function() {
+		return turtl.core.send('profile:space:delete-member', this.get('space_id'), this.get('user_id'));
+	},
 });
 
 var Members = SyncCollection.extend({

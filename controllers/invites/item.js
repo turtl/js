@@ -49,7 +49,6 @@ var InvitesItemController = Composer.Controller.extend({
 		return this.html(view.render('invites/item', {
 			invite: this.model.toJSON(),
 			passphrase_open: this.passphrase_open,
-			default_passphrase: this.model.default_passphrase,
 			confirmed: turtl.user.get('confirmed'),
 		})).bind(this)
 			.then(function() {
@@ -65,44 +64,9 @@ var InvitesItemController = Composer.Controller.extend({
 			return;
 		}
 
-		var passphrase = this.inp_passphrase.get('value');
-		var pubkey = turtl.user.get('pubkey');
-		var privkey = turtl.user.get('privkey');
-		this.model.open(pubkey, privkey, passphrase)
+		var passphrase = this.inp_passphrase.get('value') || null;
+		this.model.accept(passphrase)
 			.bind(this)
-			.then(function() {
-				var space_id = this.model.get('space_id');
-				var space_key = this.model.get('space_key');
-				if(!space_key) throw new Error('Invite was successfully opened but missing space key');
-				var keychain = turtl.profile.get('keychain');
-				return keychain.upsert_key(space_id, 'space', tcrypt.from_base64(space_key))
-					.bind(this)
-					.then(function() {
-						return this.model.accept()
-							.bind(this)
-							.then(function() {
-								this.model.destroy({skip_remote_sync: true});
-								return turtl.sync.poll_api_for_changes({force: true});
-							})
-							.then(function() {
-								var space = turtl.profile.get('spaces').get(space_id) || new Space();
-								barfr.barf(i18next.t('Invite accepted! You are now a member of the space "'+space.get('title')+'"'));
-								turtl.route('/spaces/'+space_id+'/notes');
-							})
-							.catch(function(err) {
-								if(err.disconnected) {
-									barfr.barf(i18next.t('Couldn\'t connect to the server'));
-									return;
-								}
-								turtl.events.trigger('ui-error', i18next.t('There was a problem accepting that invite'), err);
-								log.error('invites: accept: ', err, derr(err));
-							});
-					})
-					.catch(function(err) {
-						turtl.events.trigger('ui-error', i18next.t('There was a problem adding the invite\'s key to your keychain'), err);
-						log.error('invites: accept: ', err, derr(err));
-					});
-			})
 			.catch(function(err) {
 				barfr.barf(i18next.t('There was a problem accepting the invite. Most likely, the passphrase given was incorrect.'));
 				log.error('invites: accept: ', err, derr(err));
@@ -138,12 +102,8 @@ var InvitesItemController = Composer.Controller.extend({
 			return;
 		}
 		if(!confirm(i18next.t('Really delete this invite?'))) return;
-		return this.model.destroy()
+		return this.model.delete()
 			.catch(function(err) {
-				if(err.disconnected) {
-					barfr.barf(i18next.t('Couldn\'t connect to the server'));
-					return;
-				}
 				turtl.events.trigger('ui-error', i18next.t('There was a problem deleting that invite'), err);
 				log.error('invites: delete: ', err, derr(err));
 			});

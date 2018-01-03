@@ -9,7 +9,7 @@
 <div class="unseal {{#if passphrase_open}}open{{/if}}">
 	{{#if confirmed}}
 		<form class="standard-form">
-			<input name="passphrase" type="password" value="{{#unless invite.is_passphrase_protected}}{{default_passphrase}}{{/unless}}" placeholder="{{t 'Invite passphrase'}}">
+			<input name="passphrase" type="password" value="" placeholder="{{t 'Invite passphrase'}}">
 			<p class="form-note">
 				{{t 'This invite is passphrase-protected. You must enter the correct passphrase to unlock it.'}}
 			</p>

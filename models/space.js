@@ -1,7 +1,7 @@
-var Space = Composer.RelationalModel.extend({
+var Space = SyncModel.extend({
 	relations: {
 		members: { collection: 'Members' },
-		invites: { collection: 'Invites' },
+		invites: { collection: 'SpaceInvites' },
 	},
 
 	sync_type: 'space',
@@ -49,14 +49,9 @@ var Space = Composer.RelationalModel.extend({
 			.filter(function(m) { return m.get('role') == Permissions.roles.owner; })[0];
 	},
 
-	set_owner: function(member_id)
+	set_owner: function(user_id)
 	{
-		return turtl.api.put('/spaces/'+this.id()+'/owner/'+member_id)
-			.bind(this)
-			.then(function(space) {
-				delete space.sync_ids;
-				this.set(space);
-			});
+		return turtl.core.send('profile:space:set-owner', this.id(), user_id);
 	},
 
 	is_shared_with_me: function()
