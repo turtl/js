@@ -340,6 +340,7 @@ var turtl = {
 		}.bind(turtl);
 		this.user.bind('login', load_profile);
 		turtl.user.bind('logout', function() {
+			if(!turtl.user.logged_in) return;
 			$E('body').addClass('loggedout');
 
 			turtl.controllers.pages.release_sub();
