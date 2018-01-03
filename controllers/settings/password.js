@@ -33,7 +33,7 @@ var ChangePasswordController = FormController.extend({
 
 	render: function()
 	{
-		var connected = (turtl.sync || {}).connected;
+		var connected = turtl.connected;
 		return this.html(view.render('settings/password', {
 			connected: connected,
 			username: turtl.user.get('username'),
@@ -54,7 +54,7 @@ var ChangePasswordController = FormController.extend({
 		var new_password = this.inp_new_password.get('value');
 		var new_confirm = this.inp_new_confirm.get('value');
 
-		var user = new User({username: cur_username, password: cur_password});
+		var user = new User();
 
 		var loading = function(yesno)
 		{
@@ -65,38 +65,17 @@ var ChangePasswordController = FormController.extend({
 
 		var pending_barf = barfr.barf(i18next.t('Updating your login. Please be patient (and DO NOT close the app)!'));
 		loading(true);
-		return delay(300).bind(this)
+		return delay(300)
+			.bind(this)
 			.then(function() {
-				return Promise.all([
-					turtl.user.gen_key(turtl.user.get('username'), turtl.user.get('password'), 0),
-					user.gen_key(cur_username, cur_password, 0, {skip_cache: true}),
-				]);
-			})
-			.spread(function(cur_key, new_key) {
-				var errors = [];
-				cur_key = JSON.stringify(cur_key);
-				new_key = JSON.stringify(new_key);
-				if(new_key != cur_key)
-				{
-					errors.push([this.inp_cur_username, i18next.t('The current username/password you entered do not match the currently logged in user\'s.')]);
-				}
-
-				if(!this.check_errors(errors))
-				{
-					loading(false);
-					barfr.close_barf(pending_barf);
-					return;
-				}
-
 				var errors = UserJoinController.prototype.check_login(this.inp_new_username, this.inp_new_password, this.inp_new_confirm);
-				if(!this.check_errors(errors))
-				{
+				if(!this.check_errors(errors)) {
 					loading(false);
 					barfr.close_barf(pending_barf);
 					return;
 				}
 
-				return turtl.user.change_password(new_username, new_password)
+				return turtl.user.change_password(cur_username, cur_password, new_username, new_password)
 					.then(function() {
 						barfr.barf(i18next.t('Your login was changed successfully! Logging you out...'));
 					})
@@ -105,7 +84,7 @@ var ChangePasswordController = FormController.extend({
 					});
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', i18next.t('There was a problem changing your login. We are undoing the changes. Please try again.'), err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem changing your login. We are undoing the changes'), err);
 				log.error('settings: change password: ', derr(err));
 				loading(false);
 			});

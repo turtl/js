@@ -108,92 +108,9 @@ var User = Composer.Model.extend({
 
 	/**
 	 * change the username/password.
-	 *
-	 * this assumes the current account has been verified, and does no checking
-	 * itself.
-	 *
-	 * here's how this works:
-	 *
-	 *   1. generate a new master key using the new u/p
-	 *   2. generate a new auth token using the new key
-	 *   3. save the auth token to the API
-	 *   4. use the new key to re-encrypt and save *every* keychain entry
-	 *
-	 * done! because all non-keychain objects are self-describing, we only need
-	 * to encrypt keychain entries and we're good to go.
 	 */
-	change_password: function(new_username, new_password)
-	{
-		// TODO:
-		// - using a tmp user object, generate new key/auth token with new
-		//   username/password
-		// - copy keychain to new object, re-encrypt new/copied keychain with
-		//   new user key
-		// - save the entire bunch to the API in one call (new username, new
-		//   auth token, entire keychain)! no syncing here...it's either all or
-		//   nothing.
-		// - on success, REPLACE user's key/auth token/keychain with new ones
-		//
-		// no need to roll back on failure, because everything is a copy of a
-		// copy of a copy. either everything works prefectly and we post it to
-		// the server, or one tiny thing goes wrong and we post nothing.
-
-		// welcome to the future. welcome to a brand new you.
-		var user = new User(turtl.user.toJSON());
-		var auth = null;
-		user.set({
-			username: new_username,
-			password: new_password,
-		});
-		return user.gen_auth(new_username, new_password)
-			.then(function(_auth) {
-				auth = _auth;
-				return user.serialize();
-			})
-			.then(function() {
-				// copy in the keychain
-				return Promise.map(turtl.profile.get('keychain').models(), function(keyentry) {
-					var newkey = new KeychainEntry();
-					newkey.key = user.key;
-					newkey.set(keyentry.toJSON());
-					return newkey.serialize()
-						.then(function() {
-							return newkey.safe_json();
-						});
-				});
-			})
-			.then(function(keys) {
-				var userdata = user.safe_json();
-				var auth_change = {
-					user: {
-						username: userdata.username,
-						body: userdata.body,
-					},
-					auth: auth,
-					keychain: keys,
-				};
-				return turtl.api.put('/users/'+turtl.user.id(), auth_change);
-			})
-			.then(function(res) {
-				turtl.sync.ignore_on_next_sync(res.sync_ids);
-				turtl.user.key = null;
-				turtl.user.auth = null;
-				return turtl.user.login({username: new_username, password: new_password}, {silent: true})
-					.then(function() {
-						return turtl.user.save();
-					})
-					.then(function() {
-						turtl.profile.get('keychain').each(function(key) {
-							key.key = user.key;
-							key.save({skip_remote_sync: true});
-						});
-					});
-			})
-			.then(function() {
-				setTimeout(function() {
-					turtl.user.logout();
-				}, 3000);
-			});
+	change_password: function(cur_username, cur_password, new_username, new_password) {
+		return turtl.core.send('user:change-password', cur_username, cur_password, new_username, new_password);
 	},
 
 	write_cookie: function(username, password)
