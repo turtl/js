@@ -340,10 +340,17 @@ var turtl = {
 		}.bind(turtl);
 		this.user.bind('login', load_profile);
 		turtl.user.bind('logout', function() {
-			if(!turtl.user.logged_in) return;
 			$E('body').addClass('loggedout');
+			var is_user_controller = turtl.controllers.pages.is([
+				UserLoginController,
+				UserJoinController,
+				UserWelcomeController,
+				UserMigrateController
+			]);
 
-			turtl.controllers.pages.release_sub();
+			if(!is_user_controller) {
+				turtl.controllers.pages.release_sub();
+			}
 			turtl.keyboard.unbind('shift+l');
 			turtl.keyboard.unbind('n', 'shortcut:main:notes');
 			turtl.keyboard.unbind('b', 'shortcut:main:boards');
@@ -353,7 +360,16 @@ var turtl = {
 			if(turtl.profile) turtl.profile.destroy();
 			turtl.profile = null;
 
-			turtl.route('/');
+			var url = turtl.router && turtl.router.cur_path();
+			if(
+				!url || (
+					!url.match(/\/users\/login/) &&
+					!url.match(/\/users\/join/) &&
+					!url.match(/\/users\/migrate/)
+				)
+			) {
+				turtl.route('/');
+			}
 
 			turtl.events.trigger('user:logout');
 			if(window.port) window.port.send('logout');
