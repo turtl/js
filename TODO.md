@@ -1,10 +1,5 @@
 v0.7:
 
-- invites/sharing
-- cleanup
-  - Protected and all its derivative functions
-  - old js syncing stuff
-  - old js file syncing junk
 - wire up all settings interfaces to core
   - change password
   - sync info
