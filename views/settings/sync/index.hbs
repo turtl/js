@@ -1,0 +1,16 @@
+<div class="content header">
+	<h2>
+		{{t 'You have {{num}} pending sync item(s)' num=count}}
+		<div class="connection {{#if connected}}connected{{else}}disconnected{{/if}}">
+			{{icon 'connection'}}
+			<span class="connected">{{t 'Connected'}}</span>
+			<span class="disconnected">{{t 'Offline mode'}}</span>
+		</div>
+	</h2>
+	{{#if num_frozen}}
+		<p>{{t 'You have one or more frozen sync items. Syncing will be stuck until you fix them. Try unfreezing first, and if that doesn\'t work, you can delete the frozen sync item(s).'}}</p>
+	{{/if}}
+</div>
+
+<ul class="item-list"></ul>
+

@@ -203,6 +203,7 @@ var turtl = {
 				});
 				break;
 			case 'sync:outgoing:complete':
+				turtl.events.trigger('sync:outgoing:complete');
 				break;
 			case 'migration-event':
 				break;
