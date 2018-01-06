@@ -1,5 +1,6 @@
-if(!window.locales) window.locales = {};
-locales.hu = {
+var language = 'hu';
+var locale = '';
+var translation = {
     "Accept": "Elfogad",
     "Add": "Hozzáad",
     "Add a new note": "Új jegyzet",

@@ -37,21 +37,6 @@ var Board = SyncModel.extend({
 var Boards = SyncCollection.extend({
 	model: Board,
 	sync_type: 'board',
-
-	toJSON_named: function(board_ids)
-	{
-		return board_ids
-			.map(function(bid) {
-				var board = this.find_by_id(bid);
-				if(!board) return false;
-				var name = board.get('title') || i18next.t('(untitled board)');
-				var json = board.toJSON();
-				json.name = name;
-				if(!json.title) json.title = i18next.t('(untitled board)');
-				return json;
-			}.bind(this))
-			.filter(function(board) { return !!board; });
-	}
 });
 
 var BoardsFilter = Composer.FilterCollection.extend({

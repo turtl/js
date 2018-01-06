@@ -1,0 +1,44 @@
+#!/bin/bash
+
+function i18list() {
+	grep -lri --exclude-dir=node_modules --exclude-dir=.git 'i18next.t(' . \
+		| grep -P '\.js' \
+		| xargs cat \
+		| grep 'i18next.t(' \
+		| perl -p -e 's/.*i18next\.t//g' \
+		| perl -p -e "s/^.*?'(.*?)(?<!\\\\)'.*$/\1/g" \
+		| perl -p -e 's/^.*?"(.*?)(?<!\\)".*$/\1/g' \
+		| perl -p -e "s/\\\\'/'/g" \
+		| perl -p -e 's/\\"/"/g'
+
+	grep -lri --exclude-dir=node_modules --exclude-dir=.git '{{t ' . \
+		| grep -P '\.hbs' \
+		| xargs cat \
+		| grep '{{t ' \
+		| perl -p -e 's/.*\{\{t //g' \
+		| perl -p -e "s/^.*?'(.*?)(?<!\\\\)'.*$/\1/g" \
+		| perl -p -e 's/^.*?"(.*?)(?<!\\)".*$/\1/g' \
+		| perl -p -e "s/\\\\'/'/g" \
+		| perl -p -e 's/\\"/"/g'
+}
+
+
+echo "// Set your language/locale codes here."
+echo "//"
+echo "// Locale can be blank, in which case it will be used as the default for the"
+echo "// language."
+echo "//"
+echo "// if you don't know your language/local codes, fine them here:"
+echo "//   https://www.science.co.il/language/Locale-codes.php"
+echo "var language = 'xx';"
+echo "var locale = '';"
+echo ""
+echo "// Do your translation here!"
+echo "var translation = {"
+i18list | sort | uniq \
+	| perl -p -e 's/"/\"/g' \
+	| perl -p -e 's/^/	"/g' \
+	| perl -p -e 's/\n/": "",\n/g'
+echo "};"
+echo "";
+

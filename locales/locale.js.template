@@ -1,5 +1,15 @@
-if(!window.locales) window.locales = {};
-locales.XX = {	// NOTE: change XX to the two-letter language code
+// Set your language/locale codes here.
+//
+// Locale can be blank, in which case it will be used as the default for the
+// language.
+//
+// if you don't know your language/local codes, fine them here:
+//   https://www.science.co.il/language/Locale-codes.php
+var language = 'xx';
+var locale = '';
+
+// Do your translation here!
+var translation = {
     "Accept": "",
     "Add": "",
     "Add a new note": "",

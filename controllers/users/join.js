@@ -119,34 +119,35 @@ var UserJoinController = UserBaseController.extend({
 	{
 		var passphrase = this.inp_password.get('value');
 		var status = ' - ';
-		if(passphrase.length >= 32)
-		{
+		var text = '';
+		// NOTE: we actually want i18next('stringval') here instead of
+		// i18next(status) because by using hardcoded strings, we can analyze
+		// the code and find a list of active i18n strings, which could be used
+		// to generate an automated list of translations that are needed. this
+		// is especially important for when the interface language  changes.
+		if(passphrase.length >= 32) {
 			status = 'excellent';
-		}
-		else if(passphrase.length >= 24)
-		{
+			text = i18next.t('excellent');
+		} else if(passphrase.length >= 24) {
 			status = 'great';
-		}
-		else if(passphrase.length >= 16)
-		{
+			text = i18next.t('great');
+		} else if(passphrase.length >= 16) {
 			status = 'good';
-		}
-		else if(passphrase.length >= 10)
-		{
+			text = i18next.t('good');
+		} else if(passphrase.length >= 10) {
 			status = 'ok';
-		}
-		else if(passphrase.length > 4)
-		{
+			text = i18next.t('ok');
+		} else if(passphrase.length > 4) {
 			status = 'weak';
-		}
-		else if(passphrase.length > 0)
-		{
+			text = i18next.t('weak');
+		} else if(passphrase.length > 0) {
 			status = 'too short';
+			text = i18next.t('too short');
 		}
 
 		var width = Math.min(passphrase.length / 32, 1) * 100;
 
-		this.viewstate.strength_text = i18next.t(status);
+		this.viewstate.strength_text = text;
 		this.viewstate.strength_width = width;
 		this.viewstate.strength_class = 'level-'+sluggify(status);
 		this.render();

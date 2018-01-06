@@ -21,8 +21,9 @@ cssvndout = $(subst css/,$(BUILD)/css/,$(cssvnd:%.less=%.css))
 handlebars := $(shell find views/ -name "*.hbs")
 allsvg = $(shell find images/site/icons/ -name "*.svg")
 alljs = $(shell echo "main.js" \
-			&& find {config,controllers,handlers,locales,lib,models,turtl} -name "*.js" \
+			&& find {config,controllers,handlers,lib,models,turtl} -name "*.js" \
 			| grep -v '(ignore|\.thread\.)')
+locales = $(shell find locales -name "*.js")
 testsjs = $(shell find tests/{data,tests} -name "*.js")
 
 all: index.html
@@ -57,6 +58,11 @@ $(BUILD)/lib/app/lib-permissions.js: node_modules/turtl-lib-permissions/process.
 	@echo "Composer.object.merge(Permissions, Permissions.process(permdata))" >> $@
 	@echo "})();" >> $@
 
+$(BUILD)/lib/app/locales.js: $(locales) scripts/build-locales
+	@echo "- Locales: " $?
+	@test -d "$(@D)" || mkdir -p "$(@D)"
+	@./scripts/build-locales > $@
+
 ################################################################################
 # CSS
 ################################################################################
@@ -81,7 +87,7 @@ $(BUILD)/postcss: $(cssfiles) $(cssvndout)
 # index
 ################################################################################
 
-index.html: $(alljs) $(cssfiles) $(cssvndout) $(BUILD)/lib/app/svg-icons.js $(BUILD)/lib/app/templates.js $(BUILD)/lib/app/lib-permissions.js views/layouts/default.html $(BUILD)/postcss scripts/include.sh scripts/gen-index
+index.html: $(alljs) $(cssfiles) $(cssvndout) $(BUILD)/lib/app/svg-icons.js $(BUILD)/lib/app/templates.js $(BUILD)/lib/app/lib-permissions.js $(BUILD)/lib/app/locales.js views/layouts/default.html $(BUILD)/postcss scripts/include.sh scripts/gen-index
 	@echo "- index.html: " $?
 	@./scripts/gen-index > $@
 
@@ -94,6 +100,13 @@ min.index.html: $(alljs) $(cssfiles) $(cssvndout) $(BUILD)/lib/app/svg-icons.js 
 	@./scripts/gen-minified-index
 
 minify: $(cssfiles) lib/app/templates.js lib/app/svg-icons.js $(BUILD)/lib/app/lib-permissions.js $(BUILD)/postcss min.index.html
+
+################################################################################
+# locale utils
+################################################################################
+
+locales/locale.js.template: $(alljs) scripts/gen-i18n-template
+	@./scripts/gen-i18n-template > $@
 
 ################################################################################
 # util

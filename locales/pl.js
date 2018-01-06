@@ -1,5 +1,6 @@
-if(!window.locales) window.locales = {};
-locales.pl = {
+var language = 'pl';
+var locale = '';
+var translation = {
     "Accept": "Akceptuj",
     "Add": "Dodaj",
     "Add a new note": "Dodaj notatkę",

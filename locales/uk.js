@@ -1,5 +1,6 @@
-if(!window.locales) window.locales = {};
-locales.uk = {
+var language = 'uk';
+var locale = '';
+var translation = {
     "Accept": "Прийняти",
     "Add": "Додати",
     "Add a new note": "Додати нову нотатку",
