@@ -1,4 +1,4 @@
-.PHONY: all clean watch
+.PHONY: all clean watch locale-template
 
 SHELL := /bin/bash
 
@@ -106,7 +106,10 @@ minify: $(cssfiles) lib/app/templates.js lib/app/svg-icons.js $(BUILD)/lib/app/l
 ################################################################################
 
 locales/locale.js.template: $(alljs) scripts/gen-i18n-template
+	@echo "- Building $@: " $?
 	@./scripts/gen-i18n-template > $@
+
+locale-template: locales/locale.js.template
 
 ################################################################################
 # util
