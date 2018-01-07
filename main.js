@@ -44,8 +44,9 @@ var turtl = {
 	back: null,
 	settings: new PublicSetting(),
 
-	// holds the last successfully routed url
+	// our last routes
 	last_url: null,
+	last_routes: [],
 
 	// whether or not our locale data is loaded
 	localized: false,
@@ -479,22 +480,22 @@ var turtl = {
 			if(e) e.stop();
 		}, 'a[href^="#"]');
 
-		turtl.router.bind('route', turtl.controllers.pages.trigger.bind(turtl.controllers.pages, 'route'));
+		var last_route = null;
+		turtl.router.bind('preroute', function() {
+			turtl.last_url = last_route;
+			last_route = turtl.router.cur_path();
+			if(turtl.last_url) {
+				turtl.push_route(turtl.last_url);
+			}
+		});
 		turtl.router.bind('preroute', turtl.controllers.pages.trigger.bind(turtl.controllers.pages, 'preroute'));
+		turtl.router.bind('route', turtl.controllers.pages.trigger.bind(turtl.controllers.pages, 'route'));
 		turtl.router.bind('fail', function(obj) {
 			log.error('route failed:', obj.url, obj);
 		});
 		turtl.router.bind('preroute', function(boxed) {
 			boxed.path = boxed.path.replace(/\-\-.*$/, '');
 			return boxed;
-		});
-
-		// save turtl.last_url
-		var route = null;
-		turtl.router.bind('route', function() {
-			turtl.last_url = route;
-			turtl.last_clean_url = route ? route.replace(/\-\-.*/, '') : null;
-			route = window.location.pathname;
 		});
 	},
 
@@ -513,6 +514,17 @@ var turtl = {
 		}
 		log.debug('turtl::route() -- '+url);
 		this.router.route(url, options);
+	},
+
+	route_changed: function() {
+		return turtl.last_routes[turtl.last_routes.length - 1] != turtl.router.cur_path();
+	},
+
+	push_route: function(url) {
+		turtl.last_routes.push(url);
+		if(turtl.last_routes.length >= 10) {
+			turtl.last_routes = turtl.last_routes.slice(1);
+		}
 	},
 
 	route_to_space: function(space_id) {

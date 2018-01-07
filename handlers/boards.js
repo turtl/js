@@ -1,6 +1,6 @@
 var boards = {
-	notes: function()
-	{
+	notes: function() {
+		if(!turtl.route_changed() && turtl.controllers.pages.is(NotesIndexController)) return;
 		var params = turtl.param_router.get();
 		var space_id = params.space_id;
 		var board_id = params.board_id;
