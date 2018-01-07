@@ -2,8 +2,6 @@ var $E = function(selector, filter) {return ($(filter) || document).getElement(s
 var $ES = function(selector, filter) {return ($(filter) || document).getElements(selector);};
 
 var turtl = {
-	client_id: null,
-
 	site_url: null,
 
 	events: new Composer.Event(),
@@ -641,9 +639,6 @@ var _turtl_init = function()
 
 	view.fix_template_paths();
 
-	var clid = localStorage.client_id;
-	if(!clid) clid = localStorage.client_id = tcrypt.to_hex(tcrypt.random_bytes(32));
-	turtl.client_id = clid;
 	turtl.init();
 
 	setup_global_error_catching();

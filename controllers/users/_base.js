@@ -49,13 +49,11 @@ var UserBaseController = FormController.extend({
 
 	save_login: function()
 	{
-		if(!this.autologin()) return;
-		var authdata = {
-			uid: turtl.user.id(),
-			key: tcrypt.key_to_string(turtl.user.key),
-			auth: turtl.user.auth
-		};
-		turtl.events.trigger('auth:save-login', authdata);
+		if(!this.autologin()) return Promise.resolve();
+		return turtl.core.send('user:get-login-token')
+			.then(function(token) {
+				turtl.events.trigger('auth:save-login', token);
+			});
 	},
 
 	persist_new_api: function(endpoint) {

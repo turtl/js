@@ -26,17 +26,6 @@ var User = Composer.Model.extend({
 			});
 	},
 
-	login_from_auth: function(auth)
-	{
-		if(!auth) return false;
-		this.set({id: auth.uid});
-		this.set('username', auth.username);
-		this.auth = auth.auth;
-		this.key = tcrypt.key_from_string(auth.key);
-		this.logged_in = true;
-		this.trigger('login', this);
-	},
-
 	login_from_cookie: function()
 	{
 		var cookie = localStorage[config.user_cookie];
