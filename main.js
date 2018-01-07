@@ -156,7 +156,6 @@ var turtl = {
 
 				this.loaded = true;
 				turtl.events.trigger('loaded');
-				if(window.port) window.port.send('loaded');
 				// if a user exists, log them in
 				if(config.cookie_login) {
 					this.user.login_from_cookie()
@@ -275,7 +274,6 @@ var turtl = {
 					if(initial_route.match(/background.html/)) initial_route = space_route;
 					turtl.route(initial_route);
 					options.initial_route = '/';
-					if(window.port) window.port.send('profile-load-complete');
 					turtl.events.trigger('app:load:profile-loaded');
 
 					turtl.keyboard.bind('shift+/', function() {
@@ -373,7 +371,6 @@ var turtl = {
 			}
 
 			turtl.events.trigger('user:logout');
-			if(window.port) window.port.send('logout');
 		}.bind(turtl));
 	},
 
@@ -606,7 +603,6 @@ var markdown = null;
 
 var _turtl_init = function()
 {
-	window.port = window.port || false;
 	window._base_url = config.base_url || '';
 	turtl.site_url = config.site_url || '';
 

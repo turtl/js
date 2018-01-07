@@ -20,7 +20,7 @@ function all_css() {
 	echo "${BUILD}/css/vnd/reset.css"
 	find ${BUILD}/css/vnd -name '*.css' \
 		| grep -v 'reset.css'
-	echo "${BUILD}/css/font.css"
+	echo "${BUILD}/css/fonts.css"
 	echo "${BUILD}/css/template.css"
 	echo "${BUILD}/css/general.css"
 	find ${BUILD}/css -name '*.css' \

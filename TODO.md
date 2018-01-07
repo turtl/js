@@ -1,14 +1,9 @@
 v0.7:
 
-- wire up all settings interfaces to core
-  - sync info
 - Update bookmarker
   - should be aware of spaces, have space selector
   - bookmarker should accept a URL, fill in the rest itself (title, thumbnail, desc)
   - should save last space/last board used
-- note interface:
-  - show tags in note?
-  - show note board?
 
 v1043.56.1:
 
