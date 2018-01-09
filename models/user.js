@@ -17,6 +17,7 @@ var User = Composer.Model.extend({
 			.then(function(userdata) {
 				this.logged_in = true;
 				this.set(userdata);
+				this.trigger('login');
 				if(config.cookie_login) {
 					this.write_cookie(username, password);
 				}
