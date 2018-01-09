@@ -157,12 +157,12 @@ var turtl = {
 				turtl.events.trigger('loaded');
 				// if a user exists, log them in
 				if(config.cookie_login) {
-					this.user.login_from_cookie()
+					return this.user.login_from_cookie()
 						.catch(function(_) {})
-						.finally(function() {
-							turtl.route(initial_route);
-						});
 				}
+			})
+			.finally(function() {
+				turtl.route(initial_route);
 			});
 	},
 
