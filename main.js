@@ -169,7 +169,15 @@ var turtl = {
 	dispatch_core_event: function(ev, data) {
 		switch(ev) {
 			case 'user:login':
-				turtl.user.trigger('login');
+				// there is a race condition where we get user:login before the
+				// user object has set logged_in = true, which messes up some of
+				// the interfaces (header, mainly). so, here we wait until the
+				// turtl.user obj is logged in, then we fire the login event.
+				var inter = setInterval(function() {
+					if(!turtl.user.logged_in) return;
+					turtl.user.trigger('login');
+					clearInterval(inter);
+				}, 10);
 				break;
 			case 'user:logout':
 				turtl.user.do_logout();

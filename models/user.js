@@ -17,7 +17,8 @@ var User = Composer.Model.extend({
 			.then(function(userdata) {
 				this.logged_in = true;
 				this.set(userdata);
-				this.trigger('login');
+				// NOTE: no this.trigger('login') here because the core will
+				// send the user:login event for us, which we dispatch in main
 				if(config.cookie_login) {
 					this.write_cookie(username, password);
 				}
