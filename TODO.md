@@ -1,9 +1,6 @@
 v0.7:
 
-- Update bookmarker
-  - should be aware of spaces, have space selector
-  - bookmarker should accept a URL, fill in the rest itself (title, thumbnail, desc)
-  - should save last space/last board used
+- Clean out bookmarker junk
 
 v1043.56.1:
 
