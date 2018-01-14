@@ -21,7 +21,7 @@ cssvndout = $(subst css/,$(BUILD)/css/,$(cssvnd:%.less=%.css))
 handlebars := $(shell find views/ -name "*.hbs")
 allsvg = $(shell find images/site/icons/ -name "*.svg")
 alljs = $(shell echo "main.js" \
-			&& find {config,controllers,handlers,lib,models,turtl} -name "*.js" \
+			&& find {config,controllers,handlers,lib,models} -name "*.js" \
 			| grep -v '(ignore|\.thread\.)')
 locales = $(shell find locales -name "*.js")
 testsjs = $(shell find tests/{data,tests} -name "*.js")

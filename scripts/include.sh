@@ -65,7 +65,6 @@ function all_js() {
 	path_to_js "${SEARCH_PATH}models"
 	path_to_js "${SEARCH_PATH}handlers"
 	path_to_js "${SEARCH_PATH}locales"
-	path_to_js "${SEARCH_PATH}turtl"
 	path_to_js "${BUILD}/"
 	echo "${SEARCH_PATH}main.js"
 }
