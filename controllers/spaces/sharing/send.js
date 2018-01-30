@@ -19,7 +19,7 @@ var SpacesSharingSendController = FormController.extend({
 	formclass: 'space-invite',
 	buttons: true,
 	button_tabindex: 6,
-	action: 'Invite',
+	action: null,
 
 	to_user: null,
 	email_timer: null,
@@ -28,6 +28,7 @@ var SpacesSharingSendController = FormController.extend({
 	passphrase_holder: false,
 
 	init: function() {
+		if(!this.action) this.action = i18next.t('Invite');
 		this.parent();
 
 		if(!this.model) {

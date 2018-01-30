@@ -31,7 +31,7 @@ var NotesEditController = FormController.extend({
 
 	model: null,
 	clone: null,
-	action: 'Save',
+	action: null,
 	show_cancel: false,
 	formclass: 'notes-edit',
 	button_tabindex: 9,
@@ -49,6 +49,7 @@ var NotesEditController = FormController.extend({
 
 	init: function()
 	{
+		if(!this.action) this.action = i18next.t('Save');
 		if(!(this.confirm_unsaved === true || this.confirm_unsaved === false))
 		{
 			this.confirm_unsaved = config.confirm_unsaved;

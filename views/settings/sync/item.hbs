@@ -2,7 +2,7 @@
 	<div class="share-actions"></div>
 	<h2>
 		{{sync.type}}
-		<small>({{t sync.action}} - {{ago-time created}})</small>
+		<small>({{sync.action_text}} - {{ago-time created}})</small>
 	</h2>
 	{{#if sync.frozen}}
 		<p class="frozen">{{t 'Frozen - This item is blocking syncing. Fix by unfreezing or deleting.'}}</p>

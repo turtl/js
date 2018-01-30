@@ -16,12 +16,12 @@ var NotesEditTagsController = FormController.extend({
 	clone: null,
 	formclass: 'notes-edit-tags',
 	button_tabindex: 3,
-	action: 'Done',
 
 	collection: null,
 
 	init: function()
 	{
+		if(!this.action) this.action = i18next.t('Done');
 		this.clone = this.model.clone();
 		this.collection = new Tags();
 

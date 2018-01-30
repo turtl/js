@@ -13,7 +13,7 @@ var FormController = Composer.Controller.extend({
 	buttons: true,
 	button_tabindex: null,
 	formclass: 'standard-form',
-	action: 'Create',
+	action: null,
 	footer_actions: [],
 	disabled: false,
 	show_cancel: true,
@@ -31,6 +31,7 @@ var FormController = Composer.Controller.extend({
 			turtl.keyboard.attach();
 			document.body.removeEvent('keydown', esc_handler);
 		});
+		if(!this.action) this.action = i18next.t('Create');
 		return this.parent.apply(this, arguments);
 	},
 

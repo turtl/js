@@ -7,7 +7,7 @@
 					{{#each this}}
 						<li {{#if class}}class="{{class}}"{{/if}}>
 							<a href="{{#if href}}{{href}}{{else}}#{{sluggify name}}{{/if}}" rel="{{sluggify name}}">
-								{{t name}}
+								{{name}}
 							</a>
 						</li>
 					{{/each}}

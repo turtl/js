@@ -26,6 +26,15 @@ var SyncItemController = Composer.Controller.extend({
 
 	render: function() {
 		var data = this.model.toJSON();
+		// make sure we properly localize our sync actions
+		var action_map = {
+			'add': i18next.t('Add'),
+			'edit': i18next.t('Edit'),
+			'delete': i18next.t('Delete'),
+			'move-space': i18next.t('Move space'),
+			'change-password': i18next.t('Change password'),
+		};
+		data.action_text = action_map[data.action];
 		return this.html(view.render('settings/sync/item', {
 			sync: data,
 			created: id_timestamp(data.id),
