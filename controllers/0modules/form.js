@@ -22,14 +22,17 @@ var FormController = Composer.Controller.extend({
 	{
 		turtl.keyboard.detach();	// disable keyboard shortcuts while editing
 		// ...BUT close on escape
-		var esc_handler = function(e) {
-			if(e.key != 'esc') return;
-			this.trigger('cancel');
+		var key_handler = function(e) {
+			var ctrl_or_cmd = e.control || e.meta;
+			if(e.key == 'esc') return this.trigger('cancel');
+			if(ctrl_or_cmd && (e.key == 'enter' || e.key == 'return')) {
+				return this.submit(e);
+			}
 		}.bind(this);
-		document.body.addEvent('keydown', esc_handler);
+		document.body.addEvent('keydown', key_handler);
 		this.bind('release', function() {
 			turtl.keyboard.attach();
-			document.body.removeEvent('keydown', esc_handler);
+			document.body.removeEvent('keydown', key_handler);
 		});
 		if(!this.action) this.action = i18next.t('Create');
 		return this.parent.apply(this, arguments);
