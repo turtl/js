@@ -8,7 +8,7 @@
 		<p class="frozen">{{t 'Frozen - This item is blocking syncing. Fix by unfreezing or deleting.'}}</p>
 		{{#if sync.error}}
 			<p class="sync-error">
-				<strong>Error:</strong> {{sync.error.msg}} ({{sync.error.code}})
+				{{t '<strong>Error:</strong> {{errmsg}} ({{errcode}})' errmsg=sync.error.msg errcode=sync.error.code}}
 			</p>
 		{{/if}}
 	{{else}}
