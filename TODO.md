@@ -1,9 +1,6 @@
 v0.7:
 
-- allow pasting into login fields?
-- set invite secret input to type="password"
 - import/export
-- Clean out bookmarker junk
 
 v1043.56.1:
 
