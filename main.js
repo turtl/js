@@ -219,6 +219,9 @@ var turtl = {
 			case 'profile:indexed':
 				turtl.events.trigger('profile-indexed');
 				break;
+			case 'profile:import:tally':
+				turtl.events.trigger('profile:import:tally');
+				break;
 		}
 	},
 

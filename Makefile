@@ -24,7 +24,6 @@ alljs = $(shell echo "main.js" \
 			&& find {config,controllers,handlers,lib,models} -name "*.js" \
 			| grep -v '(ignore|\.thread\.)')
 locales = $(shell find locales -name "*.js")
-testsjs = $(shell find tests/{data,tests} -name "*.js")
 
 all: index.html
 
@@ -90,10 +89,6 @@ $(BUILD)/postcss: $(cssfiles) $(cssvndout)
 index.html: $(alljs) $(cssfiles) $(cssvndout) $(BUILD)/lib/app/svg-icons.js $(BUILD)/lib/app/templates.js $(BUILD)/lib/app/lib-permissions.js $(BUILD)/lib/app/locales.js views/layouts/default.html $(BUILD)/postcss scripts/include.sh scripts/gen-index
 	@echo "- index.html: " $?
 	@./scripts/gen-index > $@
-
-tests/index.html: $(testsjs) index.html tests/scripts/gen-index
-	@echo "- tests/index.html: " $?
-	@./tests/scripts/gen-index
 
 min.index.html: $(alljs) $(cssfiles) $(cssvndout) $(BUILD)/lib/app/svg-icons.js $(BUILD)/lib/app/templates.js $(BUILD)/lib/app/lib-permissions.js views/layouts/default.html $(BUILD)/postcss scripts/include.sh scripts/gen-index
 	@echo "- index.html: " $?

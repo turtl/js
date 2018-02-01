@@ -42,6 +42,14 @@ var Profile = Composer.RelationalModel.extend({
 		return turtl.core.send('profile:get-size');
 	},
 
+	export: function() {
+		return turtl.core.send('profile:export');
+	},
+
+	import: function(action, exportdata) {
+		return turtl.core.send('profile:import', action, exportdata);
+	},
+
 	current_space: function() {
 		var spaces = this.get('spaces');
 		var space_id = this.current_space_id;
