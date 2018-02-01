@@ -16,18 +16,6 @@ var Space = SyncModel.extend({
 			if(!turtl.user) return;
 			turtl.user.delete_setting('spaces:'+this.id()+':*');
 		}.bind(this));
-
-		// make sure the current space gets updated properly when destroyed
-		this.bind('destroy', function() {
-			if(!turtl.profile) return;
-			if(turtl.profile.current_space().id() != this.id()) return;
-			// note, this would fire BEFORE the space is removed from the spaces
-			// collection, so we need to wait for the event chain to propagate
-			// (and the space to be removed) before selcting the next space
-			setTimeout(function() {
-				turtl.route_to_space();
-			});
-		}.bind(this));
 	},
 
 	can_i: function(permission, options)

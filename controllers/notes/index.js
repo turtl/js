@@ -57,6 +57,18 @@ var NotesIndexController = Composer.Controller.extend({
 		turtl.push_title(title, back, {prefix_space: true});
 		this.bind('release', turtl.pop_title.bind(null, false));
 
+		// if our space is removed from under us, route to the next best space
+		this.with_bind(space, 'destroy', function() {
+			if(!turtl.profile) return;
+			if(turtl.profile.current_space().id() != space.id()) return;
+			// note, this would fire BEFORE the space is removed from the spaces
+			// collection, so we need to wait for the event chain to propagate
+			// (and the space to be removed) before selcting the next space
+			setTimeout(function() {
+				turtl.route_to_space();
+			});
+		});
+
 		var invites = turtl.profile.get('invites');
 		var set_header_actions = function() {
 			var header_actions = [];
