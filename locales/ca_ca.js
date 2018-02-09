@@ -1,5 +1,5 @@
 var language = 'ca';
-var locale = '';
+var locale = 'ca';
 var translation = {
 	"Accept": "Accepta",
 	"Add": "Afegeix",

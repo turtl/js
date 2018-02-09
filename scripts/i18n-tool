@@ -31,6 +31,9 @@ function template() {
 	if [ "${lang}" == "" ]; then
 		lang="xx"
 	fi
+	if [ "${locale}" == "" ]; then
+		locale="xx"
+	fi
 	echo "// Set your language/locale codes here."
 	echo "//"
 	echo "// Locale can be blank, in which case it will be used as the default for the"
@@ -70,16 +73,18 @@ function update() {
 
 function usage() {
 	echo
+	echo "--------------------------------------------------------------------------------"
 	echo "$0 <cmd>"
 	echo "  <cmd> can be one of:"
 	echo
 	echo "    template"
-	echo "      Read all JS/templates and output a new locale template based off the needed"
+	echo "      Read all JS/templates and output a new locale template based off theneeded"
 	echo "      translations."
-	echo "    update <lang>[_locale]"
-	echo "      Read the file at locales/<lang>[_locale].js, remove any unused translations"
-	echo "      and add in any new translations needed, and output the entire updated file."
-	echo "      Use this to update a locale after the interface has changed."
+	echo "    update <lang>_<locale>"
+	echo "      Read the file at locales/<lang>_<locale>.js, remove any unused translations"
+	echo "      and add in any new (blank) translations needed, and output the entire"
+	echo "      updated file. Use this to update a locale after the interface has changed."
+	echo "      (NOTE: running this can take a minute)"
 	echo "    keys"
 	echo "      List all current locale keys. Mainly used for debugging."
 	echo

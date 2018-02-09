@@ -1,5 +1,5 @@
 var language = 'pl';
-var locale = '';
+var locale = 'pl';
 var translation = {
 	"Accept": "Akceptuj",
 	"Add": "Dodaj",
