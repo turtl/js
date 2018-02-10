@@ -101,7 +101,7 @@ var translation = {
 	"Have an idea? A problem?": "Ötlete van? Problémája van?",
 	"Here's an image: ": "Itt egy kép",
 	"Here's an image:<br>![](https://turtl.it/images<space> </space>/favicon.png)": "Itt egy kép:<br>![](https://turtl.it/images<space> </space>/favicon.png)",
-	"http://support.mashery.com/docs/customizing_your_portal/Markdown_Cheat_Sheet": " http://support.mashery.com/docs/customizing_your_portal/Markdown_Cheat_Sheet":",
+	"http://support.mashery.com/docs/customizing_your_portal/Markdown_Cheat_Sheet": "http://support.mashery.com/docs/customizing_your_portal/Markdown_Cheat_Sheet",
 	"https://sqlite.org/fts3.html#full_text_index_queries": "https://sqlite.org/fts3.html#full_text_index_queries",
 	"I will remember my login!": "Nem fogom elfelejteni a belépési adataimat!",
 	"image": "kép",
@@ -215,7 +215,7 @@ var translation = {
 	"That passphrase is making me cringe.": "Meghajlok a jelmondat előtt",
 	"The email given is invalid.": "A megadott email hibás",
 	"The specified role does not exist.": "A meghatározott feladatkör nem létezik.",
-	"There was a problem accepting the invite. Most likely, the passphrase given was incorrect.": Itt volt egy probléma, amikor elfogadta a meghívást. Valószínűleg a megadott passphrase helytelen volt.",
+	"There was a problem accepting the invite. Most likely, the passphrase given was incorrect.": "Itt volt egy probléma, amikor elfogadta a meghívást. Valószínűleg a megadott passphrase helytelen volt.",
 	"There was a problem changing your login. We are undoing the changes": "Probléma történt a bejelentkezés módosításával kapcsolatban. Visszaállítjuk a változásokat",
 	"There was a problem clearing your profile": "Hiba a profil törlésénél",
 	"There was a problem deleting that invite": "Hiba történt a meghívó törlése közben",
@@ -292,7 +292,7 @@ var translation = {
 	"Your login was changed successfully! Logging you out...": "A bejelentkezés sikeresen megváltozott! Kiléptetünk ...",
 	"Your login was changed successfully!": "A bejelenthezési adatok sikeresen frissültek!",
 	"Your passphrase does not match the confirmation.": "A jelmondatok nem egyeznek",
-	"Your settings": "Beállításaim"
+	"Your settings": "Beállításaim",
 	"Your spaces": "A Te helyeid",
 };
 
