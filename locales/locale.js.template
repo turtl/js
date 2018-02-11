@@ -143,6 +143,7 @@ var translation = {
 	"Move": "",
 	"Move board to another space": "",
 	"Move space": "",
+	"New bookmark": "",
 	"New email": "",
 	"New email address": "",
 	"New invite": "",

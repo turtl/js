@@ -2,7 +2,7 @@
 
 echo "window.locales = {};"
 echo ""
-for locale in $(find locales -name "*.js"); do
+for locale in $(find locales -name "*.js" | grep -v 'extras.js'); do
 	echo "(function() {"
 	cat $locale
 	echo "var key = language.trim();"
