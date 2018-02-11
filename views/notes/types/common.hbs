@@ -83,7 +83,11 @@
 				</div>
 			{{else}}
 				{{#if note.title}}
-					<h1 class="main-title">{{note.title}}</h1>
+					<h1 class="main-title">
+						{{#if note.url}}<a href="{{note.url}}" target="_blank">{{/if}}
+						{{note.title}}
+						{{#if note.url}}</a>{{/if}}
+					</h1>
 				{{/if}}
 			{{/equal}}
 			{{#if has_body}}
