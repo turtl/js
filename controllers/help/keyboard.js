@@ -2,6 +2,10 @@ var KeyboardShortcutHelpController = Composer.Controller.extend({
 	modal: null,
 
 	init: function() {
+		// don't allow multiple tag windows
+		turtl.events.trigger('help:keyboard:open');
+		this.with_bind(turtl.events, 'help:keyboard:open', this.trigger.bind(this, 'close'));
+
 		this.modal = new TurtlModal({
 			show_header: true,
 			title: i18next.t('Keyboard shortcuts')
