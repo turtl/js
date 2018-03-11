@@ -43,11 +43,20 @@ var UserMigrateController = UserJoinController.extend({
 		turtl.push_title(i18next.t('Migrate your account'), '/users/login');
 		this.bind('release', turtl.pop_title.bind(null, false));
 
+		var rendered = false;
+		this.bind_once('xdom:render', function() { rendered = true; });
 		this.with_bind_once(turtl.events, 'user:migrate:login', function(username, password) {
-			this.inp_v6_username.set('value', username);
-			this.inp_v6_password.set('value', password);
-			if(username.match(/@/)) {
-				this.inp_username.set('value', username);
+			var set_vals = function() {
+				this.inp_v6_username.set('value', username);
+				this.inp_v6_password.set('value', password);
+				if(username.match(/@/)) {
+					this.inp_username.set('value', username);
+				}
+			}.bind(this);
+			if(rendered) {
+				set_vals();
+			} else {
+				this.bind_once('xdom:render', set_vals);
 			}
 		}.bind(this));
 	},
