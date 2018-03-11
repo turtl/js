@@ -14,6 +14,7 @@ var Search = Composer.Collection.extend({
 			boards: search.board ? [search.board] : null,
 			tags: search.tags,
 			exclude_tags: search.exclude_tags,
+			url: search.url,
 			type: search.type,
 			has_file: search.has_file,
 			color: search.color,

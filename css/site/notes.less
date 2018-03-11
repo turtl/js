@@ -251,7 +251,8 @@
 .notes-edit {
 	form {padding-bottom: 16rem;}
 	form {
-		.existing {padding: 0 0 4rem 0; font-size: 13rem;}
+		.existing {height: 0; box-sizing: border-box; overflow: hidden; font-size: 13rem; transition: height 0.3s;}
+		.existing.open {height: 20px;}
 		.existing {
 			em {display: inline-block; width: 14rem; height: 14rem; margin: 0 6rem 0 0; font-weight: bold; color: #fff; text-align: center; background: @theme_accent; border-radius: 7rem;}
 		}

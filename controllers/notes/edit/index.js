@@ -11,7 +11,6 @@ var NotesEditController = FormController.extend({
 		'textarea[name=text]': 'inp_text',
 		'.password': 'el_password',
 		'.file-container': 'el_file',
-		'.existing': 'el_existing',
 		'.button-row': 'el_buttons'
 	},
 
@@ -45,7 +44,9 @@ var NotesEditController = FormController.extend({
 	skip_resize_text: false,
 	form_data: null,
 
-	url_timer: null,
+	view_state: {
+		already_bookmarked: false,
+	},
 
 	init: function()
 	{
@@ -107,29 +108,26 @@ var NotesEditController = FormController.extend({
 		// URL check setup, needs to happen before render
 		if(this.model.is_new())
 		{
-			this.url_timer = new Timer(500);
-			this.url_timer.bind('fired', function() {
+			var url_timer = new Timer(500);
+			this.with_bind(url_timer, 'fired', function() {
 				var url_search = this.inp_url.get('value');
 				if(!url_search) return;
-				turtl.search.search({url: url_search}).bind(this)
+				turtl.search.search({space: turtl.profile.current_space().id(), url: url_search})
+					.bind(this)
 					.spread(function(ids) {
 						ids = ids.erase(this.model.id());
-						if(!ids || !ids.length)
-						{
-							this.el_existing.slide('out');
-							return;
+						if(ids && ids.length > 0) {
+							this.view_state.already_bookmarked = ids.length;
+						} else {
+							this.view_state.already_bookmarked = false;
 						}
-
-						var msg = '<em>!</em>';
-						if(ids.length == 1) msg += i18next.t('This URL is already bookmarked in another note');
-						else msg += i18next.t('This URL is already bookmarked in {{ids_length}} notes', {ids_length: ids.length});
-
-						this.el_existing.set('html', msg);
-						this.el_existing.slide('in');
+						this.render();
+					})
+					.catch(function(err) {
+						log.error('Notes: edit: problem finding note by url: ', err);
 					});
 			}.bind(this));
-			this.bind('check-url', this.url_timer.reset.bind(this.url_timer));
-			this.bind('release', this.url_timer.unbind.bind(this.url_timer));
+			this.bind('check-url', url_timer.reset.bind(url_timer));
 		}
 
 		this.render()
@@ -178,6 +176,8 @@ var NotesEditController = FormController.extend({
 		this.with_bind(this.clone.get('file'), 'change', unsaved);
 
 		this.with_bind(turtl.profile.get('boards'), ['add', 'remove', 'change'], this.render.bind(this));
+		this.with_bind(turtl.events, 'profile:set-current-space', this.render.bind(this));
+		this.with_bind(turtl.events, 'profile:set-current-space', this.check_url.bind(this));
 
 		// basically copy tumblr's fixed footer tagging interface
 		var footer_desc = function()
@@ -218,6 +218,7 @@ var NotesEditController = FormController.extend({
 
 		var boards = turtl.profile.space_boards().map(function(b) { return b.toJSON(); });
 		return this.html(view.render('notes/edit/index', {
+			state: this.view_state,
 			note: data,
 			show_board_selector: !this.board_id,
 			boards: boards,
@@ -226,8 +227,7 @@ var NotesEditController = FormController.extend({
 		})).bind(this)
 			.then(function() {
 				setTimeout(this.resize_text.bind(this), 10);
-				if(this.model.is_new())
-				{
+				if(this.model.is_new()) {
 					var focus_el = null;
 					switch(this.type)
 					{
@@ -243,12 +243,7 @@ var NotesEditController = FormController.extend({
 					// beware!
 					if(focus_el) setTimeout(focus_el.focus.bind(focus_el), 300);
 				}
-				if(this.el_existing)
-				{
-					this.check_url();
-					this.el_existing.set('slide', {duration: 300});
-					this.el_existing.get('slide').hide();
-				}
+				this.check_url();
 			});
 	},
 
