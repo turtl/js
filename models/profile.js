@@ -69,7 +69,7 @@ var Profile = Composer.RelationalModel.extend({
 			if(!space) return;
 		}
 		this.current_space_id = space_id;
-		//turtl.events.trigger('profile:set-current-space');
+		turtl.events.trigger('profile:set-current-space');
 	},
 
 	space_boards: function() {

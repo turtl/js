@@ -1,5 +1,10 @@
 @import '../variables';
 
+.form-uncard {
+	&.interface {width: auto;}
+	form.standard-form {.uncard();}
+}
+
 form.standard-form {padding: 16rem 4% (45rem + 16rem) 4%; .card();}
 form.standard-form {
 	@media @desktop {

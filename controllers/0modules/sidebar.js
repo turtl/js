@@ -11,6 +11,10 @@ var SidebarController = Composer.Controller.extend({
 		scroll: false,
 	},
 
+	view_state: {
+		edit_icons: true,
+	},
+
 	elements: {
 		'> .overlay': 'overlay',
 		'> .inner': 'el_inner',
@@ -85,6 +89,7 @@ var SidebarController = Composer.Controller.extend({
 			this.boards = new BoardsFilter(turtl.profile.get('boards'), {
 				filter: function(b) {
 					if(!turtl.profile) return false;
+					if(!b) return false;
 					var is_in_space = b.get('space_id') == turtl.profile.current_space().id();
 					var is_in_filter = this.board_filter ?
 						fuzzysearch(this.board_filter.toLowerCase(), b.get('title').toLowerCase()) :
@@ -166,14 +171,15 @@ var SidebarController = Composer.Controller.extend({
 		var cur_board_id = turtl.param_router.get().board_id;
 		var in_all_notes = turtl.router.cur_path().match(/\/spaces\/[^\/]+\/notes/);
 		return this.html(view.render('modules/sidebar', {
+			state: this.view_state,
 			cur_space: cur_space,
 			cur_space_id: cur_space_id,
 			in_all_notes: in_all_notes,
 			cur_board_id: cur_board_id,
 			spaces: space_data,
 			boards: this.boards.toJSON(),
-			can_add_boards: current_space.can_i(Permissions.permissions.add_board),
-			can_edit_boards: current_space.can_i(Permissions.permissions.edit_board),
+			can_add_boards: this.view_state.edit_icons && current_space.can_i(Permissions.permissions.add_board),
+			can_edit_boards: this.view_state.edit_icons && current_space.can_i(Permissions.permissions.edit_board),
 			open: this.is_open,
 			space_state: this.space_state,
 			last_sync: (turtl.sync || {}).last_sync,
@@ -233,7 +239,9 @@ var SidebarController = Composer.Controller.extend({
 		this.space_state.open = true;
 		this.space_state.zin = true;
 
-		// apply the "Scroll" class pre-emptively if our space content is going
+		if(!this.el_spaces) return;
+
+		// apply the "scroll" class pre-emptively if our space content is going
 		// to be larger than the window vertically. otherwise, apply it after
 		// the space container expands fully.
 		//
@@ -406,9 +414,9 @@ var SidebarController = Composer.Controller.extend({
 		make_hammer(this.el_spaces.getElement('.gutter'));
 	},
 
-	focus_if: function(el, options)
-	{
+	focus_if: function(el, options) {
 		options || (options = {});
+		if(!el) return;
 
 		if(get_platform() == 'mobile') return;
 		if(options.delay === undefined) {

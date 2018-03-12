@@ -21,6 +21,7 @@ var NotesEditController = FormController.extend({
 		'change form': 'detect_change',
 		'input form': 'detect_change',
 		'input input[name=url]': 'check_url',
+		'change select[name=board_id]': 'update_selected_id',
 		'click .formatting a[rel=formatting]': 'show_formatting_help',
 		'click .password a.preview': 'toggle_preview_password'
 	},
@@ -45,6 +46,7 @@ var NotesEditController = FormController.extend({
 	form_data: null,
 
 	view_state: {
+		text_height: null,
 		already_bookmarked: false,
 	},
 
@@ -96,20 +98,27 @@ var NotesEditController = FormController.extend({
 			return true;
 		}.bind(this);
 
-		this.modal = new TurtlModal(Object.merge({
-			show_header: true,
-			title: title,
-			closefn: conf,
-			actions: [
-				{name: 'preview', icon: 'preview'}
-			]
-		}, this.modal_opts && this.modal_opts() || {}));
+		if(!this.skip_modal) {
+			this.modal = new TurtlModal(Object.merge({
+				show_header: true,
+				title: title,
+				closefn: conf,
+				actions: [
+					{name: 'preview', icon: 'preview'}
+				]
+			}, this.modal_opts && this.modal_opts() || {}));
+		}
 
 		// URL check setup, needs to happen before render
 		if(this.model.is_new())
 		{
 			var url_timer = new Timer(500);
 			this.with_bind(url_timer, 'fired', function() {
+				if(!this.inp_url) {
+					this.view_state.already_bookmarked = false;
+					this.render();
+					return;
+				}
 				var url_search = this.inp_url.get('value');
 				if(!url_search) return;
 				turtl.search.search({space: turtl.profile.current_space().id(), url: url_search})
@@ -133,6 +142,24 @@ var NotesEditController = FormController.extend({
 		this.render()
 			.bind(this)
 			.then(function() {
+				if(this.model.is_new()) {
+					var focus_el = null;
+					switch(this.type)
+					{
+						case 'text': focus_el = this.inp_text; break;
+						case 'link': focus_el = this.inp_url; break;
+						case 'image': focus_el = this.inp_url; break;
+						case 'password': focus_el = this.inp_password; break;
+					}
+					// NOTE: the delay here is same as CSS transition
+					//
+					// without this, the modal will jump forward to the textarea whlie
+					// sliding in, making the transition look really ugly and stupid.
+					// beware!
+					if(focus_el) setTimeout(focus_el.focus.bind(focus_el), 300);
+				}
+				this.check_url();
+
 				this.track_subcontroller('file', function() {
 					return new NotesEditFileController({
 						inject: this.el_file,
@@ -141,32 +168,39 @@ var NotesEditController = FormController.extend({
 				}.bind(this));
 				// track unsaved changes to the model
 				this.form_data = this.el_form.toQueryString();
+
+				setTimeout(this.resize_text.bind(this), 50);
 			});
 
-		var close = function()
-		{
-			this.modal.close();
-		}.bind(this);
-
-		this.modal.open(this.el);
-		this.with_bind(this.modal, 'close', this.release.bind(this));
-		this.with_bind(this.modal, 'header:fire-action', function(action) {
-			switch(action)
+		if(this.modal) {
+			var close = function()
 			{
-			case 'preview': this.open_preview(); break;
-			}
-		});
-		this.bind(['cancel', 'close'], close);
+				this.modal.close();
+			}.bind(this);
+
+			this.modal.open(this.el);
+			this.with_bind(this.modal, 'close', this.release.bind(this));
+			this.with_bind(this.modal, 'header:fire-action', function(action) {
+				switch(action)
+				{
+					case 'preview': this.open_preview(); break;
+				}
+			});
+			this.bind(['cancel', 'close'], close);
+		} else {
+			this.bind(['cancel', 'close'], this.release.bind(this));
+		}
 
 		// handle our "you have unsaved changes" state stuff
 		var unsaved = function()
 		{
-			var set_back = false;
-			if(this.modal.el.getElement('a[rel=back]'))
-			{
-				set_back = true;
+			if(this.modal) {
+				var set_back = false;
+				if(this.modal.el.getElement('a[rel=back]')) {
+					set_back = true;
+				}
+				this.modal.set_title(title + ' <strong>*</strong>', set_back && turtl.last_url);
 			}
-			this.modal.set_title(title + ' <strong>*</strong>', set_back && turtl.last_url);
 			this.have_unsaved = true;
 			this.highlight_button();
 		}.bind(this);
@@ -195,14 +229,7 @@ var NotesEditController = FormController.extend({
 		this.with_bind(this.clone.get('tags'), ['add', 'remove'], footer_desc);
 		footer_desc();
 
-		var special_key_bound = this.special_key.bind(this);
-		document.body.addEvent('keydown', special_key_bound);
-		this.bind('release', function() {
-			document.body.removeEvent('keydown', special_key_bound);
-		});
-
-		if(!this.skip_resize_text)
-		{
+		if(!this.skip_resize_text) {
 			var resizer = this.resize_text.bind(this);
 			window.addEvent('resize', resizer);
 			this.bind('release', window.removeEvent.bind(window, 'resize', resizer));
@@ -211,9 +238,9 @@ var NotesEditController = FormController.extend({
 
 	render: function()
 	{
-		var type = this.model.get('type') || this.type;
+		var type = this.clone.get('type') || this.type;
 		var colors = NOTE_COLORS;
-		var data = this.model.toJSON();
+		var data = this.clone.toJSON();
 		if(!data.color) delete data.color;
 
 		var boards = turtl.profile.space_boards().map(function(b) { return b.toJSON(); });
@@ -224,27 +251,7 @@ var NotesEditController = FormController.extend({
 			boards: boards,
 			type: this.model.get('type') || this.type,
 			colors: colors
-		})).bind(this)
-			.then(function() {
-				setTimeout(this.resize_text.bind(this), 10);
-				if(this.model.is_new()) {
-					var focus_el = null;
-					switch(this.type)
-					{
-						case 'text': focus_el = this.inp_text; break;
-						case 'link': focus_el = this.inp_url; break;
-						case 'image': focus_el = this.inp_url; break;
-						case 'password': focus_el = this.inp_password; break;
-					}
-					// NOTE: the delay here is same as CSS transition
-					//
-					// without this, the modal will jump forward to the textarea whlie
-					// sliding in, making the transition look really ugly and stupid.
-					// beware!
-					if(focus_el) setTimeout(focus_el.focus.bind(focus_el), 300);
-				}
-				this.check_url();
-			});
+		}));
 	},
 
 	grab_form_data: function()
@@ -375,21 +382,6 @@ var NotesEditController = FormController.extend({
 		this.with_bind(con, 'save', this.submit.bind(this));
 	},
 
-	special_key: function(e)
-	{
-		if(e.key == 'esc')
-		{
-			this.trigger('close');
-		}
-		else if(e.key == 'enter' || e.key == 'return')
-		{
-			if(!Composer.match(e.target, 'textarea, input'))
-			{
-				this.submit(e);
-			}
-		}
-	},
-
 	toggle_preview_password: function(e)
 	{
 		if(e) e.stop();
@@ -415,7 +407,13 @@ var NotesEditController = FormController.extend({
 		var txt_height = this.inp_text.getCoordinates().height;
 		var height = txt_height + diff;
 		if(height < 80) height = 80;
-		this.inp_text.setStyles({ height: height+'px' });
-	}
+		this.view_state.text_height = height;
+		this.render();
+	},
+
+	update_selected_id: function(e) {
+		var board_id = this.inp_board.get('value');
+		this.clone.set({board_id: board_id});
+	},
 });
 

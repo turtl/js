@@ -19,16 +19,20 @@
 				<input name="filter" id="sidebar-space-filter" type="text" placeholder="{{t 'Search for spaces'}}" autocomplete="off">
 			</div>
 			<ul class="spaces">
-				<li class="add">
-					<a href="/spaces/add">
-						{{t 'Create a space'}}
-						{{icon 'add'}}
-					</a>
-				</li>
+				{{#if state.edit_icons}}
+					<li class="add">
+						<a href="/spaces/add">
+							{{t 'Create a space'}}
+							{{icon 'add'}}
+						</a>
+					</li>
+				{{/if}}
 				{{#each spaces}}
 					<li rel="{{id}}" class="space {{#equal id @root.cur_space_id}}sel{{/equal}}">
 						<a class="go" href="/spaces/{{id}}/notes" {{#if color}}style="border-color: {{color.bg}};"{{/if}}>{{title}}</a>
-						<a class="edit" href="/spaces/edit/{{id}}">{{icon 'account'}}</a>
+						{{#if state.edit_icons}}
+							<a class="edit" href="/spaces/edit/{{id}}">{{icon 'account'}}</a>
+						{{/if}}
 					</li>
 				{{/each}}
 			</ul>

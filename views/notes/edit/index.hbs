@@ -1,7 +1,7 @@
 {{#if show_board_selector}}
 	<div class="board">
 		<select name="board_id">
-			<option value="">{{t 'Select a board'}}</option>
+			<option value="" {{#unless @root.note.board_id}}selected{{/unless}}>{{t 'Select a board'}}</option>
 			{{#each boards}}
 				<option value="{{id}}" {{#equal @root.note.board_id id}}selected{{/equal}}>{{title}}</option>
 			{{/each}}
@@ -17,7 +17,14 @@
 {{/equal-or}}
 {{#equal-or type 'image' 'link'}}
 	<input type="text" name="url" value="{{note.url}}" tabindex="1" placeholder="{{#equal note.type "image"}}{{t 'Image URL'}}{{else}}{{t 'URL'}}{{/equal}}">
-	<div class="existing"></div>
+	<div class="existing {{#if state.already_bookmarked}}open{{/if}}">
+		<em>!</em>
+		{{#equal state.already_bookmarked 1}}
+			{{t 'This URL is already bookmarked in another note'}}
+		{{else}}
+			{{t 'This URL is already bookmarked in {{ids_length}} notes' ids_length=state.already_bookmarked}}
+		{{/equal}}
+	</div>
 {{/equal-or}}
 
 <input type="text" name="title" value="{{note.title}}" tabindex="2" placeholder="{{t 'Title'}}">
@@ -29,7 +36,7 @@
 	</div>
 {{/equal}}
 
-<textarea name="text" rows="1" cols="80" tabindex="5" placeholder="{{t 'Note text'}}">{{note.text}}</textarea>
+<textarea name="text" rows="1" cols="80" tabindex="5" placeholder="{{t 'Note text'}}" {{#if state.text_height}}style="height: {{state.text_height}}px;"{{/if}}>{{note.text}}</textarea>
 <div class="formatting clear">
 	<a href="#formatting" rel="formatting">{{t 'Formatting help'}}</a>
 </div>
