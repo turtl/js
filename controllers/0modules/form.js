@@ -18,6 +18,7 @@ var FormController = Composer.Controller.extend({
 	disabled: false,
 	show_cancel: true,
 	bind_keys: true,
+	disable_esc: false,
 
 	init: function()
 	{
@@ -100,7 +101,9 @@ var FormController = Composer.Controller.extend({
 			if(Object.keys(keyboard_lock).length > 0) return;
 			if(!this.bind_keys) return;
 			var ctrl_or_cmd = e.control || e.meta;
-			if(e.key == 'esc') return this.trigger('cancel');
+			if(e.key == 'esc' && !this.disable_esc) {
+				return this.trigger('cancel');
+			}
 			if(ctrl_or_cmd && (e.key == 'enter' || e.key == 'return')) {
 				e.stop();
 				return this.submit(e);
