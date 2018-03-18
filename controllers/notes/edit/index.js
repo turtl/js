@@ -170,6 +170,19 @@ var NotesEditController = FormController.extend({
 				this.form_data = this.el_form.toQueryString();
 
 				setTimeout(this.resize_text.bind(this), 50);
+
+				// basically copy tumblr's fixed footer tagging interface
+				var footer_desc = function() {
+					var tags = this.clone.get('tags').toJSON();
+					if(tags.length) {
+						this.view_state.footer_desc = tags.join(', ');
+					} else {
+						this.view_state.footer_desc = '';
+					}
+					this.render();
+				}.bind(this);
+				this.with_bind(this.clone.get('tags'), ['add', 'remove'], footer_desc);
+				footer_desc();
 			});
 
 		if(this.modal) {
@@ -202,7 +215,8 @@ var NotesEditController = FormController.extend({
 				this.modal.set_title(title + ' <strong>*</strong>', set_back && turtl.last_url);
 			}
 			this.have_unsaved = true;
-			this.highlight_button();
+			this.view_state.highlight_button = true;
+			this.render();
 		}.bind(this);
 		this.bind('unsaved', unsaved);
 		this.with_bind(this.clone, 'change', unsaved);
@@ -212,22 +226,6 @@ var NotesEditController = FormController.extend({
 		this.with_bind(turtl.profile.get('boards'), ['add', 'remove', 'change'], this.render.bind(this));
 		this.with_bind(turtl.events, 'profile:set-current-space', this.render.bind(this));
 		this.with_bind(turtl.events, 'profile:set-current-space', this.check_url.bind(this));
-
-		// basically copy tumblr's fixed footer tagging interface
-		var footer_desc = function()
-		{
-			var tags = this.clone.get('tags').toJSON();
-			if(tags.length)
-			{
-				this.set_desc(tags.join(', '));
-			}
-			else
-			{
-				this.set_desc('');
-			}
-		}.bind(this);
-		this.with_bind(this.clone.get('tags'), ['add', 'remove'], footer_desc);
-		footer_desc();
 
 		if(!this.skip_resize_text) {
 			var resizer = this.resize_text.bind(this);

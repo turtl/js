@@ -20,6 +20,11 @@ var FormController = Composer.Controller.extend({
 	bind_keys: true,
 	disable_esc: false,
 
+	view_state: {
+		footer_desc: '',
+		highlight_button: false,
+	},
+
 	init: function()
 	{
 		this.setup_form_key_handler();
@@ -31,6 +36,7 @@ var FormController = Composer.Controller.extend({
 	html: function(content)
 	{
 		return this.parent(view.render('modules/form-layout', {
+			state: this.view_state,
 			action: this.action,
 			formclass: this.formclass,
 			buttons: this.buttons,
@@ -50,12 +56,6 @@ var FormController = Composer.Controller.extend({
 	cancel: function(e)
 	{
 		this.trigger('cancel');
-	},
-
-	set_desc: function(text)
-	{
-		if(!this.el_desc) return;
-		this.el_desc.set('html', text);
 	},
 
 	/**
@@ -114,15 +114,6 @@ var FormController = Composer.Controller.extend({
 			turtl.keyboard.attach();
 			document.body.removeEvent('keydown', key_handler);
 		});
-	},
-
-	highlight_button: function()
-	{
-		if(this.el.getElement('div.highlight')) return;
-		var dot = new Element('div').addClass('highlight').set('html', '&nbsp;');
-		dot.inject(this.btn_submit);
-		Velocity(dot, {opacity: [1, 0]}, {duration: 400});
-		Velocity(dot, 'callout.pulse', {duration: 800});
 	},
 
 	check_errors: function(errors)

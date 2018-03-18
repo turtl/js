@@ -38,7 +38,8 @@ form.standard-form {
 		.button {
 			span,
 			input {display: inline; cursor: pointer; padding-top: 18rem; padding-bottom: 16rem;}
-			.highlight {position: absolute; top: 6rem; right: 4rem; width: 12rem; height: 12rem; background: @theme_warn; .border-radius(6rem); .layer-rest();}
+			&:after {content: " "; position: absolute; top: 6rem; right: 4rem; width: 12rem; height: 12rem; background: @theme_warn; .border-radius(6rem); .layer-rest(); opacity: 0; transition: opacity 0.3s;}
+			&.highlight:after {opacity: 1;}
 		}
 	}
 	.form-note {font-size: 13rem !important; color: @theme_gray; padding: 8rem;}

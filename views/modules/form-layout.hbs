@@ -14,14 +14,14 @@
 						{{/each}}
 					</ul>
 				{{/if}}
-				<div class="desc"></div>
+				<div class="desc">{{state.footer_desc}}</div>
 
 				{{#if show_cancel}}
 					<div class="button flat cancel">
 						<span>{{t 'Cancel'}}</span>
 					</div>
 				{{/if}}
-				<div class="button flat submit {{#if disabled}}disabled{{/if}}">
+				<div class="button flat submit {{#if disabled}}disabled{{/if}} {{#if state.highlight_button}}highlight{{/if}}">
 					<input type="submit" {{#if tabindex}}tabindex="{{tabindex}}"{{/if}} value="{{action}}">
 				</div>
 			</div>
