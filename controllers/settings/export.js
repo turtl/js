@@ -40,7 +40,6 @@ var ExportController = Composer.Controller.extend({
 		this.render();
 		turtl.profile.export().bind(this)
 			.then(function(data) {
-				var errors = data.errors;
 				delete data.errors;
 				var backup = JSON.stringify(data, null, 2);
 				var blob = new Blob([backup], {type: 'application/json'});

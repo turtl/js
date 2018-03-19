@@ -54,7 +54,11 @@ var ChangePasswordController = FormController.extend({
 		var new_password = this.inp_new_password.get('value');
 		var new_confirm = this.inp_new_confirm.get('value');
 
-		var user = new User();
+		var errors = [];
+		if(new_password != new_confirm) {
+			errors.push([this.inp_new_confirm, i18next.t('Your passphrase does not match the confirmation.')]);
+		}
+		if(!this.check_errors(errors)) return;
 
 		var loading = function(yesno)
 		{

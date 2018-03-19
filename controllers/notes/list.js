@@ -95,7 +95,6 @@ var NotesListController = Composer.ListController.extend({
 					}.bind(this))
 					this.track(notes, function(model, options) {
 						options || (options = {});
-						var fragment = options.fragment;
 						// since the search model only deals with IDs, here we pull
 						// out the actual note model from the profile (which was
 						// pre-loaded and decrypted)
@@ -178,7 +177,6 @@ var NotesListController = Composer.ListController.extend({
 		if(!this.viewstate.mode.match(/^masonry/)) return;
 
 		if(this.masonry) this.masonry.detach();
-		var start = new Date().getTime();
 		this.masonry = this.note_list.masonry({
 			singleMode: true,
 			resizeable: true,

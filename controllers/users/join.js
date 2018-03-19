@@ -85,7 +85,6 @@ var UserJoinController = UserBaseController.extend({
 
 		var username = this.inp_username.get('value');
 		var password = this.inp_password.get('value');
-		var pconfirm = this.inp_confirm.get('value');
 
 		var errors = this.check_login(this.inp_username, this.inp_password, this.inp_confirm);
 		if(!this.check_errors(errors)) return;

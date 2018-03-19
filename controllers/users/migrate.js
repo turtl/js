@@ -74,7 +74,6 @@ var UserMigrateController = UserJoinController.extend({
 		var v6_password = this.inp_v6_password.get('value');
 		var username = this.inp_username.get('value');
 		var password = this.inp_password.get('value');
-		var pconfirm = this.inp_confirm.get('value');
 
 		var errors = this.check_login(this.inp_username, this.inp_password, this.inp_confirm);
 		if(!this.check_errors(errors)) return;
@@ -88,7 +87,6 @@ var UserMigrateController = UserJoinController.extend({
 		this.inp_submit.set('disabled', 'disabled');
 		turtl.loading(true);
 
-		var error = null;
 		endpoint_promise
 			.bind(this)
 			.then(function() {
@@ -99,7 +97,6 @@ var UserMigrateController = UserJoinController.extend({
 				turtl.settings.set('last_username', username);
 			})
 			.catch(function(err) {
-				error = err;
 				turtl.events.trigger('ui-error', i18next.t('There was a problem saving that account'), err);
 				log.error('users: migrate: ', err, derr(err));
 			})

@@ -51,7 +51,6 @@ var NotesIndexController = Composer.Controller.extend({
 			}.bind(this));
 		}
 
-		var tagsearch = clone(this.search);
 		this.notes = new Notes();
 
 		turtl.push_title(title, back, {prefix_space: true});

@@ -247,7 +247,7 @@ var NotesEditController = FormController.extend({
 			note: data,
 			show_board_selector: !this.board_id,
 			boards: boards,
-			type: this.model.get('type') || this.type,
+			type: type,
 			colors: colors
 		}));
 	},
@@ -284,7 +284,6 @@ var NotesEditController = FormController.extend({
 
 		// grab the file binary, and clear it out from the model
 		var file_set = clone.get('file').get('set');
-		var file_id = clone.id();
 		if(!file_set) {
 			clone.unset('file');
 		}

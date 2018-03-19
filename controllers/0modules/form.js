@@ -48,11 +48,6 @@ var FormController = Composer.Controller.extend({
 		}));
 	},
 
-	submit: function(e)
-	{
-		console.warn('formcontroller: submit: override me');
-	},
-
 	cancel: function(e)
 	{
 		this.trigger('cancel');

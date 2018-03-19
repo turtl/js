@@ -42,7 +42,6 @@ var NotesEditTagsListController = Composer.Controller.extend({
 		var tags = this.model.get('tags');
 		var exists = tags.find_by_id(name);
 
-		var size = tags.size();
 		if(exists) tags.remove(exists);
 		else tags.add(name);
 	}

@@ -44,7 +44,6 @@ var FeedbackController = FormController.extend({
 	submit: function(e)
 	{
 		if(e) e.stop();
-		var email = this.inp_email && this.inp_email.get('value').trim();
 		var body = this.inp_text.get('value').trim();
 
 		var errors = [];

@@ -100,20 +100,9 @@ var ActionController = Composer.Controller.extend({
 		var rotate = method == 'open' ? '135deg' : '';
 
 		var rad = 3.141592654 / 180;
-		var radius = 100;
 		var start = 270;
 		var end = 360;
 		var total = this.el.getElements('ul li').length;
-		var circle_pos = function(idx, radius)
-		{
-			var diff = end - start;
-			var step = diff / (total - 1);
-			var deg = start + (idx * step);
-			var rads = deg * rad;
-			var x = Math.sin(rads);
-			var y = Math.cos(rads);
-			return [x, y].map(function(num) { return num * radius; }).concat([deg]);
-		};
 
 		this.el.getElements('ul li').each(function(el, i) {
 			if(method == 'close')

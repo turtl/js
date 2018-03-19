@@ -21,11 +21,6 @@ var SpacesSharingController = Composer.Controller.extend({
 		this.members = this.model.get('members');
 		this.invites = this.model.get('invites');
 
-		var actions = [];
-		if(this.model.can_i(Permissions.permissions.add_space_invite)) {
-			actions.push({name: 'menu', actions: [{name: i18next.t('Send invite'), href: '#send-invite'}]});
-		}
-
 		var title = i18next.t('Sharing');
 		turtl.push_title(title, null, {prefix_space: true});
 		this.bind('release', turtl.pop_title.bind(null, false));

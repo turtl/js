@@ -215,7 +215,6 @@ var NotesViewController = NoteBaseController.extend({
 
 		this.el_file.addClass('decrypting');
 		atag.set('title', 'Decrypting, this can take a bit.');
-		var promise;
 		var url;
 		return this.model.get('file').to_blob({force: true}).bind(this)
 			.then(function(blob) {

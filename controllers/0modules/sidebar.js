@@ -4,17 +4,6 @@ var SidebarController = Composer.Controller.extend({
 	xdom: true,
 	el: '#sidebar',
 
-	is_open: false,
-	space_state: {
-		open: false,
-		zin: false,
-		scroll: false,
-	},
-
-	view_state: {
-		edit_icons: true,
-	},
-
 	elements: {
 		'> .overlay': 'overlay',
 		'> .inner': 'el_inner',
@@ -39,6 +28,16 @@ var SidebarController = Composer.Controller.extend({
 		'input .boards .filter input[name=filter]': 'filter_boards',
 		'keyup .boards .filter input[name=filter]': 'filter_boards',
 		'click .boards .filter icon': 'clear_board_filter',
+	},
+
+	space_state: {
+		open: false,
+		zin: false,
+		scroll: false,
+	},
+
+	view_state: {
+		edit_icons: true,
 	},
 
 	is_open: false,
@@ -372,7 +371,6 @@ var SidebarController = Composer.Controller.extend({
 				var board_a = this.el.getElement('ul.boards li a.go');
 				if(board_a) {
 					var li = Composer.find_parent('li.board', board_a);
-					var bid = li && li.get('rel');
 					board_a.click();
 				}
 				return;
