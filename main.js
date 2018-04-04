@@ -9,9 +9,6 @@ var turtl = {
 	// our core communication lib.
 	core: null,
 
-	// holds the user model
-	user: null,
-
 	// holds the DOM object that turtl does all of its operations within
 	main_container_selector: '#main',
 
@@ -271,12 +268,11 @@ var turtl = {
 					var spaces = turtl.profile.get('spaces');
 					var space = default_space ? spaces.get(default_space) : spaces.first();
 					if(!space) space = spaces.first();
+					var initial_route = '/';
 					if(space) {
 						var space_route = '/spaces/'+space.id()+'/notes';
-						var initial_route = options.initial_route || space_route;
+						initial_route = options.initial_route || space_route;
 						if(initial_route == '/') initial_route = space_route;
-					} else {
-						initial_route = '/';
 					}
 
 					if(initial_route.match(/^\/users\//)) initial_route = space_route;
