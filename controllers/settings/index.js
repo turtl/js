@@ -32,23 +32,28 @@ var SettingsController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 
-		var sync = new Sync();
-		return sync.get_pending()
-			.then(function(res) {
+		var sync_collection = new SyncCollection();
+		return sync_collection.get_pending()
+			.then(function() {
+				var res = sync_collection.toJSON();
 				var outgoing_msg = '';
 				if(res.length > 0) {
 					outgoing_msg = i18next.t(', however you have {{length}} changes waiting to be synced that will be lost if you do this', {length: res.length});
 				}
 				if(!confirm(i18next.t('This will erase all your local data and log you out. Your profile will be downloaded again next time you log in{{msg}}. Continue?', {msg: outgoing_msg}))) {
-					return;
+					throw {skip: true};
 				}
-				return sync.shutdown(false);
+				return new Sync().shutdown(false);
 			})
 			.then(function() {
 				return turtl.user.logout();
 			})
 			.then(function() {
 				return (new App()).wipe_app_data();
+			})
+			.catch(function(e) { return e.skip === true; }, function() {
+				// skipping, do nothing LOL.
+				return;
 			})
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', i18next.t('There was a problem clearing your profile'), err);
