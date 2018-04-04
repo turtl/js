@@ -241,7 +241,11 @@ var NotesEditController = FormController.extend({
 		var data = this.clone.toJSON();
 		if(!data.color) delete data.color;
 
-		var boards = turtl.profile.space_boards().map(function(b) { return b.toJSON(); });
+		var boards = turtl.profile.space_boards()
+			.map(function(b) { return b.toJSON(); })
+			.sort(function(a, b) {
+				return a.title.localeCompare(b.title);
+			});
 		return this.html(view.render('notes/edit/index', {
 			state: this.view_state,
 			note: data,
