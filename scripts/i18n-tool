@@ -68,7 +68,7 @@ function update() {
 			fi
 		done
 	)"
-	template "$(echo "${output}" | sort | uniq)" "${lang_code}" "${locale_code}"
+	template "$(echo "${output}" | sort | uniq)" "${lang_code}" "${locale_code}" > locales/${lang}.js
 }
 
 function usage() {
@@ -84,6 +84,7 @@ function usage() {
 	echo "      Read the file at locales/<lang>_<locale>.js, remove any unused translations"
 	echo "      and add in any new (blank) translations needed, and output the entire"
 	echo "      updated file. Use this to update a locale after the interface has changed."
+	echo "      (NOTE: this overwrites the locale file)"
 	echo "      (NOTE: running this can take a minute)"
 	echo "    keys"
 	echo "      List all current locale keys. Mainly used for debugging."

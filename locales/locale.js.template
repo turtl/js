@@ -198,7 +198,6 @@ var translation = {
 	"Select the color for this space": "",
 	"Select the space to move to:": "",
 	"Send": "",
-	"Send invite": "",
 	"Sending an invite requires a connection to the Turtl server.": "",
 	"Sending feedback requires a connection to the Turtl server.": "",
 	"Sending feedback requires a connection!": "",
