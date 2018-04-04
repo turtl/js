@@ -164,21 +164,12 @@ var FormController = Composer.Controller.extend({
 		}.bind(this);
 		this.with_bind(turtl.events, 'sync:connected', check_disconnect);
 		check_disconnect();
-		this.bind('xdom:render', check_disconnect);
 	},
 
 	disable: function(yesno)
 	{
-		if(yesno)
-		{
-			this.disabled = true;
-			if(this.btn_submit) this.btn_submit.addClass('disabled');
-		}
-		else
-		{
-			this.disabled = false;
-			if(this.btn_submit) this.btn_submit.removeClass('disabled');
-		}
+		this.disabled = !!yesno;
+		this.render();
 	}
 });
 

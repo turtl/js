@@ -42,9 +42,11 @@ var BoardsMoveController = FormController.extend({
 	},
 
 	render: function() {
-		var spaces = turtl.profile.get('spaces').toJSON();
+		var board = this.model.toJSON();
+		var spaces = turtl.profile.get('spaces').toJSON()
+			.filter(function(space) { return space.id != board.space_id; });
 		this.html(view.render('boards/move', {
-			board: this.model.toJSON(),
+			board: board,
 			spaces: spaces,
 		}));
 	},
@@ -67,6 +69,9 @@ var BoardsMoveController = FormController.extend({
 			return;
 		}
 		var clone = this.model.clone();
+		barfr.barf('This process can take a while.');
+		turtl.loading(true);
+		this.disable(true);
 		clone.move_spaces(space_id)
 			.bind(this)
 			.then(function() {
@@ -81,6 +86,10 @@ var BoardsMoveController = FormController.extend({
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', i18next.t('There was a problem moving that board.'), err);
 				log.error('board: move: ', this.model.id(), derr(err));
+			})
+			.finally(function() {
+				turtl.loading(false);
+				this.disable(false);
 			});
 	},
 });

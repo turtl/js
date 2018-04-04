@@ -1,4 +1,5 @@
 var FeedbackController = FormController.extend({
+	xdom: true,
 	class_name: 'feedback',
 
 	elements: {
@@ -18,22 +19,19 @@ var FeedbackController = FormController.extend({
 		this.with_bind(turtl.events, 'api:disconnect', this.render.bind(this));
 		this.requires_connection({msg: i18next.t('Sending feedback requires a connection to the Turtl server.')});
 
-		this.render();
+		this.render()
+			.bind(this)
+			.then(function() {
+				if(this.inp_text) this.inp_text.focus();
+			});
 	},
 
 	render: function()
 	{
-		if(!turtl.connected) return this.html(view.render('feedback/noconnection'));
-
-		var email = turtl.user.get('username');
-		this.html(view.render('feedback/index', {
-			show_email: !email
+		//if(!turtl.connected) return this.html(view.render('feedback/noconnection'));
+		return this.html(view.render('feedback/index', {
+			connected: turtl.connected,
 		}));
-
-		if(this.inp_text)
-		{
-			this.inp_text.focus();
-		}
 	},
 
 	render_thanks: function()
