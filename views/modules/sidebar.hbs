@@ -30,7 +30,7 @@
 				{{#each spaces}}
 					<li rel="{{id}}" class="space {{#equal id @root.cur_space_id}}sel{{/equal}}">
 						<a class="go" href="/spaces/{{id}}/notes" {{#if color}}style="border-color: {{color.bg}};"{{/if}}>{{title}}</a>
-						{{#if state.edit_icons}}
+						{{#if @root.state.edit_icons}}
 							<a class="edit" href="/spaces/edit/{{id}}">{{icon 'account'}}</a>
 						{{/if}}
 					</li>
