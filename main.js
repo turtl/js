@@ -623,14 +623,6 @@ var _turtl_init = function()
 	window._base_url = config.base_url || '';
 	turtl.site_url = config.site_url || '';
 
-	// custom sizing per-device, mainly to make everything look exactly like it
-	// does size-wise (in inches) on the iphone5. this is all made possible by
-	// using rem font/box sizes everywhere instead of px...we can resize the
-	// entire app in just one place.
-	var font_size = 1;
-	if(window.navigator.userAgent.match(/(DROID4|XT894)/)) font_size = 1.12;
-	$E('html').setStyles({'font-size': font_size + 'px'});
-
 	turtl.back = new Backstate();
 
 	// create the barfr

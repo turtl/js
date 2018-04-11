@@ -5,10 +5,10 @@
 	form.standard-form {.uncard();}
 }
 
-form.standard-form {padding: 16rem 4% (45rem + 16rem) 4%; .card();}
+form.standard-form {padding: 16px 4% (45px + 16px) 4%; .card();}
 form.standard-form {
 	@media @desktop {
-		& {padding: 16rem 16rem (45rem + 16rem) 16rem;}
+		& {padding: 16px 16px (45px + 16px) 16px;}
 	}
 	input[type=text],
 	input[type=password],
@@ -16,32 +16,32 @@ form.standard-form {
 	div.editable,
 	select,
 	textarea {
-		& {box-sizing: border-box; width: 100%; margin: 0 0 12rem 0; padding: 9rem 12rem; font-size: 16rem; background: none; border: 0; border-bottom: 1rem solid @form_border; border-radius: 0; .transition(border .3s);}
-		&:focus {border-bottom: 1rem solid @theme_accent;}
+		& {box-sizing: border-box; width: 100%; margin: 0 0 12px 0; padding: 9px 12px; font-size: 16px; background: none; border: 0; border-bottom: 1px solid @form_border; border-radius: 0; .transition(border .3s);}
+		&:focus {border-bottom: 1px solid @theme_accent;}
 		&.error {border-bottom-color: @theme_warn;}
 		&[disabled] {color: @theme_gray; background: @theme_gray_white;}
 	}
 	div.editable {
 		.placeholder {color: @theme_gray;}
 	}
-	.button-row {position: fixed; .fixed-fix(); bottom: 0; left: 0; width: 100%; text-align: right; background: #fff; border-top: 1rem solid @theme_border;}
+	.button-row {position: fixed; .fixed-fix(); bottom: 0; left: 0; width: 100%; text-align: right; background: #fff; border-top: 1px solid @theme_border;}
 	.button-row {
 		ul {float: left; list-style: none;}
 		ul {
 			li {
-				a {display: inline-block; padding: 7rem 6rem;}
-				icon {line-height: 1em; font-size: 28rem; color: @theme_black;}
+				a {display: inline-block; padding: 7px 6px;}
+				icon {line-height: 1em; font-size: 28px; color: @theme_black;}
 			}
 		}
-		.desc {float: left; width: 32%; margin: 0 0 0 2rem; padding: 16rem 0 0 0; line-height: 1.1em; font-size: 14rem; text-align: left; .ellipsis();}
+		.desc {float: left; width: 32%; margin: 0 0 0 2px; padding: 16px 0 0 0; line-height: 1.1em; font-size: 14px; text-align: left; .ellipsis();}
 		.button {position: relative; text-align: center; line-height: 1em; background: none; border-radius: 0; border: 0; box-shadow: none;}
 		.button {
 			span,
-			input {display: inline; cursor: pointer; padding-top: 18rem; padding-bottom: 16rem;}
-			&:after {content: " "; position: absolute; top: 6rem; right: 4rem; width: 12rem; height: 12rem; background: @theme_warn; .border-radius(6rem); .layer-rest(); opacity: 0; transition: opacity 0.3s;}
+			input {display: inline; cursor: pointer; padding-top: 18px; padding-bottom: 16px;}
+			&:after {content: " "; position: absolute; top: 6px; right: 4px; width: 12px; height: 12px; background: @theme_warn; .border-radius(6px); .layer-rest(); opacity: 0; transition: opacity 0.3s;}
 			&.highlight:after {opacity: 1;}
 		}
 	}
-	.form-note {font-size: 13rem !important; color: @theme_gray; padding: 8rem;}
+	.form-note {font-size: 13px !important; color: @theme_gray; padding: 8px;}
 }
 

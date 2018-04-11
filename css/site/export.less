@@ -1,13 +1,13 @@
 @import '../variables';
 
 .export-page {
-	h1 {margin: 0 0 4rem 0; text-align: center;}
+	h1 {margin: 0 0 4px 0; text-align: center;}
 	h3 {text-align: center;}
 	section.export, section.import {
-		& {margin: 0 0 16rem 0; padding: 10rem; text-align: center; .card();}
-		.type {padding: 8rem;}
-		input[type=file] {max-width: 400rem; margin: 0 auto 8rem auto; padding: 0 0 4rem 0;}
-		.buttons {margin: 0 0 8rem 0;}
+		& {margin: 0 0 16px 0; padding: 10px; text-align: center; .card();}
+		.type {padding: 8px;}
+		input[type=file] {max-width: 400px; margin: 0 auto 8px auto; padding: 0 0 4px 0;}
+		.buttons {margin: 0 0 8px 0;}
 		p:not(.load) {margin: 0; padding: 0;}
 	}
 
@@ -17,10 +17,10 @@
 			label {display: block;}
 		}
 	}
-	p.load {display: inline-block; visibility: hidden; width: 0; margin: 0 0 0 6rem; padding: 0 0 0 0; vertical-align: middle; overflow: visible;}
+	p.load {display: inline-block; visibility: hidden; width: 0; margin: 0 0 0 6px; padding: 0 0 0 0; vertical-align: middle; overflow: visible;}
 	p.load {
 		&.active {visibility: visible;}
-		svg {width: 24rem; height: 24rem;}
+		svg {width: 24px; height: 24px;}
 		svg {
 			path {fill: @theme_accent;}
 		}

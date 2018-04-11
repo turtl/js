@@ -4,7 +4,7 @@
 #tmp-slide > .notes-container {padding-top: 0;}
 
 .notes {
-	@note_list_margin: 3.125rem;
+	@note_list_margin: 3.125px;
 	.list-container {padding: (@note_list_margin * 2) @note_list_margin;}
 	.list-container {
 		.view-states {
@@ -21,10 +21,10 @@
 		> li {.card(); cursor: pointer;}
 		> li.crypto-error {background: #fdd;}
 		> li {
-			.body {max-height: 400rem; overflow: hidden;}
+			.body {max-height: 400px; overflow: hidden;}
 			.content {width: auto;}
 		}
-		li.image {max-height: 400rem; overflow-y: hidden;}
+		li.image {max-height: 400px; overflow-y: hidden;}
 	}
 
 	ul.note-list.masonry {
@@ -61,16 +61,16 @@
 
 	.paginate {margin: 18px 0 16px 0; text-align: center;}
 	.paginate {
-		a {display: inline-block; margin: 0 4rem; padding: 4rem 9rem 4rem 15rem; font-size: 18rem; border-left: 1px solid @form_border;}
+		a {display: inline-block; margin: 0 4px; padding: 4px 9px 4px 15px; font-size: 18px; border-left: 1px solid @form_border;}
 		a:first-child {border-left: 0;}
 	}
 }
 
-@file_height: 34rem;
-@content_pad: 6rem;
-@content_pad_desktop: 16rem;
+@file_height: 34px;
+@content_pad: 6px;
+@content_pad_desktop: 16px;
 .note {
-	p.empty {padding: 10rem 0; font-size: 13rem; color: @theme_gray; text-align: center;}
+	p.empty {padding: 10px 0; font-size: 13px; color: @theme_gray; text-align: center;}
 
 	.note-gutter {
 		.content {width: 100%;}
@@ -89,24 +89,24 @@
 	&.image {
 		.backing {position: relative; z-index: 10; width: 100%; min-height: @header_height; background: @theme_black_bg;}
 		.backing {
-			span {display: block; font-size: 13rem; text-align: center;}
+			span {display: block; font-size: 13px; text-align: center;}
 			span {
-				icon {font-size: 20rem; color: @theme_gray;}
+				icon {font-size: 20px; color: @theme_gray;}
 			}
 			span.has-size {height: 0;}
 			span.has-size {
-				icon {position: absolute; top: 50%; left: 50%; margin: -10rem 0 0 -10rem;}
+				icon {position: absolute; top: 50%; left: 50%; margin: -10px 0 0 -10px;}
 			}
 		}
 		.header-backing {display: none;}
 		img {display: block; margin: 0 auto; max-width: 100%; height: auto;}
-		@img_header_height: 30rem;
-		@img_header_top_pad: 4rem;
-		@img_header_margin_bottom: 3rem;	// aligns the text as if header weren't there
+		@img_header_height: 30px;
+		@img_header_top_pad: 4px;
+		@img_header_margin_bottom: 3px;	// aligns the text as if header weren't there
 		&:not(.view) {
 			.content h1.main-title {position: relative; z-index: 11; display: block; height: @img_header_height; margin: -(@img_header_height + @img_header_top_pad) 0 @img_header_margin_bottom 0; padding: @img_header_top_pad 0 0 6%; line-height: @img_header_height; color: #fff; .ellipsis(); .title-scrim(bottom, .45);}
 			@media @desktop {
-				.content h1.main-title {padding-left: 24rem;}
+				.content h1.main-title {padding-left: 24px;}
 			}
 			//.file + .note-gutter .content h1.main-title {top: -@file_height;}
 		}
@@ -121,10 +121,10 @@
 
 	.file {height: (@file_height - (@content_pad * 2)); padding: @content_pad; text-align: center; background: @theme_gray_white; .layer-rest();}
 	.file {
-		strong {display: inline-block; width: 100%; font-size: 16rem; line-height: 20rem; font-weight: normal; .ellipsis();}
+		strong {display: inline-block; width: 100%; font-size: 16px; line-height: 20px; font-weight: normal; .ellipsis();}
 		strong {
-			icon {width: 20rem;}
-			svg {display: none; width: 20rem; height: 20rem; vertical-align: bottom;}
+			icon {width: 20px;}
+			svg {display: none; width: 20px; height: 20px; vertical-align: bottom;}
 			&.encrypting svg {display: inline-block;}
 			svg {
 				path {fill: @theme_accent;}
@@ -145,7 +145,7 @@
 			& icon {color: @theme_primary;}
 			&.active icon {color: @theme_warn;}
 		}
-		.show-password {padding: 0 0 16rem 0;}
+		.show-password {padding: 0 0 16px 0;}
 		.show-password {
 			form {.uncard(); padding: 0;}
 			form {
@@ -156,7 +156,7 @@
 			*:last-child {margin-bottom: 0; padding-bottom: 0;}
 		}
 	}
-	> .color {position: absolute; z-index: 12; display: block; top: 3rem; right: 3rem; width: 12rem; height: 12rem; background: @theme_primary; border: 1rem solid rgba(0, 0, 0, .2); border-radius: 7rem; .layer-hover();}
+	> .color {position: absolute; z-index: 12; display: block; top: 3px; right: 3px; width: 12px; height: 12px; background: @theme_primary; border: 1px solid rgba(0, 0, 0, .2); border-radius: 7px; .layer-hover();}
 	> .color {
 		&.blue {background-color: #73b8d1;}
 		&.red {background-color: #e85c5c;}
@@ -168,7 +168,7 @@
 	}
 
 	.info-container {display: flex; align-items: center; justify-content: space-between;}
-	.info-container {padding: 10rem @content_pad; font-size: 12rem; color: @theme_black; background: @theme_gray_light;}
+	.info-container {padding: 10px @content_pad; font-size: 12px; color: @theme_black; background: @theme_gray_light;}
 	@media @desktop {
 		.info-container {padding-left: @content_pad_desktop; padding-right: @content_pad_desktop;}
 	}
@@ -177,7 +177,7 @@
 		.tags-container {
 			ul {display: flex; align-items: flex-start; margin: 0; padding: 0; list-style: none;}
 			li.icon {padding: 0; margin: 0;}
-			li {margin: 0 0 0 9rem; padding: 0 7rem;}
+			li {margin: 0 0 0 9px; padding: 0 7px;}
 		}
 	}
 }
@@ -185,27 +185,27 @@
 // note open view
 .note-view {
 	.note {
-		.note-gutter {padding-bottom: 64rem;}
-		> .color {width: 16rem; height: 16rem; border-radius: 9rem;}
+		.note-gutter {padding-bottom: 64px;}
+		> .color {width: 16px; height: 16px; border-radius: 9px;}
 	}
 	.note:not(.image) {
-		.note-gutter {padding-top: 12rem;}
+		.note-gutter {padding-top: 12px;}
 	}
 	&:not(.note-image) {
 		.note {
-			> .color {position: static; float: right; margin: 4rem 4rem 0 4rem;}
+			> .color {position: static; float: right; margin: 4px 4px 0 4px;}
 		}
 	}
 	&.note-image {
 		header {.title-scrim(top, .50, 110%); box-shadow: none;}
 		header {
 			h1 {
-				em:before {top: 13rem; left: 3rem; .item-scrim(.3);}
+				em:before {top: 13px; left: 3px; .item-scrim(.3);}
 			}
 			ul.actions {
 				> li {
 					.item-actions {
-						> a:before {top: 15rem; left: 31rem; .item-scrim(.3);}
+						> a:before {top: 15px; left: 31px; .item-scrim(.3);}
 					}
 				}
 			}
@@ -222,7 +222,7 @@
 				.header-backing {width: @desktop_modal_width;}
 			}
 			.header-backing.hide {display: none;}
-			> .color {top: auto; right: 16rem; margin: -10rem -3rem 0 0;}
+			> .color {top: auto; right: 16px; margin: -10px -3px 0 0;}
 			.note-gutter .content .body {padding-top: (@content_pad * 2);}
 		}
 		.modal-gutter {padding-top: 0;}
@@ -238,37 +238,37 @@
 }
 
 // note board listing (mainly shown in note board editor)
-.note-boards {margin: 0 0 16rem 0; font-size: 14rem; border-radius: 0; .transition(border .3s);}
+.note-boards {margin: 0 0 16px 0; font-size: 14px; border-radius: 0; .transition(border .3s);}
 .note-boards {
-	icon {float: left; margin: 4rem 8rem 0 0; font-size: 20rem; color: @theme_black; .transition(color .3s);}
-	span {display: inline-block; padding: 3rem; color: @theme_primary;}
+	icon {float: left; margin: 4px 8px 0 0; font-size: 20px; color: @theme_black; .transition(color .3s);}
+	span {display: inline-block; padding: 3px; color: @theme_primary;}
 	ul {list-style: none;}
 	ul {
-		li {display: block; float: left; margin: 0 6rem 6rem 0; padding: 3rem 5rem; background: @theme_border; border: 1rem solid @theme_gray_midlight; border-radius: 2rem;}
+		li {display: block; float: left; margin: 0 6px 6px 0; padding: 3px 5px; background: @theme_border; border: 1px solid @theme_gray_midlight; border-radius: 2px;}
 	}
 }
 
 .notes-edit {
-	form {padding-bottom: 16rem;}
+	form {padding-bottom: 16px;}
 	form {
-		.existing {height: 0; box-sizing: border-box; overflow: hidden; font-size: 13rem; transition: height 0.3s;}
+		.existing {height: 0; box-sizing: border-box; overflow: hidden; font-size: 13px; transition: height 0.3s;}
 		.existing.open {height: 20px;}
 		.existing {
-			em {display: inline-block; width: 14rem; height: 14rem; margin: 0 6rem 0 0; font-weight: bold; color: #fff; text-align: center; background: @theme_accent; border-radius: 7rem;}
+			em {display: inline-block; width: 14px; height: 14px; margin: 0 6px 0 0; font-weight: bold; color: #fff; text-align: center; background: @theme_accent; border-radius: 7px;}
 		}
-		.url-or-file {display: block; padding: 8rem 0; font-size: 14rem; text-align: center;}
-		textarea {width: 100%; max-width: 100%; height: 100rem; resize: vertical; font-family: 'Noto Mono', monospace;}
-		.formatting {margin: -14rem 0 16rem 0; text-align: right;}
+		.url-or-file {display: block; padding: 8px 0; font-size: 14px; text-align: center;}
+		textarea {width: 100%; max-width: 100%; height: 100px; resize: vertical; font-family: 'Noto Mono', monospace;}
+		.formatting {margin: -14px 0 16px 0; text-align: right;}
 		.formatting {
-			a[rel=formatting] {display: block; padding: 5rem 0; font-size: 15rem;}
+			a[rel=formatting] {display: block; padding: 5px 0; font-size: 15px;}
 		}
 
-		.file {margin: 0 0 16rem 0;}
+		.file {margin: 0 0 16px 0;}
 		.file {
-			icon {margin: 4rem 8rem 0 0;}
-			p {margin: 0; padding: 0; font-size: 14rem;}
-			p.info {width: 100%; margin: 0 0 6rem 0; .ellipsis();}
-			p.size {float: left; padding-left: 30rem;}
+			icon {margin: 4px 8px 0 0;}
+			p {margin: 0; padding: 0; font-size: 14px;}
+			p.info {width: 100%; margin: 0 0 6px 0; .ellipsis();}
+			p.size {float: left; padding-left: 30px;}
 			p.remove {float: right;}
 			p.remove {
 				a icon {margin-right: 0;}
@@ -278,19 +278,19 @@
 			&.preview {
 				a.preview icon {color: @theme_primary;}
 			}
-			a.preview {position: absolute; right: 6%; margin: 12rem 0 0 0;}
-			a.preview icon {font-size: 16rem; color: @theme_black; .transition(color 0.3s);}
+			a.preview {position: absolute; right: 6%; margin: 12px 0 0 0;}
+			a.preview icon {font-size: 16px; color: @theme_black; .transition(color 0.3s);}
 		}
 		.boards-container {cursor: pointer;}
 	}
 
-	ul.colors {margin: 0; padding: 8rem 0 0 0; list-style: none; text-align: center;}
+	ul.colors {margin: 0; padding: 8px 0 0 0; list-style: none; text-align: center;}
 	ul.colors {
 		// 'none','blue','red','green','purple','pink','brown','black'
-		li {display: inline-block; margin: 0 6rem 6rem 6rem; padding: 0 0 0 0; .transition(transform .3s);}
+		li {display: inline-block; margin: 0 6px 6px 6px; padding: 0 0 0 0; .transition(transform .3s);}
 		li.sel {transform: scale(1.35, 1.35);}
 		li {
-			span {display: block; width: 24rem; height: 24rem; border: 1rem solid #ccc; border-radius: 4rem;}
+			span {display: block; width: 24px; height: 24px; border: 1px solid #ccc; border-radius: 4px;}
 		}
 		.edit-color(@color) {background: @color; border-color: @color;}
 		.none span {}

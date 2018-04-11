@@ -5,7 +5,7 @@
 	@side_bg: @theme_gutter_dark;
 	@side_bg_dark: darken(@side_bg, 10%);
 	@side_border: darken(@side_bg, 3%);
-	@side_padding: 12rem;
+	@side_padding: 12px;
 	> .overlay {position: absolute; z-index: 10; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; background: rgba(0, 0, 0, .7); .transition(opacity .3s);}
 	> .overlay.show {opacity: 1; cursor: pointer;}
 	> .inner {position: absolute; z-index: 11; top: 0; left: 0; bottom: 0; width: @sidebar_travel; overflow-y: auto; .layer-hover(); background: @side_bg;}
@@ -18,9 +18,9 @@
 		> .header {}
 		> .header {
 			h2 {position: fixed; z-index: 5; top: 0; width: @sidebar_travel; box-sizing: border-box;}
-			h2 {display: flex; align-items: center; height: @header_height; margin: 0 0 @side_padding 0; padding: 0 @side_padding; cursor: pointer; font-size: 14rem; color: @theme_gray_white; cursor: pointer; border-top: 0rem solid rgba(0, 0, 0, 0);}
+			h2 {display: flex; align-items: center; height: @header_height; margin: 0 0 @side_padding 0; padding: 0 @side_padding; cursor: pointer; font-size: 14px; color: @theme_gray_white; cursor: pointer; border-top: 0px solid rgba(0, 0, 0, 0);}
 			h2 {
-				icon {margin-left: 6rem; transform: rotate(-90deg);}
+				icon {margin-left: 6px; transform: rotate(-90deg);}
 				&.light {
 					&, icon {color: #eee;}
 				}
@@ -36,46 +36,46 @@
 		.spaces-container {
 			.gutter {padding-top: @header_height + @side_padding;}
 			h2 {position: fixed; z-index: 5; top: 0; width: @sidebar_travel;}
-			h2 {display: flex; align-items: center; justify-content: space-between; height: @header_height; padding: @side_padding; cursor: pointer; color: @theme_gray_light; font-size: 14rem; box-sizing: border-box; background: @side_bg_dark;}
+			h2 {display: flex; align-items: center; justify-content: space-between; height: @header_height; padding: @side_padding; cursor: pointer; color: @theme_gray_light; font-size: 14px; box-sizing: border-box; background: @side_bg_dark;}
 		}
 		.gutter {padding: @side_padding 0;}
 		.gutter {
 			.filter {position: relative; z-index: 3; padding: 0 @side_padding;}
 			.filter {
-				icon {position: absolute; top: 9rem; right: 18rem; cursor: pointer; opacity: 1; transition: opacity 0.3s;}
+				icon {position: absolute; top: 9px; right: 18px; cursor: pointer; opacity: 1; transition: opacity 0.3s;}
 				icon.close {opacity: 0;}
 				&.active {
 					icon.close {opacity: 1;}
 					icon.find {opacity: 0;}
 				}
-				input {display: block; width: 100%; padding: 6rem; color: @theme_gray_white; box-sizing: border-box; background: @side_bg_dark; border: 0; border-radius: 3rem;}
+				input {display: block; width: 100%; padding: 6px; color: @theme_gray_white; box-sizing: border-box; background: @side_bg_dark; border: 0; border-radius: 3px;}
 			}
 			ul.boards, ul.spaces {margin: 0; padding: 0; list-style: none;}
 			ul.boards, ul.spaces {
-				li {display: flex; border-bottom: 1rem solid @side_border;}
+				li {display: flex; border-bottom: 1px solid @side_border;}
 				li {
-					a {display: block; padding: 14rem @side_padding; font-size: 14rem;}
+					a {display: block; padding: 14px @side_padding; font-size: 14px;}
 					a:first-child {width: 90%;}
-					a:before {content: " "; position: absolute; opacity: 0; z-index: 4; right: 10rem; margin: 4rem 0 0 0; width: 12rem; height: 12rem; background: @theme_warn; border-radius: 6rem; .transition(opacity .3s);}
+					a:before {content: " "; position: absolute; opacity: 0; z-index: 4; right: 10px; margin: 4px 0 0 0; width: 12px; height: 12px; background: @theme_warn; border-radius: 6px; .transition(opacity .3s);}
 					a.go {max-width: 90%; .ellipsis();}
 					&.notify {
 						a:before {opacity: 1;}
 					}
 					&.sel a {font-weight: bold; opacity: 0.85;}
 					a.edit {
-						icon {font-size: 18rem;}
+						icon {font-size: 18px;}
 					}
 				}
 				li.add {
-					a, span {display: flex; justify-content: space-between; align-items: center; width: 100%; margin: (@side_padding / 2) 0 (@side_padding / 2) 0; padding: @side_padding; font-size: 11rem; text-transform: uppercase; border-left: 0;}
+					a, span {display: flex; justify-content: space-between; align-items: center; width: 100%; margin: (@side_padding / 2) 0 (@side_padding / 2) 0; padding: @side_padding; font-size: 11px; text-transform: uppercase; border-left: 0;}
 					span {.text();}
-					icon {font-size: 19rem;}
+					icon {font-size: 19px;}
 				}
 			}
 			ul.boards {
 				li {
 					.go {
-						icon {margin: 0 6rem 0 0; opacity: 0.25;}
+						icon {margin: 0 6px 0 0; opacity: 0.25;}
 					}
 					&.sel {
 						.go icon {opacity: 0.5;}
@@ -84,7 +84,7 @@
 			}
 			ul.spaces {
 				li {
-					a {border-left: 8rem solid rgba(0, 0, 0, 0);}
+					a {border-left: 8px solid rgba(0, 0, 0, 0);}
 				}
 			}
 		}
