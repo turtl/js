@@ -102,11 +102,11 @@
 		img {display: block; margin: 0 auto; max-width: 100%; height: auto;}
 		@img_header_height: 30px;
 		@img_header_top_pad: 4px;
-		@img_header_margin_bottom: 3px;	// aligns the text as if header weren't there
+		@img_header_margin_bottom: 0;
 		&:not(.view) {
-			.content h1.main-title {position: relative; z-index: 11; display: block; height: @img_header_height; margin: -(@img_header_height + @img_header_top_pad) 0 @img_header_margin_bottom 0; padding: @img_header_top_pad 0 0 6%; line-height: @img_header_height; color: #fff; .ellipsis(); .title-scrim(bottom, .45);}
-			@media @desktop {
-				.content h1.main-title {padding-left: 24px;}
+			.content h1.main-title {
+				& {position: relative; z-index: 11; display: block; height: @img_header_height; margin: -(@img_header_height + @img_header_top_pad) 0 @img_header_margin_bottom 0; padding: @img_header_top_pad 8px 0 8px; line-height: @img_header_height; color: #fff; .ellipsis(); .title-scrim(bottom, .45);}
+				a {color: #fff;}
 			}
 			//.file + .note-gutter .content h1.main-title {top: -@file_height;}
 		}
@@ -201,6 +201,7 @@
 		header {
 			h1 {
 				em:before {top: 13px; left: 3px; .item-scrim(.3);}
+				a icon {color: #fff;}
 			}
 			ul.actions {
 				> li {
