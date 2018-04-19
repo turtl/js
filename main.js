@@ -2,8 +2,6 @@ var $E = function(selector, filter) {return ($(filter) || document).getElement(s
 var $ES = function(selector, filter) {return ($(filter) || document).getElements(selector);};
 
 var turtl = {
-	site_url: null,
-
 	events: new Composer.Event(),
 
 	// our core communication lib.
@@ -621,7 +619,6 @@ var markdown = null;
 var _turtl_init = function()
 {
 	window._base_url = config.base_url || '';
-	turtl.site_url = config.site_url || '';
 
 	turtl.back = new Backstate();
 
