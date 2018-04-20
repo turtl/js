@@ -65,8 +65,10 @@ var Space = SyncModel.extend({
 				'1f9016',
 			];
 			var id = this.id();
-			var hash = tcrypt.sha512(id);
-			var num = hash.reduce(function(acc, x) { return acc + x; }, 0);
+			var num = 0;
+			for(var i = 0; i < (id.length / 2); i++) {
+				num += parseInt(id.substr(i * 2, 2), 16);
+			}
 			color = '#'+available_colors[num % available_colors.length];
 		}
 
