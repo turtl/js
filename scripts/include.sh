@@ -38,6 +38,7 @@ function vendor_js() {
 	echo "${SEARCH_PATH}lib/vnd/composer.js"
 	echo "${SEARCH_PATH}lib/vnd/bluebird.js"
 	find ${SEARCH_PATH}lib/vnd -name "*.js" \
+		| LC_ALL=C sort \
 		| grep -v 'mootools-' \
 		| grep -v 'composer\.js' \
 		| grep -v 'bluebird\.js'
