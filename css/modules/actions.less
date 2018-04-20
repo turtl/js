@@ -8,9 +8,10 @@
 	> .action {position: fixed; .fixed-fix(); z-index: 12; bottom: @action_offset; right: @action_offset;}
 	> .action {
 		.abutton {position: relative; display: inline-block; width: @action_size; height: @action_size; text-align: center; border: 2px solid #fff; border-radius: (@action_size / 1.9cm); background: @theme_primary; .layer-hover(); .transition(box-shadow .3s);}
+		> .abutton {display: flex; align-items: center; justify-content: center;}
 		.abutton {
 			icon {line-height: 2.2em; color: #fff; font-size: 22px;}
-			icon.add {font-size: 32px; line-height: 1.63em;}
+			icon.add {font-size: 32px; line-height: 1em;}
 		}
 		> a {z-index: 21;}
 		ul {display: none; margin: 0 0 0 0; padding: 0; list-style: none;}
