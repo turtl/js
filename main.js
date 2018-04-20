@@ -187,13 +187,20 @@ var turtl = {
 				barfr.barf(i18next.t('Your account has been deleted.'));
 				break;
 			case 'sync:update':
+			case 'sync:file:downloaded':
+				if(ev == 'sync:file:downloaded') {
+					data = {
+						type: 'file',
+						action: 'download',
+						item_id: data.note_id,
+						data: {id: data.note_id},
+					};
+				}
 				turtl.events.trigger('sync:update', data);
 				turtl.events.trigger('sync:update:'+data.type, data);
 				break;
 			case 'sync:connected':
 				turtl.events.trigger('sync:connected', data);
-				break;
-			case 'sync:file:downloaded':
 				break;
 			case 'sync:file:uploaded':
 				break;

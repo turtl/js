@@ -20,27 +20,25 @@ var NoteFile = SyncModel.extend({
 	creating_blob: false,
 
 	init: function() {
+		this.parent();
 		this.bind('destroy', function() {
 			this.revoke();
 		}.bind(this));
 	},
 
-	clear: function()
-	{
+	clear: function() {
 		this.revoke();
 		return this.parent.apply(this, arguments);
 	},
 
-	has_data: function()
-	{
+	has_data: function() {
 		if(!this.id()) return Promise.reject('file: has_data: bad id');
 		return FileData.prototype.load_contents(this.id())
 			.then(function() { return true; })
 			.catch(function(_) { return false; });
 	},
 
-	to_array: function(options)
-	{
+	to_array: function(options) {
 		options || (options = {});
 
 		var id = this.id()
@@ -51,8 +49,7 @@ var NoteFile = SyncModel.extend({
 		return FileData.prototype.load_contents(id);
 	},
 
-	to_blob: function(options)
-	{
+	to_blob: function(options) {
 		options || (options = {});
 
 		if(this.creating_blob && !options.force) return Promise.reject({in_progress: true});
@@ -62,6 +59,7 @@ var NoteFile = SyncModel.extend({
 			.then(function(array) {
 				var blob = new Blob([array.buffer], {type: this.get('type')});
 				if(!options.force) {
+					this.revoke();
 					this.set({blob_url: URL.createObjectURL(blob)}, options);
 				}
 				return blob;
@@ -71,8 +69,7 @@ var NoteFile = SyncModel.extend({
 			});
 	},
 
-	revoke: function()
-	{
+	revoke: function() {
 		var blob_url = this.get('blob_url');
 		if(!blob_url) return this;
 		URL.revokeObjectURL(blob_url);
@@ -82,6 +79,14 @@ var NoteFile = SyncModel.extend({
 
 	incoming_sync: function(sync_item) {
 		if(sync_item.type != 'file') return;
+		// if we get a `download` sync item, we don't REALLY need to sync
+		// anything, and therefor can skip the this.parent() call into the sync
+		// model's incoming_sync fn (really, we just want to reload the preview
+		// if needed).
+		if(sync_item.action == 'download') {
+			setTimeout(function() { this.trigger('change'); }.bind(this));
+			return;
+		}
 		// guaranteed by some sierra club asshole not to leak a blob URL...
 		// IF you step on it.
 		this.revoke();
