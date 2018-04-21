@@ -18,10 +18,10 @@ var NotesEditController = FormController.extend({
 		'click ul.colors li': 'switch_color',
 		'click .button-row ul a[rel=tag]': 'open_tags',
 		'click .button-row .desc': 'open_tags',
+		'change select[name=board_id]': 'update_selected_id',
 		'change form': 'detect_change',
 		'input form': 'detect_change',
 		'input input[name=url]': 'check_url',
-		'change select[name=board_id]': 'update_selected_id',
 		'click .formatting a[rel=formatting]': 'show_formatting_help',
 		'click .password a.preview': 'toggle_preview_password'
 	},
@@ -214,9 +214,11 @@ var NotesEditController = FormController.extend({
 				}
 				this.modal.set_title(title + ' <strong>*</strong>', set_back && turtl.last_url);
 			}
-			this.have_unsaved = true;
-			this.view_state.highlight_button = true;
-			this.render();
+			if(!this.have_unsaved || !this.view_state.highlight_button) {
+				this.have_unsaved = true;
+				this.view_state.highlight_button = true;
+				setTimeout(this.render.bind(this), 10);
+			}
 		}.bind(this);
 		this.bind('unsaved', unsaved);
 		this.with_bind(this.clone, 'change', unsaved);
@@ -246,6 +248,11 @@ var NotesEditController = FormController.extend({
 			.sort(function(a, b) {
 				return a.title.localeCompare(b.title);
 			});
+
+		// only send in note.board_id if the board_id is in the board list
+		var board_exists = boards.filter(function(b) { return b.id == data.board_id; })[0];
+		if(!board_exists) delete data.board_id;
+
 		return this.html(view.render('notes/edit/index', {
 			state: this.view_state,
 			note: data,
