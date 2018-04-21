@@ -1,9 +1,9 @@
 {{#if show_board_selector}}
 	<div class="board">
 		<select name="board_id">
-			<option value="" {{#unless @root.note.board_id}}selected{{/unless}}>{{t 'Select a board'}}</option>
+			<option id="note-editor-blank-board" value="" {{#unless @root.note.board_id}}selected{{/unless}}>{{t 'Select a board'}}</option>
 			{{#each boards}}
-				<option value="{{id}}" {{#equal @root.note.board_id id}}selected{{/equal}}>{{title}}</option>
+				<option id="board-opt-{{id}}" value="{{id}}" {{#equal @root.note.board_id id}}selected{{/equal}}>{{title}}</option>
 			{{/each}}
 		</select>
 	</div>
