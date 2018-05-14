@@ -385,40 +385,6 @@ var turtl = {
 		}.bind(turtl));
 	},
 
-	wipe_local_db: function(options)
-	{
-		options || (options = {});
-
-		turtl.settings.clear();
-		if(!turtl.user.logged_in)
-		{
-			console.log('wipe_local_db only works when logged in. if you know the users ID, you can wipe via:');
-			console.log('window.indexedDB.deleteDatabase("turtl.<userid>")');
-			return false;
-		}
-		turtl.sync.stop();
-		if(turtl.db) turtl.db.close();
-		window.indexedDB.deleteDatabase(dbname(config.api_url, turtl.user.id()));
-		if(turtl.hustle)
-		{
-			turtl.hustle.wipe();
-		}
-		else
-		{
-			window.indexedDB.deleteDatabase('hustle:'+dbname(config.api_url, turtl.user.id()));
-		}
-		turtl.db = null;
-		turtl.hustle = null;
-		if(options.restart)
-		{
-			return turtl.setup_local_db()
-		}
-		else
-		{
-			return Promise.resolve();
-		}
-	},
-
 	loading: function(show)
 	{
 		return false;
