@@ -63,7 +63,7 @@
 	{{else}}
 		<div class="content text">
 			{{#equal note.type 'password'}}
-				<h1 class="main-title password">
+				<h1 dir="auto" class="main-title password">
 					<a href="#" rel="password">
 						{{icon 'lock'}}
 						{{#if note.title}}
@@ -76,15 +76,15 @@
 				<div class="show-password">
 					<form class="standard-form">
 						{{#if note.username}}
-							<input type="text" name="username" value="{{note.username}}" readonly>
+							<input type="text" dir="auto" name="username" value="{{note.username}}" readonly>
 						{{/if}}
-						<input type="password" name="password" value="********" readonly>
+						<input type="password" dir="auto" name="password" value="********" readonly>
 					</form>
 				</div>
 			{{else}}
 				{{#if note.title}}
-					<h1 class="main-title">
-						{{#if note.url}}<a href="{{note.url}}" target="_blank">{{/if}}
+					<h1 dir="auto" class="main-title">
+						{{#if note.url}}<a dir="auto" href="{{note.url}}" target="_blank">{{/if}}
 						{{note.title}}
 						{{#if note.url}}</a>{{/if}}
 					</h1>
