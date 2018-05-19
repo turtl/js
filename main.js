@@ -77,22 +77,16 @@ var turtl = {
 			barfr.barf(msg+': '+derr(err).message);
 		});
 
+		var core_ready_promise = new Promise(function(resolve) {
+			turtl.events.bind_once('core:ready', resolve, 'turtl:main:core-ready');
+		});
+
 		turtl.core = new CoreComm(config.core.adapter, config.core.options);
-		var core_promise = new Promise(function(resolve, reject) {
+		var core_connected_promise = new Promise(function(resolve, reject) {
 			turtl.core.bind('connected', function(yesno) {
 				if(!yesno) return;
 				turtl.core.unbind('connected', 'turtl:init:core-connected');
-				if(localStorage.config_api_url) {
-					App.prototype.set_api_endpoint(localStorage.config_api_url)
-						.then(resolve)
-						.catch(function(err) {
-							barfr.barf(i18next.t('There was a problem setting the API endpoint. Try restarting the app.'));
-							log.error('core: set endpoint: ', derr(err));
-							reject(err);
-						});
-				} else {
-					resolve();
-				}
+				resolve();
 			}, 'turtl:init:core-connected');
 		}.bind(this));
 
@@ -142,8 +136,17 @@ var turtl = {
 			turtl.profile.set_current_space(space_id);
 		});
 
-		return core_promise
+		return Promise.all([core_ready_promise, core_connected_promise])
 			.bind(this)
+			.then(function() {
+				if(!localStorage.config_api_url) return;
+				return App.prototype.set_api_endpoint(localStorage.config_api_url)
+					.catch(function(err) {
+						barfr.barf(i18next.t('There was a problem setting the API endpoint. Try restarting the app.'));
+						log.error('core: set endpoint: ', derr(err));
+						throw err;
+					});
+			})
 			.then(function() {
 				// load the sidebar after we set up the user/profile object
 				turtl.controllers.sidebar = new SidebarController();
@@ -163,6 +166,9 @@ var turtl = {
 
 	dispatch_core_event: function(ev, data) {
 		switch(ev) {
+			case 'messaging:ready':
+				turtl.events.trigger('core:ready');
+				break;
 			case 'user:login':
 				// there is a race condition where we get user:login before the
 				// user object has set logged_in = true, which messes up some of
