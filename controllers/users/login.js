@@ -104,7 +104,7 @@ var UserLoginController = UserBaseController.extend({
 			})
 			.catch(function(err) {
 				this.inp_submit.set('disabled', '');
-				barfr.barf(i18next.t('Login failed'));
+				barfr.barf(i18next.t('Login failed')+' -- '+derr(err));
 				log.error('login error: ', derr(err));
 			})
 			.finally(function() {
