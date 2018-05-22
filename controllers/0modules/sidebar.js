@@ -97,16 +97,21 @@ var SidebarController = Composer.Controller.extend({
 				}.bind(this),
 				sortfn: fuzzy_sort(function(a, b) { return a.get('title', '').localeCompare(b.get('title', '')); }),
 			});
+
+			var render_timer = new Timer(50);
+			this.with_bind(render_timer, 'fired', this.render.bind(this));
+			this.bind('render-async', render_timer.reset.bind(render_timer));
+
 			this.bind('space-filter', function() {
 				this.spaces && this.spaces.refresh({diff_events: false});
-				this.render();
+				this.trigger('render-async');
 			}.bind(this));
 			this.bind('board-filter', function() {
 				this.boards && this.boards.refresh({diff_events: false});
-				this.render();
+				this.trigger('render-async');
 			}.bind(this));
-			this.with_bind(this.boards, ['add', 'remove', 'change'], this.render.bind(this));
-			this.with_bind(this.spaces, ['add', 'remove', 'change'], this.render.bind(this));
+			this.with_bind(this.boards, ['add', 'remove', 'change'], this.trigger.bind(this, 'render-async'));
+			this.with_bind(this.spaces, ['add', 'remove', 'change'], this.trigger.bind(this, 'render-async'));
 			this.bind('release', function() {
 				this.spaces.detach();
 				this.boards.detach();
