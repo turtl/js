@@ -77,7 +77,7 @@ var ExportController = Composer.Controller.extend({
 					log.debug('settings: import: read file: ', backup.length);
 					resolve(JSON.parse(backup));
 				};
-				reader.readAsBinaryString(file);
+				reader.readAsText(file, 'UTF8');
 			});
 		};
 		this.viewstate.importing = true;
