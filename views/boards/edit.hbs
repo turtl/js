@@ -1,8 +1,17 @@
-<input type="text" name="title" value="{{board.title}}" placeholder="{{t 'Board title'}}">
+<input type="text" dir="auto" name="title" value="{{board.title}}" placeholder="{{t 'Board title'}}">
 
-{{#if parent}}
-	<p class="child">
-		{{t 'This board will be nested under "{{parent_title}}"' parent_title=parent.title}}
-	</p>
+{{#if show_move}}
+	<div class="edit-button move">
+		<p>
+			<a href="#move" rel="move">{{t 'Move board to another space'}} &raquo;</a>
+		</p>
+	</div>
+{{/if}}
+{{#if show_delete}}
+	<div class="edit-button delete">
+		<p>
+			<a href="#delete" rel="delete">{{t 'Delete this board'}} &raquo;</a>
+		</p>
+	</div>
 {{/if}}
 

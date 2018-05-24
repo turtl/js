@@ -36,13 +36,14 @@ var NotesEditTagsListController = Composer.Controller.extend({
 		try
 		{
 			var name = Composer.find_parent('ul.tags > li', e.target).getElement('span').get('html').trim();
+			name = decode_entities(name);
 		}
 		catch(_) { return; }
 
 		var tags = this.model.get('tags');
 		var exists = tags.find_by_id(name);
+		console.log('name: ', name, exists);
 
-		var size = tags.size();
 		if(exists) tags.remove(exists);
 		else tags.add(name);
 	}

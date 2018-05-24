@@ -11,7 +11,13 @@ var NotesListController = Composer.ListController.extend({
 		'click .paginate a': 'paginate'
 	},
 
-	view_mode: 'masonry',
+	viewstate: {
+		initial: true,
+		empty: true,
+		no_results: false,
+		mode: 'masonry',
+	},
+
 	masonry: null,
 	masonry_timer: null,
 
@@ -26,17 +32,30 @@ var NotesListController = Composer.ListController.extend({
 
 	init: function()
 	{
-		this.masonry_timer = new Timer(10);
+		this.masonry_timer = new Timer(50);
 		this.with_bind(this.masonry_timer, 'fired', this.update_masonry.bind(this));
 
-		var renderopts = {empty: true};
-		this.bind('list:empty', this.render.bind(this, renderopts));
-		this.bind('list:notempty', this.render.bind(this));
+		this.bind('list:empty', function() {
+			this.viewstate.empty = true;
+			this.render();
+		}.bind(this));
+		this.bind('list:notempty', function() {
+			this.viewstate.empty = false;
+			this.render();
+		}.bind(this));
+		this.bind('run-search', function() {
+			this.trigger.apply(this, ['search'].concat(to_arr(arguments)));
+			this.viewstate.searching = true;
+			this.render();
+		}.bind(this));
+		this.bind('search-reset', function() {
+			this.viewstate.searching = false;
+			this.render();
+		}.bind(this));
 		this.bind('release', function() { this.masonry_timer.unbind(); }.bind(this));
 
 		var resize_timer = new Timer(10);
-		var resize_reset = function()
-		{
+		var resize_reset = function() {
 			resize_timer.reset();
 		}.bind(this);
 		window.addEvent('resize', resize_reset);
@@ -48,8 +67,14 @@ var NotesListController = Composer.ListController.extend({
 
 		this.bind_once('xdom:render', function() {
 			// run an initial search
-			this.do_search().bind(this)
-				.spread(function(ids, tags) {
+			this.do_search()
+				.bind(this)
+				.spread(function(searched_notes, tags, _total) {
+					var ids = searched_notes.map(function(n) { return n.id(); })
+
+					// clear the "initial" state
+					this.viewstate.initial = false;
+
 					// curtail rendering duplicate result sets
 					this._last_search = JSON.stringify(ids);
 
@@ -60,13 +85,16 @@ var NotesListController = Composer.ListController.extend({
 						this.do_search(Object.merge({notify: true}, options));
 					}.bind(this));
 
-					var notes = turtl.profile.get('notes');
-					this.with_bind(notes, ['add', 'change', 'remove', 'reset', 'destroy'], function() {
-						this.trigger('search');
+					var notes = this.notes;
+					notes.reset(searched_notes);
+
+					var search_timer = new Timer(500);
+					this.with_bind(search_timer, 'fired', this.trigger.bind(this, 'search'));
+					this.with_bind(turtl.events, ['sync:update:note'], function() {
+						search_timer.reset();
 					}.bind(this))
-					this.track(turtl.search, function(model, options) {
+					this.track(notes, function(model, options) {
 						options || (options = {});
-						var fragment = options.fragment;
 						// since the search model only deals with IDs, here we pull
 						// out the actual note model from the profile (which was
 						// pre-loaded and decrypted)
@@ -85,43 +113,28 @@ var NotesListController = Composer.ListController.extend({
 					});
 
 					this.with_bind(turtl.search, ['reset'], this.render.bind(this, {}));
-					this.bind('search-done', function(ids, _tags, _total, options) {
+					this.bind('search-done', function(searched_notes, _tags, _total, options) {
 						options || (options = {});
-
-						// curtail rendering duplicate result sets
-						var string_ids = JSON.stringify(ids);
-						if(string_ids == this._last_search) return;
-						this._last_search = string_ids;
-
-						// let render know what's going on
-						if(ids.length == 0) { renderopts.no_results = true; }
-						else { delete renderopts.no_results; }
+						this.notes.reset(searched_notes, options)
+						this.viewstate.no_results = this.notes.size() === 0;
+						this.render();
 
 						// always go back to the top after a search
-						if(options.scroll_to_top)
-						{
-							$E('#wrap').scrollTo(0, 0);
-						}
-
-						// ok, all the notes we found are deserialized and loaded
-						// into mem, so we trigger a reset and the tracker will pick
-						// up on it and re-display the notes
-						turtl.search.trigger('reset');
-					});
-					this.render();
+						if(options.scroll_to_top) $E('#wrap').scrollTo(0, 0);
+					}.bind(this));
 				});
 		}.bind(this));
-		this.render({initial: true});
+		this.render();
 	},
 
-	render: function(options)
+	render: function()
 	{
-		options || (options = {});
+		var empty = this.viewstate.empty && !this.viewstate.searching;
+		var no_results = this.viewstate.no_results && this.viewstate.searching;
 		return this.html(view.render('notes/list', {
-			initial: options.initial,
-			empty: options.no_results ? false : options.empty,
-			no_results: options.no_results,
-			view_mode: this.view_mode,
+			state: this.viewstate,
+			empty: empty,
+			no_results: no_results,
 			show_prev: this.search.page > 1,
 			show_next: ((this.search.page * this.search.per_page) < turtl.search.total),
 		})).bind(this)
@@ -132,19 +145,20 @@ var NotesListController = Composer.ListController.extend({
 	{
 		options || (options = {});
 
-		return turtl.search.search(this.search, {do_reset: true, upsert: options.upsert, silent: true})
+		return turtl.search.search(this.search)
 			.bind(this)
-			.tap(function(res) {
-				return turtl.profile.get('notes').load_and_deserialize(res[0], {silent: true});
+			.spread(function(res, tags, total) {
+				var opts = Object.merge({}, options);
+				return [res, tags, total, opts];
 			})
 			.tap(function(res) {
-				if(options.notify) this.trigger.apply(this, ['search-done'].concat(res).concat([options]));
+				if(options.notify) this.trigger.apply(this, ['search-done'].concat(res));
 			});
 	},
 
 	update_view: function()
 	{
-		switch(this.view_mode)
+		switch(this.viewstate.mode)
 		{
 			case 'masonry':
 				this.masonry_timer.reset();
@@ -160,10 +174,9 @@ var NotesListController = Composer.ListController.extend({
 
 	update_masonry: function()
 	{
-		if(!this.view_mode.match(/^masonry/)) return;
+		if(!this.viewstate.mode.match(/^masonry/)) return;
 
 		if(this.masonry) this.masonry.detach();
-		var start = new Date().getTime();
 		this.masonry = this.note_list.masonry({
 			singleMode: true,
 			resizeable: true,

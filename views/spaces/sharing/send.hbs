@@ -1,0 +1,16 @@
+<input name="title" type="text" placeholder="{{t 'Invite title (shared with invitee)'}}" value="{{t 'Invite to &quot;{{board_title}}&quot;' board_title=space.title}}">
+<input name="email" type="email" placeholder="{{t 'Invitee\'s email address'}}">
+<div class="email-note {{#if email_note_class}}open {{email_note_class}}{{/if}}">
+	<p>{{email_note}}</p>
+</div>
+<select name="role" class="role">
+	{{#each roles}}
+		<option value="{{@key}}" {{#equal @key 'admin'}}selected{{/equal}}>{{@key}} - {{this}}</option>
+	{{/each}}
+</select>
+<input name="passphrase" type="text" placeholder="{{passphrase_holder}}">
+<p>
+	{{t 'This passphrase is used to encrypt the invite. You can communicate it to the invitee via a secure channel (in-person, encrypted email, encrypted chat, etc).'}}
+</p>
+
+

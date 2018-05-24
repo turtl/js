@@ -1,3 +1,14 @@
+{{#if show_board_selector}}
+	<div class="board">
+		<select name="board_id">
+			<option id="note-editor-blank-board" value="" {{#unless @root.note.board_id}}selected{{/unless}}>{{t 'Select a board'}}</option>
+			{{#each boards}}
+				<option id="board-opt-{{id}}" value="{{id}}" {{#equal @root.note.board_id id}}selected{{/equal}}>{{title}}</option>
+			{{/each}}
+		</select>
+	</div>
+{{/if}}
+
 {{#equal-or type 'file' 'image'}}
 	<div class="file-container"></div>
 	{{#equal type 'image'}}
@@ -6,24 +17,29 @@
 {{/equal-or}}
 {{#equal-or type 'image' 'link'}}
 	<input type="text" name="url" value="{{note.url}}" tabindex="1" placeholder="{{#equal note.type "image"}}{{t 'Image URL'}}{{else}}{{t 'URL'}}{{/equal}}">
-	<div class="existing"></div>
+	<div class="existing {{#if state.already_bookmarked}}open{{/if}}">
+		<em>!</em>
+		{{#equal state.already_bookmarked 1}}
+			{{t 'This URL is already bookmarked in another note'}}
+		{{else}}
+			{{t 'This URL is already bookmarked in {{ids_length}} notes' ids_length=state.already_bookmarked}}
+		{{/equal}}
+	</div>
 {{/equal-or}}
 
-<input type="text" name="title" value="{{note.title}}" tabindex="2" placeholder="{{t 'Title'}}">
+<input type="text" dir="auto" name="title" value="{{note.title}}" tabindex="2" placeholder="{{t 'Title'}}">
 {{#equal type 'password'}}
-	<input type="text" name="username" value="{{note.username}}" tabindex="3" placeholder="{{t 'Username'}}">
+	<input type="text" dir="auto" name="username" value="{{note.username}}" tabindex="3" placeholder="{{t 'Username'}}">
 	<div class="password">
 		<a class="preview" href="#preview">{{icon 'preview'}}</a>
-		<input type="password" name="password" value="{{note.password}}" tabindex="4" placeholder="{{t 'Password'}}">
+		<input type="password" dir="auto" name="password" value="{{note.password}}" tabindex="4" placeholder="{{t 'Password'}}">
 	</div>
 {{/equal}}
 
-<textarea name="text" rows="1" cols="80" tabindex="5" placeholder="{{t 'Note text'}}">{{note.text}}</textarea>
+<textarea dir="auto" name="text" rows="1" cols="80" tabindex="5" placeholder="{{t 'Note text'}}" {{#if state.text_height}}style="height: {{state.text_height}}px;"{{/if}}>{{note.text}}</textarea>
 <div class="formatting clear">
 	<a href="#formatting" rel="formatting">{{t 'Formatting help'}}</a>
 </div>
-
-<div class="boards-container"></div>
 
 {{!--	Disable colors for now ='[
 <ul class="colors">

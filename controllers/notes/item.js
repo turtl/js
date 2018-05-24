@@ -80,11 +80,12 @@ var NotesItemController = NoteBaseController.extend({
 				var load_img = function(img_tag)
 				{
 					return new Promise(function(resolve, reject) {
-						if(img_tag.complete || (img_tag.naturalWidth && img_tag.naturalWidth > 0))
-						{
+						if(img_tag.complete || (img_tag.naturalWidth && img_tag.naturalWidth > 0)) {
 							return resolve();
 						}
-						img_tag.onload = resolve;
+						var loader = new Image();
+						loader.onload = resolve;
+						loader.src = img_tag.get('src');
 					});
 				};
 				var set_height = function()

@@ -1,0 +1,42 @@
+<input type="text" dir="auto" name="title" value="{{space.title}}" placeholder="{{t 'Space title'}}" {{#unless can_edit}}disabled{{/unless}}>
+{{#if can_edit}}
+	<p class="color">
+		<label>
+			<input type="color" name="color" value="{{color}}">
+			{{t 'Select the color for this space'}}
+		</label>
+	</p>
+{{/if}}
+
+{{#unless shared}}
+	<p class="default">
+		<label>
+			<input type="checkbox" name="default" value="1" {{#if is_default}}checked{{/if}}>
+			{{t 'Set this as your default space'}}
+		</label>
+	</p>
+	{{#unless is_new}}
+		<p class="share">
+			<a href="/spaces/{{space.id}}/sharing" rel="share">{{t 'Share this space &raquo;'}}</a>
+		</p>
+	{{/unless}}
+{{/unless}}
+
+{{#if show_delete}}
+	<div class="delete">
+		<p>
+			{{#if last_space}}
+				<span class="last">
+					{{t 'This is your last space, and cannot be deleted.'}}
+				</span>
+			{{else}}
+				{{#if shared}}
+					<a href="#leave" rel="leave">{{t 'Leave this space &raquo;'}}</a>
+				{{else}}
+					<a href="#delete" rel="delete">{{t 'Delete this space &raquo;'}}</a>
+				{{/if}}
+			{{/if}}
+		</p>
+	</div>
+{{/if}}
+

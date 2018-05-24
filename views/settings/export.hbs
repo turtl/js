@@ -1,0 +1,41 @@
+<div class="content">
+	<section class="export">
+		<div class="buttons">
+			<div class="button {{#if state.exporting}}disabled{{/if}}">
+				<span>{{t 'Export'}}</span>
+			</div>
+			<p class="load {{#if state.exporting}}active{{/if}}">{{svg 'loading'}}</p>
+		</div>
+		<p class="progress">
+			{{t 'This process can take a while.'}}
+		</p>
+	</section>
+
+	<section class="import">
+		<form>
+			<input type="file" name="file">
+			<div class="action">
+				<label>
+					<input type="radio" name="action" value="restore" checked>{{t 'Only import items missing from current profile'}}
+				</label>
+				<label>
+					<input type="radio" name="action" value="replace">{{t 'Import everything, overwriting current items'}}
+				</label>
+				<label>
+					<input type="radio" name="action" value="full">{{t 'Completely wipe current profile before importing'}}
+				</label>
+			</div>
+			<div class="buttons">
+				<div class="button">
+					<input {{#if state.importing}}disabled{{/if}} type="submit" class="button" value="Import">
+				</div>
+				<p class="load {{#if state.importing}}active{{/if}}">{{svg 'loading'}}</p>
+			</div>
+			{{#if state.importing}}
+				<div class="status">
+					{{t 'Imported {{count}} items' count=state.import_count}}
+				</div>
+			{{/if}}
+		</form>
+	</section>
+</div>

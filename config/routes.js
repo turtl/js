@@ -2,22 +2,19 @@ config.routes = {
 	'/users/login': ['users', 'login'],
 	'/users/welcome': ['users', 'welcome'],
 	'/users/join': ['users', 'join'],
+	'/users/migrate': ['users', 'migrate'],
 	'/users/logout': ['users', 'logout'],
 
-	'/boards': ['boards', 'index'],
-	'/boards/([0-9a-f]+)/notes': ['boards', 'notes'],
-	'/boards/share/([0-9a-f]+)': ['boards', 'sharing'],
+	'/spaces/:space_id/notes': ['notes', 'index'],
+	'/spaces/:space_id/boards/:board_id/notes': ['boards', 'notes'],
+	'/spaces/:space_id/sharing': ['spaces', 'sharing'],
+	'/invites': ['invites', 'index'],
 
 	'/settings': ['settings', 'index'],
 	'/settings/password': ['settings', 'password'],
 	'/settings/delete-account': ['settings', 'delete_account'],
-
-	'/personas': ['personas', 'index'],
-	'/personas/join': ['personas', 'join'],
-
-	'/sharing': ['sharing', 'index'],
-
-	'/sync': ['sync', 'index'],
+	'/settings/sync': ['settings', 'sync'],
+	'/settings/export': ['settings', 'export'],
 
 	'/feedback': ['feedback', 'index'],
 

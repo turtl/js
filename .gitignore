@@ -2,10 +2,8 @@
 config/config.js
 node_modules
 index.html
-*.css
-!reset.css
-library/templates.js
-library/svg-icons.js
+build/
 turtl.min.js
 *.stackdump
+sess.vim
 

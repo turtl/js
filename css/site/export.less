@@ -1,0 +1,29 @@
+@import '../variables';
+
+.export-page {
+	h1 {margin: 0 0 4px 0; text-align: center;}
+	h3 {text-align: center;}
+	section.export, section.import {
+		& {margin: 0 0 16px 0; padding: 10px; text-align: center; .card();}
+		.type {padding: 8px;}
+		input[type=file] {max-width: 400px; margin: 0 auto 8px auto; padding: 0 0 4px 0;}
+		.buttons {margin: 0 0 8px 0;}
+		p:not(.load) {margin: 0; padding: 0;}
+	}
+
+	.import {
+		.action {display: flex; flex-direction: column; align-items: flex-start; width: 70%; margin: 0 auto 16px auto;}
+		.action {
+			label {display: block;}
+		}
+	}
+	p.load {display: inline-block; visibility: hidden; width: 0; margin: 0 0 0 6px; padding: 0 0 0 0; vertical-align: middle; overflow: visible;}
+	p.load {
+		&.active {visibility: visible;}
+		svg {width: 24px; height: 24px;}
+		svg {
+			path {fill: @theme_accent;}
+		}
+	}
+}
+

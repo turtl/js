@@ -1,0 +1,52 @@
+<p>{{t 'Your account needs to be upgraded! Please enter your Turtl login info.'}}</p>
+<input type="text" name="v6_username" placeholder="{{t 'Email'}}" value="{{state.username}}" tabindex="1" autocomplete="off" autocorrect="off" autocapitalize="off">
+<input type="password" name="v6_password" placeholder="{{t 'Passphrase'}}" value="{{state.password}}" autocomplete="off" autocorrect="off" tabindex="2">
+
+<br>
+<br>
+<p>{{t 'Create a new account to migrate your data into.'}}</p>
+<input id="inp_email" type="email" name="username" placeholder="{{t 'New email address'}}" tabindex="4" autocomplete="off" autocorrect="off" autocapitalize="none" autocorrect="off" tabindex="4">
+<input id="inp_pass" type="password" name="password" placeholder="{{t 'Passphrase'}}" autocomplete="off" autocorrect="off" tabindex="5">
+<input id="inp_conf" type="password" name="confirm" placeholder="{{t 'Confirm passphrase'}}" autocomplete="off" autocorrect="off" tabindex="6">
+<div class="strength {{state.strength_class}}">
+	<div class="progress-bar">
+		<div class="inner" style="width: {{state.strength_width}}%;">&nbsp;</div>
+	</div>
+	<p>{{t 'Passphrase strength: '}}<span class="status">{{state.strength_text}}</span></p>
+</div>
+
+{{#if show_autologin}}
+	<div class="autologin">
+		<label>
+			<input type="checkbox" name="autologin" value="1" {{#if autologin}}checked{{/if}}>
+			{{t 'Stay logged in'}}
+		</label>
+	</div>
+{{/if}}
+
+<div class="buttons">
+	<div class="button login">
+		<input type="submit" class="button" value="{{t 'Migrate'}}">
+	</div>
+	<p class="load">
+		{{svg 'loading'}}
+	</p>
+	<p>
+		<a href="/users/login">{{t 'Login to an existing account'}}</a>
+	</p>
+</div>
+
+<a class="open-settings {{#if state.settings}}active{{/if}}" href="#settings">{{t 'Advanced settings'}} {{icon 'more'}}</a>
+<div class="settings-container old-server {{#if state.settings}}active{{/if}}">
+	<p class="settings">
+		<label>
+			{{t 'Old Turtl server'}}
+			<input type="text" name="old_server" value="{{state.old_endpoint}}" placeholder="https://api.turtlapp.com/v2">
+		</label>
+		<label>
+			{{t 'Turtl server'}}
+			<input type="text" name="server" value="{{state.endpoint}}" placeholder="https://api.turtlapp.com/v3">
+		</label>
+	</p>
+</div>
+

@@ -1,0 +1,15 @@
+<p>
+	{{t 'Select the space to move to:'}}
+</p>
+<div class="space">
+	<select name="space_id">
+		{{#each spaces}}
+			<option value="{{id}}" {{#equal @root.board.space_id id}}selected{{/equal}}>{{title}}</option>
+		{{/each}}
+	</select>
+</div>
+
+<p class="form-note">
+	{{t 'Note that when you move a board to another space, all of its notes will be moved with it.'}}
+</p>
+

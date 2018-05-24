@@ -4,23 +4,35 @@ var BoardsEditController = FormController.extend({
 	},
 
 	events: {
+		'click a[rel=move]': 'move_board',
+		'click a[rel=delete]': 'delete_board',
 	},
 
 	modal: null,
 	model: null,
+	space: null,
 	formclass: 'boards-edit',
 
-	init: function()
-	{
+	init: function() {
 		if(!this.model) this.model = new Board();
-		this.action = this.model.is_new() ? 'Create': 'Edit';
+		this.space = this.model.get_space() || turtl.profile.current_space();
 
-		var child = '';
-		if(this.model.get('parent_id')) child = ' nested';
+		var perm_map = {
+			add: Permissions.permissions.add_board,
+			edit: Permissions.permissions.edit_board,
+		};
+		if(!permcheck(this.space, perm_map[this.model.is_new() ? 'add' : 'edit'])) return this.release();
+
+		var title = this.model.is_new() ?
+			i18next.t('Create board in {{space}}', {space: this.space.get('title')}) :
+			i18next.t('Edit board');
+		this.action = this.model.is_new() ?
+			i18next.t('Create') :
+			i18next.t('Edit');
 
 		this.modal = new TurtlModal({
 			show_header: true,
-			title: this.action + child + ' board'
+			title: title,
 		});
 
 		this.parent();
@@ -32,55 +44,67 @@ var BoardsEditController = FormController.extend({
 		this.bind(['cancel', 'close'], close);
 	},
 
-	render: function()
-	{
-		var parent = null, parent_id = null;
-		if(parent_id = this.model.get('parent_id'))
-		{
-			parent = turtl.profile.get('boards').find_by_id(parent_id).toJSON();
-		}
+	render: function() {
+		var show_move = !this.model.is_new()
+			&& this.space.can_i(Permissions.permissions.delete_board);
+		var show_delete = !this.model.is_new()
+			&& this.space.can_i(Permissions.permissions.delete_board);
 		this.html(view.render('boards/edit', {
 			action: this.action,
 			board: this.model.toJSON(),
-			parent: parent
+			show_move: show_move,
+			show_delete: show_delete,
 		}));
-		if(this.model.is_new())
-		{
+		if(this.model.is_new()) {
 			this.inp_title.focus.delay(300, this.inp_title);
 		}
 	},
 
-	submit: function(e)
-	{
+	submit: function(e) {
 		if(e) e.stop();
 		var title = this.inp_title.get('value').toString().trim();
 
-		var errors = [];
-		if(!title) errors.push(i18next.t('Please give your board a title'));
-
-		if(errors.length)
-		{
-			barfr.barf(errors.join('<br>'));
-			return;
-		}
-
-		this.model.create_or_ensure_key(null, {silent: true});
 		var clone = this.model.clone();
 		clone.set({title: title});
 		clone.save()
 			.bind(this)
 			.then(function() {
 				this.model.set(clone.toJSON());
-
-				// add the board to our main board list
 				turtl.profile.get('boards').upsert(this.model);
-
 				this.trigger('close');
+				turtl.route('/spaces/'+this.space.id()+'/boards/'+this.model.id()+'/notes');
 			})
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', i18next.t('There was a problem updating that board'), err);
 				log.error('board: edit: ', this.model.id(), derr(err));
 			});
-	}
+	},
+
+	move_board: function(e) {
+		if(e) e.stop();
+		this.trigger('close');
+		new BoardsMoveController({
+			model: this.model,
+		});
+	},
+
+	delete_board: function(e) {
+		if(e) e.stop();
+		if(!permcheck(this.space, Permissions.permissions.delete_board)) return;
+		if(!confirm(i18next.t('Really delete this board and all of its notes?'))) return;
+		var board_id = this.model.id();
+		this.model.destroy({delete_notes: true})
+			.bind(this)
+			.then(function() {
+				if(turtl.param_router.get().board_id == board_id) {
+					turtl.route('/spaces/'+this.space.id()+'/notes');
+				}
+				this.trigger('close');
+			})
+			.catch(function(err) {
+				log.error('board: delete: ', derr(err));
+				barfr.barf(i18next.t('There was a problem deleting your board: {{message}}', {message: err.message}));
+			});
+	},
 });
 

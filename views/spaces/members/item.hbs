@@ -1,0 +1,17 @@
+<div class="share-actions"></div>
+<h2>{{email}}</h2>
+<p {{#if edit_mode}}class="editing"{{/if}}>
+	{{#if edit_mode}}
+		<select name="role">
+			{{#each roles}}
+				<option value="{{@key}}" {{#equal @key @root.role}}selected{{/equal}}>{{@key}}</option>
+			{{/each}}
+		</select>
+		<a href="#save">{{t 'Save'}}</a> |
+		<a href="#cancel">{{t 'Cancel'}}</a>
+	{{else}}
+		{{role}}
+	{{/if}}
+	{{#if is_me}} - <em>{{t 'You'}}</em>{{/if}}
+</p>
+

@@ -63,7 +63,6 @@ var ItemActionsController = Composer.Controller.extend({
 	open: function(e)
 	{
 		if(e) e.stop();
-		var came_from_actions = turtl.router.cur_path().match('-actions:/menu');
 		turtl.events.trigger('menu:open', this.cid());
 		this.container.addClass('open');
 		this.menu.setStyles({height: 'auto'});

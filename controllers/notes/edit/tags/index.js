@@ -16,12 +16,16 @@ var NotesEditTagsController = FormController.extend({
 	clone: null,
 	formclass: 'notes-edit-tags',
 	button_tabindex: 3,
-	action: 'Done',
 
 	collection: null,
 
 	init: function()
 	{
+		// don't allow multiple tag windows
+		turtl.events.trigger('notes:edit:tags:open');
+		this.with_bind(turtl.events, 'notes:edit:tags:open', this.trigger.bind(this, 'close'));
+
+		if(!this.action) this.action = i18next.t('Done');
 		this.clone = this.model.clone();
 		this.collection = new Tags();
 
@@ -62,8 +66,10 @@ var NotesEditTagsController = FormController.extend({
 
 	load_suggested_tags: function()
 	{
-		var boards = this.clone.get('boards') || [];
-		return turtl.search.search({boards: boards}).bind(this)
+		var space = turtl.profile.current_space();
+		var space_id = space && space.id();
+		var board_id = this.clone.get('board_id');
+		return turtl.search.search({space: space_id, board: board_id}).bind(this)
 			.spread(function(_, suggested_tags) {
 				var mtags = this.clone.get('tags');
 				suggested_tags = suggested_tags

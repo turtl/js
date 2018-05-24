@@ -13,7 +13,6 @@ var PagesController = Composer.Controller.extend({
 		options || (options = {});
 
 		var main_sel = turtl.main_container_selector;
-		var main = document.getElement(main_sel);
 
 		this.trigger('start');
 		if(!options.force_reload && this.is(controller_class))

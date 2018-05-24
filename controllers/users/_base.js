@@ -7,6 +7,10 @@ var UserBaseController = FormController.extend({
 		'change input[name=autologin]': 'toggle_autologin'
 	},
 
+	viewstate: {
+		endpoint: '',
+	},
+
 	init: function()
 	{
 		this.parent();
@@ -36,15 +40,45 @@ var UserBaseController = FormController.extend({
 		}
 	},
 
+	toggle_settings: function(e) {
+		if(e) e.stop();
+
+		this.viewstate.settings = !this.viewstate.settings;
+		this.render();
+	},
+
 	save_login: function()
 	{
-		if(!this.autologin()) return;
-		var authdata = {
-			uid: turtl.user.id(),
-			key: tcrypt.key_to_string(turtl.user.key),
-			auth: turtl.user.auth
-		};
-		turtl.events.trigger('auth:save-login', authdata);
-	}
+		if(!this.autologin()) return Promise.resolve();
+		return turtl.core.send('user:get-login-token')
+			.then(function(token) {
+				turtl.events.trigger('auth:save-login', token);
+			});
+	},
+
+	persist_new_api: function(endpoint) {
+		if(!endpoint) return Promise.resolve();
+		endpoint = endpoint.replace(/\/+$/, '');
+		log.debug('user: persisting api url');
+		localStorage.config_api_url = endpoint;
+		this.viewstate.endpoint = endpoint;
+		return App.prototype.set_api_endpoint(endpoint)
+	},
+
+	persist_old_api: function(endpoint) {
+		if(!endpoint) return Promise.resolve();
+		endpoint = endpoint.replace(/\/+$/, '');
+		log.debug('user: persisting old api url');
+		localStorage.config_old_api_url = endpoint;
+		this.viewstate.old_endpoint = endpoint;
+		return App.prototype.set_old_api_endpoint(endpoint)
+	},
+
+	persist_endpoint: function(endpoint, old_endpoint) {
+		return Promise.all([
+			this.persist_new_api(endpoint),
+			this.persist_old_api(old_endpoint),
+		]);
+	},
 });
 

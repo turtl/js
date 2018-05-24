@@ -1,0 +1,22 @@
+<div class="sync-item">
+	<div class="share-actions"></div>
+	<h2>
+		{{sync.type}}
+		<small>({{sync.action_text}} - {{ago-time created}})</small>
+	</h2>
+	{{#if sync.frozen}}
+		<p class="frozen">{{t 'Frozen - This item is blocking syncing. Fix by unfreezing or deleting.'}}</p>
+		{{#if sync.error}}
+			<p class="sync-error">
+				{{t '<strong>Error:</strong> {{errmsg}} ({{errcode}})' errmsg=sync.error.msg errcode=sync.error.code}}
+			</p>
+		{{/if}}
+	{{else}}
+		{{#if sync.blocked}}
+			<p class="blocked">{{t 'Blocked by frozen syncs.'}}</p>
+		{{else}}
+			<p class="ready">{{t 'Ready to sync'}}</p>
+		{{/if}}
+	{{/if}}
+</div>
+

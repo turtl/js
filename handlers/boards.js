@@ -1,43 +1,19 @@
 var boards = {
-	index: function()
-	{
-		var slide = false;
-		var page_con = turtl.controllers.pages.get_subcontroller('sub');
-		if((page_con instanceof NotesIndexController || page_con instanceof BoardsShareController) && page_con.board_id != 'all')
-		{
-			slide = 'right';
-		}
-		turtl.back.clear();
-		turtl.controllers.pages.load(BoardsController, {}, {
-			slide: slide
-		});
-	},
-
-	notes: function(board_id)
-	{
+	notes: function() {
+		if(!turtl.route_changed() && turtl.controllers.pages.is(NotesIndexController)) return;
+		var params = turtl.param_router.get();
+		var space_id = params.space_id;
+		var board_id = params.board_id;
 		var force_reload = false;
-		var page_con = turtl.controllers.pages.get_subcontroller('sub') || {board_id: board_id};
+		var page_con = turtl.controllers.pages.sub('sub') || {board_id: board_id};
 		if(page_con.board_id != board_id) force_reload = true;
+		if((page_con.search || {}).space != space_id) force_reload = true;
 
 		turtl.back.push(turtl.route.bind(turtl, '/boards'));
 		turtl.controllers.pages.load(NotesIndexController, {board_id: board_id}, {
 			force_reload: force_reload,
-			slide: turtl.controllers.pages.is([BoardsController, SharingController]) ? 'left' : null
+			slide: false,
 		});
 	},
-
-	sharing: function(board_id)
-	{
-		var page_con = turtl.controllers.pages.get_subcontroller('sub');
-		var slide = false;
-		if(page_con instanceof BoardsController)
-		{
-			slide = 'left';
-		}
-		turtl.back.push(turtl.route.bind(turtl, '/boards'));
-		turtl.controllers.pages.load(BoardsShareController, {board_id: board_id}, {
-			slide: slide
-		});
-	}
 };
 

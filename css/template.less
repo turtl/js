@@ -1,16 +1,15 @@
 @import 'variables';
 
-html {font-size: 1px;}
-html, body {width: 100%; height: 100%;}
 html {
 	-ms-touch-action: manipulation;
 	touch-action: manipulation;
 	//overflow: -moz-scrollbars-vertical;
 	//overflow-y: scroll;
 }
+html, body {width: 100%; height: 100%;}
 
 // width testing
-#wrap:after {display: none; content: " "; position: absolute; z-index: 9999; top: 0; left: 0; width: 318rem; height: 10rem; background: black; border: 1rem solid blue;}
+#wrap:after {display: none; content: " "; position: absolute; z-index: 9999; top: 0; left: 0; width: 318px; height: 10px; background: black; border: 1px solid blue;}
 
 ::selection {background: #bfe1de;}
 ::-moz-selection {background: #bfe1de;}
@@ -20,90 +19,89 @@ html {
 }
 *:focus {outline: 0;}
 
-body {font-size: 10rem; font-family: 'raleway', helvetica, arial, sans-serif; background: @theme_gutter;}
+body {font-size: 10px; font-family: 'Noto Sans', helvetica, arial, sans-serif; background: @theme_gutter;}
 
 a { text-decoration: none; }
-
-/* custom font(s) */
-@font-face {font-family: 'Entypo'; font-weight: 400; src: url(../images/font/turtl-icons.ttf);}
-@font-face {font-family: 'Raleway'; font-style: normal; font-weight: 400; src: local('Raleway'), url(../images/font/raleway.woff) format('woff');}
-@font-face {font-family: 'Raleway'; font-style: normal; font-weight: 600; src: local('Raleway SemiBold'), local('Raleway-SemiBold'), url(../images/font/raleway-semibold.woff) format('woff');}
 
 //#wrap {position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: scroll;}
 #wrap {height: 100%; overflow-y: scroll; overflow-x: hidden;}
 #app {.transition(left .3s);}
-#main {position: relative; left: 0; z-index: 5; padding: (@header_height + @nav_height) 0 80rem 0; .transition(left 0.3s);}
+#main {position: relative; left: 0; z-index: 5; padding: @header_height 0 80px 0; .transition(left 0.3s);}
 body.loggedout #main {padding-top: @header_height;}
-#main > div,
-#tmp-slide > div {padding-top: @page_top_padding;}
 
-@header_pad_top: 4rem;
+@header_pad_top: 4px;
 @header_adjusted: (@header_height - @header_pad_top);
 
-header {position: fixed; .fixed-fix(); z-index: 14; width: 100%; height: @header_adjusted; margin: 0 0 0 0; padding: @header_pad_top 0 0 0; background: @theme_black_bg;}
+header {position: fixed; .fixed-fix(); z-index: 14; width: 100%; height: @header_height; margin: 0 0 0 0; padding: 0 0 0 0; background: @theme_black_bg;}
 header.under {z-index: 10;}
 header {
-	a.logo {position: absolute; display: block; width: 60rem; height: 28rem; margin: 3rem 0 0 0;}
+	> div {display: flex; align-items: center; justify-content: space-between; width: 100%; flex-basis: 100%; height: @header_height;}
+	.title {display: flex; align-items: center; justify-content: flex-start;}
+	// this min-width keeps the logo/title from smashing against each other when the title is shorter. 
+	.title {min-width: 200px;}
+	a.logo {display: flex; align-items: center; flex-basis: 60px; flex-shrink: 0; width: 60px; height: 28px; margin: -1px 0 0 0;}
 	a.logo {
-		img {position: relative; z-index: 2; max-width: 100%; height: 100%; margin: 0 0 0 8rem;}
-		icon {position: absolute; z-index: 1; margin: 6rem 0 0 -14rem; font-size: 28.5rem; color: #8fc46a; .transition(margin-left .3s);}
+		img {position: relative; z-index: 2; max-width: 100%; height: 100%; margin: -1px 0 0 8px;}
+		icon {position: relative; z-index: 1; margin: 0px 0 0 -14px; font-size: 28.5px; color: #8fc46a; .transition(margin-left .3s);}
 	}
-	a.logo:before {content: " "; position: fixed; opacity: 0; z-index: 4; top: 26rem; left: 8rem; width: 12rem; height: 12rem; background: @theme_warn; border-radius: 6rem; .transition(opacity .3s);}
+	a.logo:before {content: " "; position: fixed; opacity: 0; z-index: 4; top: 26px; left: 8px; width: 12px; height: 12px; background: @theme_warn; border-radius: 6px; .transition(opacity .3s);}
 	.notify {
 		a.logo:before {opacity: 1;}
 	}
 	.has-back {
-		h1 {margin-left: 10rem;}
+		h1 {margin-left: 10px;}
 		a.logo {display: none;}
 	}
 
-	h1 {position: absolute; width: 70%; margin: 1rem 0 0 60rem; text-align: left; font-weight: normal; font-size: 1.6em; line-height: 1.2em;}
+	h1 {display: flex; align-items: center; flex-grow: 1; min-width: 100px; height: @header_height; margin: 0 0 0 0; text-align: left; font-weight: normal; font-size: 1.6em; line-height: 1.2em; .ellipsis();}
 	h1 {
-		em {color: #8fc46a;}
-		em {
-			> span,
-			a {display: inline-block; max-width: 100%; margin: 0 0 0 -10rem; padding: 7rem 0 7rem 10rem; color: #8fc46a; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}
-			a icon {vertical-align: -12%; margin-right: 8rem; color: #8fc46a; font-size: 1.4em;}
+		> span,
+		> a {display: block; max-width: 100%; color: @theme_primary; .ellipsis();}
+		> a {
+			icon {vertical-align: -12%; margin-right: 8px; color: #8fc46a; font-size: 1.4em;}
+			span {display: flex; flex-wrap: nowrap; align-items: center;}
+		}
+		space {display: block; max-width: 90px; margin: -2px 6px 0 0; padding: 2px 6px; font-size: 14px; cursor: pointer; .ellipsis(); border-radius: 3px;}
+		space {
+			&.light {color: #eee;}
+			&.dark {color: @theme_black_bg;}
 		}
 	}
-	ul.actions {position: absolute; top: 0; right: 0; height: @header_height; list-style: none; .transition(top .3s);}
+	ul.actions {display: flex; flex-wrap: nowrap; height: @header_height; margin-right: 8px; list-style: none;}
 	ul.actions {
-		> li {display: inline-block; width: 44rem; height: @header_height; vertical-align: top;}
+		> li {display: inline-block; min-width: 22px; height: @header_height; vertical-align: top;}
 		> li {
 			&.mod {position: relative;}
-			&.mod:after {display: block; content: " "; position: absolute; top: 6rem; right: 6rem; width: 10rem; height: 10rem; margin: 0 0 0 0; background: @theme_warn; border-radius: 5rem;}
+			&.mod:after {display: block; content: " "; position: absolute; top: 6px; right: 0; width: 10px; height: 10px; margin: 0 0 0 0; background: @theme_warn; border-radius: 5px;}
+			&.mod.bottom:after {top: auto; bottom: 8px; right: 2px;}
 
-			> a {display: inline-block; width: @header_adjusted; height: @header_adjusted; line-height: 42rem; text-align: center;}
+			&.notification {margin-right: 6px;}
+
+			a {min-width: 36px;}
+			> a {display: inline-block; height: @header_adjusted; line-height: 42px; text-align: center;}
 			> a {
-				icon {font-size: 22rem; color: #eee; vertical-align: middle;}
-				icon.info {font-size: 20rem;}
+				icon {font-size: 22px; color: #eee; vertical-align: middle;}
+				icon.info {font-size: 20px;}
 			}
 			.item-actions {
-				> a {width: @header_height; height: @header_height; margin: 2rem 0 0 0; line-height: @header_height; text-align: center;}
+				> a {height: @header_height; margin: 2px 0 0 0; line-height: @header_height; text-align: center;}
 				> a icon {color: #eee;}
-				> .menu {top: 8rem; right: 8rem;}
+				> .menu {top: 8px; right: 8px;}
 			}
 		}
 	}
 }
 
-footer {display: block; margin: 32rem 0 0 0; padding: 16rem; font-size: 10rem; color: #777; text-align: right;}
+footer {display: block; margin: 32px 0 0 0; padding: 16px; font-size: 10px; color: #777; text-align: right;}
 
 /* settings menu slide in */
 body.settings {
-	header a.logo icon {margin-left: -20rem;}
+	header a.logo icon {margin-left: -20px;}
 }
 
 /* body page slide shite */
-#tmp-slide {position: absolute; margin-top: (@header_height + @nav_height); display: none; width: 100%; overflow-y: scroll; .transition(left 0.3s);}
+#tmp-slide {position: absolute; margin-top: @header_height; display: none; width: 100%; overflow-y: scroll; .transition(left 0.3s);}
 body.loggedout #tmp-slide {margin-top: @header_height;}
 body.page-slide {overflow: hidden;}
 body.page-slide #tmp-slide {display: block;}
 
-body.settings,
-body.modal:not(.search) {
-	//#wrap {height: 100%; overflow: hidden;}
-}
-
-//body.settings,
-//body.modal {overflow-y: hidden !important;}

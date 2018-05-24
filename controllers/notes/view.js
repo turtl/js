@@ -39,18 +39,25 @@ var NotesViewController = NoteBaseController.extend({
 			this.release();
 			throw new Error('notes: view: no model passed');
 		}
-		var actions = [];
-		if(!this.hide_actions)
-		{
-			actions = [
-				{name: 'menu', actions: [/*{name: 'Edit'},*/ {name: 'Delete'}]}
-			];
-		}
+		var space = turtl.profile.current_space();
+
 		this.modal = new TurtlModal(Object.merge({
 			show_header: true,
 			title: this.title,
-			actions: actions
+			actions: []
 		}, this.modal_opts && this.modal_opts() || {}));
+		var setup_actions = function() {
+			var actions = [];
+			if(!this.hide_actions) {
+				if(space.can_i(Permissions.permissions.delete_note)) {
+					actions.push({name: 'menu', actions: [{name: 'Delete'}]});
+				}
+			}
+			this.modal.actions = actions;
+			this.modal.render_header();
+		}.bind(this);
+		setup_actions();
+		this.with_bind(space.get('members'), ['change', 'reset'], setup_actions);
 		this.render();
 
 		var close = this.modal.close.bind(this.modal);
@@ -62,9 +69,7 @@ var NotesViewController = NoteBaseController.extend({
 		this.with_bind(this.model.get('file'), 'change', this.render.bind(this));
 		this.with_bind(this.model, 'destroy', close);
 		this.with_bind(this.modal, 'header:menu:fire-action', function(action) {
-			switch(action)
-			{
-				case 'edit': this.open_edit(); break;
+			switch(action) {
 				case 'delete': this.open_delete(); break;
 			}
 		}.bind(this));
@@ -100,12 +105,18 @@ var NotesViewController = NoteBaseController.extend({
 		// set up the action button
 		if(!this.hide_actions)
 		{
-			this.track_subcontroller('actions', function() {
-				var actions = new ActionController({inject: this.modal.el});
-				actions.set_actions([{title: i18next.t('Edit note'), name: 'edit', icon: 'edit'}]);
-				this.with_bind(actions, 'actions:fire', this.open_edit.bind(this, null));
-				return actions;
-			}.bind(this));
+			var button_actions = [];
+			if(space.can_i(Permissions.permissions.edit_note)) {
+				button_actions.push({title: i18next.t('Edit note'), name: 'edit', icon: 'edit'});
+			}
+			if(button_actions.length > 0) {
+				this.track_subcontroller('actions', function() {
+					var actions = new ActionController({inject: this.modal.el});
+					actions.set_actions(button_actions);
+					this.with_bind(actions, 'actions:fire', this.open_edit.bind(this, null));
+					return actions;
+				}.bind(this));
+			}
 		}
 
 		this.parent();
@@ -118,12 +129,10 @@ var NotesViewController = NoteBaseController.extend({
 	{
 		var type = this.model.get('type');
 		var note = this.model.toJSON();
-		if(type == 'image' && !note.url && !(note.file || {}).name)
-		{
+		if(type == 'image' && !note.url && !(note.file || {}).name) {
 			type = 'text';
 		}
-		if(note.file)
-		{
+		if(note.file) {
 			note.file.blob_url = this.model.get('file').get('blob_url');
 			if(note.file.meta && note.file.meta.width && note.file.meta.height)
 			{
@@ -131,12 +140,12 @@ var NotesViewController = NoteBaseController.extend({
 			}
 		}
 		var show_info = false;
-		if(note.boards.length || note.tags.length) show_info = true;
+		if(note.board_id || note.tags.length) show_info = true;
 		var type_content = view.render('notes/types/'+type, {
 			note: note,
 			show_info: show_info
 		});
-		this.html(view.render('notes/view', {
+		return this.html(view.render('notes/view', {
 			note: note,
 			content: type_content
 		})).bind(this)
@@ -176,6 +185,8 @@ var NotesViewController = NoteBaseController.extend({
 	open_edit: function(e)
 	{
 		if(e) e.stop();
+		var space = turtl.profile.current_space();
+		if(!permcheck(space, Permissions.permissions.edit_note)) return;
 		new NotesEditController({
 			model: this.model
 		});
@@ -184,6 +195,8 @@ var NotesViewController = NoteBaseController.extend({
 	open_delete: function(e)
 	{
 		if(e) e.stop();
+		var space = turtl.profile.current_space();
+		if(!permcheck(space, Permissions.permissions.delete_note)) return;
 		if(!confirm(i18next.t('Really delete this note?'))) return false;
 		this.model.destroy()
 			.catch(function(err) {
@@ -202,7 +215,6 @@ var NotesViewController = NoteBaseController.extend({
 
 		this.el_file.addClass('decrypting');
 		atag.set('title', 'Decrypting, this can take a bit.');
-		var promise;
 		var url;
 		return this.model.get('file').to_blob({force: true}).bind(this)
 			.then(function(blob) {

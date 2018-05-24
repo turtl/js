@@ -1,14 +1,15 @@
 var notes = {
-	index: function()
-	{
-		var force_reload = false;
-		var page_con = turtl.controllers.pages.get_subcontroller('sub') || {board_id: 'all'};
-		if(page_con.board_id != 'all') force_reload = true;
+	index: function() {
+		if(!turtl.route_changed() && turtl.controllers.pages.is(NotesIndexController)) return;
+		var slide = false;
+		if(turtl.controllers.pages.is([SpacesSharingController, InvitesController])) {
+			slide = 'right';
+		}
 
 		turtl.back.clear();
 		turtl.controllers.pages.load(NotesIndexController, {board_id: 'all'}, {
-			force_reload: force_reload,
-			slide: false
+			force_reload: true,
+			slide: slide
 		});
 	}
 };

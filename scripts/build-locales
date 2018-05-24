@@ -1,0 +1,14 @@
+#!/bin/bash
+
+echo "window.locales = {};"
+echo ""
+for locale in $(find locales -name "*.js" | grep -v 'extras.js'); do
+	echo "(function() {"
+	cat $locale
+	echo "var key = language.trim();"
+	echo "if(locale.trim()) key += '-'+locale.trim().toUpperCase();"
+	echo "window.locales[key] = translation;"
+	echo "})();"
+	echo ""
+done
+

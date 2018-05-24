@@ -1,16 +1,17 @@
 @import 'variables';
 
-@action_size: 50rem;
-@action_sub_size: 42rem;
-@action_offset: 18rem;
+@action_size: 50px;
+@action_sub_size: 42px;
+@action_offset: 18px;
 #main,
 .turtl-modal {
 	> .action {position: fixed; .fixed-fix(); z-index: 12; bottom: @action_offset; right: @action_offset;}
 	> .action {
-		.abutton {position: relative; display: inline-block; width: @action_size; height: @action_size; text-align: center; border: 2rem solid #fff; border-radius: (@action_size / 1.9cm); background: @theme_primary; .layer-hover(); .transition(box-shadow .3s);}
+		.abutton {position: relative; display: inline-block; width: @action_size; height: @action_size; text-align: center; border: 2px solid #fff; border-radius: (@action_size / 1.9cm); background: @theme_primary; .layer-hover(); .transition(box-shadow .3s);}
+		> .abutton {display: flex; align-items: center; justify-content: center;}
 		.abutton {
-			icon {line-height: 2.2em; color: #fff; font-size: 22rem;}
-			icon.add {font-size: 32rem; line-height: 1.63em;}
+			icon {line-height: 2.2em; color: #fff; font-size: 22px;}
+			icon.add {font-size: 32px; line-height: 1em;}
 		}
 		> a {z-index: 21;}
 		ul {display: none; margin: 0 0 0 0; padding: 0; list-style: none;}
@@ -21,7 +22,7 @@
 				.abutton {
 					icon {line-height: 1.95em;}
 				}
-				h4 {display: none; margin: 0 8rem 0 0; padding: 5rem; cursor: pointer; font-size: 14rem; color: #fff; background: rgba(0, 0, 0, .9); border-radius: 2rem;}
+				h4 {display: none; margin: 0 8px 0 0; padding: 5px; cursor: pointer; font-size: 14px; color: #fff; background: rgba(0, 0, 0, .9); border-radius: 2px;}
 			}
 		}
 	}
@@ -36,7 +37,7 @@
 			}
 			.generate_action_lis(@counter) when (@counter >= 0) {
 				.generate_action_lis((@counter - 1));
-				li.item-@{counter} {bottom: (@action_offset + ((@counter + 1) * 56rem));}
+				li.item-@{counter} {bottom: (@action_offset + ((@counter + 1) * 56px));}
 			}
 			//.generate_action_lis(10);
 		}

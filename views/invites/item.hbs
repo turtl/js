@@ -1,0 +1,26 @@
+<div class="invite-data">
+	<div class="invite-actions"></div>
+	<h2>
+		{{#if invite.is_passphrase_protected}}{{icon 'lock'}}{{/if}}
+		{{invite.title}}
+	</h2>
+	<p>{{t 'From {{user}}' user=invite.from_username}}</p>
+</div>
+<div class="unseal {{#if passphrase_open}}open{{/if}}">
+	{{#if confirmed}}
+		<form class="standard-form">
+			<input name="passphrase" type="password" value="" placeholder="{{t 'Invite passphrase'}}">
+			<p class="form-note">
+				{{t 'This invite is passphrase-protected. You must enter the correct passphrase to unlock it.'}}
+			</p>
+			<div class="buttons">
+				<div class="button login">
+					<input type="submit" class="button" value="{{t 'Unlock'}}">
+				</div>
+			</div>
+		</form>
+	{{else}}
+		<p class="confirmation error">{{t 'You must confirm your account before accepting invites. If you no longer have your confirmation email, you can resend it from the Settings menu.'}}</p>
+	{{/if}}
+</div>
+
