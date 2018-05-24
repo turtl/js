@@ -1,6 +1,8 @@
 [Turtl](https://turtl.it/)
 ==========================
 
+_Opening an issue? See the [Turtl project tracker](https://github.com/turtl/project-tracker/issues)_
+
 This is the heart of Turtl!
 
 It's the javascript core that runs the app whether on desktop or mobile. It
