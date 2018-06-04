@@ -228,7 +228,7 @@ var turtl = {
 				turtl.events.trigger('profile-indexed');
 				break;
 			case 'profile:import:tally':
-				turtl.events.trigger('profile:import:tally');
+				turtl.events.trigger('profile:import:tally', data);
 				break;
 		}
 	},
