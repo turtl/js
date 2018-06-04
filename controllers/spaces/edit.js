@@ -20,7 +20,7 @@ var SpacesEditController = FormController.extend({
 	init: function()
 	{
 		if(!this.model) this.model = new Space();
-		this.action = this.model.is_new() ? i18next.t('Create space'): i18next.t('Edit space');
+		this.action = i18next.t('Save');
 
 		this.modal = new TurtlModal({
 			show_header: true,

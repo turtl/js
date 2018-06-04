@@ -26,9 +26,7 @@ var BoardsEditController = FormController.extend({
 		var title = this.model.is_new() ?
 			i18next.t('Create board in {{space}}', {space: this.space.get('title')}) :
 			i18next.t('Edit board');
-		this.action = this.model.is_new() ?
-			i18next.t('Create') :
-			i18next.t('Edit');
+		this.action = i18next.t('Save');
 
 		this.modal = new TurtlModal({
 			show_header: true,
