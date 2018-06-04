@@ -83,8 +83,8 @@ var ExportController = Composer.Controller.extend({
 		this.viewstate.importing = true;
 		this.viewstate.import_count = 0;
 		this.render();
-		this.with_bind(turtl.events, 'profile:import:tally', function() {
-			this.viewstate.import_count++;
+		this.with_bind(turtl.events, 'profile:import:tally', function(count) {
+			this.viewstate.import_count = count;
 			this.render();
 		}.bind(this), 'import:tally');
 		load_backup()
