@@ -50,7 +50,7 @@ var UserBaseController = FormController.extend({
 	save_login: function()
 	{
 		if(!this.autologin()) return Promise.resolve();
-		return turtl.core.send('user:get-login-token')
+		return turtl.core.send('user:get-login-token', "I understand this token contains the user's master key and their account may be compromised if the token is misplaced.")
 			.then(function(token) {
 				turtl.events.trigger('auth:save-login', token);
 			});
