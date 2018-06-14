@@ -615,6 +615,9 @@ var _turtl_init = function()
 		// prevent backspace from triggering if we're not in a form element
 		e.stop();
 	});
+
+	// OH BEHAVE
+	delete Hammer.defaults.cssProps.userSelect;
     
 	md = window.markdownit({
 		html: true,

@@ -133,7 +133,7 @@ var SidebarController = Composer.Controller.extend({
 			this.with_bind(turtl.profile.get('spaces'), ['change', 'add', 'remove', 'reset'], this.render.bind(this), 'sidebar:spaces:render');
 		}, 'sidebar:login:render');
 
-		var hammer = new Hammer.Manager(this.el);
+		var hammer = new Hammer.Manager(this.el, {domEvents: true, touchAction: 'pan-y'});
 		hammer.add(new Hammer.Press({time: 750}));
 		hammer.add(new Hammer.Swipe());
 		hammer.on('press', function(e) {
@@ -409,7 +409,7 @@ var SidebarController = Composer.Controller.extend({
 		}
 		var make_hammer = function(el) {
 			if(!el) return;
-			var hammer = new Hammer.Manager(el);
+			var hammer = new Hammer.Manager(el, {touchAction: 'pan-y'});
 			hammer.add(new Hammer.Swipe());
 			this._swipe_hammers.push(hammer);
 		}.bind(this);
