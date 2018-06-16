@@ -58,7 +58,6 @@ var UserJoinController = UserBaseController.extend({
 		return this.html(view.render('users/join', {
 			state: this.viewstate,
 			autologin: this.autologin(),
-			show_autologin: config.has_autologin,
 		}));
 	},
 
@@ -103,6 +102,7 @@ var UserJoinController = UserBaseController.extend({
 			.then(function() {
 				turtl.settings.set('last_username', username);
 			})
+			.then(this.save_login.bind(this))
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', i18next.t('There was a problem saving that account'), err);
 				log.error('users: join: ', err, derr(err));

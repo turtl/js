@@ -11,18 +11,15 @@ var UserBaseController = FormController.extend({
 		endpoint: '',
 	},
 
-	init: function()
-	{
+	init: function() {
 		this.parent();
 
 		if(turtl.user.logged_in) return this.release();
 
 		var autologin = JSON.parse(localStorage['user:autologin'] || 'false');
-		if(autologin) turtl.events.trigger('auth:add-auto-login');
 	},
 
-	autologin: function()
-	{
+	autologin: function() {
 		return JSON.parse(localStorage['user:autologin'] || 'false');
 	},
 
@@ -30,14 +27,7 @@ var UserBaseController = FormController.extend({
 	{
 		var checked = this.inp_autologin.getProperty('checked');
 		localStorage['user:autologin'] = JSON.stringify(checked);
-		if(checked)
-		{
-			turtl.events.trigger('auth:add-auto-login');
-		}
-		else
-		{
-			turtl.events.trigger('auth:remove-auto-login');
-		}
+		this.render();
 	},
 
 	toggle_settings: function(e) {
@@ -47,13 +37,12 @@ var UserBaseController = FormController.extend({
 		this.render();
 	},
 
-	save_login: function()
-	{
-		if(!this.autologin()) return Promise.resolve();
-		return turtl.core.send('user:get-login-token', "I understand this token contains the user's master key and their account may be compromised if the token is misplaced.")
-			.then(function(token) {
-				turtl.events.trigger('auth:save-login', token);
-			});
+	save_login: function() {
+		var checked = this.inp_autologin.getProperty('checked');
+		if(!checked) {
+			return turtl.remember_me.clear();
+		}
+		return turtl.remember_me.save();
 	},
 
 	persist_new_api: function(endpoint) {

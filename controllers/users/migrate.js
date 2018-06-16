@@ -64,6 +64,7 @@ var UserMigrateController = UserJoinController.extend({
 	render: function() {
 		return this.html(view.render('users/migrate', {
 			state: this.viewstate,
+			autologin: this.autologin(),
 		}));
 	},
 
@@ -96,6 +97,7 @@ var UserMigrateController = UserJoinController.extend({
 			.then(function() {
 				turtl.settings.set('last_username', username);
 			})
+			.then(this.save_login.bind(this))
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', i18next.t('There was a problem saving that account'), err);
 				log.error('users: migrate: ', err, derr(err));

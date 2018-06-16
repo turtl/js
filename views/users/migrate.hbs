@@ -15,14 +15,7 @@
 	<p>{{t 'Passphrase strength: '}}<span class="status">{{state.strength_text}}</span></p>
 </div>
 
-{{#if show_autologin}}
-	<div class="autologin">
-		<label>
-			<input type="checkbox" name="autologin" value="1" {{#if autologin}}checked{{/if}}>
-			{{t 'Stay logged in'}}
-		</label>
-	</div>
-{{/if}}
+{{remember-me autologin}}
 
 <div class="buttons">
 	<div class="button login">

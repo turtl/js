@@ -60,7 +60,6 @@ var UserLoginController = UserBaseController.extend({
 		return this.html(view.render('users/login', {
 			state: this.viewstate,
 			autologin: this.autologin(),
-			show_autologin: config.has_autologin,
 		}));
 	},
 

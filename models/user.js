@@ -17,24 +17,27 @@ var User = Composer.Model.extend({
 			.then(function(userdata) {
 				this.logged_in = true;
 				this.set(userdata);
-				// NOTE: no this.trigger('login') here because the core will
-				// send the user:login event for us, which we dispatch in main
-				if(config.cookie_login) {
-					this.write_cookie(username, password);
-				}
 			})
 			.finally(function() {
 				this.logging_in = false;
 			});
 	},
 
-	login_from_cookie: function()
-	{
-		var cookie = localStorage[config.user_cookie];
-		if(!cookie) return Promise.reject();
+	login_from_saved: function(user_id, key) {
+		this.logging_in = true;
+		return turtl.core.send('user:login-from-saved', user_id, key)
+			.bind(this)
+			.then(function(userdata) {
+				this.logged_in = true;
+				this.set(userdata);
+			})
+			.finally(function() {
+				this.logging_in = false;
+			});
+	},
 
-		var userdata = JSON.parse(cookie);
-		return this.login(userdata.username, userdata.password);
+	save_login: function() {
+		return turtl.core.send('user:save-login');
 	},
 
 	/**
@@ -58,9 +61,6 @@ var User = Composer.Model.extend({
 			.then(function(userdata) {
 				this.logged_in = true;
 				this.set(userdata);
-				if(config.cookie_login) {
-					this.write_cookie(username, password);
-				}
 			})
 			.finally(function() {
 				this.logging_in = false;
@@ -77,9 +77,6 @@ var User = Composer.Model.extend({
 			.then(function(userdata) {
 				this.logged_in = true;
 				this.set(userdata);
-				if(config.cookie_login) {
-					this.write_cookie(username, password);
-				}
 			})
 			.finally(function() {
 				this.logging_in = false;
@@ -102,20 +99,6 @@ var User = Composer.Model.extend({
 	 */
 	change_password: function(cur_username, cur_password, new_username, new_password) {
 		return turtl.core.send('user:change-password', cur_username, cur_password, new_username, new_password);
-	},
-
-	write_cookie: function(username, password)
-	{
-		var save = {
-			id: this.id(),
-			username: username,
-			password: password,
-		};
-		localStorage[config.user_cookie] = JSON.stringify(save);
-	},
-
-	clear_cookie: function() {
-		delete localStorage[config.user_cookie];
 	},
 
 	do_logout: function(options) {

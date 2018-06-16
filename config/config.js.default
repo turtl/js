@@ -4,19 +4,29 @@ var config = {
 	// filled in by extension/app from its manifest
 	version: '0.7',
 
+	// filled in by the loading app (will be desktop/mobile generally)
+	client: 'js',
+
 	// some options for setting up our core communication
 	core: {
 		adapter: 'websocket',
 		options: {},
 	},
 
+	// "Remember me" settings.
+	// keep in mind that this is horribly insecure, and offered only as a
+	// convenience to those willing to make a tradeoff in security.
+	remember_me: {
+		// whether or not to show the "Remember me" checkbox for login/join
+		enabled: true,
+		adapter: 'localstorage',
+		options: {},
+	},
+
 	base_url: '',
 	route_base: '',
 
-	// used to persist user key/auth info to disk.
-	user_cookie: 'turtl:user:v2',
-
-	cookie_login: true,
+	enable_remember_me: true,
 
 	// if true, any uncaught errors will be logged to the API for processing
 	catch_global_errors: false,

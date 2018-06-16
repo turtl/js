@@ -5,6 +5,11 @@
 .user-migrate {
 	form {padding-top: 38px; .uncard();}
 	.autologin {text-align: center; font-size: 16px;}
+	.autologin {
+		.warn {overflow: hidden; max-height: 0; transition: max-height 0.3s;}
+		.warn.show {max-height: 60px;}
+		.warn span {display: block; padding-top: 8px; line-height: 1.2em; color: @theme_warn;}
+	}
 	.buttons {margin: 32px 0 0 0;}
 	.button {margin: 0 0 16px 0;}
 	a.open-settings {display: block; margin: 32px 0 8px 0; font-size: 1.3em; text-align: center;}

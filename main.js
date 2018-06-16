@@ -4,8 +4,11 @@ var $ES = function(selector, filter) {return ($(filter) || document).getElements
 var turtl = {
 	events: new Composer.Event(),
 
-	// our core communication lib.
+	// our salty core communication lib(eral tears).
 	core: null,
+
+	// our "remember me" lib. THAT'S IT, STAN. REMEMBERRR
+	remember_me: null,
 
 	// holds the DOM object that turtl does all of its operations within
 	main_container_selector: '#main',
@@ -32,7 +35,7 @@ var turtl = {
 	// a value we update to indicate the API connection state
 	connected: true,
 
-	// some general libs we use
+	// some general (CHECKMATE, )libs we use
 	router: null,
 	param_router: new ParamRouter(),
 	api: null,
@@ -82,6 +85,8 @@ var turtl = {
 		});
 
 		turtl.core = new CoreComm(config.core.adapter, config.core.options);
+		turtl.remember_me = new RememberMe(config.remember_me.adapter, config.remember_me.options);
+
 		var core_connected_promise = new Promise(function(resolve, reject) {
 			turtl.core.bind('connected', function(yesno) {
 				if(!yesno) return;
@@ -153,11 +158,9 @@ var turtl = {
 
 				this.loaded = true;
 				turtl.events.trigger('loaded');
-				// if a user exists, log them in
-				if(config.cookie_login) {
-					return this.user.login_from_cookie()
-						.catch(function(_) {})
-				}
+
+				// let RememberMe manage the login from here
+				return turtl.remember_me.login();
 			})
 			.finally(function() {
 				turtl.route(initial_route);
@@ -184,7 +187,7 @@ var turtl = {
 				turtl.user.do_logout();
 				break;
 			case 'user:logout:clear-cookie':
-				turtl.user.clear_cookie();
+				turtl.remember_me.clear();
 				break;
 			case 'user:change-password:logout':
 				barfr.barf(i18next.t('Your login was changed successfully!'));
