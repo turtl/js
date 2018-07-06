@@ -26,8 +26,6 @@ var config = {
 	base_url: '',
 	route_base: '',
 
-	enable_remember_me: true,
-
 	// if true, any uncaught errors will be logged to the API for processing
 	catch_global_errors: false,
 
