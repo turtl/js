@@ -208,6 +208,7 @@ var SidebarController = Composer.Controller.extend({
 	{
 		this.close_spaces();
 		if(!this.overlay) return;
+		if(!this.is_open) return;
 		this.is_open = false;
 		this.overlay.setStyles({position: 'fixed'});
 		this.render();
@@ -218,10 +219,12 @@ var SidebarController = Composer.Controller.extend({
 		turtl.events.trigger('sidebar:close');
 		this.clear_space_filter();
 		this.clear_board_filter();
-		setTimeout(function() {
+		var blurfn = function() {
 			this.inp_space_filter.blur();
 			this.inp_board_filter.blur();
-		}.bind(this));
+		}.bind(this);
+		setTimeout(blurfn);
+		setTimeout(blurfn, 300);
 	},
 
 	toggle: function()
@@ -272,6 +275,7 @@ var SidebarController = Composer.Controller.extend({
 	close_spaces_del: function(e)
 	{
 		if(!this.el_spaces) return;
+		if(!this.is_open && !this.space_state.open) return;
 		this.skip_close_on_next_route = true;
 		this.space_state.open = false;
 		var spaces_height = this.el_spaces.getElement('>.gutter').getCoordinates().height;
