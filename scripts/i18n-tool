@@ -7,9 +7,9 @@ function i18list() {
 		| grep -P '\.js' \
 		| xargs cat \
 		| grep 'i18next.t(' \
-		| perl -p -e 's/.*i18next\.t//g' \
-		| perl -p -e "s/^.*?'(.*?)(?<!\\\\)'.*$/\1/g" \
-		| perl -p -e 's/^.*?"(.*?)(?<!\\)".*$/\1/g' \
+		| perl -p -e 's/.*i18next\.t/i18next.t/g' \
+		| perl -p -e "s/^i18next.t\('(.*?)(?<!\\\\)'.*$/\1/g" \
+		| perl -p -e 's/^i18next.t\("(.*?)(?<!\\)".*$/\1/g' \
 		| perl -p -e "s/\\\\'/'/g" \
 		| perl -p -e 's/\\"/"/g'
 
@@ -17,9 +17,9 @@ function i18list() {
 		| grep -P '\.hbs' \
 		| xargs cat \
 		| grep '{{t ' \
-		| perl -p -e 's/.*\{\{t //g' \
-		| perl -p -e "s/^.*?'(.*?)(?<!\\\\)'.*$/\1/g" \
-		| perl -p -e 's/^.*?"(.*?)(?<!\\)".*$/\1/g' \
+		| perl -p -e 's/.*\{\{t\s+/{{t /g' \
+		| perl -p -e "s/^\{\{t '(.*?)(?<!\\\\)'.*$/\1/g" \
+		| perl -p -e 's/^\{\{t "(.*?)(?<!\\)".*$/\1/g' \
 		| perl -p -e "s/\\\\'/'/g" \
 		| perl -p -e 's/\\"/"/g'
 }
@@ -78,8 +78,8 @@ function usage() {
 	echo "  <cmd> can be one of:"
 	echo
 	echo "    template"
-	echo "      Read all JS/templates and output a new locale template based off theneeded"
-	echo "      translations."
+	echo "      Read all JS/templates and output a new locale template based off the"
+	echo "      needed translations."
 	echo "    update <lang>_<locale>"
 	echo "      Read the file at locales/<lang>_<locale>.js, remove any unused translations"
 	echo "      and add in any new (blank) translations needed, and output the entire"

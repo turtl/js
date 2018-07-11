@@ -1,4 +1,4 @@
-[Turtl](https://turtl.it/)
+[Turtl](https://turtlapp.com/)
 ==========================
 
 _Opening an issue? See the [Turtl project tracker](https://github.com/turtl/project-tracker/issues)_
