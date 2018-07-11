@@ -27,6 +27,10 @@ var App = Composer.Model.extend({
 		return turtl.core.send('app:api:get-old-endpoint');
 	},
 
+	get_logs: function() {
+		return turtl.core.send('app:get-log', 256);
+	},
+
 	shutdown: function() {
 		return turtl.core.send('app:shutdown');
 	},

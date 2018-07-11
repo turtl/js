@@ -15,6 +15,7 @@ config.routes = {
 	'/settings/delete-account': ['settings', 'delete_account'],
 	'/settings/sync': ['settings', 'sync'],
 	'/settings/export': ['settings', 'export'],
+	'/settings/logs': ['settings', 'logs'],
 
 	'/feedback': ['feedback', 'index'],
 
