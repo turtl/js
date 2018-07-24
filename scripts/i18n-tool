@@ -53,16 +53,16 @@ function template() {
 
 function update() {
 	lang=$1
-	app_keys="$(i18list)"
-	lang_code="$( cat locales/${lang}.js | grep 'var language =' | awk '{print $4}' | sed 's|[^a-z]||gi' )"
-	locale_code="$( cat locales/${lang}.js | grep 'var locale =' | awk '{print $4}' | sed 's|[^a-z]||gi' )"
+	app_keys="$(i18list | perl -p -e 's/"/\\"/g')"
+	lang_code="$( cat locales/${lang}.js | grep 'var language =' | awk '{print $4}' | perl -p -e 's|[^a-z]||gi' )"
+	locale_code="$( cat locales/${lang}.js | grep 'var locale =' | awk '{print $4}' | perl -p -e 's|[^a-z]||gi' )"
 	old="$(cat locales/${lang}.js | grep -P '^\s')"
 	IFS=$'\n'
 	output="$(
 		for x in ${app_keys}; do
 			keep="$( echo "${old}" | grep -F '"'"${x}"'":' )"
 			if [ "${keep}" != "" ]; then
-				echo "${keep}" | sed 's|,?$|,|'
+				echo "${keep}" | perl -p -e 's/,?$/,/'
 			else
 				echo '	"'"${x}"'": "",'
 			fi
@@ -94,7 +94,7 @@ function usage() {
 case $cmd in
 	"template")
 		prepped_keys="$(i18list | sort | uniq \
-			| perl -p -e 's/"/\"/g' \
+			| perl -p -e 's/"/\\"/g' \
 			| perl -p -e 's/^/	"/g' \
 			| perl -p -e 's/\n/": "",\n/g')"
 		template "${prepped_keys}"
