@@ -11,4 +11,6 @@
  * when generating locale templates for us.
  */
 i18next.t('New bookmark');
+i18next.t('File saved to Download/{{filename}}');
+i18next.t('There was a problem saving the file {{filename}}.');
 
