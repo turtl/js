@@ -19,11 +19,5 @@ var Invite = SyncModel.extend({
 var Invites = SyncCollection.extend({
 	model: Invite,
 	sync_type: 'invite',
-
-	initialize: function() {
-		this.bind(['add', 'remove', 'reset'], function() {
-			turtl.events.trigger('notify', 'invites', this.size());
-		}.bind(this));
-	}
 });
 
