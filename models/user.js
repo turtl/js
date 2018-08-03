@@ -1,6 +1,4 @@
 var User = Composer.Model.extend({
-	sync_type: 'user',
-
 	logged_in: false,
 	logging_in: false,
 	changing_password: false,
@@ -8,6 +6,19 @@ var User = Composer.Model.extend({
 	init: function() {
 		this.logged_in = false;
 		this.logging_in = false;
+
+		turtl.events.bind('sync:update:user', function(sync_item) {
+			if(!this.logged_in) return;
+			if(sync_item.item_id != this.id()) return;
+			switch(sync_item.action) {
+				case 'edit':
+					this.reset(sync_item.data);
+					break;
+			}
+		}.bind(this), 'user:sync:update');
+		this.bind('destroy', function() {
+			turtl.events.unbind('sync:update:user', 'user:sync:update');
+		});
 	},
 
 	login: function(username, password) {
