@@ -297,6 +297,7 @@ var translation = {
 	"You must be connected to the Turtl service to delete invites.": "",
 	"You must be logged in to perform this action.": "",
 	"You must confirm your account before accepting invites. If you no longer have your confirmation email, you can resend it from the Settings menu.": "",
+	"You must confirm your account before accepting invites.": "",
 	"You must log in": "",
 	"You": "",
 	"Your account has been deleted.": "Ваш обліковий запис був видалений.",

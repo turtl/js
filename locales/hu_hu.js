@@ -297,6 +297,7 @@ var translation = {
 	"You must be connected to the Turtl service to delete invites.": "A meghívások törléséhez kapcsolódnia kell a Turtl szolgáltatáshoz.",
 	"You must be logged in to perform this action.": "A művelet elvégzéséhez be kell lenned jelentkezve.",
 	"You must confirm your account before accepting invites. If you no longer have your confirmation email, you can resend it from the Settings menu.": "A meghívások elfogadása előtt ellenőriznie kell fiókját. Ha már nincs megerősítő e-mailje, akkor újra elküldheti a Beállítások menüből.",
+	"You must confirm your account before accepting invites.": "",
 	"You must log in": "Be kell jelentkezned",
 	"You": "Te",
 	"Your account has been deleted.": "A fiókja törölve lett",

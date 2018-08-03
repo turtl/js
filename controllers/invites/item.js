@@ -64,7 +64,10 @@ var InvitesItemController = Composer.Controller.extend({
 			return;
 		}
 
-		var passphrase = this.inp_passphrase.get('value') || null;
+		var passphrase = null;
+		if(this.inp_passphrase) {
+			passphrase = this.inp_passphrase.get('value') || null;
+		}
 		this.model.accept(passphrase)
 			.bind(this)
 			.catch(function(err) {
@@ -77,6 +80,10 @@ var InvitesItemController = Composer.Controller.extend({
 		if(e) e.stop();
 		if(!turtl.connected) {
 			barfr.barf(i18next.t('You must be connected to the Turtl service to accept invites.'));
+			return;
+		}
+		if(!turtl.user.get('confirmed')) {
+			barfr.barf(i18next.t('You must confirm your account before accepting invites.'));
 			return;
 		}
 		if(this.model.get('is_passphrase_protected')) {
