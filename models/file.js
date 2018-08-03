@@ -59,7 +59,7 @@ var NoteFile = SyncModel.extend({
 			.then(function(array) {
 				var blob = new Blob([array.buffer], {type: this.get('type')});
 				if(!options.force) {
-					this.revoke();
+					this.revoke(Object.assign({silent: true}, options));
 					this.set({blob_url: URL.createObjectURL(blob)}, options);
 				}
 				return blob;
@@ -69,11 +69,11 @@ var NoteFile = SyncModel.extend({
 			});
 	},
 
-	revoke: function() {
+	revoke: function(options) {
 		var blob_url = this.get('blob_url');
 		if(!blob_url) return this;
 		URL.revokeObjectURL(blob_url);
-		this.unset('blob_url');
+		this.unset('blob_url', options);
 		return this;
 	},
 
