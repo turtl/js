@@ -61,7 +61,7 @@ var FeedbackController = FormController.extend({
 				this.render_thanks();
 			})
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', i18next.t('There was a problem sending that invite'), err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem sending that feedback'), err);
 				log.error('feedback: send: ', derr(err));
 				this.btn_submit.set('disabled', false).removeClass('disabled');
 				this.disable(false);
