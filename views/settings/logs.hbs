@@ -1,4 +1,9 @@
 <div class="settings-logs">
-	<textarea name="contents" readonly>{{contents}}</textarea>
+	<select name="lines">
+		<option value="256">{{t 'Load last {{lines}} lines' lines=256}}</option>
+		<option value="4096">{{t 'Load last {{lines}} lines' lines=4096}}</option>
+		<option value="-1">{{t 'Load everything (may be slow)'}}</option>
+	</select>
+	<textarea name="contents" readonly></textarea>
 </div>
 
