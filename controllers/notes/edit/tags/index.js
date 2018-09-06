@@ -25,7 +25,7 @@ var NotesEditTagsController = FormController.extend({
 		turtl.events.trigger('notes:edit:tags:open');
 		this.with_bind(turtl.events, 'notes:edit:tags:open', this.trigger.bind(this, 'close'));
 
-		if(!this.action) this.action = i18next.t('Done');
+		if(!this.action) this.action = i18next.t('Save');
 		this.clone = this.model.clone();
 		this.collection = new Tags();
 
