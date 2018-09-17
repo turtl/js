@@ -91,7 +91,8 @@ var NotesListController = Composer.ListController.extend({
 					var search_timer = new Timer(500);
 					this.with_bind(search_timer, 'fired', this.trigger.bind(this, 'search'));
 					this.with_bind(turtl.events, ['sync:update:note'], function() {
-						search_timer.reset();
+						search_timer.stop();
+						this.trigger('search', {upsert: true});
 					}.bind(this))
 					this.track(notes, function(model, options) {
 						options || (options = {});
@@ -108,7 +109,6 @@ var NotesListController = Composer.ListController.extend({
 						con.bind('update', this.masonry_timer.reset.bind(this.masonry_timer));
 						return con;
 					}.bind(this), {
-						bind_reset: true,
 						container: function() { return this.note_list }.bind(this)
 					});
 
@@ -121,7 +121,7 @@ var NotesListController = Composer.ListController.extend({
 						if(string_ids == this._last_search) return;
 						this._last_search = string_ids;
 
-						this.notes.reset(searched_notes, Object.assign({upsert: true}, options));
+						this.notes.reset(searched_notes, options);
 						this.viewstate.no_results = this.notes.size() === 0;
 						this.render();
 
