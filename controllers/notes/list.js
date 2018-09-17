@@ -115,7 +115,13 @@ var NotesListController = Composer.ListController.extend({
 					this.with_bind(turtl.search, ['reset'], this.render.bind(this, {}));
 					this.bind('search-done', function(searched_notes, _tags, _total, options) {
 						options || (options = {});
-						this.notes.reset(searched_notes, options)
+
+						// curtail rendering duplicate result sets
+						var string_ids = JSON.stringify(searched_notes.map(function(n) { return n.id(); }));
+						if(string_ids == this._last_search) return;
+						this._last_search = string_ids;
+
+						this.notes.reset(searched_notes, Object.assign({upsert: true}, options));
 						this.viewstate.no_results = this.notes.size() === 0;
 						this.render();
 
