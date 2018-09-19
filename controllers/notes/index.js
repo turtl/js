@@ -60,7 +60,7 @@ var NotesIndexController = Composer.Controller.extend({
 				a = b;
 				b = _tmp;
 			}
-			switch(this.search.sort) {
+			switch(field) {
 				case 'mod':
 					return a.get('mod') - b.get('mod');
 					break;
