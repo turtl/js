@@ -6,29 +6,6 @@ var Note = SyncModel.extend({
 		file: { model: 'NoteFile' }
 	},
 
-	public_fields: [
-		'id',
-		'space_id',
-		'board_id',
-		'user_id',
-		'file',
-		'has_file',
-		'keys',
-		'mod'
-	],
-
-	private_fields: [
-		'type',
-		'title',
-		'tags',
-		'url',
-		'username',
-		'password',
-		'text',
-		'embed',
-		'color',
-	],
-
 	initialize: function() {
 		this.bind('file-id', function() {
 			if(this.get('file').get('name')) {

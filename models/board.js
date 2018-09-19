@@ -1,17 +1,6 @@
 var Board = SyncModel.extend({
 	sync_type: 'board',
 
-	public_fields: [
-		'id',
-		'space_id',
-		'user_id',
-		'keys',
-	],
-
-	private_fields: [
-		'title'
-	],
-
 	note_count: function()
 	{
 		return turtl.search.search({board: this.id()}).bind(this)

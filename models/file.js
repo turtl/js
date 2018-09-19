@@ -5,18 +5,6 @@ var NoteFile = SyncModel.extend({
 		synced: 0
 	},
 
-	public_fields: [
-		'id',
-		'size',
-		'has_data'
-	],
-
-	private_fields: [
-		'name',
-		'type',
-		'meta'
-	],
-
 	creating_blob: false,
 
 	init: function() {
@@ -96,15 +84,6 @@ var NoteFile = SyncModel.extend({
 
 var FileData = Composer.Model.extend({
 	rawdata: true,
-
-	public_fields: [
-		'id',
-		'note_id',
-	],
-
-	private_fields: [
-		'data'
-	],
 
 	load_contents: function(note_id) {
 		return turtl.core.send('profile:note:get-file', note_id)
