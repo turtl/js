@@ -624,7 +624,7 @@ var _turtl_init = function()
     
 	md = window.markdownit({
 		html: true,
-		breaks: false,
+		breaks: true,
 		linkify: true,
 		typographer: true,
 	}).use(window.markdownitTaskLists)
