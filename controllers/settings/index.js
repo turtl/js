@@ -12,7 +12,9 @@ var SettingsController = Composer.Controller.extend({
 		this.with_bind(turtl.events, 'sync:connected', this.render.bind(this));
 		this.with_bind(turtl.user, 'change:confirmed', this.render.bind(this));
 
-		turtl.push_title(i18next.t('Your settings'));
+		var last_route_non_settings = turtl.last_routes.slice(0).reverse()
+			.filter(function(url) { return url.indexOf('/settings') < 0; })[0];
+		turtl.push_title(i18next.t('Your settings'), last_route_non_settings || '/');
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		this.render();
