@@ -16,8 +16,7 @@ config.routes = {
 	'/settings/sync': ['settings', 'sync'],
 	'/settings/export': ['settings', 'export'],
 	'/settings/logs': ['settings', 'logs'],
-
-	'/feedback': ['feedback', 'index'],
+	'/settings/feedback': ['settings', 'feedback'],
 
 	'/': ['notes', 'index']
 };
