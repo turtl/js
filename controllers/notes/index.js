@@ -52,6 +52,24 @@ var NotesIndexController = Composer.Controller.extend({
 		}
 
 		this.notes = new Notes();
+		this.notes.sortfn = function(a, b) {
+			var field = this.search.sort[0];
+			var dir = this.search.sort[1];
+			if(dir == 'desc') {
+				var _tmp = a;
+				a = b;
+				b = _tmp;
+			}
+			switch(this.search.sort) {
+				case 'mod':
+					return a.get('mod') - b.get('mod');
+					break;
+				case 'created':
+				default:
+					return a.id().localeCompare(b.id());
+					break;
+			}
+		}.bind(this);
 
 		turtl.push_title(title, back, {prefix_space: true});
 		this.bind('release', turtl.pop_title.bind(null, false));
