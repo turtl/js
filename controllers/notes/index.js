@@ -10,6 +10,7 @@ var NotesIndexController = Composer.Controller.extend({
 		space: null,
 		board: null,
 		tags: [],
+		exclude_tags: [],
 		sort: NOTE_DEFAULT_SORT,
 		page: 1,
 		per_page: 100

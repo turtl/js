@@ -20,7 +20,7 @@
 		<div class="filter-tags">
 			<ul class="tags clear">
 				{{#each tags}}
-					<li class="{{#if selected}}sel{{/if}} {{#unless available}}empty{{/unless}}">
+					<li id="tag-{{name}}" class="{{#if negated}}exclude{{/if}} {{#if selected}}sel{{/if}} {{#unless available}}empty{{/unless}}">
 						<span>{{name}}</span>
 					</li>
 				{{/each}}

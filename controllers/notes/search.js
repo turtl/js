@@ -14,6 +14,7 @@ var NotesSearchController = Composer.Controller.extend({
 		'input input[name=text]': 'text_search',
 		'keydown input[name=text]': 'special_key',
 		'click ul.tags li': 'toggle_tag',
+		'press ul.tags li': 'negate_tag_press',
 		'click ul.colors li': 'toggle_color',
 		'submit form': 'submit'
 	},
@@ -134,7 +135,19 @@ var NotesSearchController = Composer.Controller.extend({
 			tags: tags,
 			state: this.viewstate,
 			show_show_all_tags: !this.viewstate.show_all_tags && this.tags.length > this.show_max_tags,
-		}));
+		})).bind(this)
+			.then(function() {
+				if(this._hammer_mgrs) {
+					this._hammer_mgrs.map(function(mgr) { mgr.destroy(); });
+					this._hammer_mgrs = null;
+				}
+				var mgrs = this.el.getElements('.tags li').map(function(litag) {
+					var mgr = new Hammer.Manager(litag, {domEvents: true});
+					mgr.add(new Hammer.Press());
+					return mgr;
+				}.bind(this));
+				this._hammer_mgrs = mgrs;
+			});
 	},
 
 	process_tags: function(tags) {
@@ -145,9 +158,11 @@ var NotesSearchController = Composer.Controller.extend({
 		}
 		var avail_idx = make_index(available_tags || [], 'name');
 		var sel_idx = make_index(this.search.tags, null);
+		var exc_idx = make_index(this.search.exclude_tags, null);
 		return tags
 			.map(function(tag) {
 				tag.selected = !!sel_idx[tag.name];
+				tag.negated = !!exc_idx[tag.name];
 				tag.available = !!avail_idx[tag.name];
 				return tag;
 			})
@@ -160,7 +175,11 @@ var NotesSearchController = Composer.Controller.extend({
 		this.trigger('search-reset', {from_search: true});
 		this.trigger('do-search');
 		this.inp_text.set('value', '');
-		this.render();
+		this.render()
+			.bind(this)
+			.then(function() {
+				this.inp_text.focus();
+			});
 	},
 
 	clear_search: function(searchobj, options) {
@@ -168,6 +187,7 @@ var NotesSearchController = Composer.Controller.extend({
 		searchobj.sort = NOTE_DEFAULT_SORT;
 		searchobj.text = '';
 		searchobj.tags = [];
+		searchobj.exclude_tags = [];
 		searchobj.colors = [];
 		if(options.clear_page) searchobj.page = 1;
 		return searchobj;
@@ -219,26 +239,58 @@ var NotesSearchController = Composer.Controller.extend({
 		this.trigger('close');
 	},
 
-	toggle_tag: function(e)
-	{
-		if(e) e.stop();
-		var li = Composer.find_parent('li', e.target);
-		if(!li) return;
-		var name = decode_entities(li.getElement('span').get('html').clean());
-		if(!this.search.tags) this.search.tags = [];
+	get_tagname: function(e) {
+	},
 
-		if(this.search.tags.contains(name))
-		{
-			this.search.tags.erase(name);
-		}
-		else
-		{
-			this.search.tags.push(name);
+	do_toggle_tag: function(e, options) {
+		options || (options = {});
+
+		var li = Composer.find_parent('li', e.target);
+		if(!li) return true;
+		var name = decode_entities(li.getElement('span').get('html').clean());
+
+		if(options.negate) {
+			if(this.search.exclude_tags.contains(name)) {
+				this.search.exclude_tags.erase(name);
+			} else {
+				this.search.tags.erase(name);
+				this.search.exclude_tags.push(name);
+			}
+		} else {
+			if(this.search.tags.contains(name)) {
+				this.search.tags.erase(name);
+			} else if(this.search.exclude_tags.contains(name)) {
+				this.search.exclude_tags.erase(name);
+			} else {
+				this.search.tags.push(name);
+			}
 		}
 
 		this.render();
 		this.trigger('do-search');
 		this.trigger('search-mod');
+	},
+
+	toggle_tag: function(e) {
+		// hammerjs hack
+		if(this._cancel_next_click) {
+			this._cancel_next_click = false;
+			return;
+		}
+		if(!e) return;
+		e.stop();
+		var options = {};
+		if(e.control || e.meta) {
+			options.negate = true;
+		}
+		this.do_toggle_tag(e, options);
+	},
+
+	negate_tag_press: function(e) {
+		if(!e) return;
+		e.stop();
+		this.do_toggle_tag(e, {negate: true});
+		this._cancel_next_click = true;
 	},
 
 	toggle_color: function(e)
