@@ -1,0 +1,37 @@
+<div class="filter {{#if board_filter_active}}active{{/if}}">
+	{{icon 'search' class="find"}}
+	{{icon 'close' class="close"}}
+	<input name="filter" id="sidebar-board-filter" type="text" placeholder="{{t 'Search for boards'}}">
+</div>
+<ul class="boards">
+	<li class="add">
+		{{#if can_add_boards}}
+			<a href="/boards/add">
+				{{t 'Boards'}}
+				{{icon 'add'}}
+			</a>
+		{{else}}
+			<span>{{t 'Boards'}}</span>
+		{{/if}}
+	</li>
+	{{#unless board_filter_active}}
+		<li class="board {{#if in_all_notes}}sel{{/if}}">
+			<a class="go" href="/spaces/{{@root.cur_space.id}}/notes">
+				{{icon 'notes'}}
+				{{t 'All notes'}}
+			</a>
+		</li>
+	{{/unless}}
+	{{#each boards}}
+		<li rel="{{id}}" class="board {{#equal id @root.cur_board_id}}sel{{/equal}}">
+			<a class="go" href="/spaces/{{@root.cur_space.id}}/boards/{{id}}/notes">
+				{{icon 'board'}}
+				{{title}}
+			</a>
+			{{#if @root.can_edit_boards}}
+				<a class="edit" href="/boards/edit/{{id}}">{{icon 'account'}}</a>
+			{{/if}}
+		</li>
+	{{/each}}
+</ul>
+

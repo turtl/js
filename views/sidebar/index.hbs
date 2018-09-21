@@ -1,0 +1,16 @@
+<div class="overlay {{#if open}}show{{/if}}"></div>
+<div class="inner {{#if space_state.open}}spaces-open{{/if}}">
+	<div class="header">
+		<h2 class="{{cur_space.color.txt}}" style="background-color: {{cur_space.color.bg}};">
+			<em>{{cur_space.title}}</em>
+			{{icon 'arrow'}}
+		</h2>
+	</div>
+
+	<div class="spaces-container {{#if space_state.open}}open{{/if}} {{#if space_state.zin}}zin{{/if}} {{#if space_state.scroll}}scroll{{/if}}">
+		<div class="gutter spaces"></div>
+	</div>
+
+	<div class="gutter boards"></div>
+</div>
+
