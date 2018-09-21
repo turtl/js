@@ -149,6 +149,9 @@ var NotesSearchController = Composer.Controller.extend({
 						Composer.fire_event(tagli, 'press');
 					});
 					this._hammer_time = hammer;
+					this.bind('release', function() {
+						hammer.destroy();
+					}, 'search:render:hammer:release:'+this.cid());
 				}
 			});
 	},
