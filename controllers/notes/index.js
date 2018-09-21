@@ -146,9 +146,13 @@ var NotesIndexController = Composer.Controller.extend({
 			this.saved_tags = tags;
 		}.bind(this));
 
-		this.bind('search-reset', function() {
+		this.bind('search-reset', function(options) {
+			options || (options = {});
 			var searchcon = this.sub('search');
-			if(searchcon) searchcon.clear_search(this.search);
+			if(searchcon) {
+				searchcon.clear_search(this.search);
+				if(!options.from_search) searchcon.reset_search();
+			}
 
 			this.trigger('run-search');
 			var list = this.sub('list');

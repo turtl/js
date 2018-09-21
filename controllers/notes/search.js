@@ -132,8 +132,8 @@ var NotesSearchController = Composer.Controller.extend({
 			text: this.search.text,
 			colors: colors,
 			tags: tags,
-			show_max_tags: this.show_max_tags,
 			state: this.viewstate,
+			show_show_all_tags: !this.viewstate.show_all_tags && this.tags.length > this.show_max_tags,
 		}));
 	},
 
@@ -157,8 +157,9 @@ var NotesSearchController = Composer.Controller.extend({
 	reset_search: function(e)
 	{
 		if(e) e.stop();
-		this.trigger('search-reset');
+		this.trigger('search-reset', {from_search: true});
 		this.trigger('do-search');
+		this.inp_text.set('value', '');
 		this.render();
 	},
 
@@ -198,6 +199,7 @@ var NotesSearchController = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		this.viewstate.show_all_tags = true;
+		this.render();
 	},
 
 	text_search: function(e)

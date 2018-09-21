@@ -25,11 +25,9 @@
 					</li>
 				{{/each}}
 			</ul>
-			{{#gt tags.length show_max_tags}}
-				{{#unless state.show_all_tags}}
-					<a href="#show" rel="all">{{t 'Show all tags'}} &raquo;</a>
-				{{/unless}}
-			{{/gt}}
+			{{#if show_show_all_tags}}
+				<a href="#show" rel="all">{{t 'Show all tags'}} &raquo;</a>
+			{{/if}}
 		</div>
 	{{/if}}
 </div>
