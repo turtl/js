@@ -55,7 +55,6 @@ var NotesListController = Composer.ListController.extend({
 		var resize_reset = function() {
 			resize_timer.reset();
 		}.bind(this);
-		//window.addEvent('resize', resize_reset);
 		this.bind('release', function() {
 			window.removeEvent('resize', resize_reset);
 			resize_timer.unbind();
