@@ -15,7 +15,24 @@
 	</form>
 </div>
 
-<div class="tag-container"></div>
+<div class="tag-container">
+	{{#if tags.length}}
+		<div class="filter-tags">
+			<ul class="tags clear">
+				{{#each tags}}
+					<li class="{{#if selected}}sel{{/if}} {{#unless available}}empty{{/unless}}">
+						<span>{{name}}</span>
+					</li>
+				{{/each}}
+			</ul>
+			{{#gt tags.length show_max_tags}}
+				{{#unless state.show_all_tags}}
+					<a href="#show" rel="all">{{t 'Show all tags'}} &raquo;</a>
+				{{/unless}}
+			{{/gt}}
+		</div>
+	{{/if}}
+</div>
 
 {{!--	Disable colors for now ='[
 <div class="notes-edit filter-colors">	{{! bit of a hack to avoid some CSS duplication }}

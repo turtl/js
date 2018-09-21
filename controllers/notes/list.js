@@ -21,9 +21,6 @@ var NotesListController = Composer.ListController.extend({
 	masonry: null,
 	masonry_timer: null,
 
-	// ALL tags that appear in thie board
-	tags: null,
-
 	// filled in from index controller
 	search: {},
 	total: 0,
@@ -69,7 +66,7 @@ var NotesListController = Composer.ListController.extend({
 			// run an initial search
 			this.do_search()
 				.bind(this)
-				.spread(function(searched_notes, tags, _total) {
+				.spread(function(searched_notes, _tags, _total) {
 					var ids = searched_notes.map(function(n) { return n.id(); })
 
 					// clear the "initial" state
@@ -78,7 +75,6 @@ var NotesListController = Composer.ListController.extend({
 					// curtail rendering duplicate result sets
 					this._last_search = JSON.stringify(ids);
 
-					this.tags = tags;
 					this.bind('search', function(options) {
 						options || (options = {});
 						if(options.reset_pages) this.search.page = 1;
@@ -93,7 +89,7 @@ var NotesListController = Composer.ListController.extend({
 					this.with_bind(turtl.events, ['sync:update:note'], function() {
 						search_timer.stop();
 						this.trigger('search', {upsert: true});
-					}.bind(this))
+					}.bind(this));
 					this.track(notes, function(model, options) {
 						options || (options = {});
 						// since the search model only deals with IDs, here we pull

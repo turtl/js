@@ -1,8 +1,8 @@
 var NotesSearchController = Composer.Controller.extend({
+	xdom: true,
 	class_name: 'search-filters',
 
 	elements: {
-		'.tag-container': 'tag_container',
 		'ul.tags': 'el_tags',
 		'ul.colors': 'el_colors',
 		'input[name=text]': 'inp_text'
@@ -21,17 +21,33 @@ var NotesSearchController = Composer.Controller.extend({
 	modal: null,
 	tags: [],
 	search: {},
+	viewstate: {
+		show_all_tags: false,
+		available_tags: [],
+	},
+
+	show_max_tags: 30,
 
 	init: function()
 	{
 		var titlefn = function(num) { return i18next.t('Search notes ({{num}})', {num: num}); };
 
-		this.tags = clone(this.tags);
-		this.tags.sort(function(a, b) {
-			var sort = b.count - a.count;
-			if(sort != 0) return sort;
-			return a.name.localeCompare(b.name);
-		});
+		var update_initial_tags = function() {
+			var search = clone(this.search || {});
+			this.clear_search(search);
+			turtl.search.find_tags(search)
+				.bind(this)
+				.then(function(tags) {
+					this.tags = tags;
+					this.tags.sort(function(a, b) {
+						var sort = b.count - a.count;
+						if(sort != 0) return sort;
+						return a.name.localeCompare(b.name);
+					});
+					this.render();
+				});
+		}.bind(this);
+		update_initial_tags();
 
 		this.modal = new TurtlModal({
 			class_name: 'turtl-modal search',
@@ -42,7 +58,11 @@ var NotesSearchController = Composer.Controller.extend({
 				{name: 'reset', icon: 'everything', title: i18next.t('Reset search')}
 			]
 		});
-		this.render();
+		this.render()
+			.bind(this)
+			.then(function() {
+				setTimeout(function() { this.inp_text.select(); }.bind(this), 50);
+			});
 
 		var close = this.modal.close.bind(this.modal);
 		this.modal.open(this.el);
@@ -55,8 +75,7 @@ var NotesSearchController = Composer.Controller.extend({
 		});
 
 		this.with_bind(this.modal, 'header:fire-action', function(action) {
-			switch(action)
-			{
+			switch(action) {
 				case 'reset':
 					this.reset_search();
 					break;
@@ -73,11 +92,22 @@ var NotesSearchController = Composer.Controller.extend({
 			if(timer.timeout) this.trigger('do-search');
 		});
 
-		var last_tags = null;
+		// grab the updated tag list when notes update
+		this.with_bind(turtl.events, ['sync:update:note'], function(data) {
+			// don't grab the tags unless the changed note is part of this
+			// search
+			if(this.search.space_id && search.space_id != data.space_id) {
+				return;
+			}
+			if(this.search.board_id && search.board_id != data.board_id) {
+				return;
+			}
+			update_initial_tags();
+		}.bind(this));
+
 		this.bind('update-available-tags', function(tags) {
-			if(JSON.stringify(tags) == last_tags) return;
-			last_tags = JSON.stringify(tags);
-			this.render_tags({available_tags: tags});
+			this.viewstate.available_tags = tags;
+			this.render();
 		});
 		this.with_bind(turtl.search, 'search-tags', this.trigger.bind(this, 'update-available-tags'));
 	},
@@ -94,56 +124,34 @@ var NotesSearchController = Composer.Controller.extend({
 			return {name: color, selected: selected, id: i};
 		}.bind(this));
 
-		this.html(view.render('notes/search/index', {
+		var tags = this.process_tags(this.tags);
+
+		return this.html(view.render('notes/search/index', {
 			sort: sort[0],
 			dir: sort[1],
 			text: this.search.text,
-			colors: colors
+			colors: colors,
+			tags: tags,
+			show_max_tags: this.show_max_tags,
+			state: this.viewstate,
 		}));
-
-		this.render_tags(options);
-
-		setTimeout(function() { this.inp_text.select(); }.bind(this), 50);
 	},
 
-	render_tags: function(options)
-	{
-		options || (options = {});
-
-		var available_tags = options.available_tags;
-		var avail_idx = available_tags && make_index(available_tags, 'name');
-		var tags = this.tags;
-		var selected = this.search.tags;
-		var sel_idx = make_index(selected, null);
-
-		var show_all = this.show_all;
-		var max_show = 30;
-
-		tags.forEach(function(tag) {
-			if(sel_idx[tag.name])
-			{
-				tag.selected = true;
-			}
-			else
-			{
-				tag.selected = false;
-			}
-
-			if(avail_idx)
-			{
+	process_tags: function(tags) {
+		tags = clone(tags);
+		var available_tags = this.viewstate.available_tags || [];
+		if(available_tags.length == 0 && this.search.tags.length == 0) {
+			available_tags = tags;
+		}
+		var avail_idx = make_index(available_tags || [], 'name');
+		var sel_idx = make_index(this.search.tags, null);
+		return tags
+			.map(function(tag) {
+				tag.selected = !!sel_idx[tag.name];
 				tag.available = !!avail_idx[tag.name];
-			}
-			else
-			{
-				tag.available = true;
-			}
-		});
-
-		var content = view.render('notes/search/tags', {
-			tags: tags.slice(0, show_all ? undefined : max_show),
-			show_show_all: (tags.length > max_show && !show_all),
-		});
-		this.tag_container.set('html', content);
+				return tag;
+			})
+			.slice(0, this.viewstate.show_all_tags ? undefined : this.show_max_tags);
 	},
 
 	reset_search: function(e)
@@ -152,6 +160,16 @@ var NotesSearchController = Composer.Controller.extend({
 		this.trigger('search-reset');
 		this.trigger('do-search');
 		this.render();
+	},
+
+	clear_search: function(searchobj, options) {
+		options || (options = {});
+		searchobj.sort = NOTE_DEFAULT_SORT;
+		searchobj.text = '';
+		searchobj.tags = [];
+		searchobj.colors = [];
+		if(options.clear_page) searchobj.page = 1;
+		return searchobj;
 	},
 
 	sort: function(e)
@@ -179,8 +197,7 @@ var NotesSearchController = Composer.Controller.extend({
 	show_all_tags: function(e)
 	{
 		if(e) e.stop();
-		this.show_all = true;
-		this.render();
+		this.viewstate.show_all_tags = true;
 	},
 
 	text_search: function(e)
@@ -192,6 +209,7 @@ var NotesSearchController = Composer.Controller.extend({
 		this.trigger('search-mod');
 	},
 
+	// it plays a little melody
 	special_key: function(e)
 	{
 		if(!e || e.key != 'esc') return;
@@ -204,7 +222,7 @@ var NotesSearchController = Composer.Controller.extend({
 		if(e) e.stop();
 		var li = Composer.find_parent('li', e.target);
 		if(!li) return;
-		var name = li.getElement('span').get('html').clean();
+		var name = decode_entities(li.getElement('span').get('html').clean());
 		if(!this.search.tags) this.search.tags = [];
 
 		if(this.search.tags.contains(name))
