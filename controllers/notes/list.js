@@ -55,7 +55,7 @@ var NotesListController = Composer.ListController.extend({
 		var resize_reset = function() {
 			resize_timer.reset();
 		}.bind(this);
-		window.addEvent('resize', resize_reset);
+		//window.addEvent('resize', resize_reset);
 		this.bind('release', function() {
 			window.removeEvent('resize', resize_reset);
 			resize_timer.unbind();
@@ -178,12 +178,17 @@ var NotesListController = Composer.ListController.extend({
 	{
 		if(!this.viewstate.mode.match(/^masonry/)) return;
 
-		if(this.masonry) this.masonry.detach();
-		this.masonry = this.note_list.masonry({
-			singleMode: true,
-			resizeable: true,
-			itemSelector: '> li.note'
-		});
+		if(!this.masonry) {
+			this.masonry = new Masonry(this.note_list, {
+				itemSelector: '.note.item',
+				columnWidth: '.note.item',
+				percentPosition: true,
+				transitionDuration: 0,
+			});
+			return;
+		}
+		this.masonry.reloadItems();
+		this.masonry.layout();
 	},
 
 	paginate: function(e)
