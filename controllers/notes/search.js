@@ -137,16 +137,19 @@ var NotesSearchController = Composer.Controller.extend({
 			show_show_all_tags: !this.viewstate.show_all_tags && this.tags.length > this.show_max_tags,
 		})).bind(this)
 			.then(function() {
-				if(this._hammer_mgrs) {
-					this._hammer_mgrs.map(function(mgr) { mgr.destroy(); });
-					this._hammer_mgrs = null;
+				if(this._hammer_time) {
+					this._hammer_time.destroy();
 				}
-				var mgrs = this.el.getElements('.tags li').map(function(litag) {
-					var mgr = new Hammer.Manager(litag, {domEvents: true});
-					mgr.add(new Hammer.Press());
-					return mgr;
-				}.bind(this));
-				this._hammer_mgrs = mgrs;
+				if(this.el_tags) {
+					var hammer = new Hammer.Manager(this.el_tags, {domEvents: true});
+					hammer.add(new Hammer.Press({time: 500}));
+					hammer.on('press', function(e) {
+						var tagli = Composer.find_parent('ul.tags li');
+						if(!tagli) return;
+						Composer.fire_event(tagli, 'press');
+					});
+					this._hammer_time = hammer;
+				}
 			});
 	},
 
@@ -178,6 +181,7 @@ var NotesSearchController = Composer.Controller.extend({
 		this.render()
 			.bind(this)
 			.then(function() {
+				if(get_platform() == 'mobile') return;
 				this.inp_text.focus();
 			});
 	},
