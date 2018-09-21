@@ -35,6 +35,7 @@ var Profile = Composer.RelationalModel.extend({
 				delete profiledata.user;
 				this.loaded = true;
 				this.set(profiledata);
+				this.trigger('loaded');
 			});
 	},
 

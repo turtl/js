@@ -244,6 +244,9 @@ var turtl = {
 		{
 			turtl.controllers.pages.release_sub();
 			turtl.profile = new Profile();
+			turtl.profile.bind('loaded', function() {
+				turtl.user.trigger('profile-loaded');
+			});
 
 			turtl.events.trigger('app:objects-loaded');
 
