@@ -63,6 +63,14 @@ var NotesSearchController = Composer.Controller.extend({
 			.bind(this)
 			.then(function() {
 				setTimeout(function() { this.inp_text.select(); }.bind(this), 50);
+
+				var modal_el = Composer.find_parent('.turtl-modal', this.el);
+				var hammer = new Hammer.Manager(modal_el || this.el, {domEvents: true, touchAction: 'pan-y'});
+				hammer.add(new Hammer.Swipe());
+				hammer.on('swiperight', this.trigger.bind(this, 'close'));
+				this.bind('release', function() {
+					hammer.destroy();
+				});
 			});
 
 		var close = this.modal.close.bind(this.modal);
