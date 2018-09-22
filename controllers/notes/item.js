@@ -28,6 +28,19 @@ var NotesItemController = NoteBaseController.extend({
 		this.with_bind(this.model, 'change', renchange);
 		this.with_bind(this.model.get('file'), 'change', renchange);
 
+		var hammer = new Hammer.Manager(this.el, {domEvents: true});
+		hammer.add(new Hammer.Press({time: 750}));
+		hammer.on('press', function(e) {
+			this.open_edit();
+		}.bind(this));
+		hammer.on('pressup', function(e) {
+			this._cancel_click = true;
+			setTimeout(function() { this._cancel_click = false; }.bind(this), 200);
+		}.bind(this));
+		this.bind('release', function() {
+			hammer.destroy();
+		});
+
 		this.parent();
 	},
 
@@ -112,8 +125,10 @@ var NotesItemController = NoteBaseController.extend({
 			});
 	},
 
-	note_click: function(e)
-	{
+	note_click: function(e) {
+		// hammer press hack
+		if(this._cancel_click) return;
+
 		var event = e.event || {};
 		var atag = Composer.find_parent('li.note a', e.target, this.el);
 		// middle click
@@ -126,12 +141,20 @@ var NotesItemController = NoteBaseController.extend({
 		this.open_note();
 	},
 
-	open_note: function(e)
-	{
+	open_note: function(e) {
 		if(e) e.stop();
 		new NotesViewController({
 			model: this.model
 		});
-	}
+	},
+
+	open_edit: function(e) {
+		if(e) e.stop();
+		var space = turtl.profile.current_space();
+		if(!permcheck(space, Permissions.permissions.edit_note)) return;
+		new NotesEditController({
+			model: this.model
+		});
+	},
 });
 
