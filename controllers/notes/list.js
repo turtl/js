@@ -51,16 +51,6 @@ var NotesListController = Composer.ListController.extend({
 		}.bind(this));
 		this.bind('release', function() { this.masonry_timer.unbind(); }.bind(this));
 
-		var resize_timer = new Timer(10);
-		var resize_reset = function() {
-			resize_timer.reset();
-		}.bind(this);
-		this.bind('release', function() {
-			window.removeEvent('resize', resize_reset);
-			resize_timer.unbind();
-		});
-		resize_timer.bind('fired', this.update_masonry.bind(this));
-
 		this.bind_once('xdom:render', function() {
 			// run an initial search
 			this.do_search()
@@ -164,10 +154,9 @@ var NotesListController = Composer.ListController.extend({
 			case 'masonry':
 				this.masonry_timer.reset();
 				break;
-			case 'column':
-			case 'list':
+			default:
 				this.masonry_timer.stop();
-				if(this.masonry) this.masonry.detach();
+				if(this.masonry) this.masonry.destroy();
 				this.masonry = null;
 				break;
 		}
@@ -175,7 +164,7 @@ var NotesListController = Composer.ListController.extend({
 
 	update_masonry: function()
 	{
-		if(!this.viewstate.mode.match(/^masonry/)) return;
+		if(this.viewstate.mode != 'masonry') return;
 
 		if(!this.masonry) {
 			this.masonry = new Masonry(this.note_list, {
