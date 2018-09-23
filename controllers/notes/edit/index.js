@@ -63,10 +63,15 @@ var NotesEditController = FormController.extend({
 		if(!board_id) {
 			board_id = space.setting('last_board_used_for_edit');
 		}
-		if(!this.model) this.model = new Note({
-			board_id: board_id,
-			type: this.type || 'text'
-		});
+		if(!this.model) {
+			this.model = new Note({
+				board_id: board_id,
+				type: this.type || 'text'
+			});
+			this.bind('release', function() {
+				this.model.unbind();
+			}.bind(this));
+		}
 
 		var perm_map = {
 			add: Permissions.permissions.add_note,
@@ -77,6 +82,7 @@ var NotesEditController = FormController.extend({
 		this.clone = this.model.clone();
 		this.clone.enable_sync = false;
 		this.clone.get('file').unset('set');
+		this.bind('release', this.clone.unbind.bind(this.clone));
 
 		this.parent();
 

@@ -14,7 +14,12 @@ var BoardsEditController = FormController.extend({
 	formclass: 'boards-edit',
 
 	init: function() {
-		if(!this.model) this.model = new Board();
+		if(!this.model) {
+			this.model = new Board();
+			this.bind('release', function() {
+				this.model.unbind();
+			}.bind(this));
+		}
 		this.space = this.model.get_space() || turtl.profile.current_space();
 
 		var perm_map = {
@@ -71,6 +76,7 @@ var BoardsEditController = FormController.extend({
 				turtl.profile.get('boards').upsert(this.model);
 				this.trigger('close');
 				turtl.route('/spaces/'+this.space.id()+'/boards/'+this.model.id()+'/notes');
+				clone.unbind();
 			})
 			.catch(function(err) {
 				turtl.events.trigger('ui-error', i18next.t('There was a problem updating that board'), err);
