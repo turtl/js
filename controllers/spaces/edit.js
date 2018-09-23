@@ -101,6 +101,8 @@ var SpacesEditController = FormController.extend({
 				if(is_new) {
 					turtl.route_to_space(this.model.id());
 				}
+				this.model.unbind();
+				clone.unbind();
 				this.trigger('close');
 			})
 			.catch(function(err) {
