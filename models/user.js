@@ -1,4 +1,6 @@
-var User = Composer.Model.extend({
+var User = SyncModel.extend({
+	sync_type: 'user',
+
 	logged_in: false,
 	logging_in: false,
 	changing_password: false,
