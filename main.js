@@ -233,6 +233,9 @@ var turtl = {
 			case 'profile:import:tally':
 				turtl.events.trigger('profile:import:tally', data);
 				break;
+			case 'app:quit':
+				// this should be handled by the loader (ie, the desktop app)
+				break;
 		}
 	},
 
