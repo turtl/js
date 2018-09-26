@@ -58,8 +58,9 @@ const SidebarBoardsController = Composer.Controller.extend({
 	},
 
 	render: function() {
+		if(!turtl.profile) return Promise.resolve();
 		var current_space = turtl.profile.current_space();
-		if(!current_space) return;
+		if(!current_space) return Promise.resolve();
 		var cur_space = current_space.toJSON();
 		var in_all_notes = turtl.router.cur_path().match(/\/spaces\/[^\/]+\/notes/);
 		var cur_board_id = turtl.param_router.get().board_id;
