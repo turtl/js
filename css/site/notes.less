@@ -69,6 +69,12 @@
 @file_height: 34px;
 @content_pad: 6px;
 @content_pad_desktop: 16px;
+.content-pad() {
+	& {padding: @content_pad;}
+	@media @desktop {
+		& {padding: @content_pad_desktop;}
+	}
+}
 .note {
 	p.empty {padding: 10px 0; font-size: 13px; color: @theme_gray; text-align: center;}
 
@@ -81,12 +87,10 @@
 	&.link,
 	&.password,
 	&.image.view {
-		.note-gutter {padding: @content_pad;}
-		@media @desktop {
-			.note-gutter {padding: @content_pad_desktop;}
-		}
+		.note-gutter {.content-pad();}
 	}
 	&.image {
+		&:not(.view) .content .body {.content-pad();}
 		.backing {position: relative; z-index: 10; width: 100%; min-height: @header_height; background: @theme_black_bg;}
 		.backing {
 			span {display: block; font-size: 13px; text-align: center;}
