@@ -54,7 +54,7 @@ var translation = {
 	"Confirm your current login": "Հաստատել Ձեր ընթացիկ օգտանունը",
 	"Confirmation email resent": "Կրկին ուղարկել հաստատման էլ. նամակը",
 	"Connected": "Կապակցված է",
-	"Connected to the Turtl service! Disengaging offline mode. Syncing your profile.": "Կապակցվեց Turtl-ի ծառայությանը: Անցանց գործելաձևի անջատում: Ձեր հատկագրի համաժամեցում:,
+	"Connected to the Turtl service! Disengaging offline mode. Syncing your profile.": "Կապակցվեց Turtl-ի ծառայությանը: Անցանց գործելաձևի անջատում: Ձեր հատկագրի համաժամեցում:",
 	"Couldn't connect to the server": "Չստացվեց կապ հաստատել սպասարկչի հետ",
 	"Create": "Ստեղծել",
 	"Create a new account to migrate your data into.": "Ստեղծել նոր հաշիվ՝ Ձեր տվյալները տեղափոխելու համար",
