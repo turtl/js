@@ -19,7 +19,10 @@ var SpacesEditController = FormController.extend({
 
 	init: function()
 	{
-		if(!this.model) this.model = new Space();
+		if(!this.model) {
+			this.model = new Space();
+			this.bind('release', this.model.unbind.bind(this.model));
+		}
 		this.action = i18next.t('Save');
 
 		this.modal = new TurtlModal({
@@ -101,7 +104,6 @@ var SpacesEditController = FormController.extend({
 				if(is_new) {
 					turtl.route_to_space(this.model.id());
 				}
-				this.model.unbind();
 				clone.unbind();
 				this.trigger('close');
 			})

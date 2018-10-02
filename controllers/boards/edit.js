@@ -16,9 +16,7 @@ var BoardsEditController = FormController.extend({
 	init: function() {
 		if(!this.model) {
 			this.model = new Board();
-			this.bind('release', function() {
-				this.model.unbind();
-			}.bind(this));
+			this.bind('release', this.model.unbind.bind(this.model));
 		}
 		this.space = this.model.get_space() || turtl.profile.current_space();
 
