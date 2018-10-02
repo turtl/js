@@ -76,6 +76,9 @@ const SidebarController = Composer.Controller.extend({
 							viewstate: this.viewstate,
 							sortfn: fuzzy_sort,
 						});
+						this.bind('focus-space-filter', function(opts) {
+							this.focus_if(sub.inp_space_filter, opts);
+						}.bind(this));
 						this.bind('blur-space-filter', function() {
 							if(sub.inp_space_filter) sub.inp_space_filter.blur();
 						});
@@ -223,9 +226,7 @@ const SidebarController = Composer.Controller.extend({
 		this.render()
 			.bind(this)
 			.then(function() {
-				setTimeout(function() {
-					if(get_platform() != 'mobile') this.inp_space_filter.focus();
-				}.bind(this), 100);
+				this.trigger('focus-space-filter', {delay: 100});
 			});
 	},
 
