@@ -88,22 +88,61 @@ var UserMigrateController = UserJoinController.extend({
 		this.inp_submit.set('disabled', 'disabled');
 		turtl.loading(true);
 
+		var migration_errors = [];
+		var decrypted_items = 0;
+		var total_items = 0;
+		this.with_bind(turtl.events, 'migration', function(ev, args) {
+			switch(ev) {
+				case 'error':
+					if(migration_errors.length < 3 && (args.subtype == 'keychain' || args.subtype == 'board')) {
+						turtl.update_loading_screen(i18next.t('Migration error...'));
+					}
+					migration_errors.push(args);
+					break;
+				case 'profile-items':
+					turtl.update_loading_screen(i18next.t('Grabbed {{num_keychain}} keychain entries, {{num_boards}} boards, {{num_notes}} notes, {{num_files}} files from old server.', args));
+					turtl.update_loading_screen(i18next.t('Downloading files...'));
+					total_items = args.num_keychain + args.num_boards + args.num_notes + args.num_files;
+					break;
+				case 'decrypt-start':
+					turtl.update_loading_screen(i18next.t('Files downloaded, decrypting profile...'));
+					break;
+				case 'decrypt-done':
+					turtl.update_loading_screen(i18next.t('Old profile loaded, converting to new format', args));
+					break;
+				case 'decrypt-item':
+					decrypted_items++;
+					if(decrypted_items % (Math.floor(total_items / 4)) == 0) {
+						turtl.update_loading_screen(i18next.t('Decrypted {{percent}} of items', {percent: Math.round(100 * (decrypted_items / total_items))+'%'}));
+					}
+					break;
+			}
+		});
 		endpoint_promise
 			.bind(this)
 			.then(function() {
 				barfr.barf(i18next.t('Migration started. This can take a few minutes! Please be patient.'));
+				turtl.show_loading_screen(true);
 				return turtl.user.migrate(v6_username, v6_password, username, password);
 			})
 			.then(function() {
 				turtl.settings.set('last_username', username);
+				var keychain_errors = migration_errors
+					.filter(function(e) { return e.subtype == 'keychain' || e.subtype == 'board'; });
+				if(keychain_errors.length > 0) {
+					new UserMigrationReportController({
+						errors: migration_errors,
+					});
+				}
 			})
 			.then(this.save_login.bind(this))
 			.catch(function(err) {
-				turtl.events.trigger('ui-error', i18next.t('There was a problem saving that account'), err);
+				turtl.events.trigger('ui-error', i18next.t('There was a problem migrating that account'), err);
 				log.error('users: migrate: ', err, derr(err));
 			})
 			.finally(function() {
 				turtl.loading(false);
+				turtl.show_loading_screen(false);
 				this.inp_submit.set('disabled', '');
 				this.el_loader.removeClass('active');
 			});

@@ -1,0 +1,9 @@
+<p>{{t 'It looks like you had some problems during migration. Don\'t worry, your data is still safe on the old Turtl server and you can try again at any time. Please send this log to the turtl team at {{email}}' email="info@turtlapp.com"}}</p>
+
+<div class="settings-logs">
+	<textarea disabled>{{#each errors}}---
+Type: {{subtype}} (id: {{item_id}})
+Action: {{type}}
+Msg: {{msg}}
+{{/each}}</textarea>
+</div>

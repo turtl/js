@@ -223,6 +223,7 @@ var turtl = {
 				turtl.events.trigger('sync:outgoing:complete');
 				break;
 			case 'migration-event':
+				turtl.events.trigger('migration', data.event, data.args);
 				break;
 			case 'profile:loaded':
 				turtl.events.trigger('profile-loaded');
