@@ -1,0 +1,43 @@
+{{!-- not bothering with localization on this page because it is temporary --}}
+
+{{#if results}}
+
+<div class="settings-logs">
+	<p>
+	Here are the results. Please copy all text and send to info@turtlapp.com
+	</p>
+	<textarea disabled>---- core v0 ----
+{{results.core_v0}}
+
+---- v0.6 v0 ----
+{{results.v6_v0}}
+
+---- core v1 ----
+{{results.core_v1}}
+
+---- v0.6 v1 ----
+{{results.v6_v1}}</textarea>
+</div>
+
+{{else}}
+
+<div class="settings-logs">
+	<p>
+	This is a page for people who cannot login on Turtl v0.7+. It is
+	intended to help people who are getting "Bad login" messages when usng
+	their v0.6 login credentials.
+	</p>
+</div>
+<input type="text" name="username" placeholder="Your username" value="" tabindex="1" autocomplete="off" autocorrect="off" autocapitalize="off">
+<input type="password" name="password" placeholder="Your password" autocomplete="off" autocorrect="off" tabindex="2">
+
+<div class="buttons">
+	<div class="button login">
+		<input type="submit" class="button" value="Debug">
+	</div>
+	<p class="load">
+		{{svg 'loading'}}
+	</p>
+</div>
+{{/if}}
+

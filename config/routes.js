@@ -4,6 +4,7 @@ config.routes = {
 	'/users/join': ['users', 'join'],
 	'/users/migrate': ['users', 'migrate'],
 	'/users/logout': ['users', 'logout'],
+	'/users/debug': ['users', 'debug'],
 
 	'/spaces/:space_id/notes': ['notes', 'index'],
 	'/spaces/:space_id/boards/:board_id/notes': ['boards', 'notes'],

@@ -42,6 +42,10 @@ var users = {
 	{
 		turtl.user.logout();
 		turtl.route('/users/login', {replace_state: true});
-	}
+	},
+
+	debug: function() {
+		turtl.controllers.pages.load(UserLoginDebugController, {}, {});
+	},
 };
 
