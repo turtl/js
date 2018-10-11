@@ -13,7 +13,12 @@ var LogsController = Composer.Controller.extend({
 	model: null,
 
 	init: function() {
-		turtl.push_title(i18next.t('Debug log'), '/settings');
+		var backurl = '/settings';
+		var last_routes = turtl.last_routes.slice(0).reverse().slice(0, 2);
+		if(last_routes.indexOf('/users/login') >= 0) {
+			var backurl = '/users/login';
+		}
+		turtl.push_title(i18next.t('Debug log'), backurl);
 		this.render()
 			.then(this.refresh_logs.bind(this));
 	},

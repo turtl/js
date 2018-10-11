@@ -33,6 +33,16 @@ var UserLoginController = UserBaseController.extend({
 		turtl.push_title(i18next.t('Login'));
 		this.bind('release', turtl.pop_title.bind(null, false));
 
+		var header_actions = [];
+		header_actions.push({name: 'menu', actions: [
+			{name: i18next.t('Debug log'), href: '/settings/logs'},
+		]});
+		turtl.events.trigger('header:set-actions', header_actions);
+		this.with_bind(turtl.events, 'header:menu:fire-action', function(action, atag) {
+			turtl.back.push(turtl.route.bind(turtl, turtl.router.cur_path()));
+			turtl.route(atag.get('href'));
+		}.bind(this));
+
 		var endpoint_promises = [
 			App.prototype.get_api_endpoint(),
 			App.prototype.get_old_api_endpoint(),

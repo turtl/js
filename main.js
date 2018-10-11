@@ -392,7 +392,8 @@ var turtl = {
 					!url.match(/\/users\/login/) &&
 					!url.match(/\/users\/join/) &&
 					!url.match(/\/users\/migrate/) &&
-					!url.match(/\/users\/debug/)
+					!url.match(/\/users\/debug/) &&
+					!url.match(/\/settings\/logs/)
 				)
 			) {
 				turtl.route('/');
@@ -503,7 +504,8 @@ var turtl = {
 			!url.match(/\/users\/login/) &&
 			!url.match(/\/users\/join/) &&
 			!url.match(/\/users\/migrate/) &&
-			!url.match(/\/users\/debug/)
+			!url.match(/\/users\/debug/) &&
+			!url.match(/\/settings\/logs/)
 		)
 		{
 			url = '/users/login';
