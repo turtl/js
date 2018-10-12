@@ -153,6 +153,8 @@ var NotesIndexController = Composer.Controller.extend({
 			if(searchcon) {
 				searchcon.clear_search(this.search);
 				if(!options.from_search) searchcon.reset_search();
+			} else {
+				NotesSearchController.prototype.clear_search(this.search);
 			}
 
 			this.trigger('run-search');
