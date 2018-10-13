@@ -7,7 +7,8 @@ function i18list() {
 		| grep -P '\.js' \
 		| xargs cat \
 		| grep 'i18next.t(' \
-		| perl -p -e 's/.*i18next\.t/i18next.t/g' \
+		| perl -p -e 's/i18next\.t/\ni18next.t/g' \
+		| grep 'i18next.t(' \
 		| perl -p -e "s/^i18next.t\('(.*?)(?<!\\\\)'.*$/\1/g" \
 		| perl -p -e 's/^i18next.t\("(.*?)(?<!\\)".*$/\1/g' \
 		| perl -p -e "s/\\\\'/'/g" \
@@ -17,7 +18,8 @@ function i18list() {
 		| grep -P '\.hbs' \
 		| xargs cat \
 		| grep '{{t ' \
-		| perl -p -e 's/.*\{\{t\s+/{{t /g' \
+		| perl -p -e 's/\{\{t\s+/\n{{t /g' \
+		| grep '{{t ' \
 		| perl -p -e "s/^\{\{t '(.*?)(?<!\\\\)'.*$/\1/g" \
 		| perl -p -e 's/^\{\{t "(.*?)(?<!\\)".*$/\1/g' \
 		| perl -p -e "s/\\\\'/'/g" \
