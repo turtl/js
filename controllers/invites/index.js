@@ -13,7 +13,11 @@ var InvitesController = Composer.ListController.extend({
 	init: function() {
 		this.collection = turtl.profile.get('invites');
 		var title = i18next.t('Your invites');
-		turtl.push_title(title, null);
+		var last_route_space = turtl.last_routes.slice(0).reverse().filter(function(url) {
+			return url.indexOf('/spaces/') == 0;
+		})[0];
+		var backurl = last_route_space || '/';
+		turtl.push_title(title, backurl);
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		turtl.events.trigger('header:set-actions', [

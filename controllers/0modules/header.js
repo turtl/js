@@ -49,22 +49,21 @@ var HeaderController = Composer.Controller.extend({
 		options || (options = {});
 
 		var html = title || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-		if(backurl)
-		{
-			html = '<a href="'+ backurl +'" rel="back"><icon>'+icon('back')+'</icon>'+html+'</a>';
+		if(backurl) {
+			html = '<a href="'+ backurl +'" rel="back"><icon>'+icon('back')+'</icon>{{space}}'+html+'</a>';
 			this.el.addClass('has-back');
-		}
-		else
-		{
-			html = '<span>'+html+'</span>';
+		} else {
+			html = '{{space}}<span>'+html+'</span>';
 			this.el.removeClass('has-back');
 		}
-		if(options.prefix_space)
-		{
+		if(options.prefix_space) {
 			var space = turtl.profile.current_space();
 			var color = space.get_color();
-			html = '<space class="'+color.txt+'" style="background-color: '+color.bg+';">'+space.get('title')+'</space>'+html;
+			html = html.replace(/{{\s*space\s*}}/g, '<space class="'+color.txt+'" style="background-color: '+color.bg+';">'+space.get('title')+'</space>');
+		} else {
+			html = html.replace(/{{\s*space\s*}}/g, '');
 		}
+
 		var update_title = function() {
 			if(!options.prefix_space) return;
 			this.render_title(title, backurl, options);
@@ -113,8 +112,8 @@ var HeaderController = Composer.Controller.extend({
 		}
 	},
 
-	toggle_sidebar: function(e)
-	{
+	toggle_sidebar: function(e) {
+		if(this.el.hasClass('has-back')) return;
 		if(e) e.stop();
 		this.bind_to.trigger('sidebar:toggle');
 	},

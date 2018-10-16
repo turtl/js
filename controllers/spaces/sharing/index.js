@@ -22,7 +22,11 @@ var SpacesSharingController = Composer.Controller.extend({
 		this.invites = this.model.get('invites');
 
 		var title = i18next.t('Sharing');
-		turtl.push_title(title, null, {prefix_space: true});
+		var last_route_space = turtl.last_routes.slice(0).reverse().filter(function(url) {
+			return url.indexOf('/spaces/') == 0 && url.indexOf('/sharing') < 0;
+		})[0];
+		var backurl = last_route_space || '/spaces/'+this.model.id()+'/notes';
+		turtl.push_title(title, backurl, {prefix_space: true});
 		this.bind('release', turtl.pop_title.bind(null, false));
 
 		var invites = turtl.profile.get('invites');

@@ -58,12 +58,12 @@ header {
 	h1 {display: flex; align-items: center; flex-grow: 1; min-width: 100px; height: @header_height; margin: 0 0 0 0; text-align: left; font-weight: normal; font-size: 1.6em; line-height: 1.2em; .ellipsis();}
 	h1 {
 		> span,
-		> a {display: block; max-width: 100%; color: @theme_primary; .ellipsis();}
+		> a {display: flex; align-items: center; max-width: 100%; color: @theme_primary; .ellipsis();}
 		> a {
 			icon {vertical-align: -12%; margin-right: 8px; color: #8fc46a; font-size: 1.4em;}
 			span {display: flex; flex-wrap: nowrap; align-items: center;}
 		}
-		space {display: block; max-width: 90px; margin: -2px 6px 0 0; padding: 2px 6px; font-size: 14px; cursor: pointer; .ellipsis(); border-radius: 3px;}
+		space {display: block; max-width: 90px; margin: 0 6px 0 0; padding: 2px 6px; font-size: 14px; cursor: pointer; .ellipsis(); border-radius: 3px;}
 		space {
 			&.light {color: #eee;}
 			&.dark {color: @theme_black_bg;}

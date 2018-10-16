@@ -9,10 +9,14 @@ var boards = {
 		if(page_con.board_id != board_id) force_reload = true;
 		if((page_con.search || {}).space != space_id) force_reload = true;
 
+		var slide = false;
+		if(turtl.controllers.pages.is([SpacesSharingController, InvitesController])) {
+			slide = 'right';
+		}
 		turtl.back.push(turtl.route.bind(turtl, '/boards'));
 		turtl.controllers.pages.load(NotesIndexController, {board_id: board_id}, {
 			force_reload: force_reload,
-			slide: false,
+			slide: slide,
 		});
 	},
 };
