@@ -52,12 +52,13 @@
 			}
 			ul.boards, ul.spaces {margin: 0; padding: 0; list-style: none;}
 			ul.boards, ul.spaces {
-				li {display: flex; border-bottom: 1px solid @side_border;}
+				li {display: flex; align-items: center; border-bottom: 1px solid @side_border;}
 				li {
 					a {display: block; padding: 14px @side_padding; font-size: 14px;}
 					a:first-child {width: 90%;}
 					a:before {content: " "; position: absolute; opacity: 0; z-index: 4; right: 10px; margin: 4px 0 0 0; width: 12px; height: 12px; background: @theme_warn; border-radius: 6px; .transition(opacity .3s);}
 					a.go {max-width: 90%; .ellipsis();}
+					.icon-share {display: block; opacity: 0.3;}
 					&.notify {
 						a:before {opacity: 1;}
 					}

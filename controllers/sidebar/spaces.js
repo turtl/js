@@ -57,6 +57,7 @@ const SidebarSpacesController = Composer.Controller.extend({
 			.toJSON()
 			.map(function(space) { 
 				if(space.id == current_space.id()) space.current = true;
+				if(space.user_id != turtl.user.id()) space.shared = true;
 				space.color = spaces.get(space.id).get_color();
 				return space;
 			});

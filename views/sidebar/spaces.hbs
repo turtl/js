@@ -17,8 +17,11 @@
 		</li>
 	{{/if}}
 	{{#each spaces}}
-		<li rel="{{id}}" class="space {{#equal id @root.cur_space.id}}sel{{/equal}}">
+		<li rel="{{id}}" class="space {{#equal id @root.cur_space.id}}sel{{/equal}} {{#if shared}}shared{{/if}}">
 			<a class="go" href="/spaces/{{id}}/notes" {{#if color}}style="border-color: {{color.bg}};"{{/if}}>{{title}}</a>
+			{{#if shared}}
+				<a class="go" href="/spaces/{{id}}/notes" title="{{t 'This space is shared with you'}}">{{icon 'share'}}</a>
+			{{/if}}
 			{{#if @root.state.edit_icons}}
 				<a class="edit" href="/spaces/edit/{{id}}">{{icon 'account'}}</a>
 			{{/if}}
