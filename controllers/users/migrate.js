@@ -100,7 +100,7 @@ var UserMigrateController = UserJoinController.extend({
 					migration_errors.push(args);
 					break;
 				case 'profile-items':
-					turtl.update_loading_screen(i18next.t('Grabbed {{num_keychain}} keychain entries, {{num_boards}} boards, {{num_notes}} notes, {{num_files}} files from old server.', args));
+					turtl.update_loading_screen(i18next.t('Grabbed {{num_keychain}} keychain entries, {{num_boards}} boards, {{num_notes}} notes, {{num_files}} files from old server', args));
 					turtl.update_loading_screen(i18next.t('Downloading files...'));
 					total_items = args.num_keychain + args.num_boards + args.num_notes + args.num_files;
 					break;
@@ -108,7 +108,7 @@ var UserMigrateController = UserJoinController.extend({
 					turtl.update_loading_screen(i18next.t('Files downloaded, decrypting profile...'));
 					break;
 				case 'decrypt-done':
-					turtl.update_loading_screen(i18next.t('Old profile loaded, converting to new format', args));
+					turtl.update_loading_screen(i18next.t('Old profile loaded, converting to new format...', args));
 					break;
 				case 'decrypt-item':
 					decrypted_items++;
@@ -117,7 +117,8 @@ var UserMigrateController = UserJoinController.extend({
 					}
 					break;
 			}
-		});
+		}, 'migration:overlay:listener');
+		turtl.update_loading_screen(false);
 		endpoint_promise
 			.bind(this)
 			.then(function() {
@@ -143,6 +144,7 @@ var UserMigrateController = UserJoinController.extend({
 			.finally(function() {
 				turtl.loading(false);
 				turtl.show_loading_screen(false);
+				turtl.update_loading_screen(false);
 				this.inp_submit.set('disabled', '');
 				this.el_loader.removeClass('active');
 			});
