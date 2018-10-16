@@ -9,10 +9,15 @@
 	}
 }
 
-.search-filters {padding: 16px 6px 0 6px;}
+.search-filters {padding: 0 6px 0 6px;}
 .search-filters {
 	@media @desktop {
 		& {padding-left: 12px; padding-right: 12px;}
+	}
+	.clear-search {margin: 0 0 16px 0; border-bottom: 1px solid @theme_border;}
+	.clear-search {
+		a {display: block; padding: 16px; font-size: 16px; text-align: center;}
+		icon {margin-right: 8px; opacity: 0.5;}
 	}
 	.filter-sort {padding: 0 0 16px 0;}
 	.filter-sort {

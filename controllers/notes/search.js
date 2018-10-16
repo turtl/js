@@ -16,7 +16,8 @@ var NotesSearchController = Composer.Controller.extend({
 		'click ul.tags li': 'toggle_tag',
 		'press ul.tags li': 'negate_tag_press',
 		'click ul.colors li': 'toggle_color',
-		'submit form': 'submit'
+		'submit form': 'submit',
+		'click a[href=#clear-search]': 'reset_search',
 	},
 
 	modal: null,
@@ -55,9 +56,6 @@ var NotesSearchController = Composer.Controller.extend({
 			skip_overlay: true,
 			show_header: true,
 			title: titlefn(turtl.search.total),
-			actions: [
-				{name: 'reset', icon: 'everything', title: i18next.t('Reset search')}
-			]
 		});
 		this.render()
 			.bind(this)
@@ -83,13 +81,6 @@ var NotesSearchController = Composer.Controller.extend({
 			document.body.removeClass('search');
 		});
 
-		this.with_bind(this.modal, 'header:fire-action', function(action) {
-			switch(action) {
-				case 'reset':
-					this.reset_search();
-					break;
-			}
-		}.bind(this));
 		this.with_bind(turtl.search, 'search-done', function(_notes, _tags, total) {
 			this.modal.set_title(titlefn(total), turtl.last_url);
 		}.bind(this));
