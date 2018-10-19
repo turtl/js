@@ -31,6 +31,13 @@ var SpacesSharingSendController = FormController.extend({
 		if(!this.action) this.action = i18next.t('Invite');
 		this.parent();
 
+		var confirmed = turtl.user.get('confirmed');
+		if(!confirmed) {
+			barfr.barf(i18next.t('You must confirm your email to share spaces.'));
+			this.release();
+			return;
+		}
+
 		if(!this.model) {
 			this.release();
 			throw new Error('spaces: share: invite: no model passed');
