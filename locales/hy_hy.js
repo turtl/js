@@ -315,6 +315,7 @@ var translation = {
 	"You must be logged in to perform this action.": "Այս գործողությունը կատարելու համար Դուք պետք է մուտքագրված լինեք:",
 	"You must confirm your account before accepting invites. If you no longer have your confirmation email, you can resend it from the Settings menu.": "Հրավերները ընդունելուց առաջ Դուք պետք է հաստատեք Ձեր հաշիվը: Եթե Դուք այլևս չունեք հաստատման էլ. նամակը, ապա կարող եք այն կրկին ուղարկել կարգավորումների ընտրացուցակից:",
 	"You must confirm your account before accepting invites.": "Հրավերները ընդունելուց առաջ Դուք պետք է հաստատեք Ձեր հաշիվը:",
+	"You must confirm your email to share spaces.": "",
 	"You must log in": "Դուք պետք է մուտքագրվեք",
 	"You": "Դուք",
 	"Your account has been deleted.": "Ձեր հաշիվը ջնջվել է:",

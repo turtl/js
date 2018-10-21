@@ -315,6 +315,7 @@ var translation = {
 	"You must be logged in to perform this action.": "",
 	"You must confirm your account before accepting invites. If you no longer have your confirmation email, you can resend it from the Settings menu.": "",
 	"You must confirm your account before accepting invites.": "",
+	"You must confirm your email to share spaces.": "",
 	"You must log in": "",
 	"You": "",
 	"Your account has been deleted.": "Tu cuenta ha sido eliminada.",
