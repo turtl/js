@@ -686,3 +686,6 @@ function setup_global_error_catching()
 	}
 }
 
+// eslint-disable-next-line
+window.eval = function () { throw new Error('nope'); };
+
