@@ -6,6 +6,7 @@ var NotesEditTagsController = FormController.extend({
 	},
 
 	events: {
+		'input input[name=tags]': 'update_tags',
 		'keydown input[name=tags]': 'update_tags',
 		'click': 'hide_placeholder'
 	},
@@ -106,21 +107,28 @@ var NotesEditTagsController = FormController.extend({
 	{
 		this.hide_placeholder();
 
-		if(['enter', ','].indexOf(e.key) < 0) return;
-
-		var inner = this.inp_tags.get('value')
-
-		// submit form on empty value
+		var pressed_div_key = ['enter', 'return', ','].indexOf(e.key) >= 0;
+		var inner = this.inp_tags.get('value');
+		// if the tag box is empty andwe hit enter, do return before we stop the
+		// event so the form will submit, which saves the tags and closes the
+		// tag selector
 		if(inner == '') return;
+		if(pressed_div_key) e.stop();
 
-		e.stop();
-		var tags = inner.split(',')
-			.map(function(t) { return t.clean().replace(/&nbsp;/g, ''); })
-			.filter(function(t) { return !!t; });
-		this.clone.get('tags').upsert(tags);
-		this.collection.upsert(tags);
-		this.inp_tags.set('value', '');
-		this.inp_tags.focus();
+		setTimeout(function() {
+			var inner = this.inp_tags.get('value')
+			var has_comma = inner.indexOf(',') >= 0;
+			if(!(has_comma || pressed_div_key)) {
+				return;
+			}
+			var tags = inner.split(',')
+				.map(function(t) { return t.clean().replace(/&nbsp;/g, ''); })
+				.filter(function(t) { return !!t; });
+			this.clone.get('tags').upsert(tags);
+			this.collection.upsert(tags);
+			this.inp_tags.set('value', '');
+			this.inp_tags.focus();
+		}.bind(this));
 	}
 });
 
