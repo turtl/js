@@ -19,6 +19,7 @@ var turtl = {
 	// a modal helper
 	overlay: null,
 
+	initialized: false,
 	loaded: false,
 
 	// holds the title breadcrumbs
@@ -63,7 +64,7 @@ var turtl = {
 
 	init: function()
 	{
-		if(this.loaded) return false;
+		if(this.initialized) return false;
 
 		turtl.user = new User();
 		turtl.search = new Search();
@@ -156,7 +157,7 @@ var turtl = {
 				// load the sidebar after we set up the user/profile object
 				turtl.controllers.sidebar = new SidebarController();
 
-				this.loaded = true;
+				this.initialized = true;
 				turtl.events.trigger('loaded');
 
 				// let RememberMe manage the login from here
@@ -301,6 +302,9 @@ var turtl = {
 					if(initial_route.match(/background.html/)) initial_route = space_route;
 					turtl.route(initial_route);
 					options.initial_route = '/';
+
+					turtl.loaded = true;
+					turtl.events.trigger('app:loaded');
 					turtl.events.trigger('app:load:profile-loaded');
 
 					turtl.keyboard.bind('shift+/', function() {
@@ -400,6 +404,8 @@ var turtl = {
 			}
 
 			turtl.events.trigger('user:logout');
+			turtl.events.trigger('app:unloaded');
+			turtl.loaded = false;
 		}.bind(turtl));
 	},
 
@@ -431,7 +437,7 @@ var turtl = {
 
 	unload: function()
 	{
-		this.loaded = false;
+		this.initialized = false;
 		Object.each(this.controllers, function(controller) {
 			controller.release();
 		});
@@ -456,7 +462,7 @@ var turtl = {
 					enabled = false;
 				}
 				if(turtl.user.logging_in) enabled = false;
-				if(!turtl.loaded) enabled = false;
+				if(!turtl.initialized) enabled = false;
 				return enabled;
 			}
 		}, options);
