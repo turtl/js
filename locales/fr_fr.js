@@ -29,7 +29,7 @@ var translation = {
 	"Add a new image": "Ajouter une nouvelle image",
 	"Add a new note": "Ajouter une nouvelle note",
 	"Add a new password": "Ajouter un nouveau mot de passe",
-	"Add a new text note": "Ajouter une nouvelle note texte",
+	"Add a new text note": "Ajouter une nouvelle note textuelle",
 	"Add": "Ajouter",
 	"Advanced settings": "Paramètres avancés",
 	"All notes": "Toutes les notes",
