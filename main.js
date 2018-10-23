@@ -633,13 +633,17 @@ var _turtl_init = function()
 	// OH BEHAVE
 	delete Hammer.defaults.cssProps.userSelect;
     
-	md = window.markdownit({
+	const md_opts = {
 		html: true,
 		breaks: true,
 		linkify: true,
 		typographer: true,
-	}).use(window.markdownitTaskLists)
-    .use(window.markdownitkatex);
+	};
+	md = window.markdownit(md_opts)
+		.use(function(md) {
+			window.markdownitTaskLists(md, {enabled: false});
+		})
+		.use(window.markdownitkatex);
 
 	view.fix_template_paths();
 
