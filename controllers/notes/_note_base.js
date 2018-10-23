@@ -42,6 +42,17 @@ var NoteBaseController = Composer.Controller.extend({
 				if(err.in_progress) return;
 				throw err;
 			});
-	}
+	},
+
+	html: function(content, renderopts) {
+		renderopts || (renderopts = {});
+		if(!renderopts.before_update) {
+			renderopts.before_update = function(from, to) {
+				if(!from.hasClass('task-list-item-checkbox')) return;
+				from.set('checked', to.get('checked'));
+			};
+		}
+		return this.parent(content, renderopts);
+	},
 });
 
