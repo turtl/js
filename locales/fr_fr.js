@@ -309,7 +309,7 @@ var translation = {
 	"You do not have the needed permission to do that on this space: {{perm}}": "Vous n'avez pas la permission nécessaire pour le faire sur cet espace: {{perm}}",
 	"You have {{num}} pending sync item(s)": "Vous avez {{num}} élément(s) de synchronisation en attente",
 	"You have no pending invitations": "Vous n'avez aucune invitation en attente",
-	"You have one or more frozen sync items. Syncing will be stuck until you fix them. Try unfreezing first, and if that doesn't work, you can delete the frozen sync item(s).": "Vous avez un ou plusieurs éléments de synchronisation figés. La synchronisation sera bloquée jusqu'à ce que vous les répariez. Essayez d'abord de dégeler, puis si cela ne fonctionne pas, vous pouvez supprimer le ou les éléments de synchronisation figés.",
+	"You have one or more frozen sync items. Syncing will be stuck until you fix them. Try unfreezing first, and if that doesn't work, you can delete the frozen sync item(s).": "Vous avez un ou plusieurs éléments de synchronisation figés. La synchronisation sera bloquée jusqu'à ce que vous les répariez. Essayez d'abord un déblocage. Si cela ne fonctionne pas, vous pouvez supprimer le ou les éléments de synchronisation figés.",
 	"You must be connected to the Turtl service to accept invites.": "Vous devez être connecté au service Turtl pour accepter les invitations.",
 	"You must be connected to the Turtl service to delete invites.": "Vous devez être connecté au service Turtl pour supprimer les invitations.",
 	"You must be logged in to perform this action.": "Vous devez être connecté pour effectuer cette action.",
