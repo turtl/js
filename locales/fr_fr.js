@@ -125,7 +125,7 @@ var translation = {
 	"Invitee's email address": "Adresse email de l’invité·e",
 	"It looks like you had some problems during migration. Don't worry, your data is still safe on the old Turtl server and you can try again at any time. Please send this log to the turtl team at {{email}}": "Il semble que vous ayez eu des problèmes lors de la migration. Ne vous inquiétez pas, vos données sont toujours en sécurité sur l'ancien serveur Turtl et vous pouvez réessayer à tout moment. Merci d'envoyer ce journal à l'équipe Turtl à {{email}}",
 	"Join": "Créer un compte",
-	"Just making sure...do you really want to delete your account?": "Juste pour être sûr… Vous voulez vraiment supprimer votre compte ?",
+	"Just making sure...do you really want to delete your account?": "Juste pour être sûr... Vous voulez vraiment supprimer votre compte ?",
 	"Keyboard shortcuts": "Raccourcis clavier",
 	"Last edited": "Dernière édition",
 	"Leave this space &raquo;": "Quitter cet espace &raquo;",
