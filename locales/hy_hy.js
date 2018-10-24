@@ -168,7 +168,7 @@ var translation = {
 	"Old Turtl server": "Turtl-ի հին սպասարկիչ",
 	"One hash makes a large title": "Մեկ վանդականիշը գրառումը շատ է մեծացնում",
 	"Only import items missing from current profile": "Ներմուծել միայն այն տարրերը, որոնք բացակայում են ընթացիկ հատկագրից",
-	"Open a Space easily by hitting <kbd>s</kbd>, typing the name of the Space you want, and hitting <kbd>Enter</kbd>. You will then be take to the Board selector. Hit <kbd>Enter</kbd> again for \"All notes\" or type the name of the Board you want to open and hit <kbd>Enter</kbd> to open it.": "Հեշտությամբ բացեք Տարածքը սեղմելով <kbd>s</kbd>, մուտքագրելով ցանկացած Տարածքի անվանումը և սեղմելով <kbd>Enter</kbd>: Այնուհետև Դուք կուղորդվեք Հարթակի ընտրիչ: Կրկին սեղմեք <kbd>Enter</kbd> \"Բոլոր գրառումներ\"-ի համար կամ մուտքագրեք ցանկացած Հարթակի անվանումը և սեղմեք <kbd>Enter</kbd> այն բացելու համար:",
+	"Open a Space easily by hitting <kbd>s</kbd>, typing the name of the Space you want, and hitting <kbd>Enter</kbd>. You will then be taken to the Board selector. Hit <kbd>Enter</kbd> again for \"All notes\" or type the name of the Board you want to open and hit <kbd>Enter</kbd> to open it.": "Հեշտությամբ բացեք Տարածքը սեղմելով <kbd>s</kbd>, մուտքագրելով ցանկացած Տարածքի անվանումը և սեղմելով <kbd>Enter</kbd>: Այնուհետև Դուք կուղորդվեք Հարթակի ընտրիչ: Կրկին սեղմեք <kbd>Enter</kbd> \"Բոլոր գրառումներ\"-ի համար կամ մուտքագրեք ցանկացած Հարթակի անվանումը և սեղմեք <kbd>Enter</kbd> այն բացելու համար:",
 	"Open boards menu": "Բացել հարթակների ընտրացուցակը",
 	"Open current note": "Բացել ընթացիկ գրառումը",
 	"Open spaces menu": "Բացել տարածքների ընտրացուցակը",

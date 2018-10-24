@@ -168,7 +168,7 @@ var translation = {
 	"Old Turtl server": "Ancien serveur Turtl",
 	"One hash makes a large title": "Un croisillon # fait un grand titre",
 	"Only import items missing from current profile": "N'importer que les éléments manquant au profil actuel",
-	"Open a Space easily by hitting <kbd>s</kbd>, typing the name of the Space you want, and hitting <kbd>Enter</kbd>. You will then be take to the Board selector. Hit <kbd>Enter</kbd> again for \"All notes\" or type the name of the Board you want to open and hit <kbd>Enter</kbd> to open it.": "Ouvrir un Espace facilement en tapant <kbd>s</kbd>, le nom de l'Espace désiré et enfin la touche <kbd>Entrée</kbd>. Vous serez redirigé vers le selecteur de Tableau. Appuyez sur <kbd>Entrée</kbd> à nouveau pour \"Toutes les notes\" ou tapez le nom du Tableau que vous souhaitez ouvrir puis validez avec la touche <kbd>Enter</kbd>.",
+	"Open a Space easily by hitting <kbd>s</kbd>, typing the name of the Space you want, and hitting <kbd>Enter</kbd>. You will then be taken to the Board selector. Hit <kbd>Enter</kbd> again for \"All notes\" or type the name of the Board you want to open and hit <kbd>Enter</kbd> to open it.": "Ouvrir un Espace facilement en tapant <kbd>s</kbd>, le nom de l'Espace désiré et enfin la touche <kbd>Entrée</kbd>. Vous serez redirigé vers le selecteur de Tableau. Appuyez sur <kbd>Entrée</kbd> à nouveau pour \"Toutes les notes\" ou tapez le nom du Tableau que vous souhaitez ouvrir puis validez avec la touche <kbd>Enter</kbd>.",
 	"Open boards menu": "Ouvrir le menu des tableaux",
 	"Open current note": "Ouvrir la note actuelle",
 	"Open spaces menu": "Ouvrir le menu des espaces",

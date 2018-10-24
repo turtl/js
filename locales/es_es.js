@@ -168,7 +168,7 @@ var translation = {
 	"Old Turtl server": "",
 	"One hash makes a large title": "Una almohadilla hace un título grande",
 	"Only import items missing from current profile": "",
-	"Open a Space easily by hitting <kbd>s</kbd>, typing the name of the Space you want, and hitting <kbd>Enter</kbd>. You will then be take to the Board selector. Hit <kbd>Enter</kbd> again for \"All notes\" or type the name of the Board you want to open and hit <kbd>Enter</kbd> to open it.": "",
+	"Open a Space easily by hitting <kbd>s</kbd>, typing the name of the Space you want, and hitting <kbd>Enter</kbd>. You will then be taken to the Board selector. Hit <kbd>Enter</kbd> again for \"All notes\" or type the name of the Board you want to open and hit <kbd>Enter</kbd> to open it.": "",
 	"Open boards menu": "",
 	"Open current note": "Abrir nota actual",
 	"Open spaces menu": "",
