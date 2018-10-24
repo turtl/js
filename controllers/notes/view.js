@@ -50,7 +50,9 @@ var NotesViewController = NoteBaseController.extend({
 			var actions = [];
 			if(!this.hide_actions) {
 				if(space.can_i(Permissions.permissions.delete_note)) {
-					actions.push({name: 'menu', actions: [{name: i18next.t('Delete')}]});
+					actions.push({name: 'menu', actions: [
+						{name: i18next.t('Delete'), action: 'delete'},
+					]});
 				}
 			}
 			this.modal.actions = actions;

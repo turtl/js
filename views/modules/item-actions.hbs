@@ -6,7 +6,7 @@
 				<ul>
 					{{#each this}}
 						<li {{#if class}}class="{{class}}"{{/if}}>
-							<a href="{{#if href}}{{href}}{{else}}#{{sluggify name}}{{/if}}" rel="{{sluggify name}}">
+							<a href="{{#if href}}{{href}}{{else}}#{{sluggify name}}{{/if}}" rel="{{#if action}}{{action}}{{else}}{{sluggify name}}{{/if}}">
 								{{name}}
 							</a>
 						</li>
