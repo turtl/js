@@ -1,0 +1,20 @@
+<p>
+	{{t 'Select the space to move to:'}}
+</p>
+<div class="space">
+	<select name="space_id">
+		{{#each spaces}}
+			<option {{#equal id @root.selected_space}}selected{{/equal}} id="sel-space-{{id}}" value="{{id}}">{{title}}</option>
+		{{/each}}
+	</select>
+</div>
+
+<div class="space">
+	<select name="board_id">
+		<option value="">{{t 'No board selected'}}</option>
+		{{#each boards}}
+			<option {{#equal id @root.selected_board}}selected{{/equal}} id="sel-board-{{id}}" value="{{id}}">{{title}}</option>
+		{{/each}}
+	</select>
+</div>
+

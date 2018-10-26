@@ -70,8 +70,15 @@ var Note = SyncModel.extend({
 		});
 	},
 
-	move_spaces: function(new_space_id) {
-		this.set({space_id: new_space_id});
+	get_space: function()
+	{
+		var space_id = this.get('space_id');
+		if(!space_id) return false;
+		return turtl.profile.get('spaces').get(space_id) || false;
+	},
+
+	move_spaces: function(new_space_id, new_board_id) {
+		this.set({space_id: new_space_id, board_id: new_board_id});
 		return this.save({custom_method: 'move-space'});
 	},
 

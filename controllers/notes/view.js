@@ -52,6 +52,7 @@ var NotesViewController = NoteBaseController.extend({
 				if(space.can_i(Permissions.permissions.delete_note)) {
 					actions.push({name: 'menu', actions: [
 						{name: i18next.t('Delete'), action: 'delete'},
+						{name: i18next.t('Move note to another space'), action: 'move'},
 					]});
 				}
 			}
@@ -73,6 +74,7 @@ var NotesViewController = NoteBaseController.extend({
 		this.with_bind(this.modal, 'header:menu:fire-action', function(action) {
 			switch(action) {
 				case 'delete': this.open_delete(); break;
+				case 'move': this.open_move(); break;
 			}
 		}.bind(this));
 
@@ -205,6 +207,14 @@ var NotesViewController = NoteBaseController.extend({
 				log.error('note: delete: ', derr(err));
 				barfr.barf(i18next.t('There was a problem deleting your note: {{err}}', {err: err.message}));
 			});
+	},
+
+	open_move: function(e) {
+		if(e) e.stop();
+		this.trigger('close');
+		new NotesMoveController({
+			model: this.model,
+		});
 	},
 
 	open_file: function(e)
