@@ -1,4 +1,4 @@
-var users = {
+handlers.users = {
 	login: function()
 	{
 		var slide = false;

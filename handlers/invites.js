@@ -1,4 +1,4 @@
-var invites = {
+handlers.invites = {
 	index: function() {
 		var slide = false;
 		if(turtl.controllers.pages.is([NotesIndexController, SpacesSharingController])) {

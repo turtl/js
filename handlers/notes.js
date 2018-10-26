@@ -1,4 +1,4 @@
-var notes = {
+handlers.notes = {
 	index: function() {
 		if(!turtl.route_changed() && turtl.controllers.pages.is(NotesIndexController)) return;
 		var slide = false;

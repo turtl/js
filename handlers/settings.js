@@ -1,4 +1,4 @@
-var settings = {
+handlers.settings = {
 	index: function()
 	{
 		var slide = false;

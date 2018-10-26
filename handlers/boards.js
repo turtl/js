@@ -1,4 +1,4 @@
-var boards = {
+handlers.boards = {
 	notes: function() {
 		if(!turtl.route_changed() && turtl.controllers.pages.is(NotesIndexController)) return;
 		var params = turtl.param_router.get();

@@ -1,24 +1,24 @@
 config.routes = {
-	'/users/login': ['users', 'login'],
-	'/users/welcome': ['users', 'welcome'],
-	'/users/join': ['users', 'join'],
-	'/users/migrate': ['users', 'migrate'],
-	'/users/logout': ['users', 'logout'],
-	'/users/debug': ['users', 'debug'],
+	'/users/login': handlers.users.login,
+	'/users/welcome': handlers.users.welcome,
+	'/users/join': handlers.users.join,
+	'/users/migrate': handlers.users.migrate,
+	'/users/logout': handlers.users.logout,
+	'/users/debug': handlers.users.debug,
 
-	'/spaces/:space_id/notes': ['notes', 'index'],
-	'/spaces/:space_id/boards/:board_id/notes': ['boards', 'notes'],
-	'/spaces/:space_id/sharing': ['spaces', 'sharing'],
-	'/invites': ['invites', 'index'],
+	'/spaces/:space_id/notes': handlers.notes.index,
+	'/spaces/:space_id/boards/:board_id/notes': handlers.boards.notes,
+	'/spaces/:space_id/sharing': handlers.spaces.sharing,
+	'/invites': handlers.invites.index,
 
-	'/settings': ['settings', 'index'],
-	'/settings/password': ['settings', 'password'],
-	'/settings/delete-account': ['settings', 'delete_account'],
-	'/settings/sync': ['settings', 'sync'],
-	'/settings/export': ['settings', 'export'],
-	'/settings/logs': ['settings', 'logs'],
-	'/settings/feedback': ['settings', 'feedback'],
+	'/settings': handlers.settings.index,
+	'/settings/password': handlers.settings.password,
+	'/settings/delete-account': handlers.settings.delete_account,
+	'/settings/sync': handlers.settings.sync,
+	'/settings/export': handlers.settings.export,
+	'/settings/logs': handlers.settings.logs,
+	'/settings/feedback': handlers.settings.feedback,
 
-	'/': ['notes', 'index']
+	'/': handlers.notes.index
 };
 

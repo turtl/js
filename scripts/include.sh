@@ -47,6 +47,7 @@ function vendor_js() {
 function all_js() {
 	vendor_js
 	
+	path_to_js "${SEARCH_PATH}handlers"
 	path_to_js "${SEARCH_PATH}config/config.js"
 	find ${SEARCH_PATH}config -name '*.js' \
 		| LC_ALL=C sort \
@@ -64,7 +65,6 @@ function all_js() {
 		| grep -v 'nav\.js'
 	path_to_js "${SEARCH_PATH}controllers"
 	path_to_js "${SEARCH_PATH}models"
-	path_to_js "${SEARCH_PATH}handlers"
 	path_to_js "${BUILD}/"
 	echo "${SEARCH_PATH}main.js"
 }
