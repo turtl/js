@@ -5042,6 +5042,10 @@ exports.get_auth = function(username, password, options) {
 		});
 };
 
+exports._meta = {
+	sjcl: sjcl,
+	tcrypt: tcrypt,
+};
 
 return exports;
 })();
