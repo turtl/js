@@ -1,6 +1,7 @@
 @import '../variables';
 
 .settings {
+	.username {padding: 16px 0; text-align: center;}
 	> ul.item-list {margin-bottom: 16px;}
 	> ul.item-list {
 		> li {padding: 0;}
@@ -14,6 +15,9 @@
 	}
 	> .info {padding: 8px; text-align: center; font-size: 15px;}
 	> .info {
+		p {margin-top: 12px;}
+		p:first-child {margin-top: 0;}
+		small {font-size: 80%;}
 		em {color: darken(@theme_accent, 20%);}
 	}
 }

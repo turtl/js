@@ -7,6 +7,10 @@ var SettingsController = Composer.Controller.extend({
 		'click a[href=#resend-confirmation]': 'resend_confirmation',
 	},
 
+	viewstate: {
+		api_endpoint: null,
+	},
+
 	init: function()
 	{
 		this.with_bind(turtl.events, 'sync:connected', this.render.bind(this));
@@ -17,16 +21,25 @@ var SettingsController = Composer.Controller.extend({
 		turtl.push_title(i18next.t('Your settings'), last_route_non_settings || '/');
 		this.bind('release', turtl.pop_title.bind(null, false));
 
+		App.prototype.get_api_endpoint()
+			.bind(this)
+			.then(function(endpoint) {
+				this.viewstate.api_endpoint = endpoint;
+				this.render();
+			});
 		this.render();
 	},
 
 	render: function()
 	{
 		var confirmed = turtl.user.get('confirmed');
+		var username = turtl.user.get('username');
 		return this.html(view.render('settings/index', {
 			connected: turtl.connected,
 			version: config.client + '-' + config.version,
 			confirmed: confirmed,
+			username: username,
+			state: this.viewstate,
 		}));
 	},
 
