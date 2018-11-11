@@ -137,6 +137,7 @@ var translation = {
 	"Loading notes...": "Jegyzetek betöltése....",
 	"Loading profile": "Profil betöltése",
 	"Log out": "Kilépés",
+	"Logged in as <em>{{username}}</em> <small>(on {{server}})</small>": "",
 	"Login failed": "Hibás belépés",
 	"Login to an existing account": "Belépés meglévő fiókba",
 	"Login": "Belépés",

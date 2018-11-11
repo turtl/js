@@ -137,6 +137,7 @@ var translation = {
 	"Loading notes...": "Գրառումների բեռնում...",
 	"Loading profile": "Հատկագրի բեռնում",
 	"Log out": "Ելք",
+	"Logged in as <em>{{username}}</em> <small>(on {{server}})</small>": "",
 	"Login failed": "Չհաջողվեց մուտքագրվել",
 	"Login to an existing account": "Մուտքագրվել առկա հաշվի մեջ",
 	"Login": "Մուտքագրվել",

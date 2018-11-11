@@ -137,6 +137,7 @@ var translation = {
 	"Loading notes...": "",
 	"Loading profile": "Cargando perfil",
 	"Log out": "Desloguearte",
+	"Logged in as <em>{{username}}</em> <small>(on {{server}})</small>": "",
 	"Login failed": "Logueo fallido",
 	"Login to an existing account": "Loguéate en una cuenta existente",
 	"Login": "Loguéate",

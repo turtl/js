@@ -137,6 +137,7 @@ var translation = {
 	"Loading notes...": "Chargement des notes...",
 	"Loading profile": "Chargement du profil",
 	"Log out": "Déconnexion",
+	"Logged in as <em>{{username}}</em> <small>(on {{server}})</small>": "",
 	"Login failed": "Connexion échouée",
 	"Login to an existing account": "S’identifier avec un compte existant",
 	"Login": "Connexion",

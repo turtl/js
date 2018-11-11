@@ -137,6 +137,7 @@ var translation = {
 	"Loading notes...": "",
 	"Loading profile": "Завантаження профілю",
 	"Log out": "Вийти",
+	"Logged in as <em>{{username}}</em> <small>(on {{server}})</small>": "",
 	"Login failed": "Помилка логіну",
 	"Login to an existing account": "Вхід до існуючого облікового запису",
 	"Login": "Логін",

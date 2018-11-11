@@ -137,6 +137,7 @@ var translation = {
 	"Loading notes...": "",
 	"Loading profile": "Carregant el perfil",
 	"Log out": "Surt del compte",
+	"Logged in as <em>{{username}}</em> <small>(on {{server}})</small>": "",
 	"Login failed": "Ha fallat l'autenticació",
 	"Login to an existing account": "Entra a un compte existent",
 	"Login": "Inicieu la sessió",
