@@ -19,6 +19,7 @@ var FormController = Composer.Controller.extend({
 	show_cancel: true,
 	bind_keys: true,
 	disable_esc: false,
+	disable_browser_validation: false,
 
 	view_state: {
 		footer_desc: '',
@@ -45,6 +46,7 @@ var FormController = Composer.Controller.extend({
 			footer_actions: this.footer_actions,
 			show_cancel: this.show_cancel,
 			disabled: this.disabled,
+			disable_browser_validation: this.disable_browser_validation,
 		}));
 	},
 

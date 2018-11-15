@@ -1,5 +1,5 @@
 <div class="{{formclass}} clear interface">
-	<form class="standard-form" autocomplete="off">
+	<form class="standard-form" autocomplete="off" {{#if disable_browser_validation}}novalidate{{/if}}>
 		{{{content}}}
 		{{#if buttons}}
 			<div class="button-row clear">

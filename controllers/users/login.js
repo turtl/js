@@ -18,6 +18,7 @@ var UserLoginController = UserBaseController.extend({
 
 	buttons: false,
 	formclass: 'user-login',
+	disable_browser_validation: true,
 
 	viewstate: {
 		old_endpoint: '',
