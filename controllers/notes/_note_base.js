@@ -54,5 +54,12 @@ var NoteBaseController = Composer.Controller.extend({
 		}
 		return this.parent(content, renderopts);
 	},
+
+	malformed_note: function(note) {
+		var notedata = clone(note);
+		note.type = 'text';
+		note.title = i18next.t('Malformed note');
+		note.text = i18next.t('This note was saved incorrectly and cannot be displayed.\n\n```\n{{-note_data}}\n```\n', {note_data: JSON.stringify(notedata, null, 2)});
+	},
 });
 

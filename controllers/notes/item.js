@@ -48,12 +48,13 @@ var NotesItemController = NoteBaseController.extend({
 	{
 		var type = this.model.get('type');
 		var note = this.model.toJSON();
-		if(!type)
-		{
-			throw new Error('note: bad type: '+ note.id);
+		var note_error = false;
+		if(!type) {
+			type = 'text';
+			note_error = true;
+			this.malformed_note(note);
 		}
-		if(note.file)
-		{
+		if(note.file) {
 			note.file.blob_url = this.model.get('file').get('blob_url');
 			if(note.file.meta && note.file.meta.width && note.file.meta.height)
 			{
@@ -83,9 +84,8 @@ var NotesItemController = NoteBaseController.extend({
 				{
 					this.el.addClass('preview');
 				}
-				if(this.model.get('crypto_error'))
-				{
-					this.el.addClass('crypto-error');
+				if(note_error) {
+					this.el.addClass('note-error');
 				}
 				this.el.set('rel', this.model.id());
 

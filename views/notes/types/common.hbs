@@ -35,30 +35,7 @@
 {{/if}}
 
 <div class="note-gutter">
-	{{#if crypto_error}}
-		<div class="content text">
-			<div class="body">
-				<h1>{{t 'Crypto error'}}</h1>
-				<p>
-					{{t 'There was a problem decrypting this note. Please contact <a href="mailto:info@turtlapp.com">info@turtlapp.com</a> for assistance.'}}
-				</p>
-				{{#if error_data.boards.length}}
-					<p>
-						{{t 'This note belongs to these boards:'}}
-					</p>
-					<ul>
-						{{#each error_data.boards}}
-							<li>{{this}}</li>
-						{{/each}}
-					</ul>
-				{{else}}
-					{{t 'This note is not in any boards.'}}
-				{{/if}}
-				<h2>{{t 'Debug info'}}</h2>
-				<code>ID:&nbsp;{{note.id}}<br>Key:&nbsp;{{#if error_data.key}}{{error_data.key}}{{else}}No key found{{/if}}</code>
-			</div>
-		</div>
-	{{else}}{{#if empty}}
+	{{#if empty}}
 		<p class="empty">{{t '(empty note)'}}</p>
 	{{else}}
 		<div class="content text">
@@ -96,6 +73,6 @@
 				</div>
 			{{/if}}
 		</div>
-	{{/if}}{{/if}}
+	{{/if}}
 </div>
 
