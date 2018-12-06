@@ -107,9 +107,6 @@ const SidebarController = Composer.Controller.extend({
 		this.with_bind(turtl.events, 'sidebar:toggle', this.toggle.bind(this));
 		this.with_bind(turtl.events, 'app:load:profile-loaded', this.render.bind(this));
 
-		this.with_bind(turtl.user, 'login', function() {
-		}, 'sidebar:login:render');
-
 		var hammer = new Hammer.Manager(this.el, {domEvents: true, touchAction: 'pan-y'});
 		hammer.add(new Hammer.Press({time: 750}));
 		hammer.add(new Hammer.Swipe());
@@ -133,9 +130,15 @@ const SidebarController = Composer.Controller.extend({
 	},
 
 	render: function() {
-		if(!turtl.profile) return;
+		if(!turtl.profile) {
+			log.warn('SidebarController::render() -- missing `turtl.profile`');
+			return;
+		}
 		var current_space = turtl.profile.current_space();
-		if(!current_space) return;
+		if(!current_space) {
+			log.warn('SidebarController::render() -- missing `turtl.profile.current_space()`');
+			return;
+		}
 		var cur_space = current_space.toJSON();
 		cur_space.color = current_space.get_color();
 		var cur_space_id = current_space.id();
