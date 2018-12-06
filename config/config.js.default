@@ -27,7 +27,7 @@ var config = {
 	route_base: '',
 
 	// if true, any uncaught errors will be logged to the API for processing
-	catch_global_errors: false,
+	catch_global_errors: true,
 
 	// if a note is changed in the note editor, pop up a confirmation before
 	// letting the unsaved changes get lost (due to modal closing)

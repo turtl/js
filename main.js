@@ -223,6 +223,9 @@ var turtl = {
 			case 'sync:outgoing:complete':
 				turtl.events.trigger('sync:outgoing:complete');
 				break;
+			case 'sync:outgoing:extra':
+				turtl.events.trigger('sync:outgoing:extra', data);
+				break;
 			case 'migration-event':
 				turtl.events.trigger('migration', data.event, data.args);
 				break;
@@ -664,12 +667,10 @@ window.addEvent('domready', function() {
 
 init_localization();
 
-function setup_global_error_catching()
-{
+function setup_global_error_catching() {
 	// set up a global error handler that XHRs shit to the API so we know when bugs
 	// are cropping up
-	if(config.catch_global_errors)
-	{
+	if(config.catch_global_errors) {
 		var enable_errlog = true;
 		var handler = function(msg, url, line)
 		{
@@ -686,11 +687,7 @@ function setup_global_error_catching()
 				});
 		};
 		Promise.onPossiblyUnhandledRejection(function(err) {
-			var msg = err.message;
-			var parts = err.stack.split(/\n/g)[1].split(/:/, 2);
-			var file = parts[0].replace(/at/, '').trim();
-			var line = parts[1];
-			handler(msg, file, line);
+			console.error('Unhandled Promise error: ', err, err.stack);
 		});
 		window.onerror = handler;
 	}
