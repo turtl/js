@@ -9,12 +9,19 @@ var SettingsController = Composer.Controller.extend({
 
 	viewstate: {
 		api_endpoint: null,
+		extra: {},
 	},
 
 	init: function()
 	{
 		this.with_bind(turtl.events, 'sync:connected', this.render.bind(this));
 		this.with_bind(turtl.user, 'change:confirmed', this.render.bind(this));
+		this.with_bind(turtl.events, 'sync:outgoing:extra', function(extra) {
+			this.viewstate.extra = extra;
+		}.bind(this));
+		this.with_bind(turtl.events, 'sync:incoming:extra', function(extra) {
+			this.viewstate.extra = extra;
+		}.bind(this));
 
 		var last_route_non_settings = turtl.last_routes.slice(0).reverse()
 			.filter(function(url) { return url.indexOf('/settings') < 0; })[0];

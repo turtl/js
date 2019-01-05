@@ -226,6 +226,9 @@ var turtl = {
 			case 'sync:outgoing:extra':
 				turtl.events.trigger('sync:outgoing:extra', data);
 				break;
+			case 'sync:incoming:extra':
+				turtl.events.trigger('sync:incoming:extra', data);
+				break;
 			case 'migration-event':
 				turtl.events.trigger('migration', data.event, data.args);
 				break;
