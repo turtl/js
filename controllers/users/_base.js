@@ -38,6 +38,8 @@ var UserBaseController = FormController.extend({
 	},
 
 	save_login: function() {
+		if(!turtl.remember_me) return;
+		if(!this.inp_autologin) return;
 		var checked = this.inp_autologin.getProperty('checked');
 		if(!checked) {
 			return turtl.remember_me.clear();
