@@ -13,11 +13,11 @@
 		{{/if}}
 		<label>
 			{{t 'Proxy server'}}
-			<input type="text" name="proxy" value="{{state.proxy}}" placeholder="https://10.0.0.2:6777">
+			<input type="text" name="proxy" value="{{state.proxy}}" placeholder="http://10.0.0.2:6777">
 		</label>
 		<label>
 			{{t 'Skip SSL verification'}}
-			<input type="checkbox" name="ignore-ssl" value="1" placeholder="10.0.0.1:6777" {{#if state.ignore_ssl}}checked{{/if}}>
+			<input type="checkbox" name="ignore-ssl" value="1" {{#if state.ignore_ssl}}checked{{/if}}>
 		</label>
 	</p>
 </div>
