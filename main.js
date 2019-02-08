@@ -145,8 +145,11 @@ var turtl = {
 		return Promise.all([core_ready_promise, core_connected_promise])
 			.bind(this)
 			.then(function() {
-				if(!localStorage.config_api_url) return;
-				return App.prototype.set_api_endpoint(localStorage.config_api_url)
+				var current_settings = {};
+				try { current_settings = JSON.parse(localStorage['login_settings']); } catch(_) {}
+				var endpoint = current_settings.endpoint || localStorage.config_api_url;
+				if(!endpoint) return;
+				return App.prototype.set_api_config({endpoint: endpoint})
 					.catch(function(err) {
 						barfr.barf(i18next.t('There was a problem setting the API endpoint. Try restarting the app.'));
 						log.error('core: set endpoint: ', derr(err));

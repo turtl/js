@@ -4,7 +4,6 @@ var UserJoinController = UserBaseController.extend({
 		'input[name=username]': 'inp_username',
 		'input[name=password]': 'inp_password',
 		'input[name=confirm]': 'inp_confirm',
-		'input[name=server]': 'inp_server',
 		'input[type=submit]': 'inp_submit',
 		'p.load': 'el_loader',
 		'.strength': 'strength_container',
@@ -16,7 +15,6 @@ var UserJoinController = UserBaseController.extend({
 	events: {
 		'click .button.confirm': 'finalize',
 		'input input[name=password]': 'update_meter',
-		'click a.open-settings': 'toggle_settings'
 	},
 
 	buttons: false,
@@ -24,6 +22,7 @@ var UserJoinController = UserBaseController.extend({
 
 	viewstate: {
 		endpoint: '',
+		proxy: '',
 		strength_text: ' - ',
 		strength_width: 0,
 		strength_class: '',
@@ -37,15 +36,10 @@ var UserJoinController = UserBaseController.extend({
 		turtl.push_title(i18next.t('Join'), '/users/login');
 		this.bind('release', turtl.pop_title.bind(null, false));
 
-		var endpoint_promises = [
-			App.prototype.get_api_endpoint(),
-			App.prototype.get_old_api_endpoint(),
-		];
-		Promise.all(endpoint_promises)
+		this.populate_login_settings()
 			.bind(this)
-			.spread(function(endpoint, old_endpoint) {
-				this.viewstate.endpoint = localStorage.config_api_url || endpoint;
-				this.viewstate.old_endpoint = localStorage.config_old_api_url || old_endpoint;
+			.then(function(settings) {
+				Object.assign(this.viewstate, settings);
 			})
 			.then(this.render.bind(this))
 			.then(function() {
@@ -55,9 +49,13 @@ var UserJoinController = UserBaseController.extend({
 
 	render: function()
 	{
+		var advanced = view.render('users/advanced-settings', {
+			state: this.viewstate,
+		});
 		return this.html(view.render('users/join', {
 			state: this.viewstate,
 			autologin: this.autologin(),
+			advanced: advanced,
 		}));
 	},
 
@@ -88,8 +86,7 @@ var UserJoinController = UserBaseController.extend({
 		var errors = this.check_login(this.inp_username, this.inp_password, this.inp_confirm);
 		if(!this.check_errors(errors)) return;
 
-		var server = this.inp_server.get('value').trim();
-		var endpoint_promise = this.persist_endpoint(server);
+		var endpoint_promise = this.persist_login_settings(this.grab_form_login_settings());
 
 		this.el_loader.addClass('active');
 		this.inp_submit.set('disabled', 'disabled');

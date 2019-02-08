@@ -7,8 +7,6 @@ var UserMigrateController = UserJoinController.extend({
 		'input[name=username]': 'inp_username',
 		'input[name=password]': 'inp_password',
 		'input[name=confirm]': 'inp_confirm',
-		'input[name=old_server]': 'inp_old_server',
-		'input[name=server]': 'inp_server',
 		'input[type=submit]': 'inp_submit',
 		'p.load': 'el_loader',
 		'.strength': 'strength_container',
@@ -62,9 +60,14 @@ var UserMigrateController = UserJoinController.extend({
 	},
 
 	render: function() {
+		var advanced = view.render('users/advanced-settings', {
+			state: this.viewstate,
+			show_old_server: true,
+		});
 		return this.html(view.render('users/migrate', {
 			state: this.viewstate,
 			autologin: this.autologin(),
+			advanced: advanced,
 		}));
 	},
 
@@ -80,9 +83,7 @@ var UserMigrateController = UserJoinController.extend({
 		if(!this.check_errors(errors)) return;
 
 		this.inp_submit.disabled = true;
-		var old_server = this.inp_old_server.get('value').trim();
-		var server = this.inp_server.get('value').trim();
-		var endpoint_promise = this.persist_endpoint(server, old_server);
+		var endpoint_promise = this.persist_login_settings(this.grab_form_login_settings());
 
 		this.el_loader.addClass('active');
 		this.inp_submit.set('disabled', 'disabled');

@@ -28,10 +28,10 @@ var SettingsController = Composer.Controller.extend({
 		turtl.push_title(i18next.t('Your settings'), last_route_non_settings || '/');
 		this.bind('release', turtl.pop_title.bind(null, false));
 
-		App.prototype.get_api_endpoint()
+		App.prototype.get_api_config()
 			.bind(this)
-			.then(function(endpoint) {
-				this.viewstate.api_endpoint = endpoint;
+			.then(function(config) {
+				this.viewstate.api_endpoint = config.endpoint;
 				this.render();
 			});
 		this.render();

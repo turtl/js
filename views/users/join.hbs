@@ -22,13 +22,5 @@
 	</p>
 </div>
 
-<a class="open-settings {{#if state.settings}}active{{/if}}" href="#settings">{{t 'Advanced settings'}} {{icon 'more'}}</a>
-<div class="settings-container {{#if state.settings}}active{{/if}}">
-	<p class="settings">
-		<label>
-			{{t 'Turtl server'}}
-			<input type="text" name="server" value="{{state.endpoint}}" placeholder="https://apiv3.turtlapp.com">
-		</label>
-	</p>
-</div>
+{{{advanced}}}
 

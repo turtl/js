@@ -19,11 +19,10 @@
 	}
 	.settings-container {max-height: 0; overflow: hidden; .transition(max-height 0.3s);}
 	.settings-container {
-		&.active {max-height: 120px;}
-		&.old-server.active {max-height: 160px;}
+		&.active {max-height: 600px;}
 		p.settings {margin: 0 0 16px 0; padding: 10px; .card();}
 		p.settings {
-			label {color: @theme_gray}
+			label {display: block; color: @theme_gray}
 			small {font-size: 0.7em;}
 		}
 	}

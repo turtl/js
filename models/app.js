@@ -11,20 +11,12 @@ var App = Composer.Model.extend({
 		return turtl.core.send('app:wipe-app-data');
 	},
 
-	set_api_endpoint: function(endpoint) {
-		return turtl.core.send('app:api:set-endpoint', endpoint);
+	set_api_config: function(config) {
+		return turtl.core.send('app:api:set-config', config);
 	},
 
-	get_api_endpoint: function() {
-		return turtl.core.send('app:api:get-endpoint');
-	},
-
-	set_old_api_endpoint: function(endpoint) {
-		return turtl.core.send('app:api:set-old-endpoint', endpoint);
-	},
-
-	get_old_api_endpoint: function() {
-		return turtl.core.send('app:api:get-old-endpoint');
+	get_api_config: function() {
+		return turtl.core.send('app:api:get-config');
 	},
 
 	get_logs: function(lines) {
