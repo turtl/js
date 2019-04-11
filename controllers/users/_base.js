@@ -56,7 +56,7 @@ var UserBaseController = FormController.extend({
 		if(typeof(current_settings.ignore_ssl) != 'undefined') {
 			ignore_ssl_default = current_settings.ignore_ssl;
 		} else if(typeof(defaults['ignore_ssl']) != 'undefined') {
-			ignore_ssl_deafult = defaults['ignore_ssl'];
+			ignore_ssl_default = defaults['ignore_ssl'];
 		}
 		return {
 			endpoint: current_settings.endpoint || localStorage['config_api_url'] || defaults['endpoint'],
