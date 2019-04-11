@@ -129,7 +129,7 @@ var translation = {
 	"Last edited": "Последнее изменение",
 	"Leave this space": "Покинуть это пространство",
 	"Leave this space &raquo;": "Покинуть это пространство &raquo;",
-	"Leaving a space requires a connection to the Turtl server": "Для того чтобы покинуть пространство требуется подключение к серверу Turtl".
+	"Leaving a space requires a connection to the Turtl server": "Для того чтобы покинуть пространство требуется подключение к серверу Turtl",
 	"Load everything (may be slow)": "Загрузить всё (может быть долго)",
 	"Load last {{lines}} lines": "Загрузить последние {{lines}} строки",
 	"Loading notes...": "Загрузка заметок",
