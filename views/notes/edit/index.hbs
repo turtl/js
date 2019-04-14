@@ -36,10 +36,7 @@
 	</div>
 {{/equal}}
 
-<textarea dir="auto" name="text" rows="1" cols="80" tabindex="5" placeholder="{{t 'Note text'}}" {{#if state.text_height}}style="height: {{state.text_height}}px;"{{/if}}>{{note.text}}</textarea>
-<div class="formatting clear">
-	<a href="#formatting" rel="formatting">{{t 'Formatting help'}}</a>
-</div>
+<div class="editor"></div>
 
 {{!--	Disable colors for now ='[
 <ul class="colors">

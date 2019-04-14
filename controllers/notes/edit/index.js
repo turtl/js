@@ -11,7 +11,8 @@ var NotesEditController = FormController.extend({
 		'textarea[name=text]': 'inp_text',
 		'.password': 'el_password',
 		'.file-container': 'el_file',
-		'.button-row': 'el_buttons'
+		'.button-row': 'el_buttons',
+		'.editor': 'el_editor',
 	},
 
 	events: {
@@ -46,7 +47,6 @@ var NotesEditController = FormController.extend({
 	form_data: null,
 
 	view_state: {
-		text_height: null,
 		already_bookmarked: false,
 	},
 
@@ -166,7 +166,15 @@ var NotesEditController = FormController.extend({
 				}
 				this.check_url();
 
-				this.track_subcontroller('file', function() {
+				this.sub('editor', function() {
+					return new NotesEditEditorController({
+						inject: this.el_editor,
+						model: this.clone,
+						skip_resize_text: this.skip_resize_text,
+						use_wysiwyg: true,
+					});
+				}.bind(this));
+				this.sub('file', function() {
 					return new NotesEditFileController({
 						inject: this.el_file,
 						model: this.clone
@@ -174,8 +182,6 @@ var NotesEditController = FormController.extend({
 				}.bind(this));
 				// track unsaved changes to the model
 				this.form_data = this.el_form.toQueryString();
-
-				setTimeout(this.resize_text.bind(this), 50);
 
 				// basically copy tumblr's fixed footer tagging interface
 				var footer_desc = function() {
@@ -234,12 +240,6 @@ var NotesEditController = FormController.extend({
 		this.with_bind(turtl.profile.get('boards'), ['add', 'remove', 'change'], this.render.bind(this));
 		this.with_bind(turtl.events, 'profile:set-current-space', this.render.bind(this));
 		this.with_bind(turtl.events, 'profile:set-current-space', this.check_url.bind(this));
-
-		if(!this.skip_resize_text) {
-			var resizer = this.resize_text.bind(this);
-			window.addEvent('resize', resizer);
-			this.bind('release', window.removeEvent.bind(window, 'resize', resizer));
-		}
 	},
 
 	render: function()
@@ -277,7 +277,12 @@ var NotesEditController = FormController.extend({
 		var url = this.inp_url && this.inp_url.get('value');
 		var username = this.inp_username && this.inp_username.get('value');
 		var password = this.inp_password && this.inp_password.get('value');
-		var text = this.inp_text.get('value');
+		const editor_con = this.sub('editor');
+		if(editor_con) {
+			var text = editor_con.text();
+		} else {
+			var text = this.inp_text.get('value');
+		}
 
 		var data = {
 			space_id: space_id,
@@ -411,18 +416,6 @@ var NotesEditController = FormController.extend({
 			this.el_password.removeClass('preview');
 			this.inp_password.set('type', 'password');
 		}
-	},
-
-	resize_text: function()
-	{
-		var form_bottom = this.el_form.getCoordinates().bottom;
-		var btn_top = this.el_buttons.getCoordinates().top;
-		var diff = btn_top - form_bottom;
-		var txt_height = this.inp_text.getCoordinates().height;
-		var height = txt_height + diff;
-		if(height < 80) height = 80;
-		this.view_state.text_height = height;
-		this.render();
 	},
 
 	update_selected_id: function(e) {
