@@ -96,6 +96,7 @@ const NoteBaseController = Composer.Controller.extend({
 		return Promise.all(embed_promises)
 			.bind(this)
 			.then(function(notes) {
+				if(!this.el) return;
 				// remove any previously embedded notes before rendering
 				if(this._num_last_embeds && this._num_last_embeds > 0) {
 					for(var i = notes.length - 1; i < this._num_last_embeds; i++) {
