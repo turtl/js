@@ -46,6 +46,10 @@ var Note = SyncModel.extend({
 		this.trigger('file-id');
 	},
 
+	is_loaded: function() {
+		return this.get('space_id');
+	},
+
 	add_tag: function(tag)
 	{
 		var tags = this.get('tags');
@@ -85,6 +89,17 @@ var Note = SyncModel.extend({
 	incoming_sync: function(sync_item) {
 		if(sync_item.type != 'note') return;
 		return this.parent(sync_item);
+	},
+
+	fetch: function() {
+		return turtl.core.send('profile:get-notes', [this.id()])
+			.bind(this)
+			.then(function(notes) {
+				const notedata = notes && notes[0];
+				if(!notedata) return this;
+				this.reset(notedata);
+				return this;
+			});
 	},
 });
 

@@ -1,4 +1,4 @@
-var NotesViewController = NoteBaseController.extend({
+const NotesViewController = NoteBaseController.extend({
 	class_name: 'note',
 
 	elements: {
@@ -34,8 +34,7 @@ var NotesViewController = NoteBaseController.extend({
 
 	init: function()
 	{
-		if(!this.model)
-		{
+		if(!this.model) {
 			this.release();
 			throw new Error('notes: view: no model passed');
 		}
@@ -44,13 +43,14 @@ var NotesViewController = NoteBaseController.extend({
 		this.modal = new TurtlModal(Object.merge({
 			show_header: true,
 			title: this.title,
-			actions: []
+			actions: [],
 		}, this.modal_opts && this.modal_opts() || {}));
 		var setup_actions = function() {
 			var actions = [];
 			if(!this.hide_actions) {
 				if(space.can_i(Permissions.permissions.delete_note)) {
 					actions.push({name: 'menu', actions: [
+						{name: i18next.t('Copy link to note'), action: 'copy-link'},
 						{name: i18next.t('Delete'), action: 'delete'},
 						{name: i18next.t('Move note to another space'), action: 'move'},
 					]});
@@ -73,6 +73,7 @@ var NotesViewController = NoteBaseController.extend({
 		this.with_bind(this.model, 'destroy', close);
 		this.with_bind(this.modal, 'header:menu:fire-action', function(action) {
 			switch(action) {
+				case 'copy-link': this.copy_link(); break;
 				case 'delete': this.open_delete(); break;
 				case 'move': this.open_move(); break;
 			}
@@ -368,6 +369,26 @@ var NotesViewController = NoteBaseController.extend({
 		if(!el) return;
 
 		this.modal.scroll_to(el);
-	}
+	},
+
+	copy_link: function() {
+		if(!ClipboardJS.isSupported()) {
+			log.warn('NotesViewController.copy_link() -- clipboard API not supported');
+			return;
+		}
+		const link = 'note::'+this.model.id();
+		const el_id = 'copy-id-'+this.model.id();
+		const div = new Element('div');
+		div.setStyles({position: 'absolute', left: -9999, width: 1});
+		div.set('html', [
+			'<input id="'+el_id+'" type="button" data-clipboard-text="'+link+'">',
+		].join('\n'));
+		div.inject(document.body);
+		const btn = div.getElement('#'+el_id);
+		const clip = new ClipboardJS('#'+el_id);
+		Composer.fire_event(btn, 'click');
+		setTimeout(clip.destroy.bind(clip));
+		barfr.barf(i18next.t('Copied!'));
+	},
 });
 

@@ -1,4 +1,4 @@
-var NotesItemController = NoteBaseController.extend({
+const NotesItemController = NoteBaseController.extend({
 	tag: 'li',
 	class_name: 'note',
 
@@ -7,6 +7,9 @@ var NotesItemController = NoteBaseController.extend({
 	},
 
 	model: null,
+	extra_class: 'item',
+	// if true, this note cannot be opened
+	prohibit_open: false,
 
 	_last_height: 0,
 
@@ -69,7 +72,7 @@ var NotesItemController = NoteBaseController.extend({
 			note: note
 		})).bind(this)
 			.then(function() {
-				this.el.className = 'note item';
+				this.el.className = 'note '+this.extra_class;
 				this.el.addClass(type);
 				var is_password = this.model.get('type') == 'password';
 				if(!this.model.get('text'))
@@ -126,6 +129,7 @@ var NotesItemController = NoteBaseController.extend({
 	},
 
 	note_click: function(e) {
+		if(this.prohibit_open) return;
 		// hammer press hack
 		if(this._cancel_click) return;
 
@@ -142,9 +146,11 @@ var NotesItemController = NoteBaseController.extend({
 	},
 
 	open_note: function(e) {
+		if(this.prohibit_open) return;
 		if(e) e.stop();
 		new NotesViewController({
-			model: this.model
+			model: this.model,
+			embed_notes: true,
 		});
 	},
 

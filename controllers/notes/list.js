@@ -1,14 +1,14 @@
-var NotesListController = Composer.ListController.extend({
+const NotesListController = Composer.ListController.extend({
 	xdom: true,
 	class_name: 'list-container',
 
 	elements: {
 		'ul': 'note_list',
-		'p.paginate': 'pagination'
+		'p.paginate': 'pagination',
 	},
 
 	events: {
-		'click .paginate a': 'paginate'
+		'click .paginate a': 'paginate',
 	},
 
 	viewstate: {
@@ -87,7 +87,8 @@ var NotesListController = Composer.ListController.extend({
 						var note = notes.get(model.id());
 						var con = new NotesItemController({
 							inject: options.container,
-							model: note
+							model: note,
+							embed_notes: true,
 						});
 						// if the note re-renders, it possibly changed height and we
 						// need to adjust the masonry
@@ -168,8 +169,8 @@ var NotesListController = Composer.ListController.extend({
 
 		if(!this.masonry) {
 			this.masonry = new Masonry(this.note_list, {
-				itemSelector: '.note.item',
-				columnWidth: '.note.item',
+				itemSelector: '.note-list > .note.item',
+				columnWidth: '.note-list > .note.item',
 				percentPosition: true,
 				transitionDuration: 0,
 			});
