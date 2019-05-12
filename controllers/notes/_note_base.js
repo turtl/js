@@ -126,6 +126,7 @@ const NoteBaseController = Composer.Controller.extend({
 						return con;
 					}.bind(this));
 				}.bind(this));
+				this.trigger('update');
 			});
 	},
 });
