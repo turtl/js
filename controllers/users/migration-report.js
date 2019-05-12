@@ -15,11 +15,13 @@ const UserMigrationReportController = Composer.Controller.extend({
 
 	init: function()
 	{
+		const context = turtl.context.grab(this);
 		this.modal = new TurtlModal(Object.merge({
 			show_header: true,
 			title: i18next.t('Migration report'),
 			actions: [],
 			skip_close_on_pageload: true,
+			context: context,
 		}, this.modal_opts && this.modal_opts() || {}));
 		this.render();
 
@@ -27,7 +29,7 @@ const UserMigrationReportController = Composer.Controller.extend({
 		this.modal.open(this.el);
 		this.with_bind(this.modal, 'close', this.release.bind(this));
 		this.bind(['cancel', 'close'], close);
-		this.with_bind(turtl.keyboard, 'esc', close);
+		this.with_bind(context, 'esc', close);
 	},
 
 	render: function()

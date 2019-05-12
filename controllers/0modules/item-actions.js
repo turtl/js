@@ -14,14 +14,14 @@ var ItemActionsController = Composer.Controller.extend({
 
 	actions: [],
 	add_url: false,
+	context: null,
 
 	init: function()
 	{
 		this.render();
 
 		var closebind = this.close.bind(this);
-		turtl.keyboard.bind('esc', closebind);
-		this.bind('release', function() { turtl.keyboard.unbind('esc', closebind); });
+		this.with_bind(this.context || turtl.keyboard, 'esc', closebind);
 
 		this.with_bind(turtl.events, 'menu:open', function(cid) {
 			if(cid == this.cid()) return false;

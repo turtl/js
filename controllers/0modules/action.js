@@ -14,6 +14,7 @@ var ActionController = Composer.Controller.extend({
 
 	actions: [],
 	shortcut_idx: {},
+	context: null,
 
 	is_open: false,
 
@@ -28,8 +29,8 @@ var ActionController = Composer.Controller.extend({
 		}.bind(this);
 		document.body.addEvent('click', click_outside);
 		this.bind('release', function() { document.body.removeEvent('click', click_outside); });
-		this.with_bind(turtl.keyboard, 'esc', this.close.bind(this));
-		this.with_bind(turtl.keyboard, 'raw', function(obj) {
+		this.with_bind(this.context || turtl.keyboard, 'esc', this.close.bind(this));
+		this.with_bind(this.context || turtl.keyboard, 'raw', function(obj) {
 			if(obj.is_input) return;
 			var key = !obj.shift && !obj.alt && !obj.meta && !obj.control && obj.key;
 			var action = this.shortcut_idx[key];

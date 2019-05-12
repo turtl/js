@@ -26,6 +26,7 @@ var NotesIndexController = Composer.Controller.extend({
 
 	init: function()
 	{
+		const context = turtl.context.grab(this);
 		var space = turtl.profile.current_space();
 		var space_id = space.id();
 		this.search.space = space_id;
@@ -113,8 +114,8 @@ var NotesIndexController = Composer.Controller.extend({
 			turtl.route(atag.get('href'));
 		}.bind(this));
 		this.with_bind(turtl.events, 'search:toggle', this.toggle_search.bind(this));
-		this.with_bind(turtl.keyboard, '/', this.open_search.bind(this));
-		this.with_bind(turtl.keyboard, 'x', this.clear_search.bind(this));
+		this.with_bind(context, '/', this.open_search.bind(this));
+		this.with_bind(context, 'x', this.clear_search.bind(this));
 
 		this.render();
 
@@ -124,7 +125,9 @@ var NotesIndexController = Composer.Controller.extend({
 
 			// set up the action button
 			this.sub('actions', function() {
-				var actions = new ActionController();
+				var actions = new ActionController({
+					context: context,
+				});
 				actions.set_actions([
 					{title: i18next.t('Text note'), name: 'text', icon: 'write', shortcut: 't'},
 					{title: i18next.t('Bookmark'), name: 'link', icon: 'bookmark', shortcut: 'b'},
@@ -133,7 +136,7 @@ var NotesIndexController = Composer.Controller.extend({
 					{title: i18next.t('Password'), name: 'password', icon: 'password', shortcut: 'p'}
 				]);
 				this.with_bind(actions, 'actions:fire', this.open_add.bind(this), 'notes:action-fire:open-add');
-				this.with_bind(turtl.keyboard, 'a', function() {
+				this.with_bind(context, 'a', function() {
 					if(actions.is_open) return;
 					actions.open();
 				}, 'notes:keyboard:open-add');

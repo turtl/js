@@ -38,12 +38,14 @@ const NotesViewController = NoteBaseController.extend({
 			this.release();
 			throw new Error('notes: view: no model passed');
 		}
+		const context = turtl.context.grab(this);
 		var space = turtl.profile.current_space();
 
 		this.modal = new TurtlModal(Object.merge({
 			show_header: true,
 			title: this.title,
 			actions: [],
+			context: context,
 		}, this.modal_opts && this.modal_opts() || {}));
 		var setup_actions = function() {
 			var actions = [];
@@ -116,7 +118,10 @@ const NotesViewController = NoteBaseController.extend({
 			}
 			if(button_actions.length > 0) {
 				this.track_subcontroller('actions', function() {
-					var actions = new ActionController({inject: this.modal.el});
+					var actions = new ActionController({
+						inject: this.modal.el,
+						context: context,
+					});
 					actions.set_actions(button_actions);
 					this.with_bind(actions, 'actions:fire', this.open_edit.bind(this, null));
 					return actions;
@@ -126,8 +131,8 @@ const NotesViewController = NoteBaseController.extend({
 
 		this.parent();
 
-		this.with_bind(turtl.keyboard, 'delete', this.open_delete.bind(this));
-		this.with_bind(turtl.keyboard, 'e', this.open_edit.bind(this));
+		this.with_bind(context, 'delete', this.open_delete.bind(this));
+		this.with_bind(context, 'e', this.open_edit.bind(this));
 	},
 
 	render: function()

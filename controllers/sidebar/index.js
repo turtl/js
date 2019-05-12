@@ -39,6 +39,7 @@ const SidebarController = Composer.Controller.extend({
 
 	init: function()
 	{
+		const context = turtl.context.grab(this);
 		this.with_bind(turtl.user, 'profile-loaded', function() {
 			// a sort function that makes fuzzy searching a bit more natural
 			var fuzzy_sort = function(default_sort) {
@@ -120,7 +121,7 @@ const SidebarController = Composer.Controller.extend({
 		hammer.on('swipeleft', this.close.bind(this));
 		this.bind('release', hammer.destroy.bind(hammer));
 
-		this.with_bind(turtl.keyboard, 'esc', this.close.bind(this));
+		this.with_bind(context, 'esc', this.close.bind(this));
 
 		// close when switching pages, UNLESS we specifically ask not to
 		this.with_bind(turtl.controllers.pages, 'prerelease', function() {

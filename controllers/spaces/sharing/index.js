@@ -18,6 +18,8 @@ var SpacesSharingController = Composer.Controller.extend({
 		if(!this.model) this.model = turtl.profile.current_space();
 		if(!this.model) throw new Error('space sharing: no spaces available');
 
+		const context = turtl.context.grab(this);
+
 		this.members = this.model.get('members');
 		this.invites = this.model.get('invites');
 
@@ -61,7 +63,9 @@ var SpacesSharingController = Composer.Controller.extend({
 		var set_main_action = function() {
 			if(this.model.can_i(Permissions.permissions.add_space_invite)) {
 				this.sub('actions', function() {
-					var actions = new ActionController();
+					var actions = new ActionController({
+						context: context,
+					});
 					actions.set_actions([{title: 'New member', name: 'share', icon: 'add_user'}]);
 					this.with_bind(actions, 'actions:fire', this.open_send.bind(this));
 					return actions;

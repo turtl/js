@@ -42,6 +42,7 @@ var turtl = {
 	api: null,
 	back: null,
 	settings: new PublicSetting(),
+	context: null,
 
 	// our last routes
 	last_url: null,
@@ -112,6 +113,7 @@ var turtl = {
 		turtl.keyboard = new TurtlKeyboard();
 		turtl.keyboard.attach();
 
+		turtl.context = new PageContext();
 		turtl.overlay = new TurtlOverlay();
 
 		config.routes = turtl.param_router.parse_routes(config.routes);
