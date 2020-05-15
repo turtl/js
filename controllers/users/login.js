@@ -34,7 +34,7 @@ var UserLoginController = UserBaseController.extend({
 
 		var header_actions = [];
 		header_actions.push({name: 'menu', actions: [
-			{name: i18next.t('Debug log'), href: '/settings/logs'},
+			{name: i18next.t('Debug log'), href: '/settings/logs', rel: 'debug-log'},
 		]});
 		turtl.events.trigger('header:set-actions', header_actions);
 		this.with_bind(turtl.events, 'header:menu:fire-action', function(action, atag) {
