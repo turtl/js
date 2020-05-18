@@ -96,8 +96,8 @@ var NotesIndexController = Composer.Controller.extend({
 			}
 			header_actions.push({name: 'search', icon: 'search'});
 			header_actions.push({name: 'menu', actions: [
-				{name: i18next.t('Share this space'), href: '/spaces/'+space_id+'/sharing'},
-				{name: i18next.t('Settings'), href: '/settings'},
+				{name: i18next.t('Share this space'), href: '/spaces/'+space_id+'/sharing', rel: 'share-this-space'},
+				{name: i18next.t('Settings'), href: '/settings', rel: 'settings'},
 			]});
 			turtl.events.trigger('header:set-actions', header_actions);
 		}.bind(this);
