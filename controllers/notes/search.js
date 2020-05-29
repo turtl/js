@@ -47,6 +47,10 @@ var NotesSearchController = Composer.Controller.extend({
 						return a.name.localeCompare(b.name);
 					});
 					this.render();
+				})
+				.catch(function(err) {
+					turtl.events.trigger('ui-error', i18next.t('There was a problem loading search tags'), err);
+					log.error('notes: search: ', err, derr(err));
 				});
 		}.bind(this);
 		update_initial_tags();

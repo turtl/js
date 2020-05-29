@@ -145,6 +145,10 @@ const NotesListController = Composer.ListController.extend({
 			})
 			.tap(function(res) {
 				if(options.notify) this.trigger.apply(this, ['search-done'].concat(res));
+			})
+			.catch(function(err) {
+				turtl.events.trigger('ui-error', i18next.t('There was a problem searching notes'), err);
+				log.error('notes: list: ', err, derr(err));
 			});
 	},
 
