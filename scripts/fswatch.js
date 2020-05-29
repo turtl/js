@@ -29,7 +29,7 @@ function do_make() {
 	timeout = setTimeout(function() {
 		timeout = null;
 		is_making = true;
-		exec('c:/msys2/usr/bin/make', function(err, stdout, stderr) {
+		exec('make', function(err, stdout, stderr) {
 			if(err) console.error('error: ', err);
 			if(stdout) {
 				stdout = grep(stdout).trim();
