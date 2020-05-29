@@ -6,4 +6,5 @@ build/
 turtl.min.js
 *.stackdump
 sess.vim
+package-lock.json
 
