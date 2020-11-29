@@ -1,6 +1,6 @@
 # [Contributing to Turtl](https://turtlapp.com/contributing/)
 
-Thanks for wanting to help make the Turtl project better!
+Thank you for help to make the Turtl project better!
 
 If you're submitting an issue, please carry on. No need to read the contributing
 guidelines. However, you may be interested in [our Trello list](https://trello.com/b/yIQGkHia/turtl-product-dev).
